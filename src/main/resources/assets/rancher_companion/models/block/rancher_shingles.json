@@ -1,0 +1,6 @@
+{
+ "parent": "minecraft:block/cube_all",
+ "textures": {
+  "all": "rancher_companion:block/rancher_shingles"
+ }
+}

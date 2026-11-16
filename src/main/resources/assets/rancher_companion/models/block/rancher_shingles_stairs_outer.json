@@ -1,0 +1,8 @@
+{
+ "parent": "minecraft:block/outer_stairs",
+ "textures": {
+  "bottom": "rancher_companion:block/rancher_shingles",
+  "top": "rancher_companion:block/rancher_shingles",
+  "side": "rancher_companion:block/rancher_shingles"
+ }
+}

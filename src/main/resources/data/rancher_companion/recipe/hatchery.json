@@ -1,0 +1,30 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "category": "misc",
+ "pattern": [
+  "FHF",
+  "LPL",
+  "IPI"
+ ],
+ "key": {
+  "F": {
+   "item": "minecraft:feather"
+  },
+  "H": {
+   "item": "minecraft:hay_block"
+  },
+  "L": {
+   "item": "minecraft:leather"
+  },
+  "P": {
+   "tag": "minecraft:planks"
+  },
+  "I": {
+   "item": "minecraft:iron_ingot"
+  }
+ },
+ "result": {
+  "id": "rancher_companion:hatchery",
+  "count": 1
+ }
+}

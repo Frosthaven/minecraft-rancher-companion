@@ -1,0 +1,10 @@
+{
+ "type": "minecraft:stonecutting",
+ "ingredient": {
+  "item": "rancher_companion:rancher_shingles"
+ },
+ "result": {
+  "id": "rancher_companion:rancher_shingles_stairs",
+  "count": 1
+ }
+}

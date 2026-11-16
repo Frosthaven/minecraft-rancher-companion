@@ -1,0 +1,16 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "category": "building",
+ "pattern": [
+  "BBB"
+ ],
+ "key": {
+  "B": {
+   "item": "rancher_companion:rancher_beam"
+  }
+ },
+ "result": {
+  "id": "rancher_companion:rancher_beam_slab",
+  "count": 6
+ }
+}

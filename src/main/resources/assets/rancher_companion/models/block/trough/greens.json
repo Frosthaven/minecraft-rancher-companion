@@ -1,0 +1,293 @@
+{
+ "parent": "minecraft:block/block",
+ "textures": {
+  "wood": "rancher_companion:block/style_wood",
+  "steel": "rancher_companion:block/style_steel",
+  "steel_dark": "rancher_companion:block/style_steel_dark",
+  "rivet": "rancher_companion:block/style_rivet",
+  "leather": "rancher_companion:block/style_leather",
+  "leather_light": "rancher_companion:block/style_leather_light",
+  "straw": "rancher_companion:block/style_straw",
+  "straw_light": "rancher_companion:block/style_straw_light",
+  "greens": "rancher_companion:block/style_greens",
+  "greens_light": "rancher_companion:block/style_greens_light",
+  "feather": "rancher_companion:block/style_feather",
+  "feather_dark": "rancher_companion:block/style_feather_dark",
+  "feather_light": "rancher_companion:block/style_feather_light",
+  "particle": "rancher_companion:block/style_wood"
+ },
+ "elements": [
+  {
+   "from": [
+    3,
+    7,
+    3
+   ],
+   "to": [
+    13,
+    8,
+    13
+   ],
+   "faces": {
+    "down": {
+     "uv": [
+      3,
+      3,
+      13,
+      13
+     ],
+     "texture": "#greens"
+    },
+    "up": {
+     "uv": [
+      3,
+      3,
+      13,
+      13
+     ],
+     "texture": "#greens"
+    },
+    "north": {
+     "uv": [
+      3,
+      8,
+      13,
+      9
+     ],
+     "texture": "#greens"
+    },
+    "south": {
+     "uv": [
+      3,
+      8,
+      13,
+      9
+     ],
+     "texture": "#greens"
+    },
+    "west": {
+     "uv": [
+      3,
+      8,
+      13,
+      9
+     ],
+     "texture": "#greens"
+    },
+    "east": {
+     "uv": [
+      3,
+      8,
+      13,
+      9
+     ],
+     "texture": "#greens"
+    }
+   }
+  },
+  {
+   "from": [
+    3,
+    8,
+    3
+   ],
+   "to": [
+    6,
+    9,
+    6
+   ],
+   "faces": {
+    "down": {
+     "uv": [
+      3,
+      10,
+      6,
+      13
+     ],
+     "texture": "#greens_light"
+    },
+    "up": {
+     "uv": [
+      3,
+      3,
+      6,
+      6
+     ],
+     "texture": "#greens_light"
+    },
+    "north": {
+     "uv": [
+      10,
+      7,
+      13,
+      8
+     ],
+     "texture": "#greens_light"
+    },
+    "south": {
+     "uv": [
+      3,
+      7,
+      6,
+      8
+     ],
+     "texture": "#greens_light"
+    },
+    "west": {
+     "uv": [
+      3,
+      7,
+      6,
+      8
+     ],
+     "texture": "#greens_light"
+    },
+    "east": {
+     "uv": [
+      10,
+      7,
+      13,
+      8
+     ],
+     "texture": "#greens_light"
+    }
+   }
+  },
+  {
+   "from": [
+    10,
+    8,
+    10
+   ],
+   "to": [
+    13,
+    9,
+    13
+   ],
+   "faces": {
+    "down": {
+     "uv": [
+      10,
+      3,
+      13,
+      6
+     ],
+     "texture": "#greens_light"
+    },
+    "up": {
+     "uv": [
+      10,
+      10,
+      13,
+      13
+     ],
+     "texture": "#greens_light"
+    },
+    "north": {
+     "uv": [
+      3,
+      7,
+      6,
+      8
+     ],
+     "texture": "#greens_light"
+    },
+    "south": {
+     "uv": [
+      10,
+      7,
+      13,
+      8
+     ],
+     "texture": "#greens_light"
+    },
+    "west": {
+     "uv": [
+      10,
+      7,
+      13,
+      8
+     ],
+     "texture": "#greens_light"
+    },
+    "east": {
+     "uv": [
+      3,
+      7,
+      6,
+      8
+     ],
+     "texture": "#greens_light"
+    }
+   }
+  },
+  {
+   "from": [
+    10,
+    8,
+    3
+   ],
+   "to": [
+    13,
+    9,
+    6
+   ],
+   "faces": {
+    "down": {
+     "uv": [
+      10,
+      10,
+      13,
+      13
+     ],
+     "texture": "#greens_light"
+    },
+    "up": {
+     "uv": [
+      10,
+      3,
+      13,
+      6
+     ],
+     "texture": "#greens_light"
+    },
+    "north": {
+     "uv": [
+      3,
+      7,
+      6,
+      8
+     ],
+     "texture": "#greens_light"
+    },
+    "south": {
+     "uv": [
+      10,
+      7,
+      13,
+      8
+     ],
+     "texture": "#greens_light"
+    },
+    "west": {
+     "uv": [
+      3,
+      7,
+      6,
+      8
+     ],
+     "texture": "#greens_light"
+    },
+    "east": {
+     "uv": [
+      10,
+      7,
+      13,
+      8
+     ],
+     "texture": "#greens_light"
+    }
+   }
+  }
+ ]
+}

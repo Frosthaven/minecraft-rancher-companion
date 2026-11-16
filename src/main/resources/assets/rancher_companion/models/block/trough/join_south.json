@@ -1,0 +1,89 @@
+{
+ "parent": "minecraft:block/block",
+ "textures": {
+  "wood": "rancher_companion:block/style_wood",
+  "steel": "rancher_companion:block/style_steel",
+  "steel_dark": "rancher_companion:block/style_steel_dark",
+  "rivet": "rancher_companion:block/style_rivet",
+  "leather": "rancher_companion:block/style_leather",
+  "leather_light": "rancher_companion:block/style_leather_light",
+  "straw": "rancher_companion:block/style_straw",
+  "straw_light": "rancher_companion:block/style_straw_light",
+  "greens": "rancher_companion:block/style_greens",
+  "greens_light": "rancher_companion:block/style_greens_light",
+  "feather": "rancher_companion:block/style_feather",
+  "feather_dark": "rancher_companion:block/style_feather_dark",
+  "feather_light": "rancher_companion:block/style_feather_light",
+  "particle": "rancher_companion:block/style_wood"
+ },
+ "elements": [
+  {
+   "from": [
+    2,
+    0,
+    14
+   ],
+   "to": [
+    14,
+    2,
+    16
+   ],
+   "faces": {
+    "down": {
+     "uv": [
+      2,
+      0,
+      14,
+      2
+     ],
+     "texture": "#wood"
+    },
+    "up": {
+     "uv": [
+      2,
+      14,
+      14,
+      16
+     ],
+     "texture": "#wood"
+    },
+    "north": {
+     "uv": [
+      2,
+      14,
+      14,
+      16
+     ],
+     "texture": "#wood"
+    },
+    "south": {
+     "uv": [
+      2,
+      14,
+      14,
+      16
+     ],
+     "texture": "#wood"
+    },
+    "west": {
+     "uv": [
+      14,
+      14,
+      16,
+      16
+     ],
+     "texture": "#wood"
+    },
+    "east": {
+     "uv": [
+      0,
+      14,
+      2,
+      16
+     ],
+     "texture": "#wood"
+    }
+   }
+  }
+ ]
+}

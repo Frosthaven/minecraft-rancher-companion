@@ -1,0 +1,21 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "category": "building",
+ "pattern": [
+  "PPP",
+  "PNP",
+  "PPP"
+ ],
+ "key": {
+  "P": {
+   "tag": "minecraft:planks"
+  },
+  "N": {
+   "item": "minecraft:iron_nugget"
+  }
+ },
+ "result": {
+  "id": "rancher_companion:rancher_planks",
+  "count": 8
+ }
+}

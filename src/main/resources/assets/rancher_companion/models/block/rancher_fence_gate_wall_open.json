@@ -1,0 +1,6 @@
+{
+ "parent": "minecraft:block/template_fence_gate_wall_open",
+ "textures": {
+  "texture": "rancher_companion:block/rancher_planks"
+ }
+}

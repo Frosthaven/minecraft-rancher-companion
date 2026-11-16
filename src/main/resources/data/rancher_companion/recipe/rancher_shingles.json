@@ -1,0 +1,21 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "category": "building",
+ "pattern": [
+  "SSS",
+  "SNS",
+  "SSS"
+ ],
+ "key": {
+  "S": {
+   "item": "minecraft:cobbled_deepslate"
+  },
+  "N": {
+   "item": "minecraft:iron_nugget"
+  }
+ },
+ "result": {
+  "id": "rancher_companion:rancher_shingles",
+  "count": 8
+ }
+}

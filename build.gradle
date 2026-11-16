@@ -1,0 +1,109 @@
+plugins {
+    id 'java-library'
+    id 'net.neoforged.moddev' version '2.0.148'
+    id 'idea'
+}
+
+tasks.named('wrapper', Wrapper).configure {
+    distributionType = Wrapper.DistributionType.BIN
+}
+
+version = mod_version
+group = mod_group_id
+
+base {
+    archivesName = 'drekki-rancher'
+}
+
+// Mojang ships Java 21 to players in 1.21.1.
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+neoForge {
+    version = project.neo_version
+
+    parchment {
+        mappingsVersion = project.parchment_mappings_version
+        minecraftVersion = project.parchment_minecraft_version
+    }
+
+    runs {
+        client { client() }
+        server {
+            server()
+            programArgument '--nogui'
+        }
+        gameTestServer { type = "gameTestServer" }
+        // The showcase world: straight into the saved world, with the showcase driver on (tools/showcase.py builds it).
+        showcase {
+            client()
+            programArguments.addAll '--quickPlaySingleplayer', 'showcase'
+            jvmArgument '-Drancher_companion.showcase=true'
+        }
+        // The block showcase: its own folder (run-blocks), straight into the copied flat world; the player builds every
+        // block through the real placement code and the game screenshots it all, then closes (tools/blocks_showcase.py).
+        blockShowcase {
+            client()
+            gameDirectory = project.file('run-blocks')
+            programArguments.addAll '--quickPlaySingleplayer', 'blocks'
+            jvmArgument '-Drancher_companion.blockshowcase=true'
+        }
+        // Headless: the dedicated server spawns every group into its world, saves and stops (tools/showcase.py spawn).
+        showcaseWorld {
+            server()
+            programArgument '--nogui'
+            jvmArgument '-Drancher_companion.buildworld=true'
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet(sourceSets.main)
+        }
+    }
+}
+
+// 'localRuntime': on the dev classpath only, never a published dependency.
+configurations {
+    runtimeClasspath.extendsFrom localRuntime
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+// Expands ${} properties from gradle.properties into neoforge.mods.toml.
+var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
+    var replaceProperties = [
+            minecraft_version      : minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            neo_version            : neo_version,
+            loader_version_range   : loader_version_range,
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_license            : mod_license,
+            mod_version            : mod_version,
+    ]
+    inputs.properties replaceProperties
+    expand replaceProperties
+    from "src/main/templates"
+    into "build/generated/sources/modMetadata"
+}
+sourceSets.main.resources.srcDir generateModMetadata
+neoForge.ideSyncTask generateModMetadata
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+idea {
+    module {
+        downloadSources = true
+        downloadJavadoc = true
+    }
+}

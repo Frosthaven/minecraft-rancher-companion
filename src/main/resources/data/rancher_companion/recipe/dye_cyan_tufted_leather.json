@@ -1,0 +1,17 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "building",
+ "ingredients": [
+  {
+   "tag": "rancher_companion:tufted_leather"
+  },
+  {
+   "item": "minecraft:cyan_dye"
+  }
+ ],
+ "result": {
+  "id": "rancher_companion:cyan_tufted_leather",
+  "count": 1
+ },
+ "group": "tufted_leather_dye"
+}

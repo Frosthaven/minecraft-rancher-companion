@@ -1,0 +1,22 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "building",
+ "ingredients": [
+  {
+   "item": "rancher_companion:trough"
+  },
+  {
+   "item": "minecraft:white_dye"
+  }
+ ],
+ "result": {
+  "id": "rancher_companion:trough",
+  "count": 1,
+  "components": {
+   "minecraft:block_state": {
+    "color": "1"
+   }
+  }
+ },
+ "group": "trough_dye"
+}

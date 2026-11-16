@@ -1,0 +1,24 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "category": "misc",
+ "pattern": [
+  "L L",
+  "P P",
+  "NPN"
+ ],
+ "key": {
+  "L": {
+   "item": "minecraft:leather"
+  },
+  "P": {
+   "tag": "minecraft:planks"
+  },
+  "N": {
+   "item": "minecraft:iron_nugget"
+  }
+ },
+ "result": {
+  "id": "rancher_companion:trough",
+  "count": 1
+ }
+}

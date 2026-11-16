@@ -1,0 +1,24 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:false"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "G": {
+      "item": "minecraft:glass_bottle"
+    },
+    "H": {
+      "item": "minecraft:leather_helmet"
+    }
+  },
+  "pattern": [
+    "GHG"
+  ],
+  "result": {
+    "count": 1,
+    "id": "rancher_companion:drinking_hat"
+  }
+}

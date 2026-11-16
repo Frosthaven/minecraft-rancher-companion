@@ -1,0 +1,25 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:false"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "P": {
+      "item": "minecraft:paper"
+    },
+    "D": {
+      "tag": "c:dyes"
+    }
+  },
+  "pattern": [
+    " P ",
+    "PDP"
+  ],
+  "result": {
+    "count": 1,
+    "id": "rancher_companion:party_cone"
+  }
+}

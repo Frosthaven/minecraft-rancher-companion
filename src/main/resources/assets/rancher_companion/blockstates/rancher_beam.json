@@ -1,0 +1,16 @@
+{
+ "variants": {
+  "axis=y": {
+   "model": "rancher_companion:block/rancher_beam"
+  },
+  "axis=z": {
+   "model": "rancher_companion:block/rancher_beam_horizontal",
+   "x": 90
+  },
+  "axis=x": {
+   "model": "rancher_companion:block/rancher_beam_horizontal",
+   "x": 90,
+   "y": 90
+  }
+ }
+}

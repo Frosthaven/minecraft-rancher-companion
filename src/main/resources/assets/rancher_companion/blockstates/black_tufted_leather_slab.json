@@ -1,0 +1,13 @@
+{
+ "variants": {
+  "type=bottom": {
+   "model": "rancher_companion:block/tufted_leather_slab"
+  },
+  "type=top": {
+   "model": "rancher_companion:block/tufted_leather_slab_top"
+  },
+  "type=double": {
+   "model": "rancher_companion:block/tufted_leather"
+  }
+ }
+}

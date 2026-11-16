@@ -1,0 +1,984 @@
+{
+ "multipart": [
+  {
+   "when": {
+    "facing": "west"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/base"
+   }
+  },
+  {
+   "when": {
+    "facing": "north"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/base",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/base",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/base",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "diet": "0"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_back_none"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "diet": "0"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_back_none",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "diet": "0"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_back_none",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "diet": "0"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_back_none",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "left": "false",
+    "diet": "0"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_north_none"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "left": "false",
+    "diet": "0"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_north_none",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "left": "false",
+    "diet": "0"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_north_none",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "left": "false",
+    "diet": "0"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_north_none",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "right": "false",
+    "diet": "0"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_south_none"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "right": "false",
+    "diet": "0"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_south_none",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "right": "false",
+    "diet": "0"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_south_none",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "right": "false",
+    "diet": "0"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_south_none",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "diet": "1"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_back_raw"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "diet": "1"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_back_raw",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "diet": "1"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_back_raw",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "diet": "1"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_back_raw",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "left": "false",
+    "diet": "1"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_north_raw"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "left": "false",
+    "diet": "1"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_north_raw",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "left": "false",
+    "diet": "1"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_north_raw",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "left": "false",
+    "diet": "1"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_north_raw",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "right": "false",
+    "diet": "1"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_south_raw"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "right": "false",
+    "diet": "1"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_south_raw",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "right": "false",
+    "diet": "1"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_south_raw",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "right": "false",
+    "diet": "1"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_south_raw",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "diet": "2"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_back_cooked"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "diet": "2"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_back_cooked",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "diet": "2"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_back_cooked",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "diet": "2"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_back_cooked",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "left": "false",
+    "diet": "2"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_north_cooked"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "left": "false",
+    "diet": "2"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_north_cooked",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "left": "false",
+    "diet": "2"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_north_cooked",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "left": "false",
+    "diet": "2"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_north_cooked",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "right": "false",
+    "diet": "2"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_south_cooked"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "right": "false",
+    "diet": "2"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_south_cooked",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "right": "false",
+    "diet": "2"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_south_cooked",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "right": "false",
+    "diet": "2"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_south_cooked",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "diet": "3"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_back_seed"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "diet": "3"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_back_seed",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "diet": "3"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_back_seed",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "diet": "3"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_back_seed",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "left": "false",
+    "diet": "3"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_north_seed"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "left": "false",
+    "diet": "3"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_north_seed",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "left": "false",
+    "diet": "3"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_north_seed",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "left": "false",
+    "diet": "3"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_north_seed",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "right": "false",
+    "diet": "3"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_south_seed"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "right": "false",
+    "diet": "3"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_south_seed",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "right": "false",
+    "diet": "3"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_south_seed",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "right": "false",
+    "diet": "3"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_south_seed",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "diet": "4"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_back_root"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "diet": "4"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_back_root",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "diet": "4"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_back_root",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "diet": "4"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_back_root",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "left": "false",
+    "diet": "4"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_north_root"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "left": "false",
+    "diet": "4"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_north_root",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "left": "false",
+    "diet": "4"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_north_root",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "left": "false",
+    "diet": "4"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_north_root",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "right": "false",
+    "diet": "4"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_south_root"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "right": "false",
+    "diet": "4"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_south_root",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "right": "false",
+    "diet": "4"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_south_root",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "right": "false",
+    "diet": "4"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/plaque_south_root",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "left": "false"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/end_north"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "left": "false"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/end_north",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "left": "false"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/end_north",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "left": "false"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/end_north",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "right": "false"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/end_south"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "right": "false"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/end_south",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "right": "false"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/end_south",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "right": "false"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/end_south",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "left": "true"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/join_north"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "left": "true"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/join_north",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "left": "true"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/join_north",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "left": "true"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/join_north",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "right": "true"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/join_south"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "right": "true"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/join_south",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "right": "true"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/join_south",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "right": "true"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/join_south",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "diet": "1|2|3|4"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/straw"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "diet": "1|2|3|4"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/straw",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "diet": "1|2|3|4"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/straw",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "diet": "1|2|3|4"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/straw",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "left": "true",
+    "diet": "1|2|3|4"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/straw_north"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "left": "true",
+    "diet": "1|2|3|4"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/straw_north",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "left": "true",
+    "diet": "1|2|3|4"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/straw_north",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "left": "true",
+    "diet": "1|2|3|4"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/straw_north",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "right": "true",
+    "diet": "1|2|3|4"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/straw_south"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "right": "true",
+    "diet": "1|2|3|4"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/straw_south",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "right": "true",
+    "diet": "1|2|3|4"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/straw_south",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "right": "true",
+    "diet": "1|2|3|4"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/straw_south",
+    "y": 270
+   }
+  },
+  {
+   "when": {
+    "facing": "west",
+    "diet": "3|4"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/greens"
+   }
+  },
+  {
+   "when": {
+    "facing": "north",
+    "diet": "3|4"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/greens",
+    "y": 90
+   }
+  },
+  {
+   "when": {
+    "facing": "east",
+    "diet": "3|4"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/greens",
+    "y": 180
+   }
+  },
+  {
+   "when": {
+    "facing": "south",
+    "diet": "3|4"
+   },
+   "apply": {
+    "model": "rancher_companion:block/trough/greens",
+    "y": 270
+   }
+  }
+ ]
+}

@@ -1,0 +1,13 @@
+{
+ "variants": {
+  "type=bottom": {
+   "model": "rancher_companion:block/rancher_shingles_slab"
+  },
+  "type=top": {
+   "model": "rancher_companion:block/rancher_shingles_slab_top"
+  },
+  "type=double": {
+   "model": "rancher_companion:block/rancher_shingles"
+  }
+ }
+}

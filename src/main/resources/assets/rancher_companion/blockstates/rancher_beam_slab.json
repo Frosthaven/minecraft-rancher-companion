@@ -1,0 +1,25 @@
+{
+ "variants": {
+  "axis=x,type=bottom": {
+   "model": "rancher_companion:block/rancher_beam_slab"
+  },
+  "axis=x,type=top": {
+   "model": "rancher_companion:block/rancher_beam_slab_top"
+  },
+  "axis=x,type=double": {
+   "model": "rancher_companion:block/rancher_beam_slab_double"
+  },
+  "axis=z,type=bottom": {
+   "model": "rancher_companion:block/rancher_beam_slab",
+   "y": 90
+  },
+  "axis=z,type=top": {
+   "model": "rancher_companion:block/rancher_beam_slab_top",
+   "y": 90
+  },
+  "axis=z,type=double": {
+   "model": "rancher_companion:block/rancher_beam_slab_double",
+   "y": 90
+  }
+ }
+}

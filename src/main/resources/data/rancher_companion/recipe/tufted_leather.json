@@ -1,0 +1,24 @@
+{
+ "type": "minecraft:crafting_shaped",
+ "category": "building",
+ "pattern": [
+  "LNL",
+  "NWN",
+  "LNL"
+ ],
+ "key": {
+  "L": {
+   "item": "minecraft:leather"
+  },
+  "N": {
+   "item": "minecraft:iron_nugget"
+  },
+  "W": {
+   "tag": "minecraft:wool"
+  }
+ },
+ "result": {
+  "id": "rancher_companion:tufted_leather",
+  "count": 4
+ }
+}

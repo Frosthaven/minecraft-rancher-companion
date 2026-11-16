@@ -1,0 +1,147 @@
+{
+ "parent": "minecraft:block/block",
+ "textures": {
+  "post": "rancher_companion:block/rancher_beam_side",
+  "cap": "rancher_companion:block/style_steel_dark",
+  "rail": "rancher_companion:block/rancher_planks",
+  "particle": "rancher_companion:block/rancher_planks"
+ },
+ "elements": [
+  {
+   "from": [
+    7,
+    5,
+    0
+   ],
+   "to": [
+    9,
+    8,
+    9
+   ],
+   "faces": {
+    "down": {
+     "uv": [
+      7,
+      7,
+      9,
+      16
+     ],
+     "texture": "#rail"
+    },
+    "up": {
+     "uv": [
+      7,
+      0,
+      9,
+      9
+     ],
+     "texture": "#rail"
+    },
+    "north": {
+     "uv": [
+      7,
+      8,
+      9,
+      11
+     ],
+     "texture": "#rail"
+    },
+    "south": {
+     "uv": [
+      7,
+      8,
+      9,
+      11
+     ],
+     "texture": "#rail"
+    },
+    "west": {
+     "uv": [
+      0,
+      8,
+      9,
+      11
+     ],
+     "texture": "#rail"
+    },
+    "east": {
+     "uv": [
+      7,
+      8,
+      16,
+      11
+     ],
+     "texture": "#rail"
+    }
+   }
+  },
+  {
+   "from": [
+    7,
+    11,
+    0
+   ],
+   "to": [
+    9,
+    14,
+    9
+   ],
+   "faces": {
+    "down": {
+     "uv": [
+      7,
+      7,
+      9,
+      16
+     ],
+     "texture": "#rail"
+    },
+    "up": {
+     "uv": [
+      7,
+      0,
+      9,
+      9
+     ],
+     "texture": "#rail"
+    },
+    "north": {
+     "uv": [
+      7,
+      2,
+      9,
+      5
+     ],
+     "texture": "#rail"
+    },
+    "south": {
+     "uv": [
+      7,
+      2,
+      9,
+      5
+     ],
+     "texture": "#rail"
+    },
+    "west": {
+     "uv": [
+      0,
+      2,
+      9,
+      5
+     ],
+     "texture": "#rail"
+    },
+    "east": {
+     "uv": [
+      7,
+      2,
+      16,
+      5
+     ],
+     "texture": "#rail"
+    }
+   }
+  }
+ ]
+}

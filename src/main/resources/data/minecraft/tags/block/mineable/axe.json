@@ -1,0 +1,13 @@
+{
+ "values": [
+  "rancher_companion:hatchery",
+  "rancher_companion:trough",
+  "rancher_companion:rancher_planks",
+  "rancher_companion:rancher_planks_slab",
+  "rancher_companion:rancher_planks_stairs",
+  "rancher_companion:rancher_beam",
+  "rancher_companion:rancher_beam_slab",
+  "rancher_companion:rancher_fence",
+  "rancher_companion:rancher_fence_gate"
+ ]
+}

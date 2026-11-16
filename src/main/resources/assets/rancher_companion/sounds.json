@@ -1,0 +1,331 @@
+{
+  "drekki.armor": {
+    "subtitle": "subtitles.rancher_companion.drekki.armor",
+    "sounds": [
+      "minecraft:item/armor/equip_iron1",
+      "minecraft:item/armor/equip_iron2",
+      "minecraft:item/armor/equip_iron3"
+    ]
+  },
+  "drekki.bite1": {
+    "subtitle": "subtitles.rancher_companion.drekki.bite",
+    "sounds": [
+      "rancher_companion:drekki/bite1_1",
+      "rancher_companion:drekki/bite1_2"
+    ]
+  },
+  "drekki.bite2": {
+    "subtitle": "subtitles.rancher_companion.drekki.bite",
+    "sounds": [
+      "rancher_companion:drekki/bite2_1",
+      "rancher_companion:drekki/bite2_2"
+    ]
+  },
+  "drekki.bite3": {
+    "subtitle": "subtitles.rancher_companion.drekki.bite",
+    "sounds": [
+      "rancher_companion:drekki/bite3_1",
+      "rancher_companion:drekki/bite3_2"
+    ]
+  },
+  "drekki.burst_long": {
+    "subtitle": "subtitles.rancher_companion.drekki.burst_long",
+    "sounds": [
+      {
+        "name": "rancher_companion:drekki/burst_long_1"
+      },
+      {
+        "name": "rancher_companion:drekki/burst_long_2"
+      }
+    ]
+  },
+  "drekki.burst_short": {
+    "subtitle": "subtitles.rancher_companion.drekki.burst_short",
+    "sounds": [
+      {
+        "name": "rancher_companion:drekki/burst_short_1"
+      },
+      {
+        "name": "rancher_companion:drekki/burst_short_2"
+      }
+    ]
+  },
+  "drekki.call": {
+    "subtitle": "subtitles.rancher_companion.drekki.call",
+    "sounds": [
+      {
+        "name": "rancher_companion:drekki/call_1"
+      },
+      {
+        "name": "rancher_companion:drekki/call_2"
+      }
+    ]
+  },
+  "drekki.chain": {
+    "subtitle": "subtitles.rancher_companion.drekki.chain",
+    "sounds": [
+      "minecraft:item/armor/equip_chain1",
+      "minecraft:item/armor/equip_chain2",
+      "minecraft:item/armor/equip_chain3"
+    ]
+  },
+  "drekki.chime": {
+    "subtitle": "subtitles.rancher_companion.drekki.chime",
+    "sounds": [
+      "rancher_companion:drekki/chime_1"
+    ]
+  },
+  "drekki.chime_hi": {
+    "subtitle": "subtitles.rancher_companion.drekki.chime",
+    "sounds": [
+      "rancher_companion:drekki/chime_hi_1"
+    ]
+  },
+  "drekki.eat": {
+    "subtitle": "subtitles.rancher_companion.drekki.eat",
+    "sounds": [
+      "minecraft:random/eat1",
+      "minecraft:random/eat2",
+      "minecraft:random/eat3"
+    ]
+  },
+  "drekki.fire_hit": {
+    "subtitle": "subtitles.rancher_companion.drekki.fire_hit",
+    "sounds": [
+      "rancher_companion:drekki/fire_hit_1"
+    ]
+  },
+  "drekki.fire_ignite": {
+    "subtitle": "subtitles.rancher_companion.drekki.fire_ignite",
+    "sounds": [
+      "rancher_companion:drekki/fire_ignite_1"
+    ]
+  },
+  "drekki.fire_shot": {
+    "subtitle": "subtitles.rancher_companion.drekki.fire_shot",
+    "sounds": [
+      "rancher_companion:drekki/fire_shot_1"
+    ]
+  },
+  "drekki.grow": {
+    "subtitle": "subtitles.rancher_companion.drekki.grow",
+    "sounds": [
+      "minecraft:item/bonemeal/bonemeal1",
+      "minecraft:item/bonemeal/bonemeal2",
+      "minecraft:item/bonemeal/bonemeal3"
+    ]
+  },
+  "drekki.growl_dash": {
+    "subtitle": "subtitles.rancher_companion.drekki.growl_dash",
+    "sounds": [
+      {
+        "name": "rancher_companion:drekki/growl_dash"
+      }
+    ]
+  },
+  "drekki.growl_roar": {
+    "subtitle": "subtitles.rancher_companion.drekki.growl_roar",
+    "sounds": [
+      {
+        "name": "rancher_companion:drekki/growl_roar"
+      }
+    ]
+  },
+  "drekki.grunt": {
+    "subtitle": "subtitles.rancher_companion.drekki.grunt",
+    "sounds": [
+      {
+        "name": "rancher_companion:drekki/grunt_1"
+      },
+      {
+        "name": "rancher_companion:drekki/grunt_2"
+      }
+    ]
+  },
+  "drekki.huff": {
+    "subtitle": "subtitles.rancher_companion.drekki.huff",
+    "sounds": [
+      {
+        "name": "rancher_companion:drekki/huff_1"
+      },
+      {
+        "name": "rancher_companion:drekki/huff_2"
+      }
+    ]
+  },
+  "drekki.loop_hiss": {
+    "subtitle": "subtitles.rancher_companion.drekki.loop_hiss",
+    "sounds": [
+      {
+        "name": "rancher_companion:drekki/loop_hiss"
+      }
+    ]
+  },
+  "drekki.loop_wind": {
+    "subtitle": "subtitles.rancher_companion.drekki.loop_wind",
+    "sounds": [
+      {
+        "name": "rancher_companion:drekki/loop_wind"
+      }
+    ]
+  },
+  "drekki.nose": {
+    "subtitle": "subtitles.rancher_companion.drekki.nose",
+    "sounds": [
+      "minecraft:mob/panda/nosebreath1",
+      "minecraft:mob/panda/nosebreath2",
+      "minecraft:mob/panda/nosebreath3"
+    ]
+  },
+  "drekki.pierce": {
+    "subtitle": "subtitles.rancher_companion.drekki.pierce",
+    "sounds": [
+      "minecraft:item/trident/pierce1",
+      "minecraft:item/trident/pierce2",
+      "minecraft:item/trident/pierce3"
+    ]
+  },
+  "drekki.rustle": {
+    "subtitle": "subtitles.rancher_companion.drekki.rustle",
+    "sounds": [
+      "minecraft:block/azalea_leaves/break1",
+      "minecraft:block/azalea_leaves/break2",
+      "minecraft:block/azalea_leaves/break3",
+      "minecraft:block/azalea_leaves/break4"
+    ]
+  },
+  "drekki.shield": {
+    "subtitle": "subtitles.rancher_companion.drekki.shield",
+    "sounds": [
+      "minecraft:item/shield/block1",
+      "minecraft:item/shield/block2",
+      "minecraft:item/shield/block3"
+    ]
+  },
+  "drekki.sniff": {
+    "subtitle": "subtitles.rancher_companion.drekki.sniff",
+    "sounds": [
+      {
+        "name": "rancher_companion:drekki/sniff_1"
+      },
+      {
+        "name": "rancher_companion:drekki/sniff_2"
+      }
+    ]
+  },
+  "drekki.snore": {
+    "subtitle": "subtitles.rancher_companion.drekki.snore",
+    "sounds": [
+      {
+        "name": "rancher_companion:drekki/snore_1"
+      },
+      {
+        "name": "rancher_companion:drekki/snore_2"
+      }
+    ]
+  },
+  "drekki.step_heavy": {
+    "subtitle": "subtitles.rancher_companion.drekki.step_heavy",
+    "sounds": [
+      {
+        "name": "rancher_companion:drekki/step_heavy_1"
+      },
+      {
+        "name": "rancher_companion:drekki/step_heavy_2"
+      },
+      {
+        "name": "rancher_companion:drekki/step_heavy_3"
+      }
+    ]
+  },
+  "drekki.step_light": {
+    "subtitle": "subtitles.rancher_companion.drekki.step_light",
+    "sounds": [
+      {
+        "name": "rancher_companion:drekki/step_light_1"
+      },
+      {
+        "name": "rancher_companion:drekki/step_light_2"
+      },
+      {
+        "name": "rancher_companion:drekki/step_light_3"
+      }
+    ]
+  },
+  "drekki.step_mid": {
+    "subtitle": "subtitles.rancher_companion.drekki.step_mid",
+    "sounds": [
+      {
+        "name": "rancher_companion:drekki/step_mid_1"
+      },
+      {
+        "name": "rancher_companion:drekki/step_mid_2"
+      },
+      {
+        "name": "rancher_companion:drekki/step_mid_3"
+      }
+    ]
+  },
+  "drekki.whoosh_beat": {
+    "subtitle": "subtitles.rancher_companion.drekki.whoosh_beat",
+    "sounds": [
+      {
+        "name": "rancher_companion:drekki/whoosh_beat_1"
+      },
+      {
+        "name": "rancher_companion:drekki/whoosh_beat_2"
+      }
+    ]
+  },
+  "drekki.whoosh_burst": {
+    "subtitle": "subtitles.rancher_companion.drekki.whoosh_burst",
+    "sounds": [
+      {
+        "name": "rancher_companion:drekki/whoosh_burst"
+      }
+    ]
+  },
+  "drekki.whoosh_inhale": {
+    "subtitle": "subtitles.rancher_companion.drekki.whoosh_inhale",
+    "sounds": [
+      {
+        "name": "rancher_companion:drekki/whoosh_inhale"
+      }
+    ]
+  },
+  "drekki.whoosh_leap": {
+    "subtitle": "subtitles.rancher_companion.drekki.whoosh_leap",
+    "sounds": [
+      {
+        "name": "rancher_companion:drekki/whoosh_leap"
+      }
+    ]
+  },
+  "drekki.whoosh_rock": {
+    "subtitle": "subtitles.rancher_companion.drekki.whoosh_rock",
+    "sounds": [
+      {
+        "name": "rancher_companion:drekki/whoosh_rock"
+      }
+    ]
+  },
+  "drekki.whoosh_up": {
+    "subtitle": "subtitles.rancher_companion.drekki.whoosh_up",
+    "sounds": [
+      {
+        "name": "rancher_companion:drekki/whoosh_up"
+      }
+    ]
+  },
+  "drekki.yelp": {
+    "subtitle": "subtitles.rancher_companion.drekki.yelp",
+    "sounds": [
+      {
+        "name": "rancher_companion:drekki/yelp_1"
+      },
+      {
+        "name": "rancher_companion:drekki/yelp_2"
+      }
+    ]
+  }
+}

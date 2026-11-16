@@ -1,0 +1,22 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:false"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "W": {
+      "item": "minecraft:leather"
+    }
+  },
+  "pattern": [
+    " W ",
+    "WWW"
+  ],
+  "result": {
+    "count": 1,
+    "id": "rancher_companion:cowboy_hat"
+  }
+}

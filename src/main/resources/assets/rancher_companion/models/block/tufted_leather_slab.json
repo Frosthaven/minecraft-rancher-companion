@@ -1,0 +1,163 @@
+{
+ "parent": "minecraft:block/block",
+ "textures": {
+  "leather": "rancher_companion:block/tufted_leather",
+  "studs": "rancher_companion:block/tufted_leather_studs",
+  "particle": "rancher_companion:block/tufted_leather"
+ },
+ "elements": [
+  {
+   "from": [
+    0,
+    0,
+    0
+   ],
+   "to": [
+    16,
+    8,
+    16
+   ],
+   "faces": {
+    "down": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#leather",
+     "tintindex": 0,
+     "cullface": "down"
+    },
+    "up": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#leather",
+     "tintindex": 0
+    },
+    "north": {
+     "uv": [
+      0,
+      8,
+      16,
+      16
+     ],
+     "texture": "#leather",
+     "tintindex": 0,
+     "cullface": "north"
+    },
+    "south": {
+     "uv": [
+      0,
+      8,
+      16,
+      16
+     ],
+     "texture": "#leather",
+     "tintindex": 0,
+     "cullface": "south"
+    },
+    "west": {
+     "uv": [
+      0,
+      8,
+      16,
+      16
+     ],
+     "texture": "#leather",
+     "tintindex": 0,
+     "cullface": "west"
+    },
+    "east": {
+     "uv": [
+      0,
+      8,
+      16,
+      16
+     ],
+     "texture": "#leather",
+     "tintindex": 0,
+     "cullface": "east"
+    }
+   }
+  },
+  {
+   "from": [
+    0,
+    0,
+    0
+   ],
+   "to": [
+    16,
+    8,
+    16
+   ],
+   "faces": {
+    "down": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#studs",
+     "cullface": "down"
+    },
+    "up": {
+     "uv": [
+      0,
+      0,
+      16,
+      16
+     ],
+     "texture": "#studs"
+    },
+    "north": {
+     "uv": [
+      0,
+      8,
+      16,
+      16
+     ],
+     "texture": "#studs",
+     "cullface": "north"
+    },
+    "south": {
+     "uv": [
+      0,
+      8,
+      16,
+      16
+     ],
+     "texture": "#studs",
+     "cullface": "south"
+    },
+    "west": {
+     "uv": [
+      0,
+      8,
+      16,
+      16
+     ],
+     "texture": "#studs",
+     "cullface": "west"
+    },
+    "east": {
+     "uv": [
+      0,
+      8,
+      16,
+      16
+     ],
+     "texture": "#studs",
+     "cullface": "east"
+    }
+   }
+  }
+ ],
+ "render_type": "minecraft:cutout"
+}

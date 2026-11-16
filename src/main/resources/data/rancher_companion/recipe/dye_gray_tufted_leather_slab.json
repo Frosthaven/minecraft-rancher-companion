@@ -1,0 +1,17 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "building",
+ "ingredients": [
+  {
+   "tag": "rancher_companion:tufted_leather_slab"
+  },
+  {
+   "item": "minecraft:gray_dye"
+  }
+ ],
+ "result": {
+  "id": "rancher_companion:gray_tufted_leather_slab",
+  "count": 1
+ },
+ "group": "tufted_leather_slab_dye"
+}

@@ -1,0 +1,22 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "building",
+ "ingredients": [
+  {
+   "item": "rancher_companion:hatchery"
+  },
+  {
+   "item": "minecraft:light_gray_dye"
+  }
+ ],
+ "result": {
+  "id": "rancher_companion:hatchery",
+  "count": 1,
+  "components": {
+   "minecraft:block_state": {
+    "color": "9"
+   }
+  }
+ },
+ "group": "hatchery_dye"
+}

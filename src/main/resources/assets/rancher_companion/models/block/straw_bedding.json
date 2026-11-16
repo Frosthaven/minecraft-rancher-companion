@@ -1,0 +1,6 @@
+{
+ "parent": "minecraft:block/carpet",
+ "textures": {
+  "wool": "rancher_companion:block/straw_bedding"
+ }
+}

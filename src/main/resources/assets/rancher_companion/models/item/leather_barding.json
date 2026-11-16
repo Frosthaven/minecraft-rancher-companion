@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "rancher_companion:item/leather_barding",
+    "layer1": "rancher_companion:item/leather_barding_straps"
+  }
+}
