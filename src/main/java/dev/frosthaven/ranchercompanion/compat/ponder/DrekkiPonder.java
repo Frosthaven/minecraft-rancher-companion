@@ -171,6 +171,8 @@ public final class DrekkiPonder implements PonderPlugin {
         scene.configureBasePlate(0, 0, 13);
         scene.scaleSceneView(0.75f);
         scene.showBasePlate();
+        /* each trough stands alone until the next one joins it (the schematic holds the finished line) */
+        scene.world().modifyBlocks(util.select().fromTo(1, 1, 3, 10, 1, 3), st -> st.setValue(TroughBlock.LEFT, false).setValue(TroughBlock.RIGHT, false), false);
         scene.idle(10);
         scene.world().showSection(util.select().position(1, 1, 3), Direction.DOWN);
         scene.idle(10);
@@ -179,6 +181,8 @@ public final class DrekkiPonder implements PonderPlugin {
         scene.idle(80);
         for (int x = 2; x <= 10; x++) {
             scene.world().showSection(util.select().position(x, 1, 3), Direction.DOWN);
+            scene.world().modifyBlock(util.select().position(x - 1, 1, 3).iterator().next(), st -> st.setValue(TroughBlock.LEFT, true), false);
+            scene.world().modifyBlock(util.select().position(x, 1, 3).iterator().next(), st -> st.setValue(TroughBlock.RIGHT, true), false);
             scene.idle(4);
         }
         scene.idle(10);

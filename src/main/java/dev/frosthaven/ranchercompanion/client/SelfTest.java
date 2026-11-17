@@ -60,6 +60,10 @@ public final class SelfTest {
     }
 
     private static void step(String name, int delay, Runnable act, BooleanSupplier check) { STEPS.add(new Step(name, delay, act, check, true, 0)); }
+    private static void shiftClick(int slot) {
+        var sc = (net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?>) mc().screen;
+        mc().gameMode.handleInventoryMouseClick(sc.getMenu().containerId, slot, 0, net.minecraft.world.inventory.ClickType.QUICK_MOVE, mc().player);
+    }
     private static void stepUntil(String name, int delay, int patience, Runnable act, BooleanSupplier check) { STEPS.add(new Step(name, delay, act, check, true, patience)); }
     private static void quiet(String name, int delay, Runnable act) { STEPS.add(new Step(name, delay, act, null, false, 0)); }
 
@@ -73,6 +77,23 @@ public final class SelfTest {
         Minecraft mc = mc();
         Vec3 hit = Vec3.atCenterOf(pos).add(face.getStepX() * 0.5, face.getStepY() * 0.5, face.getStepZ() * 0.5);
         mc.gameMode.useItemOn(mc.player, InteractionHand.MAIN_HAND, new BlockHitResult(hit, face, pos, false));
+    }
+
+    /** the pup as the server sees it, for a failed sleep check: where it is, whether it sleeps, its pen and bedding, its goals */
+    private static void sleepState() {
+        var srv = mc().getSingleplayerServer();
+        DrekkiEntity c = pup();
+        if (srv == null || c == null) { RancherCompanion.LOG.info("[selftest] sleep state: no pup on the client"); return; }
+        srv.execute(() -> {
+            if (!(srv.overworld().getEntity(c.getUUID()) instanceof DrekkiEntity d)) { RancherCompanion.LOG.info("[selftest] sleep state: no server pup"); return; }
+            var beds = d.bedding(); var pen = d.pen();
+            StringBuilder goals = new StringBuilder();
+            d.goalSelector.getAvailableGoals().forEach(w -> { if (w.isRunning()) goals.append(w.getGoal().getClass().getSimpleName()).append(' '); });
+            RancherCompanion.LOG.info("[selftest] sleep state: at {} home {} out {} sleeping {} pen {} beds {} onBed {} path {} goals [{}] time {}",
+                d.blockPosition(), d.home(), d.isOut(), d.isSleepingLoop(), pen == null ? -1 : pen.size(), beds == null ? -1 : beds.size(),
+                beds != null && beds.contains(dev.frosthaven.ranchercompanion.ranch.Flood.pack(d.getBlockX(), d.getBlockY(), d.getBlockZ())),
+                d.getNavigation().getPath() == null ? "none" : d.getNavigation().getPath().getTarget(), goals, d.level().getDayTime() % 24000);
+        });
     }
 
     private static DrekkiEntity pup() {
@@ -160,6 +181,12 @@ public final class SelfTest {
         quiet("near_for_screen", 15, () -> { select(8); near(pup()); });
         step("drekki_screen", 25, () -> interact("open its screen"),
             () -> mc().screen instanceof dev.frosthaven.ranchercompanion.client.screen.DrekkiScreen s && s.getMenu().slots.get(0).getItem().is(DrekkiItems.hatStack(5).getItem()));
+        step("drekki_screen_hat_off", 15, () -> shiftClick(0),  /* the empty slot shows the dim hat */
+            () -> mc().screen instanceof dev.frosthaven.ranchercompanion.client.screen.DrekkiScreen s && s.getMenu().slots.get(0).getItem().isEmpty());
+        step("drekki_screen_hat_back", 15, () -> {
+            var m = ((dev.frosthaven.ranchercompanion.client.screen.DrekkiScreen) mc().screen).getMenu();
+            for (int i = 1; i < m.slots.size(); i++) if (m.slots.get(i).getItem().is(DrekkiItems.hatStack(5).getItem())) { shiftClick(i); break; }
+        }, () -> mc().screen instanceof dev.frosthaven.ranchercompanion.client.screen.DrekkiScreen s && s.getMenu().slots.get(0).getItem().is(DrekkiItems.hatStack(5).getItem()));
         quiet("close_screen", 10, () -> mc().setScreen(null));
         quiet("give_tag2", 10, () -> { hotbar(2, "name_tag"); mc().options.keyShift.setDown(true); });
         step("easy_anvils_quick_rename", 25, () -> { select(2); mc().gameMode.useItem(mc().player, InteractionHand.MAIN_HAND); },
@@ -178,7 +205,11 @@ public final class SelfTest {
             cmd("time set 18000");
         });
         stepUntil("sleeps_on_bedding", 10, 30, () -> cmd("tp @s " + (hatch.getX() - 3.5) + " " + o.getY() + " " + (hatch.getZ() + 3.5) + " -90 20"),
-            () -> pup() != null && pup().isSleepingLoop() && pup().blockPosition().distManhattan(hatch.offset(0, 0, 3)) <= 2);
+            () -> {
+                boolean ok = pup() != null && pup().isSleepingLoop() && pup().blockPosition().distManhattan(hatch.offset(0, 0, 3)) <= 2;
+                if (!ok) sleepState();
+                return ok;
+            });
         quiet("morning", 20, () -> cmd("time set 1000"));
         quiet("trough", 25, () -> { cmd("setblock " + at(trough) + " rancher_companion:trough"); hotbar(4, "wheat 16"); cmd("tp @s " + (o.getX() + 0.5) + " " + o.getY() + " " + (o.getZ() + 0.5)); });
         quiet("open_trough", 20, () -> { select(8); useOn(trough, Direction.UP); });
@@ -200,8 +231,10 @@ public final class SelfTest {
             step("ponder_stable_roof", 400, () -> {}, () -> mc().screen != null && mc().screen.getClass().getSimpleName().equals("PonderUI"));
             step("ponder_stable_wander", 500, () -> {}, null);
             step("ponder_stable_end", 10, () -> {}, null);
-            quiet("ponder_open_trough", 450, () -> dev.frosthaven.ranchercompanion.compat.ponder.DrekkiPonder.open(net.minecraft.resources.ResourceLocation.parse(tr)));
-            step("ponder_trough_line", 10, () -> {}, () -> mc().screen != null && mc().screen.getClass().getSimpleName().equals("PonderUI"));
+            quiet("ponder_open_trough", 60, () -> dev.frosthaven.ranchercompanion.compat.ponder.DrekkiPonder.open(net.minecraft.resources.ResourceLocation.parse(tr)));
+            step("ponder_trough_alone", 46, () -> {}, () -> mc().screen != null && mc().screen.getClass().getSimpleName().equals("PonderUI"));  /* one trough, unjoined */
+            step("ponder_trough_joining", 344, () -> {}, null);  /* the next troughs joining one by one */
+            step("ponder_trough_line", 10, () -> {}, null);
             quiet("ponder_next_diets", 450, dev.frosthaven.ranchercompanion.compat.ponder.DrekkiPonder::next);
             step("ponder_trough_diets", 10, () -> {}, null);
             quiet("ponder_next_feeding", 300, dev.frosthaven.ranchercompanion.compat.ponder.DrekkiPonder::next);

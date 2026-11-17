@@ -23,6 +23,8 @@ public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
     /** the growth stages as players see them: never "stage 1, 2, 3" in game */
     private static final String[] STAGES = {"Pup", "Fledgling", "Mature"};
 
+    private static final net.minecraft.world.item.ItemStack GHOST_HAT = dev.frosthaven.ranchercompanion.item.DrekkiItems.hatStack(5);
+
     public DrekkiScreen(DrekkiMenu menu, Inventory inv, Component title) {
         super(menu, inv, title);
         imageWidth = 176;
@@ -33,6 +35,15 @@ public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
     @Override
     protected void renderBg(GuiGraphics g, float pt, int mx, int my) {
         g.blit(TEX, leftPos, topPos, 0, 0, imageWidth, imageHeight);
+        /* an empty hat slot shows a dim straw hat, as on the design page: the item, then the slot's own fill over it at 70% */
+        if (menu.slots.get(0).getItem().isEmpty()) {
+            int x = leftPos + dev.frosthaven.ranchercompanion.entity.DrekkiMenu.HAT_X, y = topPos + dev.frosthaven.ranchercompanion.entity.DrekkiMenu.HAT_Y;
+            g.renderFakeItem(GHOST_HAT, x, y);
+            g.pose().pushPose();
+            g.pose().translate(0, 0, 250);
+            g.fill(x, y, x + 16, y + 16, 0xB3221428);
+            g.pose().popPose();
+        }
         DrekkiEntity d = menu.drekki;
         if (d == null) return;
         float k = d.stage() == 1 ? 46 : d.stage() == 2 ? 26 : 16;
@@ -46,7 +57,6 @@ public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
         DrekkiEntity d = menu.drekki;
         g.drawString(font, title, 8, 6, Art.THREAD, false);
         if (d != null) g.drawString(font, STAGES[d.stage() - 1], 8 + font.width(title) + 6, 6, Art.DIM, false);
-        g.drawString(font, Component.translatable("screen.rancher_companion.drekki.hat"), 6, 46, Art.DIM, false);
         if (d == null) return;
         int x = 96, y = 26;
         /* health: vanilla's hearts, eight to a row */
@@ -59,11 +69,15 @@ public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
             else if (i == full && half) g.blitSprite(HALF, hx, hy, 9, 9);
         }
         int ty = y + ((hearts + 7) / 8) * 10 + 4;
-        g.drawString(font, d.lineage().name(), x, ty, Art.THREAD, false);
-        g.drawString(font, Component.translatable("screen.rancher_companion.drekki.eyes", Astral.NAMES[d.astral()]), x, ty + 12, Art.THREAD, false);
         Component diet = d.stage() == 1 ? Component.translatable("screen.rancher_companion.drekki.diet_open")
             : Component.translatable("screen.rancher_companion.drekki.diet", Diet.of(d.diet()).label);
-        g.drawString(font, diet, x, ty + 23, Art.THREAD, false);
+        /* each line wraps inside the details well (92..170, text from 96), as vanilla wraps text: 10 px a wrapped row,
+           12 between lines */
+        for (Component line : new Component[]{Component.literal(d.lineage().name()),
+                Component.translatable("screen.rancher_companion.drekki.astral", Astral.NAMES[d.astral()]), diet}) {
+            for (var row : font.split(line, 71)) { g.drawString(font, row, x, ty, Art.THREAD, false); ty += 10; }
+            ty += 2;
+        }
     }
 
     @Override

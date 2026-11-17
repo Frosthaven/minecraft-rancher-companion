@@ -186,6 +186,8 @@ tooltip naming the stance and what it does. Then the pack from stage 2
 Revised 2026-11-16, laid out like a Sophisticated Backpacks screen: the drekki part on top (equipment slots: hat; saddle
 and barding at stage 3; the model; details or traits, with Drekki and Traits tabs), then its pack, then the player's
 inventory and hotbar, so items move between them by click and shift-click. Equipment slots take only their own item.
+Equipment slots have no text label: an empty slot shows its item's icon, dimmed (the hat slot a straw hat). The astral
+line reads "Astral: <name>".
 
 Health and food: at the top of the Details tab, as vanilla's HUD draws a player's: a row of hearts (full, half, empty; ten to a
 row, so a stage 3 drekki's extra hearts wrap) and a row of ten drumstick shanks for the hunger meter. Max health per
@@ -1020,7 +1022,8 @@ Hatch a first egg, keep the pup, carry it, name it, pet it. Growth and learning 
   Out of the carrier, a checked-out pup follows its owner and teleports when too far.
 - Stage 1 never attacks and mobs never target it.
 - Drekki screen (0.3.x, built for review): its owner right-clicks it with an empty hand. The hat slot (its hat: in
-  puts it on, out takes it off), the model, bloodline, stage, eyes, diet and health hearts, the player's inventory below;
+  puts it on, out takes it off; a dim straw hat when empty, no label), the model, the name with the stage beside it, then
+  health hearts, bloodline, astral ("Astral: Dormant"), diet, the player's inventory below;
   pixel style like the hatchery and trough screens. A hat in hand still goes on with a click.
 - Petting: sneak + right-click with an empty hand (the arm swings, as on any use). The drekki is in `#c:capturing_not_supported`, so Carry On (whose
   default blacklist reads that tag) and other capture mods leave it alone: the roster keeps it, nothing else carries it. A happy sound, hearts, a short lean-in. Later a small mood gain
