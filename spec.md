@@ -172,13 +172,12 @@ Two craftable items:
 ## Drekki screen
 
 Right click the drekki at any stage to open its screen. It shows the drekki's inventory and a 3D model. Revised
-2026-11-17 (design page, UI tab): the equipment slots the stage has and the model, then three tabs beside them, one
-shown at a time. Details: bloodline, astral, diet, biome and the mood band (its name in its color; the value, effects
+2026-11-17 (design page, UI tab): the equipment slots the stage has and the model, then two tabs beside them, one
+shown at a time, and under them the stance row (stage 2 and 3), shown whichever tab is open. Details: bloodline, astral, diet, biome and the mood band (its name in its color; the value, effects
 and reasons such as "Hungry: -2 a minute" in a hover tooltip). Traits: two columns of five (the most a drekki carries:
 9 slots and Naturally Gifted), each with a hover tooltip saying what it does, the negative marked, sleeping traits
-named. Stance (stage 2 and 3): the three stance buttons and what the chosen one does. Then the pack from stage 2
-(nothing in its place at stage 1). No learning progress is shown. The drekki part is wider than the player's inventory,
-which keeps vanilla's 9 columns centered below, as Sophisticated's screens do.
+named. Stance row: the three stance buttons, each with a tooltip. Then the pack from stage 2
+(nothing in its place at stage 1). No learning progress is shown. The screen is vanilla's container width.
 Revised 2026-11-16, laid out like a Sophisticated Backpacks screen: the drekki part on top (equipment slots: hat; saddle
 and barding at stage 3; the model; details or traits, with Drekki and Traits tabs), then its pack, then the player's
 inventory and hotbar, so items move between them by click and shift-click. Equipment slots take only their own item.
