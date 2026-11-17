@@ -307,7 +307,7 @@ Rules behind the lists:
 - Look: horns are ivory until the diet locks at the start of stage 2. From then, physical diets (Raw, Seed) keep
   ivory horns and magical diets (Cooked, Root) turn them ebony. Talons match the horns. Fangs stay ivory
   (assumption).
-- Stance and abilities: see Combat.
+- Position and abilities: see Combat.
 - The ball and the breath are magenta. Open: their element.
 - Carnivore: talons, one fang on each side of the lip from stage 2, and leathery membrane wings. Herbivore: no
   talons, no fangs, feathered wings, and more plumage on the tail.
@@ -804,9 +804,19 @@ trait that unlocks a line; a named egg as an easter egg.
 
 ## Combat
 
-The drekki follows the wolf rule: it engages only what the player attacks or what hits the player. A Hold back
-toggle stops it fighting at all (proposal). Diet picks the stance and the two abilities. Damage is relative to
-Bite until balancing:
+Stances (decided 2026-11-17), for stage 2 and 3; stage 1 never fights and is never targeted. Set on the drekki
+screen; a new stage 2 drekki starts Reactive.
+
+- Aggressive: fights any hostile mob within 10 blocks, and everything Reactive answers. Hostile means a monster;
+  neutral mobs (endermen, zombified piglins, wolves, bees) only while they are angry. It leaves creepers alone, as
+  wolves do. A checked-in drekki stays in its wander area, so it fights what comes into the stable.
+- Reactive: fights whatever hits it or its owner, and whatever its owner attacks (the wolf rule).
+- Passive: never deals damage in a fight. It still uses its defensive abilities: Rejuvenate, Steel edge, and
+  defensive traits (Heal pulse, Arrow guard, Bubble, Phase ward, Thorns).
+- Every stance: players only on a server with PvP on. A ridden drekki picks no fights; its rider steers it. A
+  negative trait that forces a fight (Crimson temper) overrides the stance.
+
+Diet picks the position (where it fights from) and the two abilities. Damage is relative to Bite until balancing:
 
 - Raw (physical damage): stays in melee range and closes the distance with Pounce.
   - Bite: melee attack.
