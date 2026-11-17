@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
@@ -108,7 +109,11 @@ public final class HatcheryScreen extends Screen {
     public void render(GuiGraphics g, int mx, int my, float pt) {
         super.render(g, mx, my, pt);
         int cx = confirming ? -1 : mx, cy = confirming ? -1 : my;
-        g.drawString(font, title, left + (W - font.width(title)) / 2, top + 8, Art.THREAD, false);
+        /* the title on the left, then what it is and where in the dimmer thread (spec, Checkout: Names) */
+        g.drawString(font, title, left + 8, top + 8, Art.THREAD, false);
+        BlockPos p = view.pos();
+        Component sub = Component.literal((view.named() ? "Drekki Hatchery · " : "") + p.getX() + ", " + p.getY() + ", " + p.getZ());
+        g.drawString(font, sub, left + 8 + font.width(title) + 6, top + 8, Art.DIM, false);
         nest(g, cx, cy);
         roster(g, cx, cy);
         Row sel = selected == null ? null : row(selected);
@@ -129,7 +134,7 @@ public final class HatcheryScreen extends Screen {
     private void nest(GuiGraphics g, int mx, int my) {
         int ex = left + 32, ey = top + 47;
         if (view.egg().isEmpty()) {
-            for (int i = 0; i < 2; i++) {
+            for (int i = 0; i < 3; i++) {  /* three short lines: the nest well is 54 px wide inside */
                 Component t = Component.translatable("screen.rancher_companion.empty_nest." + i);
                 g.drawString(font, t, left + 40 - font.width(t) / 2, top + 76 + i * 10, Art.DIM, false);
             }
@@ -173,7 +178,7 @@ public final class HatcheryScreen extends Screen {
                 g.blit(TEX, x, y + ROW_H - 2, 0, 243, LIST_W, 1);
                 if (!sel) g.fill(x + 1, y + 1, x + LIST_W - 1, y + ROW_H - 2, 0x66170e1b);
             }
-            portrait(g, r, x + 1, y);
+            if (!confirming) portrait(g, r, x + 1, y);  /* models draw above the GUI; none under the confirm box */
             g.drawString(font, r.name(), x + 22, y + 2, Art.THREAD, false);
             g.drawString(font, where(r), x + 22, y + 11, r.where() == HatcheryView.HERE ? Art.GLOW : Art.DIM, false);
         }

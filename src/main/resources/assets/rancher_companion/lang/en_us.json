@@ -157,7 +157,7 @@
   "screen.rancher_companion.here_count": "Here %s/%s",
   "screen.rancher_companion.no_drekki": "None yet. Hatch an egg!",
   "screen.rancher_companion.empty_nest.0": "Empty nest",
-  "screen.rancher_companion.empty_nest.1": "Use an egg here",
+  "screen.rancher_companion.empty_nest.1": "Use an egg",
   "screen.rancher_companion.ready": "Ready!",
   "screen.rancher_companion.hatch": "Hatch",
   "screen.rancher_companion.check_out": "Check out",
@@ -213,5 +213,6 @@
   "rancher_companion.ponder.trough_feeding.text_3": "A blocked open side feeds no pup or fledgling there: keep the spot in front clear",
   "rancher_companion.ponder.trough_feeding.text_4": "Mature drekki are tall enough to eat from the top, from any side that is not blocked",
   "rancher_companion.ponder.trough_feeding.text_5": "A meal is one item. After it a drekki waits a moment before it eats again, so the others get a turn",
-  "rancher_companion.ponder.trough_feeding.text_6": "Drekki that live at a hatchery use the troughs inside their wander area, so place troughs along your paths and bedding"
+  "rancher_companion.ponder.trough_feeding.text_6": "Drekki that live at a hatchery use the troughs inside their wander area, so place troughs along your paths and bedding",
+  "screen.rancher_companion.empty_nest.2": "on the nest"
 }

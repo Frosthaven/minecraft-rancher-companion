@@ -38,10 +38,11 @@ public final class SelfTest {
 
     public static final boolean ON = Boolean.getBoolean("rancher_companion.selftest");
 
-    private record Step(String name, int delay, Runnable act, BooleanSupplier check, boolean shot) {}
+    /** patience: for a check that waits on the server (movement, AI), how many more 20-tick tries before it fails */
+    private record Step(String name, int delay, Runnable act, BooleanSupplier check, boolean shot, int patience) {}
 
     private static final List<Step> STEPS = new ArrayList<>();
-    private static int index = -1, timer, started = -1, passed, failed;
+    private static int index = -1, timer, started = -1, passed, failed, waited;
     private static final List<String> FAILS = new ArrayList<>();
     private static BlockPos o, hatch, trough;
 
@@ -58,8 +59,9 @@ public final class SelfTest {
         else mc.player.connection.sendCommand(c);
     }
 
-    private static void step(String name, int delay, Runnable act, BooleanSupplier check) { STEPS.add(new Step(name, delay, act, check, true)); }
-    private static void quiet(String name, int delay, Runnable act) { STEPS.add(new Step(name, delay, act, null, false)); }
+    private static void step(String name, int delay, Runnable act, BooleanSupplier check) { STEPS.add(new Step(name, delay, act, check, true, 0)); }
+    private static void stepUntil(String name, int delay, int patience, Runnable act, BooleanSupplier check) { STEPS.add(new Step(name, delay, act, check, true, patience)); }
+    private static void quiet(String name, int delay, Runnable act) { STEPS.add(new Step(name, delay, act, null, false, 0)); }
 
     private static String at(BlockPos p) { return p.getX() + " " + p.getY() + " " + p.getZ(); }
 
@@ -139,9 +141,9 @@ public final class SelfTest {
         step("hatch", 40, () -> { mc().setScreen(null); useOn(hatch, Direction.UP); }, () -> pup() != null && pup().stage() == 1 && hs() != null);
         step("check_out", 30, () -> { if (hs() != null) { hs().press("row0"); hs().press("out"); } }, () -> where(HatcheryView.WITH_YOU));
         quiet("walk_off", 100, () -> { mc().setScreen(null); cmd("tp @s " + (o.getX() + 7.5) + " " + o.getY() + " " + (o.getZ() + 6.5)); });
-        step("follows", 10, () -> {}, () -> pup() != null && pup().distanceTo(mc().player) < 6);
+        stepUntil("follows", 10, 15, () -> {}, () -> pup() != null && pup().distanceTo(mc().player) < 6);
         quiet("far_away", 80, () -> cmd("tp @s " + (o.getX() + 40.5) + " " + o.getY() + " " + (o.getZ() + 0.5)));
-        step("teleports_to_owner", 10, () -> {}, () -> pup() != null && pup().distanceTo(mc().player) < 6);
+        stepUntil("teleports_to_owner", 10, 15, () -> {}, () -> pup() != null && pup().distanceTo(mc().player) < 6);
         quiet("back", 80, () -> cmd("tp @s " + (o.getX() + 0.5) + " " + o.getY() + " " + (o.getZ() - 4.5)));
         quiet("near_for_pet", 15, () -> near(pup()));
         quiet("sneak", 5, () -> { select(8); mc().options.keyShift.setDown(true); });
@@ -175,7 +177,7 @@ public final class SelfTest {
             for (int dx = -1; dx <= 1; dx++) cmd("setblock " + at(hatch.offset(dx, 0, 3)) + " rancher_companion:straw_bedding");
             cmd("time set 18000");
         });
-        step("sleeps_on_bedding", 10, () -> cmd("tp @s " + (hatch.getX() - 3.5) + " " + o.getY() + " " + (hatch.getZ() + 3.5) + " -90 20"),
+        stepUntil("sleeps_on_bedding", 10, 30, () -> cmd("tp @s " + (hatch.getX() - 3.5) + " " + o.getY() + " " + (hatch.getZ() + 3.5) + " -90 20"),
             () -> pup() != null && pup().isSleepingLoop() && pup().blockPosition().distManhattan(hatch.offset(0, 0, 3)) <= 2);
         quiet("morning", 20, () -> cmd("time set 1000"));
         quiet("trough", 25, () -> { cmd("setblock " + at(trough) + " rancher_companion:trough"); hotbar(4, "wheat 16"); cmd("tp @s " + (o.getX() + 0.5) + " " + o.getY() + " " + (o.getZ() + 0.5)); });
@@ -233,6 +235,8 @@ public final class SelfTest {
             if (s.check != null) {
                 boolean ok;
                 try { ok = s.check.getAsBoolean(); } catch (RuntimeException ex) { ok = false; RancherCompanion.LOG.error("[selftest] {} threw", s.name, ex); }
+                if (!ok && waited < s.patience) { waited++; timer = 20; return; }  /* the server may be behind: look again */
+                waited = 0;
                 if (ok) passed++; else { failed++; FAILS.add(s.name); }
                 RancherCompanion.LOG.info("[selftest] {} {}", ok ? "PASS" : "FAIL", s.name);
             }

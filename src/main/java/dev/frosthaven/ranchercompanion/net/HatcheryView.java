@@ -23,7 +23,7 @@ import net.minecraft.world.item.ItemStack;
  * What the hatchery screen shows (server to client; opens the screen or refreshes it): the hatchery's title, the egg
  * (its incubation rides on the item, for the hover), the hatch checks that fail now, and the viewer's whole roster.
  */
-public record HatcheryView(BlockPos pos, Component title, ItemStack egg, boolean ready, List<String> problems, int here, List<Row> rows) implements CustomPacketPayload {
+public record HatcheryView(BlockPos pos, Component title, boolean named, ItemStack egg, boolean ready, List<String> problems, int here, List<Row> rows) implements CustomPacketPayload {
     /** where a drekki is, as the roster column says it */
     public static final int HERE = 0, WITH_YOU = 1, CARRIED = 2, ELSEWHERE = 3, NO_HATCHERY = 4;
 
@@ -38,10 +38,10 @@ public record HatcheryView(BlockPos pos, Component title, ItemStack egg, boolean
 
     public static final Type<HatcheryView> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(RancherCompanion.ID, "hatchery_view"));
     public static final StreamCodec<RegistryFriendlyByteBuf, HatcheryView> CODEC = StreamCodec.of((b, v) -> {
-        b.writeBlockPos(v.pos); ComponentSerialization.STREAM_CODEC.encode(b, v.title); ItemStack.OPTIONAL_STREAM_CODEC.encode(b, v.egg);
+        b.writeBlockPos(v.pos); ComponentSerialization.STREAM_CODEC.encode(b, v.title); b.writeBoolean(v.named); ItemStack.OPTIONAL_STREAM_CODEC.encode(b, v.egg);
         b.writeBoolean(v.ready); ByteBufCodecs.STRING_UTF8.apply(ByteBufCodecs.list()).encode(b, v.problems); b.writeVarInt(v.here);
         Row.CODEC.apply(ByteBufCodecs.list()).encode(b, v.rows);
-    }, b -> new HatcheryView(b.readBlockPos(), ComponentSerialization.STREAM_CODEC.decode(b), ItemStack.OPTIONAL_STREAM_CODEC.decode(b),
+    }, b -> new HatcheryView(b.readBlockPos(), ComponentSerialization.STREAM_CODEC.decode(b), b.readBoolean(), ItemStack.OPTIONAL_STREAM_CODEC.decode(b),
         b.readBoolean(), ByteBufCodecs.STRING_UTF8.apply(ByteBufCodecs.list()).decode(b), b.readVarInt(), Row.CODEC.apply(ByteBufCodecs.list()).decode(b)));
 
     @Override
@@ -75,6 +75,6 @@ public record HatcheryView(BlockPos pos, Component title, ItemStack egg, boolean
         }
         boolean ready = be.hasEgg() && dev.frosthaven.ranchercompanion.look.Incubation.ready(be.incubation());
         List<String> problems = ready ? Ranch.hatchProblems(p.serverLevel(), be.getBlockPos()) : List.of();
-        return new HatcheryView(be.getBlockPos(), title(be), be.eggWithProgress(), ready, problems, r.at(home).size(), rows);
+        return new HatcheryView(be.getBlockPos(), title(be), be.name() != null, be.eggWithProgress(), ready, problems, r.at(home).size(), rows);
     }
 }

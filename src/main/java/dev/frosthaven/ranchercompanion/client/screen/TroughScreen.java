@@ -27,7 +27,7 @@ public final class TroughScreen extends AbstractContainerScreen<TroughMenu> {
 
     @Override
     protected void renderLabels(GuiGraphics g, int mx, int my) {
-        g.drawString(font, title, (imageWidth - font.width(title)) / 2, 6, Art.THREAD, false);
+        g.drawString(font, title, 8, 6, Art.THREAD, false);
         Diet d = menu.lineDiet();
         Component holds = d == null ? Component.translatable("screen.rancher_companion.trough.any")
             : Component.translatable("screen.rancher_companion.trough.holds", d.label);

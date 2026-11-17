@@ -39,28 +39,31 @@ public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
         InventoryScreen.renderEntityInInventoryFollowsMouse(g, leftPos + 29, topPos + 23, leftPos + 87, topPos + 97, (int) k, 0.0625f, mx, my, d);
     }
 
+    /** the header as the design page draws it: the name, then the growth stage in the dimmer thread; the details beside the
+     *  model, health first. Only what a pup has today: no tabs, traits, stance, food or pack yet */
     @Override
     protected void renderLabels(GuiGraphics g, int mx, int my) {
-        g.drawString(font, title, (imageWidth - font.width(title)) / 2, 6, Art.THREAD, false);
-        g.drawString(font, Component.translatable("screen.rancher_companion.drekki.hat"), 6, 46, Art.DIM, false);
         DrekkiEntity d = menu.drekki;
+        g.drawString(font, title, 8, 6, Art.THREAD, false);
+        if (d != null) g.drawString(font, STAGES[d.stage() - 1], 8 + font.width(title) + 6, 6, Art.DIM, false);
+        g.drawString(font, Component.translatable("screen.rancher_companion.drekki.hat"), 6, 46, Art.DIM, false);
         if (d == null) return;
         int x = 96, y = 26;
-        g.drawString(font, d.lineage().name(), x, y, Art.THREAD, false);
-        g.drawString(font, STAGES[d.stage() - 1], x, y + 11, Art.DIM, false);
-        g.drawString(font, Component.translatable("screen.rancher_companion.drekki.eyes", Astral.NAMES[d.astral()]), x, y + 24, Art.THREAD, false);
-        Component diet = d.stage() == 1 ? Component.translatable("screen.rancher_companion.drekki.diet_open")
-            : Component.translatable("screen.rancher_companion.drekki.diet", Diet.of(d.diet()).label);
-        g.drawString(font, diet, x, y + 35, Art.THREAD, false);
         /* health: vanilla's hearts, eight to a row */
         int hearts = (int) Math.ceil(d.getMaxHealth() / 2), full = (int) d.getHealth() / 2;
         boolean half = ((int) Math.ceil(d.getHealth())) % 2 == 1;
         for (int i = 0; i < hearts; i++) {
-            int hx = x + (i % 8) * 9, hy = y + 50 + (i / 8) * 10;
+            int hx = x + (i % 8) * 9, hy = y + (i / 8) * 10;
             g.blitSprite(EMPTY, hx, hy, 9, 9);
             if (i < full) g.blitSprite(HEART, hx, hy, 9, 9);
             else if (i == full && half) g.blitSprite(HALF, hx, hy, 9, 9);
         }
+        int ty = y + ((hearts + 7) / 8) * 10 + 4;
+        g.drawString(font, d.lineage().name(), x, ty, Art.THREAD, false);
+        g.drawString(font, Component.translatable("screen.rancher_companion.drekki.eyes", Astral.NAMES[d.astral()]), x, ty + 12, Art.THREAD, false);
+        Component diet = d.stage() == 1 ? Component.translatable("screen.rancher_companion.drekki.diet_open")
+            : Component.translatable("screen.rancher_companion.drekki.diet", Diet.of(d.diet()).label);
+        g.drawString(font, diet, x, ty + 23, Art.THREAD, false);
     }
 
     @Override

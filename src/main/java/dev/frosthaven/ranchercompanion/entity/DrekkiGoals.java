@@ -126,9 +126,11 @@ final class DrekkiGoals {
 
         @Override
         public void tick() {
-            if (bed == null && ++recheck % 50 == 0) {  /* goals tick every other tick: about every 5 s */  /* bedding laid after it settled: get up and go to it */
+            /* about every 5 s (goals tick every other tick): a drekki not lying on bedding gets up and goes to some when its pen
+               has any (bedding laid after it settled, or a walk that failed) */
+            if ((bed == null || !d.blockPosition().equals(bed)) && d.getNavigation().isDone() && ++recheck % 50 == 0) {
                 Set<Long> beds = d.bedding();
-                if (beds != null && !beds.isEmpty()) {
+                if (beds != null && !beds.isEmpty() && !beds.contains(dev.frosthaven.ranchercompanion.ranch.Flood.pack(d.getBlockX(), d.getBlockY(), d.getBlockZ()))) {
                     bed = pick(d, beds);
                     d.setSleepingLoop(false);
                     settle = 0; tries = 0;
