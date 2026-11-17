@@ -176,7 +176,8 @@ Two craftable items:
 
 Right click the drekki at any stage to open its screen. It shows the drekki's inventory and a 3D model. Revised
 2026-11-17 (design page, UI tab): the equipment slots the stage has and the model, then two tabs beside them, one
-shown at a time, with the stance buttons (stage 2 and 3) under the tab, shown whichever tab is open. Details: bloodline, astral, diet, biome and the mood band (its name in its color; the value, effects
+shown at a time, with the stance buttons (stage 2 and 3) at the foot of that column, level with the hearts and food, so they stay put
+whichever tab is open. Details: bloodline, astral, diet, biome and the mood band (its name in its color; the value, effects
 and reasons such as "Hungry: -2 a minute" in a hover tooltip). Traits: two columns of five (the most a drekki carries:
 9 slots and Naturally Gifted), each with a hover tooltip saying what it does, the negative marked, sleeping traits
 named. Stance buttons: three icons (a sword for Aggressive, a shield for Reactive, a white flag for Passive), each with a
