@@ -8,7 +8,7 @@ import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
-/** The mod's container screens: the trough. (The hatchery screen has no inventory; it is a packet-driven screen.) */
+/** The mod's container screens: the trough and the drekki. (The hatchery screen has no inventory; it is a packet-driven screen.) */
 public final class DrekkiMenus {
     private DrekkiMenus() {}
 
@@ -16,6 +16,10 @@ public final class DrekkiMenus {
 
     public static final DeferredHolder<MenuType<?>, MenuType<TroughMenu>> TROUGH = MENUS.register("trough",
         () -> IMenuTypeExtension.create((id, inv, buf) -> new TroughMenu(id, inv, buf.readBlockPos())));
+
+    public static final DeferredHolder<MenuType<?>, MenuType<dev.frosthaven.ranchercompanion.entity.DrekkiMenu>> DREKKI = MENUS.register("drekki",
+        () -> IMenuTypeExtension.create((id, inv, buf) -> new dev.frosthaven.ranchercompanion.entity.DrekkiMenu(id, inv,
+            inv.player.level().getEntity(buf.readVarInt()) instanceof dev.frosthaven.ranchercompanion.entity.DrekkiEntity d ? d : null)));
 
     public static void register(IEventBus modBus) { MENUS.register(modBus); }
 }

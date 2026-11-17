@@ -15,14 +15,14 @@ import net.minecraft.world.item.Items;
 
 /**
  * A player's right-click on a live drekki (spec, Pup release): sneak with an empty hand pets it; its owner puts a hat
- * on with the hat in hand and takes it off with an empty hand. Name tags and carriers are the items' own interactions,
+ * on with the hat in hand; an empty hand opens the drekki screen (its hat slot). Name tags and carriers are the items' own interactions,
  * kept to the owner here. Null passes to the vanilla mob interactions.
  */
 public final class DrekkiInteract {
     private DrekkiInteract() {}
 
     static InteractionResult interact(DrekkiEntity d, Player player, InteractionHand hand) {
-        if (!d.owned()) return null;
+        if (!d.live()) return null;  /* live() is synched, so the client agrees and swings the arm on a click that does something */
         ItemStack stack = player.getItemInHand(hand);
         boolean mine = player.getUUID().equals(d.owner());
         if (stack.isEmpty() && player.isSecondaryUseActive()) {
@@ -46,13 +46,10 @@ public final class DrekkiInteract {
             }
             return InteractionResult.sidedSuccess(d.level().isClientSide);
         }
-        if (stack.isEmpty() && mine && d.hat() > 0 && hand == InteractionHand.MAIN_HAND) {
-            if (!d.level().isClientSide) {
-                player.setItemInHand(hand, DrekkiItems.hatStack(d.hat()));
-                d.setGear(0, d.barding(), d.dye());
-                d.playSound(net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_LEATHER.value(), 0.8f, 0.9f);
-                Ranch.touch(d);
-            }
+        if (stack.isEmpty() && mine && hand == InteractionHand.MAIN_HAND) {  /* the drekki screen: its hat slot and your inventory */
+            if (player instanceof net.minecraft.server.level.ServerPlayer sp)
+                sp.openMenu(new net.minecraft.world.SimpleMenuProvider((id, inv, p) -> new DrekkiMenu(id, inv, d),
+                    d.hasCustomName() ? d.getCustomName() : Component.literal(d.lineage().name())), buf -> buf.writeVarInt(d.getId()));
             return InteractionResult.sidedSuccess(d.level().isClientSide);
         }
         return null;

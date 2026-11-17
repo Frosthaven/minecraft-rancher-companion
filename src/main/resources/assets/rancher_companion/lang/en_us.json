@@ -209,5 +209,9 @@
   "rancher_companion.ponder.trough_feeding.text_3": "A blocked open side feeds no hatchling or young drekki there: keep the spot in front clear",
   "rancher_companion.ponder.trough_feeding.text_4": "Grown drekki are tall enough to eat from the top, from any side that is not blocked",
   "rancher_companion.ponder.trough_feeding.text_5": "A meal is one item. After it a drekki waits a moment before it eats again, so the others get a turn",
-  "rancher_companion.ponder.trough_feeding.text_6": "Drekki that live at a hatchery use the troughs inside their wander area, so place troughs along your paths and bedding"
+  "rancher_companion.ponder.trough_feeding.text_6": "Drekki that live at a hatchery use the troughs inside their wander area, so place troughs along your paths and bedding",
+  "screen.rancher_companion.drekki.hat": "Hat",
+  "screen.rancher_companion.drekki.eyes": "Eyes: %s",
+  "screen.rancher_companion.drekki.diet": "Diet: %s",
+  "screen.rancher_companion.drekki.diet_open": "Diet: open"
 }

@@ -37,6 +37,8 @@ public class DrekkiEntity extends PathfinderMob {
     /** ticks left of a petting lean-in */
     private static final EntityDataAccessor<Integer> PET = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.INT);
     public static final int PET_TICKS = 30;
+    /** the owner, synched so the client knows which clicks do something (petting swings the arm, hats, the screen) */
+    private static final EntityDataAccessor<java.util.Optional<java.util.UUID>> OWNER = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.OPTIONAL_UUID);
     private static final EntityDataAccessor<Boolean> SLEEPING = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.BOOLEAN);
 
     /** owner and roster id (null for a showcase drekki), its hatchery, and whether it is checked out (spec, Checkout) */
@@ -65,7 +67,7 @@ public class DrekkiEntity extends PathfinderMob {
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder b) {
         super.defineSynchedData(b);
-        b.define(STAGE, 3); b.define(LINE, 0); b.define(DIET, 0); b.define(ASTRAL, 1); b.define(HORN, 0); b.define(HAT, 0); b.define(BARDING, 0); b.define(DYE, -1); b.define(ANIM, 0); b.define(LANE, 0f); b.define(OWNED, false); b.define(PET, 0); b.define(SLEEPING, false);
+        b.define(STAGE, 3); b.define(LINE, 0); b.define(DIET, 0); b.define(ASTRAL, 1); b.define(HORN, 0); b.define(HAT, 0); b.define(BARDING, 0); b.define(DYE, -1); b.define(ANIM, 0); b.define(LANE, 0f); b.define(OWNED, false); b.define(PET, 0); b.define(SLEEPING, false); b.define(OWNER, java.util.Optional.empty());
     }
 
     public int stage() { return entityData.get(STAGE); }
@@ -95,7 +97,7 @@ public class DrekkiEntity extends PathfinderMob {
     }
 
     public int petTicks() { return entityData.get(PET); }
-    public java.util.UUID owner() { return owner; }
+    public java.util.UUID owner() { return owner != null ? owner : entityData.get(OWNER).orElse(null); }
     public java.util.UUID drekkiId() { return drekkiId; }
     public BlockPos home() { return home; }
     public boolean isOut() { return out; }
@@ -106,7 +108,7 @@ public class DrekkiEntity extends PathfinderMob {
     /** makes it a live drekki of this owner: checked in at a hatchery (home) or checked out (home null) */
     public void bind(java.util.UUID owner, java.util.UUID id, BlockPos home) {
         this.owner = owner; this.drekkiId = id; this.home = home; this.out = home == null;
-        entityData.set(OWNED, true); setPersistenceRequired();
+        entityData.set(OWNED, true); entityData.set(OWNER, java.util.Optional.of(owner)); setPersistenceRequired();
     }
 
     public net.minecraft.world.entity.player.Player ownerPlayer() { return owner == null ? null : level().getPlayerByUUID(owner); }

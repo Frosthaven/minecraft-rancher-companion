@@ -178,4 +178,23 @@ public final class RanchTests {
         Ranch.act(p, h, Ranch.Action.RELEASE, e.id);
         t.succeed();
     }
+
+    @GameTest(template = "floor", timeoutTicks = 900)
+    public static void sleepsOnBeddingLaidAtNightfall(GameTestHelper t) {
+        BlockPos h = stable(t);
+        ServerPlayer p = player(t);
+        Roster.Entry e = hatch(t, p, h);
+        /* bedding laid at the moment night falls, 3 blocks south: the pen's cache has not seen it yet */
+        for (int dx = -1; dx <= 1; dx++) t.setBlock(H.offset(dx, 0, 3), DrekkiBlocks.STRAW_BEDDING.get());
+        t.getLevel().setDayTime(18000);
+        t.runAfterDelay(800, () -> {
+            DrekkiEntity d = drekki(t, p).get(0);
+            BlockPos at = d.blockPosition();
+            boolean onBed = t.getLevel().getBlockState(at).is(DrekkiBlocks.STRAW_BEDDING.get());
+            t.assertTrue(d.isSleepingLoop() && onBed, "asleep on the bedding: sleeping " + d.isSleepingLoop() + " at " + t.relativePos(at) + " on " + t.getLevel().getBlockState(at));
+            t.getLevel().setDayTime(1000);
+            Ranch.act(p, h, Ranch.Action.RELEASE, e.id);
+            t.succeed();
+        });
+    }
 }

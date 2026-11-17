@@ -80,9 +80,7 @@ public final class RigBake {
         Map<Node, PartDefinition> defs = new HashMap<>();
         Map<Node, String> names = new HashMap<>();
         int[] count = {0};
-        Map<Node.Box, Integer> order = new java.util.IdentityHashMap<>();
-        for (Node n : rig.all) for (Node.Box b : n.boxes) order.put(b, order.size());
-        build(rig.root, vroot, defs, names, cellOf, order, count, true);
+        build(rig.root, vroot, defs, names, cellOf, Coplanar.grow(rig), count, true);
         ModelPart baked = LayerDefinition.create(mesh, texW, texH).bakeRoot();
         ModelPart root = baked.getChild("root");
         link(rig.root, root, names);
@@ -97,13 +95,13 @@ public final class RigBake {
         return new Baked(rig, baked, tex, eyes, sheenTex);
     }
 
-    private static void build(Node n, PartDefinition pd, Map<Node, PartDefinition> defs, Map<Node, String> names, Map<Node.Box, Cell> cellOf, Map<Node.Box, Integer> order, int[] count, boolean isRoot) {
+    private static void build(Node n, PartDefinition pd, Map<Node, PartDefinition> defs, Map<Node, String> names, Map<Node.Box, Cell> cellOf, Map<Node.Box, Integer> grow, int[] count, boolean isRoot) {
         PartDefinition mine = pd;
         if (!isRoot) {
             String name = "n" + count[0]++;
             names.put(n, name);
             CubeListBuilder cb = CubeListBuilder.create();
-            for (Node.Box b : n.boxes) if (!b.rotated()) addBox(cb, b, cellOf.get(b), 0, 0, 0, order.get(b));
+            for (Node.Box b : n.boxes) if (!b.rotated()) addBox(cb, b, cellOf.get(b), 0, 0, 0, grow.get(b));
             Vector3f e = rot(n);
             mine = pd.addOrReplaceChild(name, cb, PartPose.offsetAndRotation(n.x, -n.y, -n.z, e.x, e.y, e.z));
         } else {
@@ -113,20 +111,19 @@ public final class RigBake {
         for (Node.Box b : n.boxes) if (b.rotated()) {
             Quaternionf q = new Quaternionf().rotationX(b.rx()).rotateY(b.ry()).rotateZ(b.rz());
             Vector3f e = new Vector3f(); Baked.eulerZYX(q.x, -q.y, -q.z, q.w, e);
-            CubeListBuilder cb = CubeListBuilder.create(); addBox(cb, b, cellOf.get(b), -b.x(), -b.y(), -b.z(), order.get(b));
+            CubeListBuilder cb = CubeListBuilder.create(); addBox(cb, b, cellOf.get(b), -b.x(), -b.y(), -b.z(), grow.get(b));
             mine.addOrReplaceChild("b" + bi++, cb, PartPose.offsetAndRotation(b.x(), -b.y(), -b.z(), e.x, e.y, e.z));
         }
         defs.put(n, mine);
-        for (Node c : n.children) build(c, mine, defs, names, cellOf, order, count, false);
+        for (Node c : n.children) build(c, mine, defs, names, cellOf, grow, count, false);
     }
 
-    /** a box centered at (x, y, z) in the page's space becomes a vanilla cube from its min corner, y and z flipped. Each cube is
-     *  inflated a little by its place in the whole rig's build order (the page's cubeCount), so neighbours in different groups
-     *  get different amounts and faces that share a plane do not fight, as on the page. Eyes and lids keep their own
-     *  part-pixel offsets; fur, lamps, hats and barding all inflate */
-    private static void addBox(CubeListBuilder cb, Node.Box b, Cell c, float dx, float dy, float dz, int index) {
+    /** a box centered at (x, y, z) in the page's space becomes a vanilla cube from its min corner, y and z flipped. It grows by
+     *  its Coplanar step, so two cubes whose faces would share a plane get different growths and do not z-fight; eyes and
+     *  lids keep their own part-pixel offsets (step 0) */
+    private static void addBox(CubeListBuilder cb, Node.Box b, Cell c, float dx, float dy, float dz, int step) {
         float x = b.x() + dx, y = b.y() + dy, z = b.z() + dz;
-        cb.texOffs(c.u + 1, c.v + 1).addBox(x - b.w() / 2, -y - b.h() / 2, -z - b.d() / 2, b.w(), b.h(), b.d(), new CubeDeformation(b.kind() == 1 || b.kind() == 2 ? 0 : 0.015f * (index % 5))  /* small: the rig's own offsets (eyes, lids, nostrils) are a fraction of a pixel */);
+        cb.texOffs(c.u + 1, c.v + 1).addBox(x - b.w() / 2, -y - b.h() / 2, -z - b.d() / 2, b.w(), b.h(), b.d(), new CubeDeformation(Coplanar.STEP * step));
     }
 
     private static void link(Node n, ModelPart part, Map<Node, String> names) {

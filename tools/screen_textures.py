@@ -192,6 +192,31 @@ def trough():
     s.save("trough")
 
 
+# ---- the drekki: 176 x 196, the hat slot, a model well, a details well, the player's inventory below ----
+def drekki():
+    s = Sheet()
+    W, H = 176, 196
+    s.wood(0, 0, W, H)
+    s.leather(3, 3, W - 6, 14)
+    s.frame(0, 0, W, H)
+    for x in range(3, W - 3):
+        s.put(x, 17, STEEL[0]); s.put(x, 18, STEEL[2])
+    s.slot(7, 26)                         # the hat
+    s.well(28, 22, 60, 76)                # the model
+    s.well(92, 22, 78, 76)                # the details
+    s.rect(3, 104, W - 6, 89, STEEL[1])
+    for x in range(3, W - 3):
+        s.put(x, 104, STEEL[0]); s.put(x, 105, STEEL[2])
+    for r in range(3):
+        for c in range(9):
+            s.slot(7 + c * 18, 113 + r * 18)
+    for c in range(9):
+        s.slot(7 + c * 18, 171)
+    sprites(s)
+    s.save("drekki")
+
+
 if __name__ == "__main__":
     hatchery()
     trough()
+    drekki()

@@ -84,10 +84,12 @@ public final class SelfTest {
         if (d != null) cmd("tp @s " + (d.getX() + 1.2) + " " + d.getY() + " " + (d.getZ() + 1.2));
     }
 
+    private static net.minecraft.world.InteractionResult last = net.minecraft.world.InteractionResult.PASS;
+
     private static void interact(String why) {
         DrekkiEntity d = pup();
         if (d == null) { RancherCompanion.LOG.warn("[selftest] no drekki to {}", why); return; }
-        mc().gameMode.interact(mc().player, d, InteractionHand.MAIN_HAND);
+        last = mc().gameMode.interact(mc().player, d, InteractionHand.MAIN_HAND);
     }
 
     private static HatcheryScreen hs() { return mc().screen instanceof HatcheryScreen s ? s : null; }
@@ -147,12 +149,16 @@ public final class SelfTest {
             DrekkiEntity d = pup();
             RancherCompanion.LOG.info("[selftest] pet: shift {}, hand '{}', distance {}", mc().player.isShiftKeyDown(), mc().player.getMainHandItem(), d == null ? -1 : d.distanceTo(mc().player));
             interact("pet");
-        }, () -> pup() != null && pup().petTicks() > 0);
+        }, () -> pup() != null && pup().petTicks() > 0 && last.shouldSwing());  /* the client swings the arm as on any use */
         quiet("unsneak", 30, () -> mc().options.keyShift.setDown(false));
         quiet("give_hat", 15, () -> { hotbar(1, "rancher_companion:straw_hat"); near(pup()); });
         step("hat_on", 20, () -> { select(1); interact("hat"); }, () -> pup() != null && pup().hat() == 5);
         quiet("give_tag", 15, () -> { hotbar(2, "name_tag[custom_name='\"Pip\"']"); near(pup()); });
         step("name_tag", 20, () -> { select(2); interact("name"); }, () -> pup() != null && pup().hasCustomName() && "Pip".equals(pup().getCustomName().getString()));
+        quiet("near_for_screen", 15, () -> { select(8); near(pup()); });
+        step("drekki_screen", 25, () -> interact("open its screen"),
+            () -> mc().screen instanceof dev.frosthaven.ranchercompanion.client.screen.DrekkiScreen s && s.getMenu().slots.get(0).getItem().is(DrekkiItems.hatStack(5).getItem()));
+        quiet("close_screen", 10, () -> mc().setScreen(null));
         quiet("give_tag2", 10, () -> { hotbar(2, "name_tag"); mc().options.keyShift.setDown(true); });
         step("easy_anvils_quick_rename", 25, () -> { select(2); mc().gameMode.useItem(mc().player, InteractionHand.MAIN_HAND); },
             () -> { String n = mc().screen == null ? "none" : mc().screen.getClass().getName(); RancherCompanion.LOG.info("[selftest] screen after sneak+use name tag: {}", n); return n.contains("NameTag"); });

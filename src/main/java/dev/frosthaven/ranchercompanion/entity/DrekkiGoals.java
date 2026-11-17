@@ -99,7 +99,8 @@ final class DrekkiGoals {
     static final class Sleep extends Goal {
         private final DrekkiEntity d;
         private BlockPos bed;
-        private int settle, recheck;
+        private int settle, recheck, retry, tries;
+        private static final int MAX_TRIES = 10;
 
         Sleep(DrekkiEntity d) { this.d = d; setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK, Flag.JUMP)); }
 
@@ -119,7 +120,8 @@ final class DrekkiGoals {
         @Override
         public void start() {
             settle = 0;
-            if (bed != null) d.getNavigation().moveTo(bed.getX() + 0.5, bed.getY(), bed.getZ() + 0.5, 0.8);
+            tries = 0;
+            if (bed != null) goBed();
         }
 
         @Override
@@ -129,15 +131,25 @@ final class DrekkiGoals {
                 if (beds != null && !beds.isEmpty()) {
                     bed = pick(d, beds);
                     d.setSleepingLoop(false);
-                    settle = 0;
-                    d.getNavigation().moveTo(bed.getX() + 0.5, bed.getY(), bed.getZ() + 0.5, 0.8);
+                    settle = 0; tries = 0;
+                    goBed();
                     return;
                 }
             }
             if (d.isSleepingLoop()) return;
-            boolean there = bed == null || d.blockPosition().distManhattan(bed) <= 1 || d.getNavigation().isDone();
+            boolean near = bed == null || d.blockPosition().equals(bed);
+            /* no path yet (a mob in the air gets none, as right after a hatch or a check-in): try again for a while
+               before settling where it stands */
+            if (!near && d.getNavigation().isDone() && tries < MAX_TRIES) {
+                if (++retry % 10 == 0) { tries++; goBed(); }
+                return;
+            }
+            boolean there = near || d.getNavigation().isDone();
             if (there && ++settle > 10) { d.getNavigation().stop(); d.setSleepingLoop(true); }
         }
+
+        /** a path that ends on the bed itself (moveTo's own accuracy stops a block short) */
+        private void goBed() { d.getNavigation().moveTo(d.getNavigation().createPath(bed, 0), 0.8); }
 
         @Override
         public void stop() { d.setSleepingLoop(false); bed = null; }

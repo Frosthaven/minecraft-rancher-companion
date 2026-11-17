@@ -1001,7 +1001,10 @@ Hatch a first egg, keep the pup, carry it, name it, pet it. Growth and learning 
 - Small carrier only (the large one keeps `neoforge:false`). A drekki in a carrier does nothing and learns nothing.
   Out of the carrier, a checked-out pup follows its owner and teleports when too far.
 - Stage 1 never attacks and mobs never target it.
-- Petting: sneak + right-click with an empty hand. The drekki is in `#c:capturing_not_supported`, so Carry On (whose
+- Drekki screen (0.3.x, built for review): its owner right-clicks it with an empty hand. The hat slot (its hat: in
+  puts it on, out takes it off), the model, bloodline, stage, eyes, diet and health hearts, the player's inventory below;
+  pixel style like the hatchery and trough screens. A hat in hand still goes on with a click.
+- Petting: sneak + right-click with an empty hand (the arm swings, as on any use). The drekki is in `#c:capturing_not_supported`, so Carry On (whose
   default blacklist reads that tag) and other capture mods leave it alone: the roster keeps it, nothing else carries it. A happy sound, hearts, a short lean-in. Later a small mood gain
   with a cooldown (no mood yet).
 - Screens (hatchery, trough): pixel art in the mod's palette after Create's own screens (frogport, stock link), not

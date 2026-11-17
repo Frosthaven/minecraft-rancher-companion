@@ -21,7 +21,10 @@ public final class RancherCompanionClient {
         NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, DrekkiParticles::tick);
         NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.entity.player.ItemTooltipEvent.class, ItemSubtext::onTooltip);
         modBus.addListener(net.neoforged.neoforge.client.event.RegisterMenuScreensEvent.class,
-            e -> e.register(dev.frosthaven.ranchercompanion.block.DrekkiMenus.TROUGH.get(), dev.frosthaven.ranchercompanion.client.screen.TroughScreen::new));
+            e -> {
+                e.register(dev.frosthaven.ranchercompanion.block.DrekkiMenus.TROUGH.get(), dev.frosthaven.ranchercompanion.client.screen.TroughScreen::new);
+                e.register(dev.frosthaven.ranchercompanion.block.DrekkiMenus.DREKKI.get(), dev.frosthaven.ranchercompanion.client.screen.DrekkiScreen::new);
+            });
         /* Ponder's build guides, only with Ponder loaded (it comes with Create); compat/ponder is never touched otherwise */
         if (net.neoforged.fml.ModList.get().isLoaded("ponder")) dev.frosthaven.ranchercompanion.compat.ponder.DrekkiPonder.register();
         dev.frosthaven.ranchercompanion.net.DrekkiNet.onView = dev.frosthaven.ranchercompanion.client.screen.HatcheryScreen::show;
