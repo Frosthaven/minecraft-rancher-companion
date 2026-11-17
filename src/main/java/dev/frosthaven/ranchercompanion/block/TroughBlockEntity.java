@@ -25,6 +25,19 @@ public class TroughBlockEntity extends BlockEntity {
 
     public NonNullList<ItemStack> items() { return items; }
 
+    /** the food as a container, for the trough's screen: every change syncs to clients */
+    public net.minecraft.world.Container container() {
+        return new net.minecraft.world.SimpleContainer(SLOTS) {
+            @Override public int getContainerSize() { return SLOTS; }
+            @Override public ItemStack getItem(int i) { return items.get(i); }
+            @Override public ItemStack removeItem(int i, int n) { ItemStack s = ContainerHelper.removeItem(items, i, n); if (!s.isEmpty()) changed(); return s; }
+            @Override public ItemStack removeItemNoUpdate(int i) { return ContainerHelper.takeItem(items, i); }
+            @Override public void setItem(int i, ItemStack s) { items.set(i, s); changed(); }
+            @Override public boolean isEmpty() { return TroughBlockEntity.this.isEmpty(); }
+            @Override public void setChanged() { changed(); }
+        };
+    }
+
     public boolean isEmpty() { return items.stream().allMatch(ItemStack::isEmpty); }
 
     /** puts as much of the stack in as fits (merging first), shrinking it unless the player builds freely; returns how many went in */

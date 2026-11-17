@@ -46,6 +46,35 @@ public final class BlockClient {
 
     public static void renderers(EntityRenderersEvent.RegisterRenderers e) {
         e.registerBlockEntityRenderer(DrekkiBlocks.TROUGH_ENTITY.get(), TroughRenderer::new);
+        e.registerBlockEntityRenderer(DrekkiBlocks.HATCHERY_ENTITY.get(), EggRenderer::new);
+    }
+
+    /**
+     * The egg in the hatchery's nest, standing in the straw (the nest's top is 12 px up) and turned toward the camera. A
+     * Ready egg rocks now and then and its motes rise (HatcheryBlock.animateTick).
+     */
+    static final class EggRenderer implements BlockEntityRenderer<dev.frosthaven.ranchercompanion.block.HatcheryBlockEntity> {
+        EggRenderer(BlockEntityRendererProvider.Context ctx) {}
+
+        @Override
+        public void render(dev.frosthaven.ranchercompanion.block.HatcheryBlockEntity be, float partial, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
+            if (!be.hasEgg()) return;
+            Minecraft mc = Minecraft.getInstance();
+            double t = (be.getLevel().getGameTime() + partial) / 20.0;
+            float rock = 0;
+            if (dev.frosthaven.ranchercompanion.look.Incubation.ready(be.incubation())) {
+                double ph = t % 4.0;  /* a quick double rock, then still, every 4 s */
+                rock = ph < 0.8 ? (float) (Math.sin(ph / 0.8 * Math.PI * 4) * 12 * (1 - ph / 0.8)) : 0;
+            }
+            pose.pushPose();
+            pose.translate(0.5, 11.0 / 16, 0.5);
+            pose.mulPose(Axis.YP.rotationDegrees(180 - mc.gameRenderer.getMainCamera().getYRot()));
+            pose.mulPose(Axis.ZP.rotationDegrees(rock));
+            pose.translate(0, 0.17, 0);
+            pose.scale(0.5f, 0.5f, 0.5f);
+            mc.getItemRenderer().renderStatic(be.egg(), ItemDisplayContext.FIXED, light, overlay, pose, buffers, be.getLevel(), (int) be.getBlockPos().asLong());
+            pose.popPose();
+        }
     }
 
     /**

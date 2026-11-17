@@ -10,7 +10,6 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.village.WandererTradesEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
@@ -35,7 +34,7 @@ public final class DrekkiItems {
         }
     }
 
-    public static final DeferredItem<Item> SMALL_CARRIER = single("small_drekki_carrier");
+    public static final DeferredItem<CarrierItem> SMALL_CARRIER = add(ITEMS.registerItem("small_drekki_carrier", CarrierItem::new, new Item.Properties().stacksTo(1)));
     public static final DeferredItem<Item> LARGE_CARRIER = single("large_drekki_carrier");
 
     public static final List<DeferredItem<Item>> CRAFTED_HATS = List.of("straw_hat", "cowboy_hat", "chef_toque", "flower_crown",
@@ -50,6 +49,9 @@ public final class DrekkiItems {
 
     public static final DeferredItem<IntriguingEggItem> INTRIGUING_EGG =
         add(ITEMS.registerItem("intriguing_egg", IntriguingEggItem::new, new Item.Properties().stacksTo(1)));
+    /** testing only (creative tab, JEI): each turns into the egg at the start of that incubation day once in an inventory */
+    public static final List<DeferredItem<CreativeEggItem>> CREATIVE_EGGS = java.util.stream.IntStream.rangeClosed(1, 4)
+        .mapToObj(n -> add(ITEMS.registerItem("creative_egg_day_" + n, p -> new CreativeEggItem(p, n), new Item.Properties().stacksTo(1)))).toList();
 
     /** one item per block, in the blocks' tab order (hatchery, trough, then the decor set) */
     public static final List<DeferredItem<net.minecraft.world.item.BlockItem>> BLOCK_ITEMS =
@@ -60,6 +62,31 @@ public final class DrekkiItems {
         .icon(() -> INTRIGUING_EGG.get().getDefaultInstance())
         .displayItems((params, out) -> ALL.forEach(item -> out.accept(item.get())))
         .build());
+
+    /** the hat items by Gear.HATS index (index 0 is no hat) */
+    private static final String[] HAT_IDS = {"", "top_hat", "drinking_hat", "viking_helmet", "wizard_hat", "straw_hat", "crown", "party_cone",
+        "bucket_hat", "cowboy_hat", "chef_toque", "miner_helmet", "pirate_tricorne", "propeller_beanie", "flower_crown", "jester_cap"};
+
+    /** the Gear.HATS index of a hat item, 0 for anything else */
+    public static int hatIndex(net.minecraft.world.item.ItemStack stack) {
+        if (stack.isEmpty()) return 0;
+        var key = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem());
+        if (!key.getNamespace().equals(RancherCompanion.ID)) return 0;
+        for (int i = 1; i < HAT_IDS.length; i++) if (HAT_IDS[i].equals(key.getPath())) return i;
+        return 0;
+    }
+
+    public static net.minecraft.world.item.ItemStack hatStack(int index) {
+        return new net.minecraft.world.item.ItemStack(net.minecraft.core.registries.BuiltInRegistries.ITEM.get(
+            net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(RancherCompanion.ID, HAT_IDS[index])));
+    }
+
+    /** every hat, crafted and trader: the trader sells them all now (spec, Pup release) */
+    public static List<DeferredItem<Item>> allHats() {
+        List<DeferredItem<Item>> all = new ArrayList<>(CRAFTED_HATS);
+        all.addAll(TRADER_HATS);
+        return all;
+    }
 
     private static DeferredItem<Item> single(String id) {
         return add(ITEMS.registerSimpleItem(id, new Item.Properties().stacksTo(1)));
@@ -73,10 +100,11 @@ public final class DrekkiItems {
     /** Registers the items, the tab, the cauldron wash and the trader hat offer. */
     public static void register(IEventBus modBus) {
         ITEMS.register(modBus);
+        DrekkiData.COMPONENTS.register(modBus);
         TABS.register(modBus);
         modBus.addListener(FMLCommonSetupEvent.class, e -> e.enqueueWork(ItemHooks::registerCauldronWash));
-        /* teaser release: nothing makes the hats, barding, carriers or tonics yet (their recipes carry neoforge:false) */
-        // NeoForge.EVENT_BUS.addListener(WandererTradesEvent.class, ItemHooks::addTraderHats);
+        /* pup release: hats come only from the wandering trader (ItemHooks.ensureHats); the large carrier, the tonics and
+           the hats have no recipe (their recipe files carry neoforge:false) */
         NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.EntityInteract.class, ItemHooks::addTraderEgg);
     }
 }

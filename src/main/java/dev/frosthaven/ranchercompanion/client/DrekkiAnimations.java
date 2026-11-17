@@ -40,7 +40,16 @@ public final class DrekkiAnimations {
             case REJUV -> rejuv(P, t);
             default -> {}
         }
+        if (e.petTicks() > 0) pet(P, t, e.petTicks());
         b.apply();
+    }
+
+    /** petted: the head dips into the hand and nuzzles, the tail wags, eased in and out over the pet's ticks */
+    static void pet(Rig P, double t, int left) {
+        double u = 1 - left / (double) DrekkiEntity.PET_TICKS, env = Math.sin(Math.PI * Math.min(1, u * 1.15));
+        P.neck2.rx += (float) (0.35 * env); P.head.rx += (float) (0.3 * env);
+        P.head.rz = (float) (sin(t * 9) * 0.12 * env);
+        P.tail.ry += (float) (sin(t * 14) * 0.45 * env);
     }
 
     static void idle(Rig P, double t) {

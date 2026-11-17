@@ -32,7 +32,10 @@ neoForge {
             server()
             programArgument '--nogui'
         }
-        gameTestServer { type = "gameTestServer" }
+        gameTestServer {
+            type = "gameTestServer"
+            systemProperty "neoforge.enabledGameTestNamespaces", project.mod_id
+        }
         // The showcase world: straight into the saved world, with the showcase driver on (tools/showcase.py builds it).
         showcase {
             client()
@@ -67,7 +70,16 @@ configurations {
     runtimeClasspath.extendsFrom localRuntime
 }
 
+repositories {
+    maven { url 'https://maven.blamejared.com' }  // JEI's API, for the optional compat/jei plugin
+    maven { url 'https://maven.createmod.net' }   // Ponder (Create's), for the optional compat/ponder scenes
+}
+
 dependencies {
+    // JEI 19.44.0.403, the Haven pack's version: compile only, the plugin loads only when JEI does (compat/jei)
+    compileOnly 'mezz.jei:jei-1.21.1-neoforge-api:19.44.0.403'
+    // Ponder 1.0.82, the one Create 6.0.10 (the Haven pack's) bundles: compile only, used only when Ponder is loaded
+    compileOnly('net.createmod.ponder:ponder-neoforge:1.0.82+mc1.21.1') { transitive = false }
     testImplementation platform('org.junit:junit-bom:5.10.2')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'

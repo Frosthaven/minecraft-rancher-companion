@@ -5,7 +5,8 @@ saved worlds keep their drekki). It must run in plain NeoForge with only its own
 dependencies; the Haven pack (`../minecraft-haven-pack`) may ship it later, but nothing here may need a Haven mod.
 
 **State:** public on GitHub (`Frosthaven/minecraft-rancher-companion`), in the Haven pack since 0.2.0 (the teaser:
-blocks, trough, trader egg; see `spec.md` "Teaser release"). Push to `main` only when the user asks. The design is in `spec.md` (every decision, open questions at the end) and on the design page listed in
+blocks, trough, trader egg; see `spec.md` "Teaser release"). 0.3.0 is the pup release (`spec.md` "Pup release"):
+hatching, the roster, check in and out, the small carrier, petting, names, the trader's hats, the trough screen. Push to `main` only when the user asks. The design is in `spec.md` (every decision, open questions at the end) and on the design page listed in
 `artifacts.md`; keep both in step with any change. Ask the user before inventing a feature.
 
 ## Layout (`src/main/java/dev/frosthaven/ranchercompanion`)
@@ -42,6 +43,23 @@ blocks, trough, trader egg; see `spec.md` "Teaser release"). Push to `main` only
   tone, jaws aligned), the amethyst chime and a copy two octaves up, the fireball, ignite and explosion an octave up.
   It prints the gains and bite peaks for `SYN_GAIN`/`SAMPLE_PEAK` (page) and `GAIN`/`PEAK` (`DrekkiSounds`). The page
   caps each sound at the game's full volume and scores on 20 ticks a second, so it hears what the game plays.
+- `ranch/`: owning drekki. `Roster` (saved data, the source of truth: every drekki's record, where it is and its
+  hatchery), `Ranch` (hatch, check in and out, carriers, release; keeps each drekki in the world once: a joining entity
+  the roster disagrees with is refused), `Flood` (the walk out from a hatchery, pure and unit tested), `Ground` (the
+  world as a drekki stands in it: placement, the pen, the stable's ceiling and light checks).
+- `entity/DrekkiGoals` (follow the owner with the catch-up teleport, stroll and sleep in the pen, pen-bound
+  navigation) and `entity/DrekkiInteract` (petting, hats, owner-only name tags and carriers).
+- `block/HatcheryBlockEntity` (owner, anvil name, the egg and its incubation, the pens; puts back missing drekki),
+  `block/TroughMenu` + `DrekkiMenus`. `net/` the hatchery screen's packets. `client/screen/` the hatchery and trough
+  screens, drawn from `tools/screen_textures.py` (`uv run --with pillow python -I tools/screen_textures.py`).
+- `client/SelfTest`: with `-Drancher_companion.selftest=true` the client plays the pup release's whole flow in the
+  world it joins (single player, or a server where the player is an operator), through the game's own client
+  interactions, and logs `[selftest] PASS|FAIL <step>` with a screenshot per step, then closes the game.
+- `compat/jei/DrekkiJei` (barding dye recipes for JEI) and `compat/ponder/DrekkiPonder` (build guides; schematics and
+  lang from `uv run --with nbtlib python -I tools/ponder_scenes.py`): optional, compile only against JEI's and
+  Ponder's maven artifacts, registered only when the mod is loaded.
+- `test/RanchTests`: GameTests (`./gradlew runGameTestServer`) for hatch, check out and in, carrier, release,
+  placement behind a fence and a refused stale copy.
 - `client/DrekkiModels` caches one baked model per look; `DrekkiRenderer` picks it and draws locked eyes full bright.
 - `showcase/`: `Layout` (where the showcase puts every row, stand-in and camera shot; shared by both sides),
   `Showcase` (spawns every group, `/drekki showcase`; with the showcase flag it runs on login and walks the camera;

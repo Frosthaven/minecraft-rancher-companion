@@ -366,6 +366,8 @@ def loot():
                 {"function": "minecraft:explosion_decay"}]
         if name in ("hatchery", "trough"):  # the dye travels with the block
             entry["functions"] = [{"function": "minecraft:copy_state", "block": f"{NS}:{name}", "properties": ["color"]}]
+        if name == "hatchery":  # an anvil name stays with the block (spec, Checkout: Names)
+            entry["functions"].append({"function": "minecraft:copy_components", "source": "block_entity", "include": ["minecraft:custom_name"]})
         put(D / NS / f"loot_table/blocks/{name}.json", {"type": "minecraft:block", "pools": [
             {"rolls": 1, "entries": [entry], "conditions": [{"condition": "minecraft:survives_explosion"}]}],
             "random_sequence": f"{NS}:blocks/{name}"})

@@ -23,3 +23,17 @@ A companion animal, the drekki, that grows with the player over three stages.
     versionRange="${minecraft_version_range}"
     ordering="NONE"
     side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="jei"
+    type="optional"
+    versionRange="[19,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="ponder"
+    type="optional"
+    versionRange="[1.0.82,)"
+    ordering="NONE"
+    side="CLIENT"

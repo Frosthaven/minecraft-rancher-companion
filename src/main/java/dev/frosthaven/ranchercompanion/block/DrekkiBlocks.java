@@ -84,6 +84,9 @@ public final class DrekkiBlocks {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<TroughBlockEntity>> TROUGH_ENTITY = BLOCK_ENTITIES.register("trough",
         () -> BlockEntityType.Builder.of(TroughBlockEntity::new, TROUGH.get()).build(null));
 
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<HatcheryBlockEntity>> HATCHERY_ENTITY = BLOCK_ENTITIES.register("hatchery",
+        () -> BlockEntityType.Builder.of(HatcheryBlockEntity::new, HATCHERY.get()).build(null));
+
     private static BlockBehaviour.Properties copy(Block b) { return BlockBehaviour.Properties.ofFullCopy(b); }
 
     private static <B extends Block> DeferredBlock<B> add(String id, Function<BlockBehaviour.Properties, B> make, Supplier<BlockBehaviour.Properties> props) {

@@ -3,6 +3,7 @@ package dev.frosthaven.ranchercompanion;
 import dev.frosthaven.ranchercompanion.client.RancherCompanionClient;
 import dev.frosthaven.ranchercompanion.entity.DrekkiEntity;
 import dev.frosthaven.ranchercompanion.item.DrekkiItems;
+import dev.frosthaven.ranchercompanion.ranch.Ranch;
 import dev.frosthaven.ranchercompanion.showcase.Showcase;
 import dev.frosthaven.ranchercompanion.showcase.ShowcaseBuild;
 import net.minecraft.core.registries.Registries;
@@ -35,6 +36,15 @@ public final class RancherCompanion {
         dev.frosthaven.ranchercompanion.block.DrekkiBlocks.register(modBus);
         DrekkiSounds.SOUNDS.register(modBus);
         DrekkiItems.register(modBus);
+        dev.frosthaven.ranchercompanion.block.DrekkiMenus.register(modBus);
+        modBus.addListener(net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent.class, dev.frosthaven.ranchercompanion.net.DrekkiNet::register);
+        /* owning drekki: the roster keeps each one in the world once (ranch/Ranch) */
+        NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.entity.EntityJoinLevelEvent.class, Ranch::onJoin);
+        NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent.class, Ranch::onLeave);
+        NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerLoggedOutEvent.class, Ranch::onLogout);
+        NeoForge.EVENT_BUS.addListener(ServerTickEvent.Post.class, Ranch::onTick);
+        NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.EntityInteract.class, dev.frosthaven.ranchercompanion.entity.DrekkiInteract::onEntityInteract);
+        NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.server.ServerStoppedEvent.class, Ranch::onStopped);
         modBus.addListener(EntityAttributeCreationEvent.class, e -> e.put(DREKKI.get(), DrekkiEntity.createAttributes().build()));
         NeoForge.EVENT_BUS.addListener(RegisterCommandsEvent.class, DrekkiCommands::register);
         NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerLoggedInEvent.class, Showcase::onLogin);

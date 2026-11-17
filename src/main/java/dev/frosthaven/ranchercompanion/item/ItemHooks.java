@@ -5,9 +5,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.trading.ItemCost;
 import net.minecraft.world.item.trading.MerchantOffer;
-import net.neoforged.neoforge.event.village.WandererTradesEvent;
 
-/** Vanilla hooks for the items: a water cauldron washes dye off barding, and the wandering trader sells hats and the egg. */
+/** Vanilla hooks for the items: a water cauldron washes dye off barding, and the wandering trader sells hats and the egg (both added when a player opens it). */
 public final class ItemHooks {
     private ItemHooks() {}
 
@@ -20,15 +19,20 @@ public final class ItemHooks {
         CauldronInteraction.WATER.map().put(dev.frosthaven.ranchercompanion.block.DrekkiBlocks.TROUGH.get().asItem(), LeatherWash.INSTANCE);
     }
 
+    /** hats per visit, and how many of each the trader has */
+    static final int HAT_OFFERS = 2, HAT_STOCK = 3;
+
     /**
-     * One generic offer that picks one of the six trader hats at random, one use, for emeralds. It joins the generic
-     * pool, so a trader carries it only when the pool draws it (the event cannot force an offer onto every trader).
+     * Every wandering trader sells two different hats, picked at random from all of them, three of each (spec, Pup
+     * release). Added with the egg when a player first opens the trader; a trader that already has hat offers keeps them.
      */
-    static void addTraderHats(WandererTradesEvent event) {
-        event.getGenericTrades().add((trader, random) -> {
-            var hat = DrekkiItems.TRADER_HATS.get(random.nextInt(DrekkiItems.TRADER_HATS.size()));
-            return new MerchantOffer(new ItemCost(Items.EMERALD, HAT_PRICE), new ItemStack(hat.get()), 1, 1, 0.05f);
-        });
+    public static void ensureHats(net.minecraft.world.entity.npc.WanderingTrader trader) {
+        var offers = trader.getOffers();
+        for (MerchantOffer o : offers) if (DrekkiItems.hatIndex(o.getResult()) > 0) return;
+        var hats = new java.util.ArrayList<>(DrekkiItems.allHats());
+        java.util.Collections.shuffle(hats, new java.util.Random(trader.getRandom().nextLong()));
+        for (int i = 0; i < HAT_OFFERS && i < hats.size(); i++)
+            offers.add(new MerchantOffer(new ItemCost(Items.EMERALD, HAT_PRICE), new ItemStack(hats.get(i).get()), HAT_STOCK, 1, 0.05f));
     }
 
     /**
@@ -37,7 +41,7 @@ public final class ItemHooks {
      * one yet; one use, so each trader sells one egg. Works with the trade_rebalance feature flag too.
      */
     static void addTraderEgg(net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.EntityInteract event) {
-        if (!event.getLevel().isClientSide && event.getTarget() instanceof net.minecraft.world.entity.npc.WanderingTrader trader) ensureEgg(trader);
+        if (!event.getLevel().isClientSide && event.getTarget() instanceof net.minecraft.world.entity.npc.WanderingTrader trader) { ensureEgg(trader); ensureHats(trader); }
     }
 
     /**

@@ -1,5 +1,6 @@
 package dev.frosthaven.ranchercompanion.item;
 
+import dev.frosthaven.ranchercompanion.look.Incubation;
 import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -7,7 +8,10 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 
-/** The Intriguing Egg. Hatching is not in yet: for now it is only the item and its tooltip. */
+/**
+ * The Intriguing Egg. A new egg shows its lore; an egg that has been in a hatchery shows how far it is instead
+ * (spec, Pup release: warm, noises, active, ready), also on hover in the hatchery screen.
+ */
 public final class IntriguingEggItem extends Item {
     public IntriguingEggItem(Properties props) {
         super(props);
@@ -15,6 +19,12 @@ public final class IntriguingEggItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> lines, TooltipFlag flag) {
-        lines.add(Component.translatable(getDescriptionId() + ".tooltip").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
+        Long t = stack.get(DrekkiData.INCUBATION.get());
+        if (t == null) {
+            lines.add(Component.translatable(getDescriptionId() + ".tooltip").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
+            return;
+        }
+        int s = Incubation.stage(t);
+        lines.add(Component.translatable(getDescriptionId() + "." + Incubation.KEYS[s]).withStyle(s == 3 ? ChatFormatting.AQUA : ChatFormatting.GRAY));
     }
 }

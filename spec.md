@@ -495,9 +495,14 @@ Decided 2026-11-04. A player has one drekki checked out at a time; the rest are 
   record (see Placement), and a duplicate of the same drekki is removed.
 - Wandering (proposal 2026-11-16, stricter than MineColonies' citizens): each checked-in drekki is leashed to its
   hatchery, 25 blocks out at most, and never goes more than 3 blocks from an anchor block: a dirt path, Straw
-  Bedding, or the hatchery itself. The area it may use is every spot within 3 blocks of an anchor, joined to the
-  hatchery, inside the 25-block leash. So players draw the stable with paths and bedding; with none, a drekki keeps to
-  3 blocks around the hatchery. Its pathfinding treats spots outside the area as blocked, and one found outside (after
+  Bedding, or the hatchery itself. The area it may use is every spot within 3 blocks of an anchor, inside the 25-block leash. Anchors chain
+  (revised 2026-11-17): an anchor counts when it lies within 3 blocks of an anchor that counts, starting from the
+  hatchery; nothing else (no walk, no fence check) decides the area. So players draw the stable with paths and bedding; with none, a drekki keeps to
+  3 blocks around the hatchery. Stage 1 the same (decided 2026-11-17, after two corrections): anchors chain, so a
+  hatchling that reaches bedding may go on to a path within 3 blocks of it, and so on, inside the 25-block leash; with
+  no anchors it keeps to 3 blocks around the hatchery. Bedding draws it: most of its strolls end on bedding, and at
+  night it walks to a bedding spot and sleeps until morning (the sleep loop); with no bedding in reach it sleeps by the
+  hatchery. Its pathfinding treats spots outside the area as blocked, and one found outside (after
   a block is broken) walks back in. The hatchery caches its anchors and refreshes them when a block in range changes.
   Spawn spots (above) must lie in the area too. It never wanders into unloaded chunks. Their area traits (Homes & Gardens, Creature
   Comforts and the like) work there, under the no-stacking rule.
@@ -505,9 +510,13 @@ Decided 2026-11-04. A player has one drekki checked out at a time; the rest are 
   (revised 2026-11-16): one living elsewhere shows Check out, Pair and Trade disabled ("Lives at <name>: check it out
   there"); Move… brings it over first. A drekki with no hatchery can be checked out or moved from any hatchery.
 - Placement (revised 2026-11-16), one rule for every time a drekki appears at a hatchery (check-out, check-in, a move,
-  a hatch, the roster placing a missing one): within 3 blocks of the hatchery block, preferring right next to it. The
-  search goes out ring by ring (distance 1, then 2, then 3) and takes the first spot that fits: standing on a solid
-  block, out of liquid, room for the stage's hitbox (stage 3 needs 2x3x2 clear). With no room within 3 blocks the
+  a hatch, the roster placing a missing one): within 3 blocks of the hatchery block, preferring right next to it. A spot
+  fits when it stands on a solid block, out of liquid, with room for the stage's hitbox (stage 3 needs 2x3x2 clear).
+  Revised 2026-11-17: the search walks out from the hatchery (a flood fill in walking steps), stepping only between
+  neighboring spots a drekki can walk between, so a fence, wall or closed gate stops it; it takes the first spot that
+  fits, so spots inside a pen come first, nearest walk first. Only when none fits does it try the spots it could not
+  walk to, ring by ring (distance 1, then 2, then 3). Cost: at most a 7x7 area a few blocks high, run only when a
+  drekki appears; the wander area's walk from the hatchery shares the code and its cache. With no room within 3 blocks the
   action is refused with "No room around the hatchery" (a roster placement waits as data and the screen says so).
   A checked-out drekki then follows its owner (the baseline catch-up teleport); a checked-in one starts wandering.
 - Breaking a hatchery (revised 2026-11-16): its drekki go to "No hatchery": kept as data with the owner, never lost,
@@ -974,3 +983,34 @@ Decided 2026-11-05:
 - The hats, barding, carriers and tonics stay registered (they show in the creative tab), but nothing makes them: their
   recipe files carry `"neoforge:conditions": [{"type": "neoforge:false"}]`, and the trader hat offer
   (`ItemHooks.addTraderHats`) is not registered. Remove the condition and restore the listener to bring them back.
+
+## Pup release (0.3.0, decided 2026-11-17)
+
+Hatch a first egg, keep the pup, carry it, name it, pet it. Growth and learning stay off: every drekki is stage 1.
+
+- Hatching: the egg goes into the hatchery by right-clicking the hatchery with it. Incubation shows no progress in a
+  screen; the egg item's tooltip says where it is (also on hover in the hatchery): up to 1 day "The egg is warm.", up
+  to 2 days "The egg is making noises.", up to 3 days "The egg is really active!", after 3 days "The egg is ready to
+  hatch!". A hatch places the pup in the world at once (Placement rule) and adds it to the owner's roster.
+- Names: a hatchling has no name. Messages say "Your drekki"; the roster shows its bloodline. A name tag names it,
+  in an anvil or with the pack's quick rename (ctrl + right-click).
+- Creative eggs: "Creative Egg (Day 1..4)" stacks, the egg at that point of incubation, in the creative tab and JEI
+  only (no recipe), for testing.
+- Release: on the hatchery screen, a selected drekki can be released to the wild after a confirm step that names it.
+  It poofs on the spot (smoke, no walk off) and drops its hat; its record is deleted from the roster.
+- Small carrier only (the large one keeps `neoforge:false`). A drekki in a carrier does nothing and learns nothing.
+  Out of the carrier, a checked-out pup follows its owner and teleports when too far.
+- Stage 1 never attacks and mobs never target it.
+- Petting: sneak + right-click with an empty hand. The drekki is in `#c:capturing_not_supported`, so Carry On (whose
+  default blacklist reads that tag) and other capture mods leave it alone: the roster keeps it, nothing else carries it. A happy sound, hearts, a short lean-in. Later a small mood gain
+  with a cooldown (no mood yet).
+- Screens (hatchery, trough): pixel art in the mod's palette after Create's own screens (frogport, stock link), not
+  the leather look. The trough gets an inventory screen; the drekki has no hunger meter yet.
+- Hats: no recipes; every wandering trader offers 2 different random hats (of all 15), 3 of each. Barding has its
+  recipes back and takes dyes (vanilla's armor dye, fan dyeing and bleach). Tooltips name the kind under the item's
+  name: Drekki Hat, Drekki Barding, Drekki Carrier, Drekki Tonic, Drekki Egg.
+- JEI (optional): every barding tier with each dye shows as a crafting recipe (display only; real dyeing mixes).
+- Ponder (optional, comes with Create): build guides. Hatchery: a stable (the roof rule, light, the egg, the hatch,
+  the wander area: anchors, chaining, fences, 20 per hatchery). Trough: a line of 10 and the 11th apart, the four
+  diets, and feeding (open side for stages 1 and 2, the top for stage 3, one drekki per trough at a time). Feeding
+  itself comes with hunger, after this release; the guide shows the rules it will follow.

@@ -149,12 +149,12 @@ public class TroughBlock extends BaseEntityBlock {
         return out;
     }
 
-    private static boolean lineEmpty(BlockGetter level, List<BlockPos> line) {
+    static boolean lineEmpty(BlockGetter level, List<BlockPos> line) {
         for (BlockPos p : line) if (level.getBlockEntity(p) instanceof TroughBlockEntity be && !be.isEmpty()) return false;
         return true;
     }
 
-    private static void setLineDiet(Level level, BlockPos pos, int diet) {
+    static void setLineDiet(Level level, BlockPos pos, int diet) {
         for (BlockPos p : line(level, pos)) {
             BlockState s = level.getBlockState(p);
             if (s.getBlock() instanceof TroughBlock && s.getValue(DIET) != diet) level.setBlock(p, s.setValue(DIET, diet), Block.UPDATE_ALL);
@@ -194,16 +194,23 @@ public class TroughBlock extends BaseEntityBlock {
         return ItemInteractionResult.CONSUME;
     }
 
-    /** an empty hand takes the food back out */
+    /** an empty hand opens the trough's screen: its four slots and the player's inventory (spec, Pup release) */
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (!(level.getBlockEntity(pos) instanceof TroughBlockEntity be) || be.isEmpty()) return InteractionResult.PASS;
-        if (!level.isClientSide) {
-            for (ItemStack s : be.takeAll()) player.getInventory().placeItemBackInInventory(s);
-            if (lineEmpty(level, line(level, pos))) setLineDiet(level, pos, 0);
-            level.playSound(null, pos, SoundEvents.BUNDLE_REMOVE_ONE, SoundSource.BLOCKS, 0.8f, 1f);
-        }
+        if (!(level.getBlockEntity(pos) instanceof TroughBlockEntity)) return InteractionResult.PASS;
+        if (player instanceof net.minecraft.server.level.ServerPlayer sp)
+            sp.openMenu(new net.minecraft.world.SimpleMenuProvider((id, inv, pl) -> new TroughMenu(id, inv, pos),
+                Component.translatable("block.rancher_companion.trough")), buf -> buf.writeBlockPos(pos));
         return InteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    /** after the screen changed a trough's food: the line takes the food's diet, or none once the line is empty */
+    static void contentsChanged(Level level, BlockPos pos, ItemStack added) {
+        if (level.isClientSide) return;
+        if (lineEmpty(level, line(level, pos))) { setLineDiet(level, pos, 0); return; }
+        if (added.isEmpty() || level.getBlockState(pos).getValue(DIET) != 0) return;
+        Diet d = FoodDiets.of(added);
+        if (d != null) setLineDiet(level, pos, d.ordinal() + 1);
     }
 
     @Override
