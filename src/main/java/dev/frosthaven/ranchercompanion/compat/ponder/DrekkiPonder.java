@@ -136,7 +136,7 @@ public final class DrekkiPonder implements PonderPlugin {
         scene.effects().emitParticles(util.vector().topOf(hatch), scene.effects().simpleParticleEmitter(net.minecraft.core.particles.ParticleTypes.POOF, util.vector().of(0, 0.05, 0)), 6, 2);
         pup(scene, 5.5, 1, 6.6, 180, 1, 4);
         scene.idle(20);
-        scene.overlay().showText(70).text("The hatchling appears right next to the hatchery")
+        scene.overlay().showText(70).text("The pup appears right next to the hatchery")
             .pointAt(util.vector().of(5.5, 1.3, 6.6)).placeNearTarget();
         scene.idle(80);
 
@@ -226,10 +226,10 @@ public final class DrekkiPonder implements PonderPlugin {
         scene.idle(60);
         scene.overlay().showText(55).text("Root: roots, berries, and crops planted as themselves").pointAt(util.vector().topOf(7, 1, 2)).placeNearTarget();
         scene.idle(60);
-        scene.overlay().showText(90).text("A hatchling has no diet yet: what it eats most decides it. Fill the troughs nearest its hatchery with the diet you want")
+        scene.overlay().showText(90).text("A pup has no diet yet: what it eats most decides it. Fill the troughs nearest its hatchery with the diet you want")
             .pointAt(util.vector().topOf(1, 1, 2)).placeNearTarget().attachKeyFrame();
         scene.idle(100);
-        scene.overlay().showText(70).text("Once it is grown its diet is set, and it eats only from troughs holding that diet")
+        scene.overlay().showText(70).text("Once it is a fledgling its diet is set, and it eats only from troughs holding that diet")
             .pointAt(util.vector().topOf(5, 1, 2)).placeNearTarget();
         scene.idle(80);
         scene.markAsFinished();
@@ -244,7 +244,7 @@ public final class DrekkiPonder implements PonderPlugin {
         scene.idle(15);
         for (int x : new int[]{2, 3, 4, 6}) pup(scene, x + 0.5, 1, 2.3, 0, 1, (x * 4) % 36);
         scene.idle(15);
-        scene.overlay().showText(90).text("Hatchlings and young drekki eat through the low open side, standing in front of it")
+        scene.overlay().showText(90).text("Pups and fledglings eat through the low open side, standing in front of it")
             .pointAt(util.vector().of(3.5, 1.4, 2.3)).placeNearTarget().attachKeyFrame();
         scene.idle(100);
         scene.overlay().showOutlineWithText(util.select().fromTo(2, 1, 3, 6, 1, 3), 90).colored(PonderPalette.GREEN)
@@ -254,11 +254,11 @@ public final class DrekkiPonder implements PonderPlugin {
         scene.world().showSection(util.select().position(5, 1, 2), Direction.DOWN);
         scene.idle(10);
         scene.overlay().showOutlineWithText(util.select().position(5, 1, 3), 80).colored(PonderPalette.RED)
-            .text("A blocked open side feeds no hatchling or young drekki there: keep the spot in front clear").placeNearTarget().attachKeyFrame();
+            .text("A blocked open side feeds no pup or fledgling there: keep the spot in front clear").placeNearTarget().attachKeyFrame();
         scene.idle(90);
         pup(scene, 4.5, 1, 4.9, 180, 3, 8);
         scene.idle(15);
-        scene.overlay().showText(90).text("Grown drekki are tall enough to eat from the top, from any side that is not blocked")
+        scene.overlay().showText(90).text("Mature drekki are tall enough to eat from the top, from any side that is not blocked")
             .pointAt(util.vector().of(4.5, 2.6, 4.9)).placeNearTarget().attachKeyFrame();
         scene.idle(100);
         scene.overlay().showText(90).text("A meal is one item. After it a drekki waits a moment before it eats again, so the others get a turn")

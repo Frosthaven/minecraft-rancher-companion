@@ -129,6 +129,9 @@ hatchery screen also shows which conditions currently pass, so a player can line
 
 ## Growth
 
+In game the stages are named, never numbered (decided 2026-11-17): stage 1 is a **Pup**, stage 2 a **Fledgling**,
+stage 3 **Mature**. The spec keeps the numbers.
+
 The drekki grows with travel time. Travel is elective: travel time counts whenever the drekki is out in the world,
 and the player decides by carrying it or letting it out. Time in a carrier counts for nothing.
 

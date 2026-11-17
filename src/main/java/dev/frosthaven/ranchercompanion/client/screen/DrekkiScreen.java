@@ -20,7 +20,8 @@ public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
     private static final ResourceLocation TEX = ResourceLocation.fromNamespaceAndPath(RancherCompanion.ID, "textures/gui/drekki.png");
     private static final ResourceLocation HEART = ResourceLocation.withDefaultNamespace("hud/heart/full"),
         HALF = ResourceLocation.withDefaultNamespace("hud/heart/half"), EMPTY = ResourceLocation.withDefaultNamespace("hud/heart/container");
-    private static final String[] STAGES = {"Hatchling", "Young", "Grown"};
+    /** the growth stages as players see them: never "stage 1, 2, 3" in game */
+    private static final String[] STAGES = {"Pup", "Fledgling", "Mature"};
 
     public DrekkiScreen(DrekkiMenu menu, Inventory inv, Component title) {
         super(menu, inv, title);
