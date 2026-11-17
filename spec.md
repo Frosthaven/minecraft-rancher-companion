@@ -177,7 +177,7 @@ Two craftable items:
 Right click the drekki at any stage to open its screen. It shows the drekki's inventory and a 3D model. Revised
 2026-11-17 (design page, UI tab): the equipment slots the stage has and the model, then two tabs beside them, one
 shown at a time, with the stance buttons (stage 2 and 3) at the foot of that column, level with the hearts and food, so they stay put
-whichever tab is open. Details: bloodline, astral, diet, biome and the mood band (its name in its color; the value, effects
+whichever tab is open. Details: the health hearts and food shanks on top, then bloodline, astral, diet, biome and the mood band (its name in its color; the value, effects
 and reasons such as "Hungry: -2 a minute" in a hover tooltip). Traits: two columns of five (the most a drekki carries:
 9 slots and Naturally Gifted), each with a hover tooltip saying what it does, the negative marked, sleeping traits
 named. Stance buttons: three icons (a sword for Aggressive, a shield for Reactive, a white flag for Passive), each with a
@@ -187,7 +187,7 @@ Revised 2026-11-16, laid out like a Sophisticated Backpacks screen: the drekki p
 and barding at stage 3; the model; details or traits, with Drekki and Traits tabs), then its pack, then the player's
 inventory and hotbar, so items move between them by click and shift-click. Equipment slots take only their own item.
 
-Health and food: under the model, as vanilla's HUD draws a player's: a row of hearts (full, half, empty; ten to a
+Health and food: at the top of the Details tab, as vanilla's HUD draws a player's: a row of hearts (full, half, empty; ten to a
 row, so a stage 3 drekki's extra hearts wrap) and a row of ten drumstick shanks for the hunger meter. Max health per
 stage is open (the page uses 10, 20 and 30 as placeholders).
 
