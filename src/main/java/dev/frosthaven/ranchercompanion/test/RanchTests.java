@@ -179,7 +179,8 @@ public final class RanchTests {
         t.succeed();
     }
 
-    @GameTest(template = "floor", timeoutTicks = 900)
+    /* the sleep tests set the world's clock, which every test running beside them shares: each runs in a batch of its own */
+    @GameTest(template = "floor", timeoutTicks = 1300, batch = "sleep_bedding")
     public static void sleepsOnBeddingLaidAtNightfall(GameTestHelper t) {
         BlockPos h = stable(t);
         ServerPlayer p = player(t);
@@ -192,6 +193,33 @@ public final class RanchTests {
             BlockPos at = d.blockPosition();
             boolean onBed = t.getLevel().getBlockState(at).is(DrekkiBlocks.STRAW_BEDDING.get());
             t.assertTrue(d.isSleepingLoop() && onBed, "asleep on the bedding: sleeping " + d.isSleepingLoop() + " at " + t.relativePos(at) + " on " + t.getLevel().getBlockState(at));
+        });
+        staysAsleep(t, p, h, e, 800, 300);
+    }
+
+    /** bedding fenced in, so no path reaches it: the drekki sleeps where it is and stays asleep (it once got up every 5 s
+     *  to try the bedding again, sleeping and standing all night) */
+    @GameTest(template = "floor", timeoutTicks = 1300, batch = "sleep_unreachable")
+    public static void staysAsleepWhenItsBeddingIsOutOfReach(GameTestHelper t) {
+        BlockPos h = stable(t);
+        ServerPlayer p = player(t);
+        Roster.Entry e = hatch(t, p, h);
+        BlockPos bed = H.offset(0, 0, 3);
+        t.setBlock(bed, DrekkiBlocks.STRAW_BEDDING.get());
+        for (int dx = -1; dx <= 1; dx++) for (int dz = -1; dz <= 1; dz++)
+            if (dx != 0 || dz != 0) t.setBlock(bed.offset(dx, 0, dz), DrekkiBlocks.FENCE.get());
+        t.getLevel().setDayTime(18000);
+        t.runAfterDelay(700, () -> t.assertTrue(drekki(t, p).get(0).isSleepingLoop(), "asleep by the hatchery"));
+        staysAsleep(t, p, h, e, 700, 500);
+    }
+
+    /** from tick from, for ticks ticks, the drekki is asleep every tick; then morning, release, pass */
+    private static void staysAsleep(GameTestHelper t, ServerPlayer p, BlockPos h, Roster.Entry e, int from, int ticks) {
+        for (int i = 1; i <= ticks; i++) {
+            int k = from + i;
+            t.runAfterDelay(k, () -> t.assertTrue(drekki(t, p).get(0).isSleepingLoop(), "still asleep at tick " + k));
+        }
+        t.runAfterDelay(from + ticks + 1, () -> {
             t.getLevel().setDayTime(1000);
             Ranch.act(p, h, Ranch.Action.RELEASE, e.id);
             t.succeed();

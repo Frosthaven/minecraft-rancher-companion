@@ -33,7 +33,9 @@ public final class CarrierItem extends Item {
     public InteractionResult interactLivingEntity(ItemStack stack, Player player, LivingEntity target, InteractionHand hand) {
         if (!(target instanceof DrekkiEntity d) || !d.owned()) return InteractionResult.PASS;
         if (player.level().isClientSide) return InteractionResult.SUCCESS;
-        if (full(stack)) msg(player, "carrier.full");
+        /* DrekkiInteract already stops others; this holds too if a mod hands the item straight to the entity */
+        if (!player.getUUID().equals(d.owner())) player.displayClientMessage(Component.translatable("message.rancher_companion.not_yours", Ranch.ownerName(d)), true);
+        else if (full(stack)) msg(player, "carrier.full");
         else if (d.stage() != STAGE) msg(player, "carrier.too_big");
         else if (!d.isOut()) msg(player, "carrier.checked_in");
         else Ranch.carry((ServerPlayer) player, d, player.getItemInHand(hand));

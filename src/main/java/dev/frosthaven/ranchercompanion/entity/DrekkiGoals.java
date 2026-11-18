@@ -127,15 +127,20 @@ final class DrekkiGoals {
         @Override
         public void tick() {
             /* about every 5 s (goals tick every other tick): a drekki not lying on bedding gets up and goes to some when its pen
-               has any (bedding laid after it settled, or a walk that failed) */
+               has bedding it can walk to (laid after it settled, or a walk that failed). Bedding it cannot reach leaves it
+               asleep where it is: waking it to try again would loop sleep and stand all night */
             if ((bed == null || !d.blockPosition().equals(bed)) && d.getNavigation().isDone() && ++recheck % 50 == 0) {
                 Set<Long> beds = d.bedding();
                 if (beds != null && !beds.isEmpty() && !beds.contains(dev.frosthaven.ranchercompanion.ranch.Flood.pack(d.getBlockX(), d.getBlockY(), d.getBlockZ()))) {
-                    bed = pick(d, beds);
-                    d.setSleepingLoop(false);
-                    settle = 0; tries = 0;
-                    goBed();
-                    return;
+                    BlockPos to = pick(d, beds);
+                    var path = d.getNavigation().createPath(to, 0);
+                    if (path != null && path.canReach()) {
+                        bed = to;
+                        d.setSleepingLoop(false);
+                        settle = 0; tries = 0;
+                        d.getNavigation().moveTo(path, 0.8);
+                        return;
+                    }
                 }
             }
             if (d.isSleepingLoop()) return;
