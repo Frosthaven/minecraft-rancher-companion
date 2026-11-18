@@ -557,7 +557,11 @@ through a trade at a hatchery, so nobody loses one by accident or to a trick.
   traits (Teacher and the like) now follow the new owner.
 - A checked-out drekki cannot be offered (check it in first). A ghost can be traded; its traits stay asleep.
 - A drekki in a carrier still belongs to its owner. A carrier can change hands like any item, but only the owner can let
-  the drekki out; anyone else gets "This drekki belongs to <owner>." So a carrier is never a way around a trade.
+  the drekki out: for anyone else using it does nothing, and its tooltip says "Belongs to <owner>. Only they can let it
+  out." So a carrier is never a way around a trade.
+- The owner can check a carried drekki in at the hatchery without the carrier (lost, destroyed, given away). The roster
+  brings it home; each carry has its own code on the carrier and the roster, so that carrier, and any older one of the
+  same drekki, reads "The carrier is empty." when used (decided 2026-11-18).
 - Every trade is written to the server log (both players, both drekki). Server config `allow_trading`, default true.
 
 ## Hunger
@@ -1020,7 +1024,9 @@ Hatch a first egg, keep the pup, carry it, name it, pet it. Growth and learning 
   It poofs on the spot (smoke, no walk off) and drops its hat; its record is deleted from the roster.
 - Small carrier only (the large one keeps `neoforge:false`). A drekki in a carrier does nothing and learns nothing.
   Out of the carrier, a checked-out pup follows its owner and teleports when too far.
-- Stage 1 never attacks and mobs never target it.
+- Stage 1 never attacks and mobs never target it. It takes no damage at all (players, mobs, explosions, falls, lava,
+  fire, cactus, drowning), so it needs no healing; only the void and /kill reach it (decided 2026-11-18). A pup hurt
+  before 0.3.2 heals to full.
 - Drekki screen (0.3.x, built for review): its owner right-clicks it with an empty hand. The hat slot (its hat: in
   puts it on, out takes it off; a dim straw hat when empty, no label), the model, the name with the stage beside it, then
   health hearts, bloodline, astral ("Astral: Dormant"), diet, the player's inventory below;

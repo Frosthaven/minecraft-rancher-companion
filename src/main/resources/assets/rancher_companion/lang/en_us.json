@@ -144,7 +144,6 @@
   "message.rancher_companion.hatch.done": "The egg hatched!",
   "message.rancher_companion.no_room": "No room around the hatchery.",
   "message.rancher_companion.checkout.elsewhere": "That drekki lives at another hatchery: check it out there.",
-  "message.rancher_companion.checkout.carrier_missing": "Your drekki is in a carrier you are not holding.",
   "message.rancher_companion.checkout.done": "%s is with you now.",
   "message.rancher_companion.checkin.done": "%s is checked in here.",
   "message.rancher_companion.release.done": "%s was released to the wild.",
@@ -213,5 +212,6 @@
   "rancher_companion.ponder.trough_feeding.text_4": "Mature drekki are tall enough to eat from the top, from any side that is not blocked",
   "rancher_companion.ponder.trough_feeding.text_5": "A meal is one item. After it a drekki waits a moment before it eats again, so the others get a turn",
   "rancher_companion.ponder.trough_feeding.text_6": "Drekki that live at a hatchery use the troughs inside their wander area, so place troughs along your paths and bedding",
-  "screen.rancher_companion.empty_nest.2": "on the nest"
+  "screen.rancher_companion.empty_nest.2": "on the nest",
+  "item.rancher_companion.small_drekki_carrier.not_yours": "Belongs to %s. Only they can let it out."
 }

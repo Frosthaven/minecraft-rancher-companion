@@ -28,6 +28,8 @@ public final class Roster extends SavedData {
         public CompoundTag save;
         public Where where;
         public GlobalPos home;
+        /** CARRIED: the code the carrier holding it carries (DrekkiData.CARRY_TOKEN); null before 0.3.2's carries */
+        public UUID carry;
 
         Entry(UUID id, UUID owner, CompoundTag save, Where where, GlobalPos home) {
             this.id = id; this.owner = owner; this.save = save; this.where = where; this.home = home;
@@ -71,7 +73,7 @@ public final class Roster extends SavedData {
 
     public void remove(UUID id) { if (byId.remove(id) != null) setDirty(); }
 
-    public void move(Entry e, Where where, GlobalPos home) { e.where = where; e.home = home; setDirty(); }
+    public void move(Entry e, Where where, GlobalPos home) { e.where = where; e.home = home; if (where != Where.CARRIED) e.carry = null; setDirty(); }
 
     public void snapshot(Entry e, CompoundTag save) { e.save = save; setDirty(); }
 
@@ -86,7 +88,9 @@ public final class Roster extends SavedData {
             CompoundTag c = (CompoundTag) t;
             GlobalPos home = c.contains("home") ? GlobalPos.CODEC.parse(NbtOps.INSTANCE, c.get("home")).result().orElse(null) : null;
             Where where = Where.valueOf(c.getString("where"));
-            r.byId.put(c.getUUID("id"), new Entry(c.getUUID("id"), c.getUUID("owner"), c.getCompound("save"), where, home));
+            Entry e = new Entry(c.getUUID("id"), c.getUUID("owner"), c.getCompound("save"), where, home);
+            if (c.hasUUID("carry")) e.carry = c.getUUID("carry");
+            r.byId.put(e.id, e);
         }
         return r;
     }
@@ -97,6 +101,7 @@ public final class Roster extends SavedData {
         for (Entry e : byId.values()) {
             CompoundTag c = new CompoundTag();
             c.putUUID("id", e.id); c.putUUID("owner", e.owner); c.put("save", e.save); c.putString("where", e.where.name());
+            if (e.carry != null) c.putUUID("carry", e.carry);
             if (e.home != null) GlobalPos.CODEC.encodeStart(NbtOps.INSTANCE, e.home).result().ifPresent(h -> c.put("home", h));
             list.add(c);
         }

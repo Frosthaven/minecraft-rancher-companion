@@ -27,6 +27,12 @@ public final class CarrierItem extends Item {
         super(props);
     }
 
+    /** the carrier holds a drekki of someone other than this player */
+    public static boolean notYours(ItemStack stack, Player p) {
+        var owner = stack.get(DrekkiData.CARRIED_OWNER.get());
+        return full(stack) && owner != null && p != null && !owner.equals(p.getUUID());
+    }
+
     public static boolean full(ItemStack stack) { return stack.has(DrekkiData.CARRIED.get()); }
 
     @Override
@@ -46,6 +52,9 @@ public final class CarrierItem extends Item {
     public InteractionResult useOn(UseOnContext ctx) {
         ItemStack stack = ctx.getItemInHand();
         if (!full(stack) || ctx.getPlayer() == null) return InteractionResult.PASS;
+        /* someone else's drekki: nothing happens, on either side (the tooltip tells them whose it is) */
+        var owner = stack.get(DrekkiData.CARRIED_OWNER.get());
+        if (owner != null && !owner.equals(ctx.getPlayer().getUUID())) return InteractionResult.PASS;
         if (ctx.getLevel().isClientSide) return InteractionResult.SUCCESS;
         Ranch.letOut((ServerPlayer) ctx.getPlayer(), stack, ctx.getClickedPos().relative(ctx.getClickedFace()));
         return InteractionResult.CONSUME;

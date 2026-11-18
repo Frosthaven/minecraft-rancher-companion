@@ -16,6 +16,9 @@ public final class ItemSubtext {
         String kind = kind(e.getItemStack());
         if (kind == null || e.getToolTip().isEmpty()) return;
         e.getToolTip().add(1, Component.translatable("tooltip.rancher_companion.kind." + kind).withStyle(ChatFormatting.GRAY));
+        if (dev.frosthaven.ranchercompanion.item.CarrierItem.notYours(e.getItemStack(), e.getEntity()))
+            e.getToolTip().add(Component.translatable("item.rancher_companion.small_drekki_carrier.not_yours",
+                e.getItemStack().getOrDefault(dev.frosthaven.ranchercompanion.item.DrekkiData.CARRIED_OWNER_NAME.get(), "?")).withStyle(ChatFormatting.RED));
     }
 
     private static String kind(ItemStack s) {

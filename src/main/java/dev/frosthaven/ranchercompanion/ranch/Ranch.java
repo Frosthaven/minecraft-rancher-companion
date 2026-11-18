@@ -225,9 +225,10 @@ public final class Ranch {
         Entry out = r.out(p.getUUID());
         if (out == null) return null;
         if (out.where == Where.CARRIED) {
-            ItemStack c = carrierOf(p, out.id);
-            if (c == null) { msg(p, "checkout.carrier_missing"); return null; }
-            clearCarrier(c);
+            /* the carrier need not be at hand (lost, given away): the roster brings the drekki home, and that carrier,
+               wherever it is, no longer matches */
+            ItemStack c = carrierOf(p, out);
+            if (c != null) clearCarrier(c);
         } else {
             DrekkiEntity d = live(out.id);
             if (d != null) { r.snapshot(out, save(d)); d.discard(); }
@@ -304,7 +305,7 @@ public final class Ranch {
             if (hat > 0) d.spawnAtLocation(DrekkiItems.hatStack(hat));
             d.discard();
         } else {
-            if (e.where == Where.CARRIED) { ItemStack c = carrierOf(p, id); if (c != null) clearCarrier(c); }
+            if (e.where == Where.CARRIED) { ItemStack c = carrierOf(p, e); if (c != null) clearCarrier(c); }
             if (hat > 0) p.getInventory().placeItemBackInInventory(DrekkiItems.hatStack(hat));
         }
         r.remove(id);
@@ -314,15 +315,24 @@ public final class Ranch {
 
     // ---- carriers ----
 
-    private static ItemStack carrierOf(Player p, UUID id) {
-        for (ItemStack s : p.getInventory().items) if (id.equals(s.get(DrekkiData.CARRIED.get()))) return s;
-        for (ItemStack s : p.getInventory().offhand) if (id.equals(s.get(DrekkiData.CARRIED.get()))) return s;
+    private static ItemStack carrierOf(Player p, Entry e) {
+        for (ItemStack s : p.getInventory().items) if (holds(s, e)) return s;
+        for (ItemStack s : p.getInventory().offhand) if (holds(s, e)) return s;
         return null;
+    }
+
+    /** the carrier holds this drekki now: the drekki is carried, by this carry (an older carrier's code no longer matches) */
+    private static boolean holds(ItemStack c, Entry e) {
+        return e != null && e.where == Where.CARRIED && e.id.equals(c.get(DrekkiData.CARRIED.get()))
+            && java.util.Objects.equals(e.carry, c.get(DrekkiData.CARRY_TOKEN.get()));
     }
 
     private static void clearCarrier(ItemStack c) {
         c.remove(DrekkiData.CARRIED.get());
         c.remove(DrekkiData.CARRIED_NAME.get());
+        c.remove(DrekkiData.CARRY_TOKEN.get());
+        c.remove(DrekkiData.CARRIED_OWNER.get());
+        c.remove(DrekkiData.CARRIED_OWNER_NAME.get());
     }
 
     public static void carry(ServerPlayer p, DrekkiEntity d, ItemStack carrier) {
@@ -331,7 +341,11 @@ public final class Ranch {
         if (e == null) return;
         r.snapshot(e, save(d));
         r.move(e, Where.CARRIED, null);
+        e.carry = UUID.randomUUID();
         carrier.set(DrekkiData.CARRIED.get(), e.id);
+        carrier.set(DrekkiData.CARRY_TOKEN.get(), e.carry);
+        carrier.set(DrekkiData.CARRIED_OWNER.get(), e.owner);
+        carrier.set(DrekkiData.CARRIED_OWNER_NAME.get(), p.getGameProfile().getName());
         carrier.set(DrekkiData.CARRIED_NAME.get(), label(e.save).getString());
         poof((ServerLevel) d.level(), d.getX(), d.getY(), d.getZ());
         p.level().playSound(null, p.blockPosition(), SoundEvents.BUNDLE_INSERT, SoundSource.PLAYERS, 1f, 0.8f);
@@ -341,7 +355,7 @@ public final class Ranch {
     public static void letOut(ServerPlayer p, ItemStack carrier, BlockPos at) {
         Roster r = roster(p.server);
         Entry e = r.get(carrier.get(DrekkiData.CARRIED.get()));
-        if (e == null || e.where != Where.CARRIED) { clearCarrier(carrier); msg(p, "carrier.empty_now"); return; }
+        if (!holds(carrier, e)) { clearCarrier(carrier); msg(p, "carrier.empty_now"); return; }
         if (!e.owner.equals(p.getUUID())) {
             String who = p.server.getProfileCache() == null ? "?" : p.server.getProfileCache().get(e.owner).map(com.mojang.authlib.GameProfile::getName).orElse("?");
             msg(p, "not_yours", who);

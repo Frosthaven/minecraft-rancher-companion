@@ -107,6 +107,59 @@ public final class RanchTests {
         });
     }
 
+    /** a carried drekki checks in without its carrier (lost, given away); that carrier, and every older one, is then empty
+     *  for anyone who uses it, while the newest carrier still lets it out */
+    @GameTest(template = "floor")
+    public static void carriedDrekkiChecksInWithoutItsCarrier(GameTestHelper t) {
+        BlockPos h = stable(t);
+        ServerPlayer p = player(t), other = player(t);
+        Roster.Entry e = hatch(t, p, h);
+        Ranch.act(p, h, Ranch.Action.CHECK_OUT, e.id);
+        ItemStack given = new ItemStack(DrekkiItems.SMALL_CARRIER.get());
+        p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, given);
+        Ranch.carry(p, drekki(t, p).get(0), given);
+        p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);  /* handed to the other player */
+        other.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, given);
+        t.assertTrue(dev.frosthaven.ranchercompanion.item.CarrierItem.notYours(given, other) && !dev.frosthaven.ranchercompanion.item.CarrierItem.notYours(given, p), "the carrier knows its owner");
+        Ranch.letOut(other, given, h.offset(2, 0, 0));
+        t.assertTrue(e.where == Roster.Where.CARRIED && given.has(DrekkiData.CARRIED.get()), "the other player cannot let it out");
+        Ranch.act(p, h, Ranch.Action.CHECK_IN, null);
+        t.assertTrue(e.where == Roster.Where.HOME, "checked in without the carrier: " + e.where);
+        Ranch.letOut(other, given, h.offset(2, 0, 0));
+        t.assertTrue(!given.has(DrekkiData.CARRIED.get()), "the given carrier is empty now");
+        Ranch.act(p, h, Ranch.Action.CHECK_OUT, e.id);
+        ItemStack old = new ItemStack(DrekkiItems.SMALL_CARRIER.get()), now = new ItemStack(DrekkiItems.SMALL_CARRIER.get());
+        p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, old);
+        Ranch.carry(p, drekki(t, p).get(0), old);
+        ItemStack copy = old.copy();  /* an earlier carry's carrier, still holding the id */
+        Ranch.letOut(p, old, h.offset(2, 0, 0));
+        t.runAfterDelay(1, () -> {
+            p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, now);
+            Ranch.carry(p, drekki(t, p).get(0), now);
+            Ranch.letOut(p, copy, h.offset(2, 0, 0));
+            t.assertTrue(e.where == Roster.Where.CARRIED && !copy.has(DrekkiData.CARRIED.get()), "an older carrier is empty");
+            Ranch.letOut(p, now, h.offset(2, 0, 0));
+            t.assertTrue(e.where == Roster.Where.OUT, "the newest carrier lets it out");
+            t.runAfterDelay(1, () -> { Ranch.act(p, h, Ranch.Action.RELEASE, e.id); t.succeed(); });
+        });
+    }
+
+    /** a pup takes no damage from players, mobs, falls, lava or drowning; /kill and the void still reach it */
+    @GameTest(template = "floor")
+    public static void pupTakesNoDamage(GameTestHelper t) {
+        BlockPos h = stable(t);
+        ServerPlayer p = player(t);
+        Roster.Entry e = hatch(t, p, h);
+        DrekkiEntity d = drekki(t, p).get(0);
+        var src = t.getLevel().damageSources();
+        for (var s : new net.minecraft.world.damagesource.DamageSource[]{src.playerAttack(p), src.fall(), src.lava(), src.drown(), src.explosion(null, null), src.cactus()})
+            t.assertTrue(!d.hurt(s, 6f), "hurt by " + s.getMsgId());
+        t.assertTrue(d.getHealth() == d.getMaxHealth(), "full health: " + d.getHealth());
+        t.assertTrue(!d.isInvulnerableTo(src.genericKill()) && !d.isInvulnerableTo(src.fellOutOfWorld()), "/kill and the void still reach it");
+        Ranch.act(p, h, Ranch.Action.RELEASE, e.id);
+        t.succeed();
+    }
+
     @GameTest(template = "floor")
     public static void staleCopyIsRefused(GameTestHelper t) {
         BlockPos h = stable(t);

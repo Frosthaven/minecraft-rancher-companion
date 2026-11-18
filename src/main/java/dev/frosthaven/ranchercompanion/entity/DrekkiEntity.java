@@ -190,6 +190,13 @@ public class DrekkiEntity extends PathfinderMob {
     @Override
     protected net.minecraft.world.entity.ai.navigation.PathNavigation createNavigation(Level level) { return new DrekkiGoals.PenNavigation(this, level); }
 
+    /** a pup takes no damage (spec, Pup release): nothing fights it, so it never needs healing. The void and /kill still
+     *  reach it, so a stuck one can be removed */
+    @Override
+    public boolean isInvulnerableTo(net.minecraft.world.damagesource.DamageSource s) {
+        return super.isInvulnerableTo(s) || stage() == 1 && !s.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY);
+    }
+
     /** stage 1 is never a target: no mob picks it (spec, Pup release) */
     @Override
     public boolean canBeSeenAsEnemy() { return stage() > 1 && super.canBeSeenAsEnemy(); }
@@ -212,7 +219,10 @@ public class DrekkiEntity extends PathfinderMob {
     public void tick() {
         super.tick();
         if (level().isClientSide) speedAvg += (Math.hypot(getX() - xo, getZ() - zo) * 20 - speedAvg) * 0.3;
-        else if (petTicks() > 0) entityData.set(PET, petTicks() - 1);
+        else {
+            if (petTicks() > 0) entityData.set(PET, petTicks() - 1);
+            if (stage() == 1 && isAlive() && getHealth() < getMaxHealth()) setHealth(getMaxHealth());  /* a pup hurt before 0.3.2 */
+        }
         if (!level().isClientSide && lane() > 0 && anim().speed != 0) laneTick();
     }
 
