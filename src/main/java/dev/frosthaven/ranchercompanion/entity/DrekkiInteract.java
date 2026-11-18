@@ -46,13 +46,20 @@ public final class DrekkiInteract {
             }
             return InteractionResult.sidedSuccess(d.level().isClientSide);
         }
-        if (stack.isEmpty() && mine && hand == InteractionHand.MAIN_HAND) {  /* the drekki screen: its hat slot and your inventory */
+        /* the drekki screen (its hat slot and your inventory): with an empty hand or any item that does nothing else to a drekki */
+        if (mine && hand == InteractionHand.MAIN_HAND && opensScreen(stack)) {
             if (player instanceof net.minecraft.server.level.ServerPlayer sp)
                 sp.openMenu(new net.minecraft.world.SimpleMenuProvider((id, inv, p) -> new DrekkiMenu(id, inv, d),
                     d.hasCustomName() ? d.getCustomName() : Component.literal(d.lineage().name())), buf -> buf.writeVarInt(d.getId()));
             return InteractionResult.sidedSuccess(d.level().isClientSide);
         }
         return null;
+    }
+
+    /** items with their own use on a drekki keep it: carriers, name tags, leads, spawn eggs (hats are handled above) */
+    public static boolean opensScreen(ItemStack stack) {
+        return stack.isEmpty() || !(stack.getItem() instanceof dev.frosthaven.ranchercompanion.item.CarrierItem
+            || stack.is(Items.NAME_TAG) || stack.is(Items.LEAD) || stack.getItem() instanceof net.minecraft.world.item.SpawnEggItem);
     }
 
     /** a name tag runs before the mob's own interaction, so only the owner may name it is checked on the event */

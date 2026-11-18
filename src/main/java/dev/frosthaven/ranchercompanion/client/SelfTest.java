@@ -188,6 +188,10 @@ public final class SelfTest {
             for (int i = 1; i < m.slots.size(); i++) if (m.slots.get(i).getItem().is(DrekkiItems.hatStack(5).getItem())) { shiftClick(i); break; }
         }, () -> mc().screen instanceof dev.frosthaven.ranchercompanion.client.screen.DrekkiScreen s && s.getMenu().slots.get(0).getItem().is(DrekkiItems.hatStack(5).getItem()));
         quiet("close_screen", 10, () -> mc().setScreen(null));
+        quiet("give_sword", 10, () -> hotbar(5, "iron_sword"));
+        step("drekki_screen_with_sword", 25, () -> { select(5); interact("open its screen holding a sword"); },
+            () -> mc().screen instanceof dev.frosthaven.ranchercompanion.client.screen.DrekkiScreen);
+        quiet("close_screen2", 10, () -> mc().setScreen(null));
         quiet("give_tag2", 10, () -> { hotbar(2, "name_tag"); mc().options.keyShift.setDown(true); });
         step("easy_anvils_quick_rename", 25, () -> { select(2); mc().gameMode.useItem(mc().player, InteractionHand.MAIN_HAND); },
             () -> { String n = mc().screen == null ? "none" : mc().screen.getClass().getName(); RancherCompanion.LOG.info("[selftest] screen after sneak+use name tag: {}", n); return n.contains("NameTag"); });

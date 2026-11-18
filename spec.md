@@ -1027,7 +1027,7 @@ Hatch a first egg, keep the pup, carry it, name it, pet it. Growth and learning 
 - Stage 1 never attacks and mobs never target it. It takes no damage at all (players, mobs, explosions, falls, lava,
   fire, cactus, drowning), so it needs no healing; only the void and /kill reach it (decided 2026-11-18). A pup hurt
   before 0.3.2 heals to full.
-- Drekki screen (0.3.x, built for review): its owner right-clicks it with an empty hand. The hat slot (its hat: in
+- Drekki screen (0.3.x, built for review): its owner right-clicks it with an empty hand or any item that has no use of its own on a drekki (a weapon, a block, food; not a carrier, hat, name tag, lead or spawn egg). The hat slot (its hat: in
   puts it on, out takes it off; a dim straw hat when empty, no label), the model, the name with the stage beside it, then
   health hearts, bloodline, astral ("Astral: Dormant"), diet, the player's inventory below;
   pixel style like the hatchery and trough screens. A hat in hand still goes on with a click.

@@ -3,6 +3,7 @@ package dev.frosthaven.ranchercompanion.test;
 import dev.frosthaven.ranchercompanion.RancherCompanion;
 import dev.frosthaven.ranchercompanion.block.DrekkiBlocks;
 import dev.frosthaven.ranchercompanion.entity.DrekkiEntity;
+import dev.frosthaven.ranchercompanion.entity.DrekkiInteract;
 import dev.frosthaven.ranchercompanion.item.CreativeEggItem;
 import dev.frosthaven.ranchercompanion.item.DrekkiData;
 import dev.frosthaven.ranchercompanion.item.DrekkiItems;
@@ -15,6 +16,7 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.gametest.GameTestHolder;
@@ -229,6 +231,17 @@ public final class RanchTests {
         var r = p.interactOn(d, net.minecraft.world.InteractionHand.MAIN_HAND);
         t.assertTrue(r.consumesAction() && d.petTicks() > 0, "sneak + empty hand pets it (" + r + ", " + d.petTicks() + ")");
         Ranch.act(p, h, Ranch.Action.RELEASE, e.id);
+        t.succeed();
+    }
+
+    /** the owner opens the drekki screen with a weapon or other item in hand; carriers, name tags, leads and spawn eggs keep
+     *  their own use (the mock player cannot receive the screen, so the rule itself is checked) */
+    @GameTest(template = "floor")
+    public static void screenOpensWithAnItemInHand(GameTestHelper t) {
+        for (var item : new net.minecraft.world.item.Item[]{Items.AIR, Items.IRON_SWORD, Items.DIRT, Items.WHEAT, Items.BOW})
+            t.assertTrue(DrekkiInteract.opensScreen(new ItemStack(item)), "opens with " + item);
+        for (var item : new net.minecraft.world.item.Item[]{DrekkiItems.SMALL_CARRIER.get(), Items.NAME_TAG, Items.LEAD, Items.WOLF_SPAWN_EGG})
+            t.assertTrue(!DrekkiInteract.opensScreen(new ItemStack(item)), item + " keeps its own use");
         t.succeed();
     }
 
