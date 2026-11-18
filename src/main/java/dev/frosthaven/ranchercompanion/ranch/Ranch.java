@@ -388,7 +388,12 @@ public final class Ranch {
         if (ev.getLevel().isClientSide || !(ev.getEntity() instanceof DrekkiEntity d) || !d.owned()) return;
         if (LIVE.get(d.drekkiId()) != d) return;
         LIVE.remove(d.drekkiId());
-        if (d.getRemovalReason() == Entity.RemovalReason.UNLOADED_TO_CHUNK || d.getRemovalReason() == Entity.RemovalReason.UNLOADED_WITH_PLAYER) touch(d);
+        if (d.getRemovalReason() == Entity.RemovalReason.UNLOADED_TO_CHUNK || d.getRemovalReason() == Entity.RemovalReason.UNLOADED_WITH_PLAYER) {
+            touch(d);
+            /* a checked-out drekki left behind in a chunk that unloaded: back to its owner, once the unload is done */
+            ServerPlayer owner = d.isOut() && d.owner() != null ? d.getServer().getPlayerList().getPlayer(d.owner()) : null;
+            if (owner != null) later(owner.server, () -> bringBack(owner));
+        }
     }
 
     public static void died(DrekkiEntity d) {
@@ -412,24 +417,44 @@ public final class Ranch {
         if (d != null) { r.snapshot(out, save(d)); d.discard(); }
     }
 
-    /** every second: a checked-out drekki that is not beside its owner (login, respawn, another dimension, an unloaded chunk) comes back next to them */
-    public static void onTick(net.neoforged.neoforge.event.tick.ServerTickEvent.Post ev) {
-        MinecraftServer s = ev.getServer();
-        if (s.getTickCount() % 20 != 0) return;
-        Roster r = roster(s);
-        for (ServerPlayer p : s.getPlayerList().getPlayers()) {
-            if (!p.isAlive() || p.isSpectator()) continue;
-            Entry out = r.out(p.getUUID());
-            if (out == null || out.where != Where.OUT) continue;
-            DrekkiEntity d = live(out.id);
-            if (d != null && d.level() == p.level()) continue;
-            if (d != null) { r.snapshot(out, save(d)); d.discard(); }
-            DrekkiEntity n = spawn(p.serverLevel(), out, p.blockPosition(), null);
-            if (n == null) continue;
-            n.teleportNear(p.blockPosition());
-            add(p.serverLevel(), n);
+    /* a checked-out drekki comes back next to its owner on the events that part them, with no polling: login, respawn,
+       a dimension change, leaving spectator mode, and its chunk unloading while the owner is online */
+    public static void onLogin(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent ev) { if (ev.getEntity() instanceof ServerPlayer p) bringBack(p); }
+    public static void onRespawn(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerRespawnEvent ev) { if (ev.getEntity() instanceof ServerPlayer p) bringBack(p); }
+    public static void onDimension(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerChangedDimensionEvent ev) { if (ev.getEntity() instanceof ServerPlayer p) bringBack(p); }
+    /** fires before the mode changes: look again on the next tick */
+    public static void onGameMode(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerChangeGameModeEvent ev) {
+        if (ev.getEntity() instanceof ServerPlayer p) later(p.server, () -> bringBack(p));
+    }
+
+    /** runs r after the current work: server.execute runs at once when called on the server thread, which is too soon
+     *  in an unload or before a game mode applies; tell always queues */
+    private static void later(MinecraftServer s, Runnable r) { s.tell(new net.minecraft.server.TickTask(s.getTickCount(), r)); }
+
+    /** the owner's checked-out drekki (not in a carrier) beside them: kept when near, moved when far in the same level,
+     *  otherwise saved and spawned again next to them */
+    public static void bringBack(ServerPlayer p) {
+        /* the game mode itself, not isSpectator(): the same for a real player, and true of GameTest's mock player too */
+        if (!p.isAlive() || p.gameMode.getGameModeForPlayer() == net.minecraft.world.level.GameType.SPECTATOR || p.hasDisconnected()) return;
+        Roster r = roster(p.server);
+        Entry out = r.out(p.getUUID());
+        if (out == null || out.where != Where.OUT) return;
+        DrekkiEntity d = live(out.id);
+        if (d != null && d.level() == p.level()) {
+            if (d.distanceTo(p) > 12) d.teleportNear(p.blockPosition());
+            return;
         }
-        if (s.getTickCount() % 600 == 0) for (DrekkiEntity d : List.copyOf(LIVE.values())) if (!d.isRemoved()) touch(d);
+        if (d != null) { r.snapshot(out, save(d)); d.discard(); }
+        DrekkiEntity n = spawn(p.serverLevel(), out, p.blockPosition(), null);
+        if (n == null) return;
+        n.teleportNear(p.blockPosition());
+        add(p.serverLevel(), n);
+    }
+
+    /** the world saves: every live drekki's state goes to the roster first, so the roster saved with it is current */
+    public static void onSave(net.neoforged.neoforge.event.level.LevelEvent.Save ev) {
+        if (!(ev.getLevel() instanceof ServerLevel l) || l != l.getServer().overworld()) return;
+        for (DrekkiEntity d : List.copyOf(LIVE.values())) if (!d.isRemoved()) touch(d);
     }
 
     public static void onStopped(net.neoforged.neoforge.event.server.ServerStoppedEvent ev) { LIVE.clear(); }

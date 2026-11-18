@@ -64,6 +64,14 @@ public final class SelfTest {
         var sc = (net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?>) mc().screen;
         mc().gameMode.handleInventoryMouseClick(sc.getMenu().containerId, slot, 0, net.minecraft.world.inventory.ClickType.QUICK_MOVE, mc().player);
     }
+    /** a 9 x 9 stone pad at y 100 (the level's y for the overworld's pad is o's) with air above, its chunk kept loaded */
+    private static void pad(String dim, int x, int z) {
+        int y = dim.endsWith("overworld") ? o.getY() : 100;
+        cmd("execute in " + dim + " run forceload add " + x + " " + z);
+        cmd("execute in " + dim + " run fill " + (x - 4) + " " + y + " " + (z - 4) + " " + (x + 4) + " " + y + " " + (z + 4) + " minecraft:stone");
+        cmd("execute in " + dim + " run fill " + (x - 4) + " " + (y + 1) + " " + (z - 4) + " " + (x + 4) + " " + (y + 4) + " " + (z + 4) + " minecraft:air");
+    }
+
     private static void stepUntil(String name, int delay, int patience, Runnable act, BooleanSupplier check) { STEPS.add(new Step(name, delay, act, check, true, patience)); }
     private static void quiet(String name, int delay, Runnable act) { STEPS.add(new Step(name, delay, act, null, false, 0)); }
 
@@ -200,6 +208,18 @@ public final class SelfTest {
         step("into_carrier", 20, () -> { select(3); interact("carry"); },
             () -> pup() == null && mc().player.getInventory().getItem(3).has(DrekkiData.CARRIED.get()));
         step("let_out", 25, () -> useOn(mc().player.blockPosition().offset(2, -1, 0), Direction.UP), () -> pup() != null && !mc().player.getInventory().getItem(3).has(DrekkiData.CARRIED.get()));
+        /* a checked-out drekki comes back to its owner on the real events: a dimension change, its chunk unloading, a respawn */
+        quiet("nether_pad", 20, () -> { cmd("gamerule keepInventory true"); pad("minecraft:the_nether", 0, 0); });
+        stepUntil("follows_into_the_nether", 40, 15, () -> cmd("execute in minecraft:the_nether run tp @s 0.5 101 0.5"),
+            () -> mc().level.dimension() == net.minecraft.world.level.Level.NETHER && pup() != null && pup().distanceTo(mc().player) < 6);
+        stepUntil("follows_back_to_the_overworld", 40, 15, () -> cmd("execute in minecraft:overworld run tp @s " + (o.getX() + 0.5) + " " + o.getY() + " " + (o.getZ() - 4.5)),
+            () -> mc().level.dimension() == net.minecraft.world.level.Level.OVERWORLD && pup() != null && pup().distanceTo(mc().player) < 6);
+        quiet("far_pad", 20, () -> pad("minecraft:overworld", o.getX() + 3000, o.getZ()));
+        stepUntil("back_after_its_chunk_unloads", 60, 30, () -> cmd("tp @s " + (o.getX() + 3000.5) + " " + (o.getY() + 1) + " " + (o.getZ() + 0.5)),
+            () -> pup() != null && pup().distanceTo(mc().player) < 6);
+        quiet("die", 40, () -> { cmd("spawnpoint @s " + o.getX() + " " + o.getY() + " " + (o.getZ() - 4)); cmd("kill @s"); });
+        stepUntil("back_after_a_respawn", 40, 15, () -> mc().player.respawn(),
+            () -> mc().player.isAlive() && mc().player.distanceToSqr(o.getX(), o.getY(), o.getZ() - 4) < 25 && pup() != null && pup().distanceTo(mc().player) < 6);
         quiet("to_hatchery", 20, () -> { select(8); cmd("tp @s " + (o.getX() + 0.5) + " " + o.getY() + " " + (o.getZ() + 0.5)); });
         quiet("open_for_check_in", 25, () -> useOn(hatch, Direction.NORTH));
         step("check_in", 30, () -> { if (hs() != null) hs().press("in"); }, () -> where(HatcheryView.HERE) && pup() != null && pup().blockPosition().distManhattan(hatch) <= 5);

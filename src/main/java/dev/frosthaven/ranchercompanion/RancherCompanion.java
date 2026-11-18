@@ -42,7 +42,11 @@ public final class RancherCompanion {
         NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.entity.EntityJoinLevelEvent.class, Ranch::onJoin);
         NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent.class, Ranch::onLeave);
         NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerLoggedOutEvent.class, Ranch::onLogout);
-        NeoForge.EVENT_BUS.addListener(ServerTickEvent.Post.class, Ranch::onTick);
+        NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerLoggedInEvent.class, Ranch::onLogin);
+        NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerRespawnEvent.class, Ranch::onRespawn);
+        NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerChangedDimensionEvent.class, Ranch::onDimension);
+        NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerChangeGameModeEvent.class, Ranch::onGameMode);
+        NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.level.LevelEvent.Save.class, Ranch::onSave);
         NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.EntityInteract.class, dev.frosthaven.ranchercompanion.entity.DrekkiInteract::onEntityInteract);
         NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.server.ServerStoppedEvent.class, Ranch::onStopped);
         modBus.addListener(EntityAttributeCreationEvent.class, e -> e.put(DREKKI.get(), DrekkiEntity.createAttributes().build()));

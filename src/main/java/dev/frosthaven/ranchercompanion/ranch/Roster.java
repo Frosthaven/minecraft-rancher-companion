@@ -39,6 +39,13 @@ public final class Roster extends SavedData {
     }
 
     private final Map<UUID, Entry> byId = new LinkedHashMap<>();
+    /** each owner's checked-out drekki (OUT or CARRIED; one at most), kept in step by add, remove and move */
+    private final Map<UUID, Entry> outByOwner = new java.util.HashMap<>();
+
+    private void index(Entry e) {
+        if (e.where == Where.OUT || e.where == Where.CARRIED) outByOwner.put(e.owner, e);
+        else outByOwner.remove(e.owner, e);
+    }
 
     public static Roster get(MinecraftServer server) {
         return server.overworld().getDataStorage().computeIfAbsent(new Factory<>(Roster::new, Roster::load, null), "rancher_companion_roster");
@@ -59,21 +66,22 @@ public final class Roster extends SavedData {
     }
 
     /** the owner's checked-out drekki (with them or in a carrier), or null */
-    public Entry out(UUID owner) {
-        for (Entry e : byId.values()) if (e.owner.equals(owner) && (e.where == Where.OUT || e.where == Where.CARRIED)) return e;
-        return null;
-    }
+    public Entry out(UUID owner) { return outByOwner.get(owner); }
 
     public Entry add(UUID id, UUID owner, CompoundTag save, Where where, GlobalPos home) {
         Entry e = new Entry(id, owner, save, where, home);
         byId.put(id, e);
+        index(e);
         setDirty();
         return e;
     }
 
-    public void remove(UUID id) { if (byId.remove(id) != null) setDirty(); }
+    public void remove(UUID id) {
+        Entry e = byId.remove(id);
+        if (e != null) { outByOwner.remove(e.owner, e); setDirty(); }
+    }
 
-    public void move(Entry e, Where where, GlobalPos home) { e.where = where; e.home = home; if (where != Where.CARRIED) e.carry = null; setDirty(); }
+    public void move(Entry e, Where where, GlobalPos home) { e.where = where; e.home = home; if (where != Where.CARRIED) e.carry = null; index(e); setDirty(); }
 
     public void snapshot(Entry e, CompoundTag save) { e.save = save; setDirty(); }
 
@@ -91,6 +99,7 @@ public final class Roster extends SavedData {
             Entry e = new Entry(c.getUUID("id"), c.getUUID("owner"), c.getCompound("save"), where, home);
             if (c.hasUUID("carry")) e.carry = c.getUUID("carry");
             r.byId.put(e.id, e);
+            r.index(e);
         }
         return r;
     }

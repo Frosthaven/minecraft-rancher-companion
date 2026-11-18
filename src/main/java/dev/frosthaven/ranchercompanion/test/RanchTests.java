@@ -245,6 +245,110 @@ public final class RanchTests {
         t.succeed();
     }
 
+    // ---- a checked-out drekki comes back to its owner on events, with no polling ----
+
+    /** checks out this test's drekki and returns it */
+    private static DrekkiEntity checkedOut(GameTestHelper t, ServerPlayer p, BlockPos h, Roster.Entry e) {
+        Ranch.act(p, h, Ranch.Action.CHECK_OUT, e.id);
+        return drekki(t, p).get(0);
+    }
+
+    /** after a tick: exactly one drekki of p, beside p; then release and pass */
+    private static void besideOwner(GameTestHelper t, ServerPlayer p, BlockPos h, Roster.Entry e, String what) {
+        t.runAfterDelay(2, () -> {
+            List<DrekkiEntity> ds = drekki(t, p);
+            t.assertTrue(ds.size() == 1 && ds.get(0).distanceTo(p) < 6 && ds.get(0).level() == p.level(),
+                what + ": " + ds.size() + " drekki" + (ds.isEmpty() ? "" : ", " + ds.get(0).distanceTo(p) + " blocks away"));
+            Ranch.act(p, h, Ranch.Action.RELEASE, e.id);
+            t.succeed();
+        });
+    }
+
+    @GameTest(template = "floor")
+    public static void loginBringsItBack(GameTestHelper t) {
+        BlockPos h = stable(t);
+        ServerPlayer p = player(t);
+        Roster.Entry e = hatch(t, p, h);
+        checkedOut(t, p, h, e);
+        Ranch.onLogout(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent(p));
+        t.runAfterDelay(1, () -> {
+            t.assertTrue(drekki(t, p).isEmpty() && e.where == Roster.Where.OUT, "logged out: kept as data");
+            p.moveTo(t.absoluteVec(H.offset(-6, 0, 8).getCenter()));
+            Ranch.onLogin(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent(p));
+            besideOwner(t, p, h, e, "back on login");
+        });
+    }
+
+    @GameTest(template = "floor")
+    public static void respawnBringsItBack(GameTestHelper t) {
+        BlockPos h = stable(t);
+        ServerPlayer p = player(t);
+        Roster.Entry e = hatch(t, p, h);
+        checkedOut(t, p, h, e).getNavigation().stop();
+        p.moveTo(t.absoluteVec(H.offset(-8, 0, 14).getCenter()));  /* respawned out of following range */
+        Ranch.onRespawn(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerRespawnEvent(p, false));
+        besideOwner(t, p, h, e, "back on respawn");
+    }
+
+    @GameTest(template = "floor")
+    public static void dimensionChangeBringsItBack(GameTestHelper t) {
+        BlockPos h = stable(t);
+        ServerPlayer p = player(t);
+        Roster.Entry e = hatch(t, p, h);
+        DrekkiEntity d = checkedOut(t, p, h, e);
+        var nether = t.getLevel().getServer().getLevel(net.minecraft.world.level.Level.NETHER);
+        d.changeDimension(new net.minecraft.world.level.portal.DimensionTransition(nether, new net.minecraft.world.phys.Vec3(0.5, 64, 0.5),
+            net.minecraft.world.phys.Vec3.ZERO, 0, 0, net.minecraft.world.level.portal.DimensionTransition.DO_NOTHING));
+        t.runAfterDelay(1, () -> {
+            t.assertTrue(drekki(t, p).isEmpty(), "the drekki is in the other dimension");
+            Ranch.onDimension(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerChangedDimensionEvent(p,
+                net.minecraft.world.level.Level.NETHER, net.minecraft.world.level.Level.OVERWORLD));
+            besideOwner(t, p, h, e, "back on a dimension change");
+        });
+    }
+
+    @GameTest(template = "floor")
+    public static void chunkUnloadBringsItBack(GameTestHelper t) {
+        BlockPos h = stable(t);
+        ServerPlayer p = player(t);
+        Roster.Entry e = hatch(t, p, h);
+        DrekkiEntity d = checkedOut(t, p, h, e);
+        p.moveTo(t.absoluteVec(H.offset(-8, 0, 14).getCenter()));
+        d.remove(net.minecraft.world.entity.Entity.RemovalReason.UNLOADED_TO_CHUNK);  /* its chunk unloads behind the owner (the real event fires) */
+        besideOwner(t, p, h, e, "back after its chunk unloaded");
+    }
+
+    @GameTest(template = "floor")
+    public static void leavingSpectatorBringsItBack(GameTestHelper t) {
+        BlockPos h = stable(t);
+        ServerPlayer p = player(t);
+        Roster.Entry e = hatch(t, p, h);
+        checkedOut(t, p, h, e);
+        Ranch.onLogout(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent(p));
+        t.assertTrue(p.setGameMode(net.minecraft.world.level.GameType.SPECTATOR), "spectator mode set");
+        Ranch.onLogin(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent(p));
+        t.runAfterDelay(2, () -> {
+            t.assertTrue(drekki(t, p).isEmpty(), "a spectator's drekki stays away: " + drekki(t, p).size() + " live");
+            p.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);  /* the real game mode event */
+            besideOwner(t, p, h, e, "back on leaving spectator");
+        });
+    }
+
+    /** the world's save snapshots every live drekki into the roster saved with it */
+    @GameTest(template = "floor")
+    public static void worldSaveSnapshotsLiveDrekki(GameTestHelper t) {
+        BlockPos h = stable(t);
+        ServerPlayer p = player(t);
+        Roster.Entry e = hatch(t, p, h);
+        DrekkiEntity d = drekki(t, p).get(0);
+        d.setGear(5, d.barding(), d.dye());  /* changed without telling the roster */
+        t.assertTrue(e.save.getInt("Hat") != 5, "the roster has not seen the hat yet");
+        Ranch.onSave(new net.neoforged.neoforge.event.level.LevelEvent.Save(t.getLevel().getServer().overworld()));
+        t.assertTrue(e.save.getInt("Hat") == 5, "saved with the hat: " + e.save.getInt("Hat"));
+        Ranch.act(p, h, Ranch.Action.RELEASE, e.id);
+        t.succeed();
+    }
+
     /* the sleep tests set the world's clock, which every test running beside them shares: each runs in a batch of its own */
     @GameTest(template = "floor", timeoutTicks = 1300, batch = "sleep_bedding")
     public static void sleepsOnBeddingLaidAtNightfall(GameTestHelper t) {
