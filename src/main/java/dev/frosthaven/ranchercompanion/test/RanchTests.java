@@ -334,6 +334,24 @@ public final class RanchTests {
         });
     }
 
+    /** its chunk stops ticking but stays loaded (the owner went far): the game reports it leaving with no removal. It
+     *  stays the one copy: a respawn moves it to the owner rather than spawning a second (this once duplicated it) */
+    @GameTest(template = "floor")
+    public static void pausedChunkIsNotADuplicate(GameTestHelper t) {
+        BlockPos h = stable(t);
+        ServerPlayer p = player(t);
+        Roster.Entry e = hatch(t, p, h);
+        DrekkiEntity d = checkedOut(t, p, h, e);
+        d.getNavigation().stop();
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent(d, t.getLevel()));
+        p.moveTo(t.absoluteVec(H.offset(-8, 0, 14).getCenter()));
+        Ranch.onRespawn(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerRespawnEvent(p, false));
+        t.runAfterDelay(1, () -> {
+            t.assertTrue(drekki(t, p).size() == 1 && drekki(t, p).get(0) == d, "one copy, the same one: " + drekki(t, p).size());
+            besideOwner(t, p, h, e, "moved to its owner");
+        });
+    }
+
     /** the world's save snapshots every live drekki into the roster saved with it */
     @GameTest(template = "floor")
     public static void worldSaveSnapshotsLiveDrekki(GameTestHelper t) {

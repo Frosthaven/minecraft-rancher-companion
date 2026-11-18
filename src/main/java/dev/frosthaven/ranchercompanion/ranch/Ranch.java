@@ -387,11 +387,18 @@ public final class Ranch {
     public static void onLeave(net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent ev) {
         if (ev.getLevel().isClientSide || !(ev.getEntity() instanceof DrekkiEntity d) || !d.owned()) return;
         if (LIVE.get(d.drekkiId()) != d) return;
+        ServerPlayer owner = d.isOut() && d.owner() != null ? d.getServer().getPlayerList().getPlayer(d.owner()) : null;
+        if (d.getRemovalReason() == null) {
+            /* no removal: its chunk stopped ticking but stays loaded (the owner went far; a chunk loader holds it). It is
+               still this drekki's one copy, so it stays live and is moved to its owner; forgetting it here made a
+               second copy when the owner came back */
+            if (owner != null) later(owner.server, () -> bringBack(owner));
+            return;
+        }
         LIVE.remove(d.drekkiId());
         if (d.getRemovalReason() == Entity.RemovalReason.UNLOADED_TO_CHUNK || d.getRemovalReason() == Entity.RemovalReason.UNLOADED_WITH_PLAYER) {
             touch(d);
             /* a checked-out drekki left behind in a chunk that unloaded: back to its owner, once the unload is done */
-            ServerPlayer owner = d.isOut() && d.owner() != null ? d.getServer().getPlayerList().getPlayer(d.owner()) : null;
             if (owner != null) later(owner.server, () -> bringBack(owner));
         }
     }
