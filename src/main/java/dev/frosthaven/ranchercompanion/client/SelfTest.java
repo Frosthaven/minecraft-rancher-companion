@@ -45,6 +45,8 @@ public final class SelfTest {
     private static int index = -1, timer, started = -1, passed, failed, waited;
     private static final List<String> FAILS = new ArrayList<>();
     private static BlockPos o, hatch, trough;
+    /** the relog step: the world folder to open again once the title screen shows */
+    private static String reopen;
 
     private static Minecraft mc() { return Minecraft.getInstance(); }
 
@@ -220,6 +222,16 @@ public final class SelfTest {
         quiet("die", 40, () -> { cmd("spawnpoint @s " + o.getX() + " " + o.getY() + " " + (o.getZ() - 4)); cmd("kill @s"); });
         stepUntil("back_after_a_respawn", 40, 15, () -> mc().player.respawn(),
             () -> mc().player.isAlive() && mc().player.distanceToSqr(o.getX(), o.getY(), o.getZ() - 4) < 25 && pup() != null && pup().distanceTo(mc().player) < 6);
+        /* log out and in through the game's own events: quit to the title screen (the server logs the player out) and
+           open the world again (it logs them in); single player only */
+        if (mc().getSingleplayerServer() != null) {
+            quiet("relog", 80, () -> {
+                reopen = mc().getSingleplayerServer().getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT).toAbsolutePath().normalize().getFileName().toString();
+                mc().level.disconnect();
+                mc().disconnect(new net.minecraft.client.gui.screens.TitleScreen());
+            });
+            stepUntil("back_after_logging_in", 40, 15, () -> {}, () -> pup() != null && pup().distanceTo(mc().player) < 6);
+        }
         quiet("to_hatchery", 20, () -> { select(8); cmd("tp @s " + (o.getX() + 0.5) + " " + o.getY() + " " + (o.getZ() + 0.5)); });
         quiet("open_for_check_in", 25, () -> useOn(hatch, Direction.NORTH));
         step("check_in", 30, () -> { if (hs() != null) hs().press("in"); }, () -> where(HatcheryView.HERE) && pup() != null && pup().blockPosition().distManhattan(hatch) <= 5);
@@ -284,7 +296,14 @@ public final class SelfTest {
     public static void tick(ClientTickEvent.Post e) {
         if (!ON) return;
         Minecraft mc = mc();
-        if (mc.level == null || mc.player == null) return;
+        if (mc.level == null || mc.player == null) {
+            if (reopen != null && mc.screen instanceof net.minecraft.client.gui.screens.TitleScreen) {
+                String w = reopen; reopen = null;
+                RancherCompanion.LOG.info("[selftest] reopening {}", w);
+                mc.createWorldOpenFlows().openWorld(w, () -> RancherCompanion.LOG.error("[selftest] could not reopen {}", w));
+            }
+            return;
+        }
         if (started < 0) { started = 0; build(); timer = 200; RancherCompanion.LOG.info("[selftest] start, {} steps", STEPS.size()); return; }
         if (--timer > 0) return;
         if (index >= 0 && index < STEPS.size()) {
