@@ -69,6 +69,8 @@ public final class DrekkiParticles {
         float yaw = e.yBodyRot;
         Ctx c = new Ctx(e, e.getX(), e.getY(), e.getZ(), Layout.forward(yaw), Layout.right(yaw), e.lane() > 0 && a.speed != 0 ? a.speedAt(stage, t) : 0);
         sparkle(c, e.lineage(), stage, t);
+        if (e.ghost() && R.nextDouble() < 0.25)  /* a ghost sheds small soul-fire flames */
+            e.level().addParticle(net.minecraft.core.particles.ParticleTypes.SOUL_FIRE_FLAME, e.getRandomX(0.6), e.getRandomY(), e.getRandomZ(0.6), 0, 0.02, 0);
         double lastF = e.lastF; Vector3f m = a == Anim.SLEEP || a == Anim.FEED || a == Anim.BREATH ? mouth(e) : null;  /* posed once a tick */
         for (int fr = 0; fr < 3; fr++) {
             double age = (2 - fr) / 60.0, tf = t - age;
@@ -82,7 +84,7 @@ public final class DrekkiParticles {
                     if (s > 0.99 && R.nextDouble() < 0.012) { spark(c, m.z, m.y + 0.1 * k, -m.x, 0.12, 0.45, 0, 2.0, 0.09 * (0.5 + 0.5 * k), SNORE, 0, age); } }
                 case FEED -> { double W = Anim.FEED_W, T = Anim.loop(tf, W + 4.2) * (W + 4.2), f = (T - W) / 4.2;
                     if (T >= W && f >= 0.6 && f < 0.72 && R.nextDouble() < 0.035) { spark(c, m.z, m.y - 0.05, -m.x + rnd(-0.1, 0.1) * k, rnd(0.1, 0.3) * k, 0, 0, 0.5, 0.04 * (0.5 + 0.5 * k), HAY, 6, age); } }
-                case BALL -> { double f = Anim.loop(tf, 2.8); if (f >= 0.14 && f < 0.5) { double u = (f - 0.14) / 0.36, tx = Layout.props(a, k)[0][0]; Vector3f rm = restMouth(e);
+                case BALL -> { double f = Anim.loop(tf, 2.8); if (!e.live() && f >= 0.14 && f < 0.5) {  /* a live drekki's ball is a real projectile */ double u = (f - 0.14) / 0.36, tx = Layout.props(a, k)[0][0]; Vector3f rm = restMouth(e);
                     double bf = rm.z + (tx - rm.z) * u, by = rm.y + (1.2 * k - rm.y) * u + Math.sin(u * Math.PI) * 0.35 * k;
                     if (fr == 2) spark(c, bf, by, 0, 0, 0, 0, 0.1, 0.34 * k, MAGIC, 0, 0);  /* the ball itself: the page's 0.34 cube, one tick at a time */
                     if (R.nextDouble() < 0.85) spark(c, bf, by, 0, rnd(-.3, .3), rnd(-.3, .3), rnd(-.3, .3), 0.45, 0.11 * k, R.nextDouble() < 0.6 ? MAGIC : MAGIC_L, 0, age); } }
@@ -109,7 +111,7 @@ public final class DrekkiParticles {
             case POUNCE -> { double f = Anim.loop(t, 2.4), dx = Layout.props(a, k)[0][0];
                 if (cross(lastF, f, 0.18)) { burst(c, dx, 1.25 * k, 0, 18, WHITE, 3, 6, k); burst(c, dx, 1.25 * k, 0, 10, HAY, 3, 6, k); burst(c, Anim.POUNCE_LEAP * k + 0.3 * k, 0.1, 0, 16, DUST, 2.6, 5, k); } e.lastF = f; }
             case BALL -> { double f = Anim.loop(t, 2.8), tx = Layout.props(a, k)[0][0];
-                if (cross(lastF, f, 0.5)) { burst(c, tx, 1.2 * k, 0, 16, MAGIC, 2.6, 4, k); burst(c, tx, 1.2 * k, 0, 8, MAGIC_L, 2, 4, k); } e.lastF = f; }
+                if (!e.live() && cross(lastF, f, 0.5)) { burst(c, tx, 1.2 * k, 0, 16, MAGIC, 2.6, 4, k); burst(c, tx, 1.2 * k, 0, 8, MAGIC_L, 2, 4, k); } e.lastF = f; }
             case GUARD -> { double f = Anim.loop(t, 4.4);
                 if (cross(lastF, f, 0.1)) { ring(c, STEEL); burst(c, 0, 0.3 * k, 0, 10, DUST, 2, 5, k); } e.lastF = f; }
             case REJUV -> { double f = Anim.loop(t, 4.2); if (cross(lastF, f, 0.1)) ring(c, HEAL); e.lastF = f; }

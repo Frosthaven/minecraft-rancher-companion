@@ -14,6 +14,8 @@ public final class RancherCompanionClient {
 
     public static void init(IEventBus modBus) {
         modBus.addListener(EntityRenderersEvent.RegisterRenderers.class, e -> e.registerEntityRenderer(RancherCompanion.DREKKI.get(), DrekkiRenderer::new));
+        /* the ball is its particles (ElementalBall.tick) */
+        modBus.addListener(EntityRenderersEvent.RegisterRenderers.class, e -> e.registerEntityRenderer(RancherCompanion.ELEMENTAL_BALL.get(), net.minecraft.client.renderer.entity.NoopRenderer::new));
         modBus.addListener(RegisterColorHandlersEvent.Item.class, BardingColors::register);
         modBus.addListener(RegisterColorHandlersEvent.Block.class, BlockClient::blockColors);
         modBus.addListener(RegisterColorHandlersEvent.Item.class, BlockClient::itemColors);

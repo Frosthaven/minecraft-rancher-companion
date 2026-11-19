@@ -51,21 +51,46 @@ def trough(s, x, y, z, facing="north", left=False, right=False, diet=0):
     s.set(x, y, z, f"{NS}:trough", facing=facing, left=left, right=right, diet=diet, color=0)
 
 
-# ---- hatchery/stable: 11 x 8 x 11, the hatchery at (5, 1, 5) ----
+# ---- hatchery/stable: 11 x 8 x 11, the design page's decor booth (Blocks tab) turned to open toward the viewer ----
+# A 5x5 booth over x 3..7, z 3..7: plank floor, a ceiling of slabs 3 above the floor (beam slab rows at z 3, 5, 7,
+# shingle slabs between), back (z 7) and side (x 7) walls of a plank course under two of tufted leather, a fence front
+# on x 3, fence corner posts 3 high, the hatchery in the back corner (6, 1, 6), a trough in the other back corner
+# (4, 1, 6), bedding on the rest of the inside, a lantern under the ceiling. The front (z 3) stays open toward the
+# viewer, so the bedding and the path in front of it are in plain view.
+HATCH = (6, 1, 6)
+
+
+def fence(s, x, y, z, **sides):
+    s.set(x, y, z, f"{NS}:rancher_fence", **{d: sides.get(d, False) for d in ("north", "east", "south", "west")}, waterlogged=False)
+
+
 def stable():
     s = Schematic(11, 8, 11)
-    s.set(5, 1, 5, f"{NS}:hatchery", facing="south", color=0)
-    for x, z in ((4, 4), (6, 4), (4, 6), (6, 6)):           # corner posts: fence posts, so the stable stays open
-        for y in range(1, 5):
-            s.set(x, y, z, f"{NS}:rancher_fence", east=False, west=False, north=False, south=False, waterlogged=False)
-    for x in range(4, 7):                                    # the 3x3 roof, 4 blocks up
+    for x in range(3, 8):
+        for z in range(3, 8):
+            s.set(x, 0, z, f"{NS}:rancher_planks")
+            if z % 2:
+                s.set(x, 4, z, f"{NS}:rancher_beam_slab", axis="x", type="bottom", waterlogged=False)
+            else:
+                s.set(x, 4, z, f"{NS}:rancher_shingles_slab", type="bottom", waterlogged=False)
+    for n in range(4, 7):
+        for x, z in ((n, 7), (7, n)):                       # back wall and side wall
+            s.set(x, 1, z, f"{NS}:rancher_planks")
+            s.set(x, 2, z, f"{NS}:tufted_leather")
+            s.set(x, 3, z, f"{NS}:tufted_leather")
+        fence(s, 3, 1, n, north=True, south=True)          # the fence front on the west side
+    for y in range(1, 4):                                    # corner posts
+        fence(s, 3, y, 3, south=y == 1)
+        fence(s, 7, y, 3, south=True)
+        fence(s, 3, y, 7, east=True, north=y == 1)
+        fence(s, 7, y, 7, west=True, north=True)
+    s.set(*HATCH, f"{NS}:hatchery", facing="north", color=0)
+    trough(s, 4, 1, 6, facing="north")
+    for x in range(4, 7):
         for z in range(4, 7):
-            s.set(x, 5, z, f"{NS}:rancher_shingles_slab", type="bottom", waterlogged=False)
-    s.set(3, 1, 3, "minecraft:lantern", hanging=False, waterlogged=False)
-    for x in (5, 6):                                         # bedding 3 south of the hatchery
-        s.set(x, 1, 8, f"{NS}:straw_bedding")
-    for x in range(7, 11):                                   # a dirt path running east from the bedding
-        s.set(x, 0, 9, "minecraft:dirt_path")
+            if (x, z) not in ((6, 6), (4, 6)):
+                s.set(x, 1, z, f"{NS}:straw_bedding")
+    s.set(5, 3, 4, "minecraft:lantern", hanging=True, waterlogged=False)
     s.save("hatchery/stable")
 
 

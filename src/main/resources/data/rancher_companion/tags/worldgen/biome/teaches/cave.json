@@ -1,0 +1,23 @@
+{
+  "values": [
+    "minecraft:dripstone_caves",
+    "minecraft:lush_caves",
+    "minecraft:deep_dark",
+    {
+      "id": "biomesoplenty:glowing_grotto",
+      "required": false
+    },
+    {
+      "id": "biomesoplenty:spider_nest",
+      "required": false
+    },
+    {
+      "id": "ars_elemental:vexing_caves",
+      "required": false
+    },
+    {
+      "id": "create_abyss:abyss",
+      "required": false
+    }
+  ]
+}

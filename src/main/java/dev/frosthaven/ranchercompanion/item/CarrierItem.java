@@ -16,15 +16,18 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 
 /**
- * The small drekki carrier (spec, Carriers): right-click your checked-out stage 1 drekki to put it inside, right-click
+ * The drekki carriers (spec, Carriers): the small one holds a stage 1 drekki, the large one stage 1 or 2 (crafted from a
+ * small one, whose drekki stays inside). Right-click your checked-out drekki to put it inside, right-click
  * the ground to let it out. Inside it does nothing and learns nothing. The carrier holds only the drekki's roster id;
  * the roster keeps the drekki, so a copied carrier lets nothing out twice.
  */
 public final class CarrierItem extends Item {
-    public static final int STAGE = 1;
+    /** the biggest stage it holds */
+    public final int maxStage;
 
-    public CarrierItem(Properties props) {
+    public CarrierItem(Properties props, int maxStage) {
         super(props);
+        this.maxStage = maxStage;
     }
 
     /** the carrier holds a drekki of someone other than this player */
@@ -42,7 +45,7 @@ public final class CarrierItem extends Item {
         /* DrekkiInteract already stops others; this holds too if a mod hands the item straight to the entity */
         if (!player.getUUID().equals(d.owner())) player.displayClientMessage(Component.translatable("message.rancher_companion.not_yours", Ranch.ownerName(d)), true);
         else if (full(stack)) msg(player, "carrier.full");
-        else if (d.stage() != STAGE) msg(player, "carrier.too_big");
+        else if (d.stage() > maxStage) msg(player, maxStage == 1 ? "carrier.too_big" : "carrier.too_big_large");
         else if (!d.isOut()) msg(player, "carrier.checked_in");
         else Ranch.carry((ServerPlayer) player, d, player.getItemInHand(hand));
         return InteractionResult.CONSUME;
@@ -68,4 +71,23 @@ public final class CarrierItem extends Item {
     }
 
     private static void msg(Player p, String key) { p.displayClientMessage(Component.translatable("message.rancher_companion." + key), true); }
+
+    /** a large carrier crafted from a full small one keeps its drekki (spec, Carriers: an upgrade) */
+    public static void onCrafted(net.neoforged.neoforge.event.entity.player.PlayerEvent.ItemCraftedEvent e) {
+        if (!(e.getCrafting().getItem() instanceof CarrierItem big) || big.maxStage < 2) return;
+        var grid = e.getInventory();
+        for (int i = 0; i < grid.getContainerSize(); i++) {
+            ItemStack s = grid.getItem(i);
+            if (s.getItem() instanceof CarrierItem small && small.maxStage == 1 && full(s)) {
+                for (var type : new net.minecraft.core.component.DataComponentType<?>[]{DrekkiData.CARRIED.get(), DrekkiData.CARRIED_NAME.get(),
+                        DrekkiData.CARRY_TOKEN.get(), DrekkiData.CARRIED_OWNER.get(), DrekkiData.CARRIED_OWNER_NAME.get()}) copy(type, s, e.getCrafting());
+                return;
+            }
+        }
+    }
+
+    private static <T> void copy(net.minecraft.core.component.DataComponentType<T> type, ItemStack from, ItemStack to) {
+        T v = from.get(type);
+        if (v != null) to.set(type, v);
+    }
 }

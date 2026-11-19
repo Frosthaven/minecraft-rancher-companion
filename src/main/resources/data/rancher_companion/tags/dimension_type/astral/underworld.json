@@ -1,0 +1,24 @@
+{
+  "values": [
+    {
+      "id": "ad_astra:mars",
+      "required": false
+    },
+    {
+      "id": "ad_astra:venus",
+      "required": false
+    },
+    {
+      "id": "ad_astra:mercury",
+      "required": false
+    },
+    {
+      "id": "creatingspace:mars",
+      "required": false
+    },
+    {
+      "id": "creatingspace:venus",
+      "required": false
+    }
+  ]
+}

@@ -128,7 +128,7 @@ public final class HatcheryScreen extends Screen {
         boolean hover = Art.in(mx, my, bx, by, BW, Art.BTN_H);
         Art.Btn st = why != null ? Art.Btn.DISABLED : danger && hover ? Art.Btn.DANGER : hover ? Art.Btn.HOVER : Art.Btn.NORMAL;
         Art.button(g, TEX, font, bx, by, BW, st, label);
-        if (hover && why != null) g.renderTooltip(font, why, mx, my);
+        if (hover && why != null) Art.tip(g, font, List.of(why), false, mx, my);
     }
 
     private void nest(GuiGraphics g, int mx, int my) {
@@ -152,8 +152,8 @@ public final class HatcheryScreen extends Screen {
                 Component why = Component.translatable("message.rancher_companion.hatch." + view.problems().get(0));
                 List<net.minecraft.util.FormattedCharSequence> lines = font.split(why, 54);
                 for (int i = 0; i < Math.min(2, lines.size()); i++) g.drawString(font, lines.get(i), left + 13, top + 86 + i * 9, Art.WARN, false);
-                if (hover) g.renderComponentTooltip(font, view.problems().stream()
-                    .map(p -> (Component) Component.translatable("message.rancher_companion.hatch." + p)).toList(), mx, my);
+                if (hover) Art.tip(g, font, view.problems().stream()
+                    .map(p -> (Component) Component.translatable("message.rancher_companion.hatch." + p)).toList(), false, mx, my);
             }
         }
         if (Art.in(mx, my, ex, ey, 16, 16)) g.renderTooltip(font, view.egg(), mx, my);

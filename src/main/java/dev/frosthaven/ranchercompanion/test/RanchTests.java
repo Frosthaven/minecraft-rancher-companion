@@ -34,6 +34,16 @@ public final class RanchTests {
     private static final BlockPos H = new BlockPos(6, 1, 6);
 
     /** a hatchery at H with a 3x3 roof 4 blocks up and a torch beside it; returns its absolute position */
+    /** a 33 x 33 stone field with the stable at H: room to put the owner out of following range on the test's own
+     *  ground (off it, a teleported drekki lands in a neighbouring test's area, which is cleared when that test ends) */
+    private static BlockPos field(GameTestHelper t) {
+        for (int x = 0; x < 33; x++) for (int z = 0; z < 33; z++) t.setBlock(new BlockPos(x, 0, z), Blocks.STONE);
+        return stable(t);
+    }
+
+    /** on the field, 17 blocks from the stable: out of following range */
+    private static final BlockPos FAR = H.offset(10, 0, 14);
+
     private static BlockPos stable(GameTestHelper t) {
         for (int x = 0; x < 13; x++) for (int z = 0; z < 13; z++) t.setBlock(new BlockPos(x, 0, z), Blocks.STONE);
         t.setBlock(H, DrekkiBlocks.HATCHERY.get());
@@ -257,8 +267,12 @@ public final class RanchTests {
     private static void besideOwner(GameTestHelper t, ServerPlayer p, BlockPos h, Roster.Entry e, String what) {
         t.runAfterDelay(2, () -> {
             List<DrekkiEntity> ds = drekki(t, p);
+            DrekkiEntity live = Ranch.liveOf(e.id);
+            Roster.Entry now = Ranch.roster(t.getLevel().getServer()).get(e.id);
             t.assertTrue(ds.size() == 1 && ds.get(0).distanceTo(p) < 6 && ds.get(0).level() == p.level(),
-                what + ": " + ds.size() + " drekki" + (ds.isEmpty() ? "" : ", " + ds.get(0).distanceTo(p) + " blocks away"));
+                what + ": " + ds.size() + " drekki" + (ds.isEmpty() ? "" : ", " + ds.get(0).distanceTo(p) + " blocks away")
+                    + " | roster " + (now == null ? "none" : now.where) + ", live " + (live == null ? "none" : live.blockPosition() + " removed " + live.getRemovalReason()
+                    + " alive " + live.isAlive() + " owner " + p.getUUID().equals(live.owner())) + ", player " + p.blockPosition());
             Ranch.act(p, h, Ranch.Action.RELEASE, e.id);
             t.succeed();
         });
@@ -279,13 +293,13 @@ public final class RanchTests {
         });
     }
 
-    @GameTest(template = "floor")
+    @GameTest(template = "field")
     public static void respawnBringsItBack(GameTestHelper t) {
-        BlockPos h = stable(t);
+        BlockPos h = field(t);
         ServerPlayer p = player(t);
         Roster.Entry e = hatch(t, p, h);
         checkedOut(t, p, h, e).getNavigation().stop();
-        p.moveTo(t.absoluteVec(H.offset(-8, 0, 14).getCenter()));  /* respawned out of following range */
+        p.moveTo(t.absoluteVec(FAR.getCenter()));  /* respawned out of following range */
         Ranch.onRespawn(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerRespawnEvent(p, false));
         besideOwner(t, p, h, e, "back on respawn");
     }
@@ -307,13 +321,13 @@ public final class RanchTests {
         });
     }
 
-    @GameTest(template = "floor")
+    @GameTest(template = "field")
     public static void chunkUnloadBringsItBack(GameTestHelper t) {
-        BlockPos h = stable(t);
+        BlockPos h = field(t);
         ServerPlayer p = player(t);
         Roster.Entry e = hatch(t, p, h);
         DrekkiEntity d = checkedOut(t, p, h, e);
-        p.moveTo(t.absoluteVec(H.offset(-8, 0, 14).getCenter()));
+        p.moveTo(t.absoluteVec(FAR.getCenter()));
         d.remove(net.minecraft.world.entity.Entity.RemovalReason.UNLOADED_TO_CHUNK);  /* its chunk unloads behind the owner (the real event fires) */
         besideOwner(t, p, h, e, "back after its chunk unloaded");
     }
@@ -336,15 +350,15 @@ public final class RanchTests {
 
     /** its chunk stops ticking but stays loaded (the owner went far): the game reports it leaving with no removal. It
      *  stays the one copy: a respawn moves it to the owner rather than spawning a second (this once duplicated it) */
-    @GameTest(template = "floor")
+    @GameTest(template = "field")
     public static void pausedChunkIsNotADuplicate(GameTestHelper t) {
-        BlockPos h = stable(t);
+        BlockPos h = field(t);
         ServerPlayer p = player(t);
         Roster.Entry e = hatch(t, p, h);
         DrekkiEntity d = checkedOut(t, p, h, e);
         d.getNavigation().stop();
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent(d, t.getLevel()));
-        p.moveTo(t.absoluteVec(H.offset(-8, 0, 14).getCenter()));
+        p.moveTo(t.absoluteVec(FAR.getCenter()));
         Ranch.onRespawn(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerRespawnEvent(p, false));
         t.runAfterDelay(1, () -> {
             t.assertTrue(drekki(t, p).size() == 1 && drekki(t, p).get(0) == d, "one copy, the same one: " + drekki(t, p).size());

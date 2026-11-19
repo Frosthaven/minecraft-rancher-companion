@@ -93,7 +93,11 @@ Proposal 2026-11-16 (design page, Blocks tab, Decor). Optional decoration in the
 | Straw Bedding | Floor cover | 1 px layer, like a carpet | Loose straw; no collision box, so no ceiling |
 | Rancher Fence | Pens, stall fronts, corner posts | Fence, fence gate | Beam posts with a dark steel cap, plank rails; joins neighbours like any fence, so a stack is a bare pole |
 
-Open: recipes (a draft on the page), and whether bedding does anything for checked-in drekki.
+Straw Bedding's recipe: two Farmer's Delight straw side by side make 3 (its rope is two straw stacked, so no clash).
+Without Farmer's Delight, two wheat side by side, so plain NeoForge can still make it. Checked against vanilla and
+every Haven pack mod: no recipe of ours matches another recipe's grid.
+
+Open: the other recipes (a draft on the page), and whether bedding does anything for checked-in drekki.
 
 ## Hatchery
 
@@ -152,14 +156,14 @@ Two craftable items:
 
 ### Stage 1
 
-- Length: 14 game days of travel.
+- Length: 7 game days of travel (revised 2026-11-18; server config).
 - Size: very small, about a slime.
 - Fits the small carrier.
 - No attacks, no cooldown abilities.
 
 ### Stage 2
 
-- Length: 14 game days of travel.
+- Length: 7 game days of travel (revised 2026-11-18; server config).
 - Size: about a wolf.
 - Needs the large carrier.
 - Has its diet's basic attack (Bite or Elemental ball), no cooldown ability.
@@ -190,8 +194,8 @@ Equipment slots have no text label: an empty slot shows its item's icon, dimmed 
 line reads "Astral: <name>".
 
 Health and food: at the top of the Details tab, as vanilla's HUD draws a player's: a row of hearts (full, half, empty; ten to a
-row, so a stage 3 drekki's extra hearts wrap) and a row of ten drumstick shanks for the hunger meter. Max health per
-stage is open (the page uses 10, 20 and 30 as placeholders).
+row, so a stage 3 drekki's extra hearts wrap) and a row of ten drumstick shanks for the hunger meter. Max health:
+10, 20 and 30 by stage (decided 2026-11-18).
 
 Screen style (all the mod's screens), after the UI remix's Sophisticated Backpacks redesign (minecraft-create-ui-remix,
 `backpack-art.js`): the top is the remix's own leather, the body of its generated
@@ -249,7 +253,7 @@ Each affinity changes in real time until it locks in. After lock-in it is perman
 
 | Affinity | Driven by                    | Values               | Locks in            | Shows on the model                         |
 |----------|------------------------------|----------------------|---------------------|--------------------------------------------|
-| Astral   | Where stage 1 travel happens | Dormant, then Solar, Lunar, Aero, Underworld, Deep, End | 25% through stage 1 | Eye color |
+| Astral   | Where stage 1 travel happens | Dormant, then Solar, Lunar, Aero, Underworld, Deep, End | 50% through stage 1 | Eye color |
 | Diet     | What the drekki eats         | Carnivore raw or cooked, Herbivore seed or root | Start of stage 2 | Talons, wings, tail plumage |
 | Biome    | Time spent in each biome     | Traits per biome     | 50% through stage 2 | Foot tint                                  |
 
@@ -257,7 +261,7 @@ Each affinity changes in real time until it locks in. After lock-in it is perman
 
 - Starts Dormant: matte brown eyes with no glow. The glow starts at lock-in.
 - Gained in traveling mode only: a tick counts only when it also counts as travel time (see Growth), so time at
-  the stable or near a bed shapes nothing. Each travel tick in the first quarter of stage 1 counts toward one of
+  the stable or near a bed shapes nothing. Each travel tick in the first half of stage 1 (revised 2026-11-18) counts toward one of
   six, by where the drekki is. At lock-in the largest count wins, and a tie is settled at random among the tied.
   Each tick counts for exactly one, by the first test that matches, so Solar and Lunar never overlap the
   others. Thresholds are a proposal:
@@ -374,7 +378,7 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
 - Teacher: only the owner's activities teach the drekki.
 - Learning chance: a one-off activity (catch fire, freeze, take fall damage, run out of air, cure with milk, break an item) teaches
   its trait only 25% of the times it happens. Counted activities (kill X mobs, catch X things, do something a set
-  number of times) and death activities (die to a piglin, survive with a totem) always teach it. Mood scales the
+  number of times) and death activities (survive with a totem) always teach it. Mood scales the
   25%: 50% at high mood, 12.5% at low mood (see Mood).
 - Who benefits: every player within 10 blocks of the drekki gets the player half of its traits, like Steel edge.
   A row can narrow this, for example "only while mounted".
@@ -385,14 +389,19 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
 - Sleeping traits: a child keeps every inherited trait that passes, up to 9, but only as many as its stage cap are
   active. The rest sleep. Each stage-up wakes random sleeping traits into the new slots. Sleeping traits come first:
   a learned trait only takes a slot no sleeping trait is waiting for, so a richly bred drekki may have no room to
-  learn ("has too much on its mind").
-- Learning message: when a drekki learns a trait, its owner and every other player within 30 blocks of the drekki
+  learn.
+- Offers (decided 2026-11-19): a finished activity does not teach at once. Its owner alone gets "<name> wants to learn
+  [<trait>]"; the link has the trait's tooltip, and a click opens the drekki screen on its Traits tab, only while the
+  drekki is checked out, out of its carrier and within 10 blocks. The offer sits in its first free slot in gold, with a
+  check (learn it) and a cross (pass). One offer at a time: a new one replaces the old, whose count stays full, so it
+  comes back on its next count. A pass sets a counted trait's count to 0; a one-off trait can roll again on the next
+  activity. An offer stays until it is answered or replaced (saved with the drekki).
+- Learning message: when the owner says yes, its owner and every other player within 30 blocks of the drekki
   get a chat message, "<name> has learned [<trait>]",
   where the trait name in brackets shows the trait's tooltip on hover (name and effect), the way advancement messages
   do. An unnamed drekki is "Your drekki" to
   its owner and "<owner>'s drekki" to everyone else.
-- At the cap the trait is not learned, and the same players get "<name> wanted to learn something, but has too much on its
-  mind." instead.
+- At the cap a drekki learns nothing new: activities count nothing, no offer is made, and nothing is said in chat.
 - Inheritance: each parent passes each of its traits, positive or negative, at 33% (up to 9 kept; see Sleeping traits). A trait
   both parents hold passes at 56% (1 - 0.67^2). Combos form from the traits that pass, and a combo replaces its
   parts: the child never holds a combo and one of its parts, and does not learn a part later that a held combo covers.
@@ -425,12 +434,15 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
     key or a double tap of forward dashes (Four Winds).
   - Creature Comforts stacks with Hero of the Village, not with other drekki.
   - Cloud Stompers is learned by bouncing on slime blocks 10 times.
+  - The Fallen Emperor (changed 2026-11-18, was dying to a piglin): kill 10 piglins; brutes and zombified piglins
+    count too. Piglins then treat its owner as if wearing gold.
   - Night Watch (added by the team): kill 5 phantoms. Phantoms cannot spawn within 30 blocks of the drekki
     horizontally, at any height.
   - Soft Landing (added by the team): learned from taking fall damage. When a player within 10 blocks of the drekki
-    would fall more than 6 blocks, the drekki casts Slow Falling on them. 2-minute cooldown.
+    would fall more than 6 blocks, the drekki casts Slow Falling on them. 2-minute cooldown. A fall over 6 blocks
+    the cast misses (the last stretch and the landing arrive in one move) lands with no damage instead.
   - Undertow (added by the team as Deep Sea Diver): learned by running air down to the last bubble (25% each time).
-    When a player within 10 blocks of the drekki is down to 2 air bubbles, a current lifts them fast to the surface
+    When a player within 10 blocks across of the drekki (any depth) takes drowning damage, a current lifts them fast to the surface
     like a soul sand bubble column, with Water Breathing while they rise. It cannot pull through a solid ceiling;
     with no open water above, they get 10 s of Water Breathing instead. 5-minute cooldown.
   - Hearty (added by the team): learned by healing the drekki 5 times with potions or spells (any heal from
@@ -569,11 +581,16 @@ through a trade at a hatchery, so nobody loses one by accident or to a trick.
 Decided 2026-11-04, revised 2026-11-16: hunger has no penalties of its own. It lowers mood, and mood carries every
 effect (see Mood), so other systems can soften or sharpen it later.
 
-- The meter drains slowly while the drekki travels or fights, about one diet food per in-game day.
+- Revised 2026-11-18: ten shanks; one diet food fills one. The meter drains one shank per in-game day wherever the
+  drekki is live (at a hatchery, out with its owner) and two a day while it travels (server config
+  for both). Revised again 2026-11-18: hunger runs only while the drekki is live (its chunk loaded and ticking).
+  Time it was not ticking (unloaded, in a carrier, its owner offline) costs nothing, so a player back after a week
+  does not find every drekki starving; there is no catch-up and no simulated meals. Hungry is 0 shanks; it eats
+  whenever it has room for a shank.
 - While hungry, mood falls 2 a minute. Eating gives +5 mood and ends the drain. It never starves to death.
   Hibernation Plan makes the meter drain 33% slower.
-- Food: the player's hand at any time. A checked-out drekki on the road eats from its pack. A drekki at home
-  (checked in) goes to the troughs first, then its pack.
+- Food: the player's hand at any time. A checked-out drekki eats at a trough while its owner stands still, else
+  from its pack. A drekki at home (checked in) goes to the troughs first, then its pack (the pack opens at stage 2).
 
 ### Feeding at troughs (proposal 2026-11-16)
 
@@ -583,15 +600,19 @@ effect (see Mood), so other systems can soften or sharpen it later.
   within 3 blocks of a path, bedding or the hatchery; place troughs along the paths. A checked-out drekki
   searches 16 blocks around itself, and only while its owner stands still.
 - A trough counts when it is loaded, reachable and free. Reachable: stages 1 and 2 need a standing spot in front of
-  the open side; stage 3 eats from the top at any side that is not blocked. Free: each trough segment serves one
-  drekki at a time. A drekki claims a segment, walks to it, eats, and releases it, so a line of 10 feeds 10.
-- Before the diet locks (stage 1) any trough with food counts and it picks the nearest; each meal counts toward its
-  diet, so placing a diet's trough nearest the hatchery steers a hatchling. After the lock, only troughs holding its
-  own diet count, still the nearest.
-- A meal is one item. A short pause follows before it can claim again, so others get a turn.
+  the open side; stage 3 eats from the top at any side that is not blocked. Spots (decided 2026-11-18): each trough
+  segment has a front spot (any stage; the only one stages 1 and 2 can use) and a back spot (stage 3 over the wall),
+  and the two segments at a line's ends have an end spot each (stage 3). Each spot feeds one drekki at a time: a lone
+  trough feeds up to 4, a line of 10 up to 22. A blocked spot feeds nobody. A drekki claims a spot, walks to it, eats,
+  and releases it.
+- Owner only (decided 2026-11-18): a trough records who placed it, and feeds only that player's drekki.
+- Choice (decided 2026-11-18): it picks a random trough among those it can use, not the nearest; separating diets is
+  the player's job (the trough Ponder shows how). Before the diet locks (stage 1) any trough with food counts; each
+  meal counts toward its diet. After the lock, only troughs holding its own diet count.
+- A meal is one item. Then it releases the spot, strolls a few blocks off and waits a short pause before it can claim
+  again, so a waiting drekki gets the spot.
 - A path that fails for a few seconds marks that trough unreachable for about a minute; it tries the next. With no
   usable trough it eats from its pack; with an empty pack it stays hungry, and its mood shows it.
-- Open: whether any drekki may eat from any trough, or only drekki of the trough's owner.
 
 ## Mood
 
@@ -600,6 +621,7 @@ effect, in bands.
 
 | Mood | Band | Effects |
 |------|------|---------|
+| 90-100, Recently pet and above half food | Thriving | One-off activities teach at 75%; each counted activity counts double |
 | 75-100 | Happy | One-off activities teach at 50% (double) |
 | 50-74 | Content | Normal (one-off activities teach at 25%) |
 | 25-49 | Uneasy | No regeneration; one-off activities teach at 12.5% |
@@ -609,6 +631,11 @@ effect, in bands.
   of it (by it or by a player).
 - Falls: -2 a minute while hungry, -1 for each 2 health it loses, -1 a minute while checked out and more than
   30 blocks from its owner.
+- Recently pet (decided 2026-11-18): petting gives a buff, +10 mood, for 1 hour of real time (72,000 ticks); petting
+  again resets it. It shows as a buff icon on the drekki screen. Thriving needs it, so only active care reaches it.
+- Kinship (decided 2026-11-18): +25/9 mood (about 2.8) for each other drekki whose home is the same hatchery, checked
+  out or not, up to 9 others (+25). With 9 kin its mood never falls below 25, so it is never Miserable. A buff icon
+  shows the count.
 - Counted and death activities always teach, whatever the mood (unchanged; open whether Miserable stops them too).
 - Cue: an icon floats above the drekki's head only while Uneasy or Miserable, drawn the way MineColonies draws its
   citizens' status icons (a camera-facing sprite above the entity). Nothing shows while Content or Happy. The icons
@@ -1032,8 +1059,7 @@ Hatch a first egg, keep the pup, carry it, name it, pet it. Growth and learning 
   health hearts, bloodline, astral ("Astral: Dormant"), diet, the player's inventory below;
   pixel style like the hatchery and trough screens. A hat in hand still goes on with a click.
 - Petting: sneak + right-click with an empty hand (the arm swings, as on any use). The drekki is in `#c:capturing_not_supported`, so Carry On (whose
-  default blacklist reads that tag) and other capture mods leave it alone: the roster keeps it, nothing else carries it. A happy sound, hearts, a short lean-in. Later a small mood gain
-  with a cooldown (no mood yet).
+  default blacklist reads that tag) and other capture mods leave it alone: the roster keeps it, nothing else carries it. A happy sound, hearts, a short lean-in. From 0.4.0 it gives Recently pet (see Mood).
 - Screens (hatchery, trough): pixel art in the mod's palette after Create's own screens (frogport, stock link), not
   the leather look. The trough gets an inventory screen; the drekki has no hunger meter yet.
 - Hats: no recipes; every wandering trader offers 2 different random hats (of all 15), 3 of each. Barding has its
@@ -1044,3 +1070,74 @@ Hatch a first egg, keep the pup, carry it, name it, pet it. Growth and learning 
   the wander area: anchors, chaining, fences, 20 per hatchery). Trough: a line of 10 and the 11th apart, the four
   diets, and feeding (open side for stages 1 and 2, the top for stage 3, one drekki per trough at a time). Feeding
   itself comes with hunger, after this release; the guide shows the rules it will follow.
+
+## Growth release (0.4.0, decided 2026-11-18)
+
+Pups grow, eat, feel and learn; growth stops at stage 2 (Fledgling) until a later release.
+
+- Growth: travel time counts (out of the carrier, checked out); 7 days per stage, server config. Existing drekki
+  start at 0, no head start. A stage 2 drekki does not grow further yet. Stage-up: a chat line to the owner ("Your
+  drekki is now a Fledgling") and a particle burst.
+- Astral: locks 50% through stage 1 (see Astral affinity). A chat line to the owner names it (hover for what it
+  does), with a burst of its color and the amethyst chime.
+- Diet: counted from every meal in stage 1, locked at stage 2 with its look.
+- Hunger, troughs and mood: as in their sections. Jade (optional, `compat/jade`): a row of shanks under the hearts.
+- Biome: stage 2 counts time per biome category from now on; the lock-in and its traits come later.
+- Every biome counts (decided 2026-11-18): each category is a biome tag (`rancher_companion:teaches/<category>`, a
+  datapack can move biomes). Modded biomes go to the category they look like (Haven's mods: Biomes O' Plenty, Ars
+  Nouveau and Elemental, Climate Rivers, Create Abyss go by their look; Cave takes BOP's grottoes and nests, Ars
+  Elemental's vexing caves and the abyss). Space by look, to revisit with mod support: Mars to Dry, Glacio to Snow &
+  Ice, Venus and Mercury to Nether Barren, the Moon, orbit and open space to End Exploration. A biome in no tag falls
+  back on its `c:` tags (snowy, desert, forest...), then on Plains (the rule for any biome nothing names), so no
+  time is lost.
+- Astral off the three vanilla dimensions (decided 2026-11-18): by look too, as dimension tags
+  (`rancher_companion:astral/<name>`): Mars, Venus and Mercury Underworld, the Moon Lunar, Glacio Aero, orbit and
+  space End; any other dimension uses the Overworld's height and day rules.
+- Traits: a drekki learns at every stage, up to its stage cap: 3 as a pup, 6 as a Fledgling (decided 2026-11-18). A trait that needs riding or a
+  later stage is learned now and works once that exists; its tooltip says so. Frost Strider: the drekki walks on
+  powder snow too.
+- Stage 2 (Fledgling): the large carrier's recipe, a 9-slot pack, the three stances (see Combat) with its diet's
+  basic attack: Bite 4 damage, Elemental ball 3 (starting numbers, to tune). It takes damage.
+- Death (stage 2 on): a red chat line to the owner. A 15% chance it returns as a ghost drekki (see Ghost drekki); a
+  ghost still grows, never fights in this release (whatever its stance), and has the spec's look and revive. A ghost
+  that dies is gone for good, as is a drekki whose roll fails. Phoenix Heart wins over both.
+- Ponder: the trough scenes show the spots (front, back, ends), owner-only troughs and diet planning (keep diets
+  apart to steer a hatchling).
+- Drekki screen (as built): the name and stage over two tabs, Details and Traits. Details: hearts (ten to a row), ten
+  food shanks, bloodline, astral, diet, and the mood band in its color (hover: value, effect, reasons), then the buff
+  icons, Recently pet (minutes left) and Kinship (kin and bonus). Traits: one line per slot of its stage, learned ones
+  in green with their effect on hover, the offer in gold with a check and a cross, free ones dim; no learning progress. From stage 2 the three stance buttons sit
+  at the foot of the info well (icons from the design page, tooltip each). The
+  top is 220 wide so trait names fit Minecraft's font on one line; the pack and the inventory keep vanilla's 176, centered, and the pack row (9) over the inventory.
+  A ghost's stage reads "Fledgling, ghost".
+- Hand feeding: its owner right-clicks it with food it eats while it has room for a shank; otherwise the screen opens.
+  Petting with sneak + empty hand also starts Recently pet. A ghost under Weakness takes a golden apple.
+- Undertow reaches 10 blocks across at any depth (fixed 2026-11-18): a drekki stays at the surface while its owner
+  dives, so a 10-block reach in all directions missed a dive deeper than about 10 blocks below it. It starts at the
+  player's first drowning damage, not at 2 air bubbles (decided 2026-11-18: it gives Water Breathing, so it waits
+  until the player is actually drowning).
+- Cloud Stompers counts a slime landing from the player's tick too, once per landing: some pack mods take over slime
+  landings and the game's fall event never fires (seen in the Haven pack).
+- Traits help their owner only (decided 2026-11-18), within 10 blocks; Night Watch and Creature Comforts act on the
+  drekki's surroundings (phantom spawns, villagers near it) and work for everyone there. The Fallen Emperor was
+  owner-only already.
+- Cooldowns are each trait's own number, halved in its astral home terrain (the astral tooltip's promise, now done).
+  Tooltips show them as a gold line in real-world time ("Cooldown: 2h 20m" for Patchwork's 7 game days); a trait that
+  is recharging shows dimmer with a small gold hourglass on the traits tab, and a red "Ready in 1m 12s" line.
+- Trait and astral tooltips are one builder (trait/Tips) for the screen and chat; in chat the client draws them as the
+  screen does (title, then wrapped to at most 4 rows). The details tab shows the astral name in its eye color with the
+  same tooltip as the chat message when it settles.
+- Food (fixed 2026-11-18): the shank bar rounds up to half a shank, so an empty shank shows exactly when it eats at a
+  trough (a whole shank missing). Hand feeding works whenever the bar is not full (half a shank or more missing). Food it will not take says why on the
+  action bar ("Not hungry", "Eats Seed food only") instead of opening the screen.
+- Patchwork is learned when an item wears through (its durability runs out), not when the last item of a stack is
+  used up (fixed 2026-11-18: the game's item-destroyed event fires for both).
+- Tooltips on the mod's screens use the game's text size: a title line, then each line wrapped at the narrowest width
+  from 170 px that keeps it to 4 rows (wider only when needed). Nothing is shortened.
+- Ponder's stable scene is the design page's decor booth (Blocks tab), open toward the viewer, the hatchery in a back
+  corner; each anchor's 3-block square is drawn on its own, so the area shows as their union.
+- Hearty is learned by a Fledgling (a pup is never hurt): 5 heals from outside the mod while hurt, 30 s apart.
+- Performance: trait hooks look only at the live drekki holding that trait (an index rebuilt when one joins, leaves or
+  changes); kin are counted per hatchery as records change; the learner is found by its roster id.
+- Tests: a smoke test of every learnable trait (its learning trigger and, where it works now, its effect), and
+  screenshots of each changed screen, tooltip and Ponder scene.

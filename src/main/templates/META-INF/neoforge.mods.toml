@@ -10,6 +10,10 @@ description='''
 A companion animal, the drekki, that grows with the player over three stages.
 '''
 
+# the trait effects that no event reaches (mixin/)
+[[mixins]]
+config="${mod_id}.mixins.json"
+
 [[dependencies.${mod_id}]]
     modId="neoforge"
     type="required"
@@ -37,3 +41,9 @@ A companion animal, the drekki, that grows with the player over three stages.
     versionRange="[1.0.82,)"
     ordering="NONE"
     side="CLIENT"
+[[dependencies.${mod_id}]]
+    modId="jade"
+    type="optional"
+    versionRange="[15,)"
+    ordering="NONE"
+    side="BOTH"

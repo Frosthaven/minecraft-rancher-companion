@@ -30,9 +30,14 @@ public final class Roster extends SavedData {
         public GlobalPos home;
         /** CARRIED: the code the carrier holding it carries (DrekkiData.CARRY_TOKEN); null before 0.3.2's carries */
         public UUID carry;
+        /** the hatchery it last lived at, kept while it is out: its kin are the drekki of the same one (spec, Mood: Kinship) */
+        public GlobalPos base;
+        /** Phoenix Heart: 0 none, EGG_OWED (its egg waits for the owner), EGG_GIVEN (the egg is out; a hatchery brings it back) */
+        public int phoenix;
+        public static final int EGG_OWED = 1, EGG_GIVEN = 2;
 
         Entry(UUID id, UUID owner, CompoundTag save, Where where, GlobalPos home) {
-            this.id = id; this.owner = owner; this.save = save; this.where = where; this.home = home;
+            this.id = id; this.owner = owner; this.save = save; this.where = where; this.home = home; this.base = home;
         }
 
         public boolean livesAt(GlobalPos pos) { return where == Where.HOME && pos.equals(home); }
@@ -41,6 +46,16 @@ public final class Roster extends SavedData {
     private final Map<UUID, Entry> byId = new LinkedHashMap<>();
     /** each owner's checked-out drekki (OUT or CARRIED; one at most), kept in step by add, remove and move */
     private final Map<UUID, Entry> outByOwner = new java.util.HashMap<>();
+
+    /** how many drekki have each hatchery as their base, kept in step with every change of base (kinship) */
+    private final Map<GlobalPos, Integer> bases = new java.util.HashMap<>();
+
+    private void base(Entry e, GlobalPos to) {
+        if (java.util.Objects.equals(e.base, to)) return;
+        if (e.base != null) bases.merge(e.base, -1, (a, b) -> a + b <= 0 ? null : a + b);
+        e.base = to;
+        if (to != null) bases.merge(to, 1, Integer::sum);
+    }
 
     private void index(Entry e) {
         if (e.where == Where.OUT || e.where == Where.CARRIED) outByOwner.put(e.owner, e);
@@ -69,7 +84,9 @@ public final class Roster extends SavedData {
     public Entry out(UUID owner) { return outByOwner.get(owner); }
 
     public Entry add(UUID id, UUID owner, CompoundTag save, Where where, GlobalPos home) {
-        Entry e = new Entry(id, owner, save, where, home);
+        Entry e = new Entry(id, owner, save, where, null);
+        e.home = home;
+        base(e, home);
         byId.put(id, e);
         index(e);
         setDirty();
@@ -78,16 +95,27 @@ public final class Roster extends SavedData {
 
     public void remove(UUID id) {
         Entry e = byId.remove(id);
-        if (e != null) { outByOwner.remove(e.owner, e); setDirty(); }
+        if (e != null) { outByOwner.remove(e.owner, e); base(e, null); setDirty(); }
     }
 
-    public void move(Entry e, Where where, GlobalPos home) { e.where = where; e.home = home; if (where != Where.CARRIED) e.carry = null; index(e); setDirty(); }
+    public void move(Entry e, Where where, GlobalPos home) {
+        e.where = where; e.home = home;
+        if (home != null) base(e, home);
+        if (where != Where.CARRIED) e.carry = null;
+        index(e); setDirty();
+    }
+
+    /** the other drekki whose base is this one's hatchery, checked out or not */
+    public int kin(Entry e) { return e.base == null ? 0 : Math.max(0, bases.getOrDefault(e.base, 0) - 1); }
+
+    /** sets a drekki's base hatchery (tests, and moves that keep the record) */
+    public void setBase(Entry e, GlobalPos to) { base(e, to); setDirty(); }
 
     public void snapshot(Entry e, CompoundTag save) { e.save = save; setDirty(); }
 
     /** a broken hatchery: its drekki go to No hatchery, kept as data */
     public void orphan(GlobalPos home) {
-        for (Entry e : byId.values()) if (e.livesAt(home)) { e.where = Where.NONE; e.home = null; setDirty(); }
+        for (Entry e : byId.values()) { if (e.livesAt(home)) { e.where = Where.NONE; e.home = null; setDirty(); } if (home.equals(e.base)) base(e, null); }
     }
 
     private static Roster load(CompoundTag tag, HolderLookup.Provider reg) {
@@ -98,6 +126,10 @@ public final class Roster extends SavedData {
             Where where = Where.valueOf(c.getString("where"));
             Entry e = new Entry(c.getUUID("id"), c.getUUID("owner"), c.getCompound("save"), where, home);
             if (c.hasUUID("carry")) e.carry = c.getUUID("carry");
+            e.phoenix = c.getInt("phoenix");
+            GlobalPos base = c.contains("base") ? GlobalPos.CODEC.parse(NbtOps.INSTANCE, c.get("base")).result().orElse(home) : home;
+            e.base = null;
+            r.base(e, base);
             r.byId.put(e.id, e);
             r.index(e);
         }
@@ -111,7 +143,9 @@ public final class Roster extends SavedData {
             CompoundTag c = new CompoundTag();
             c.putUUID("id", e.id); c.putUUID("owner", e.owner); c.put("save", e.save); c.putString("where", e.where.name());
             if (e.carry != null) c.putUUID("carry", e.carry);
+            if (e.phoenix != 0) c.putInt("phoenix", e.phoenix);
             if (e.home != null) GlobalPos.CODEC.encodeStart(NbtOps.INSTANCE, e.home).result().ifPresent(h -> c.put("home", h));
+            if (e.base != null) GlobalPos.CODEC.encodeStart(NbtOps.INSTANCE, e.base).result().ifPresent(h -> c.put("base", h));
             list.add(c);
         }
         tag.put("drekki", list);

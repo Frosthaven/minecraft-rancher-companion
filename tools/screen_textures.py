@@ -5,7 +5,7 @@ a body of dithered material, sunk wells framed by a bevel, and tab-shaped button
 leather, the body dark oak, the frame worn steel, the wells dark leather, and the text thread.
 
 Run: uv run --with pillow python -I tools/screen_textures.py
-Writes assets/rancher_companion/textures/gui/{hatchery,trough}.png (256x256 sheets). The Java screens use the same
+Writes assets/rancher_companion/textures/gui/{hatchery,trough,drekki,drekki_pack,drekki_sprites}.png (256x256 sheets). The Java screens use the same
 numbers (HatcheryScreen, TroughScreen): change both together.
 """
 from pathlib import Path
@@ -192,31 +192,93 @@ def trough():
     s.save("trough")
 
 
-# ---- the drekki: 176 x 196, the hat slot, a model well, a details well, the player's inventory below ----
-def drekki():
+# ---- the drekki (spec, Drekki screen): the hat slot, the model, the details or traits, the stance at the foot of the
+# details (stage 2 on), the pack (stage 2 on: one row of 9), the player's inventory below, centered. Two sheets: drekki
+# (no pack, 220 x 220) and drekki_pack (220 x 244); the tabs, buttons and icons on drekki_sprites. The top is wider than
+# a container (Minecraft's font needs the room for trait names); the pack and the inventory keep vanilla's 176, centered.
+# DrekkiMenu and DrekkiScreen use the same numbers.
+STANCE_ICONS = {  # the design page's STANCE_ICON grids, 8 x 8
+    "aggressive": (['......SS', '.....SWS', '....SWS.', '.B.SWS..', '..BWS...', '..HB....', '.H..B...', 'H.......'],
+                   {'S': '8d939e', 'W': 'e0e4ea', 'B': '7a4a2a', 'H': '523b2a'}),
+    "reactive": (['.KKKKKK.', 'KSSSSSSK', 'KSRRRRSK', 'KSRSSRSK', 'KSRSSRSK', '.KSRRSK.', '..KSSK..', '...KK...'],
+                 {'K': '2b2e35', 'S': '8d939e', 'R': 'b8352b'}),
+    "passive": (['P.......', 'PWWWW...', 'PWWWWW..', 'PWWWW...', 'P.......', 'P.......', 'P.......', 'P.......'],
+                {'P': '7a4a2a', 'W': 'ece6d8'}),
+}
+BUFF_ICONS = {  # 9 x 9: Recently pet (a heart with a hand's warmth), Kinship (two drekki heads side by side)
+    "pet": (['.RR...RR.', 'RPPR.RPPR', 'RPWPRPPPR', 'RPPPPPPPR', '.RPPPPPR.', '..RPPPR..', '...RPR...', '....R....', '.........'],
+            {'R': '6e1e2e', 'P': 'e0607a', 'W': 'ffd0d8'}),
+    "kin": (['.........', '.HH...HH.', 'HAAH.HAAH', 'HAEH.HAEH', 'HAAAHAAAH', '.HAAHAAH.', '..HH.HH..', '.........', '.........'],
+            {'H': '2b2e35', 'A': 'c9a45a', 'E': '7ff0dc'}),
+}
+# drekki_sprites (64 x 80):
+TAB_W, TAB_H, SX = 40, 12, 0                    # tabs: normal y 0, selected y 12, hover y 24
+STANCE_BTN, STANCE_Y = 14, 40                   # stance buttons at y 40: normal, selected, hover; icons 8x8 at y 56
+ICON_Y, BUFF_Y = 56, 66                         # buff icons 9x9 at y 66: Recently pet, Kinship
+
+
+def pixels(s, x0, y0, rows, pal):
+    for y, row in enumerate(rows):
+        for x, ch in enumerate(row):
+            if ch in pal:
+                s.put(x0 + x, y0 + y, pal[ch])
+
+
+def drekki_sprites(s):
+    s.button(SX, 0, TAB_W, TAB_H, LEATHER[1], LEATHER[3], LEATHER[0])
+    s.button(SX, TAB_H, TAB_W, TAB_H, LEATHER[2], "a87ab0", "2e1a33")
+    s.button(SX, TAB_H * 2, TAB_W, TAB_H, LEATHER[2], LEATHER[3], LEATHER[1])
+    for i, (face, top, side) in enumerate([(LEATHER[1], LEATHER[3], LEATHER[0]), (LEATHER[2], "a87ab0", "2e1a33"), (LEATHER[2], LEATHER[3], LEATHER[1])]):
+        s.button(SX + i * STANCE_BTN, STANCE_Y, STANCE_BTN, STANCE_BTN, face, top, side)
+    for i, (rows, pal) in enumerate(STANCE_ICONS.values()):
+        pixels(s, SX + i * 8, ICON_Y, rows, pal)
+    for i, (rows, pal) in enumerate(BUFF_ICONS.values()):
+        pixels(s, SX + i * 10, BUFF_Y, rows, pal)
+
+
+def drekki(pack):
+    """two parts, as Sophisticated Backpacks steps its screen: the drekki's part on top, 220 wide (hat, model, info, and
+    the pack row from stage 2), and the player's inventory below it, vanilla's 176 wide, centered; clear beside it"""
     s = Sheet()
-    W, H = 176, 196
-    s.wood(0, 0, W, H)
+    W, IX = 220, 22                       # IX: where the 176-wide inventory part starts
+    top = 152 if pack else 128            # the top part's height; the inventory part hangs from its bottom edge
+    H = top + 92
+    s.wood(0, 0, W, top)
     s.leather(3, 3, W - 6, 14)
-    s.frame(0, 0, W, H)
+    s.frame(0, 0, W, top)
     for x in range(3, W - 3):
         s.put(x, 17, STEEL[0]); s.put(x, 18, STEEL[2])
     s.slot(7, 26)                         # the hat
-    s.well(28, 22, 60, 76)                # the model
-    s.well(92, 22, 78, 76)                # the details
-    s.rect(3, 104, W - 6, 89, STEEL[1])
-    for x in range(3, W - 3):
-        s.put(x, 104, STEEL[0]); s.put(x, 105, STEEL[2])
+    s.well(28, 22, 52, 100)               # the model
+    s.well(83, 22, 131, 100)              # the details or traits, the stance at its foot
+    if pack:
+        for c in range(9):
+            s.slot(IX + 7 + c * 18, 128)
+    # the inventory part: its own steel frame, joined to the top part's bottom edge (the frames overlap there)
+    py = top - 3
+    s.rect(IX, py, 176, H - py, STEEL[1])
+    s.frame(IX, py, 176, H - py, rivets=False)
+    for x in range(IX + 3, IX + 173):     # the join: one steel rule across, no frame between the parts
+        for y in range(py, py + 3):
+            s.put(x, y, STEEL[1])
+        s.put(x, py, STEEL[0]); s.put(x, py + 1, STEEL[2])
     for r in range(3):
         for c in range(9):
-            s.slot(7 + c * 18, 113 + r * 18)
+            s.slot(IX + 7 + c * 18, top + 8 + r * 18)
     for c in range(9):
-        s.slot(7 + c * 18, 171)
-    sprites(s)
-    s.save("drekki")
+        s.slot(IX + 7 + c * 18, top + 66)
+    s.save("drekki_pack" if pack else "drekki")
+
+
+def drekki_sheet_sprites():
+    s = Sheet()
+    drekki_sprites(s)
+    s.save("drekki_sprites")
 
 
 if __name__ == "__main__":
     hatchery()
     trough()
-    drekki()
+    drekki(False)
+    drekki(True)
+    drekki_sheet_sprites()

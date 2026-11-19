@@ -1,0 +1,59 @@
+{
+  "values": [
+    "minecraft:desert",
+    "minecraft:savanna",
+    "minecraft:savanna_plateau",
+    "minecraft:windswept_savanna",
+    "minecraft:badlands",
+    "minecraft:eroded_badlands",
+    "minecraft:wooded_badlands",
+    {
+      "id": "biomesoplenty:dryland",
+      "required": false
+    },
+    {
+      "id": "biomesoplenty:lush_desert",
+      "required": false
+    },
+    {
+      "id": "biomesoplenty:lush_savanna",
+      "required": false
+    },
+    {
+      "id": "biomesoplenty:scrubland",
+      "required": false
+    },
+    {
+      "id": "biomesoplenty:volcanic_plains",
+      "required": false
+    },
+    {
+      "id": "biomesoplenty:wasteland",
+      "required": false
+    },
+    {
+      "id": "biomesoplenty:wasteland_steppe",
+      "required": false
+    },
+    {
+      "id": "ad_astra:martian_canyon_creek",
+      "required": false
+    },
+    {
+      "id": "ad_astra:martian_polar_caps",
+      "required": false
+    },
+    {
+      "id": "ad_astra:martian_wastelands",
+      "required": false
+    },
+    {
+      "id": "creatingspace:mars_cave",
+      "required": false
+    },
+    {
+      "id": "creatingspace:mars_plains",
+      "required": false
+    }
+  ]
+}

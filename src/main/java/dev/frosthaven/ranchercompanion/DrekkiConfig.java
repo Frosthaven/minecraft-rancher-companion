@@ -14,6 +14,7 @@ public final class DrekkiConfig {
     public static final ModConfigSpec SPEC;
     public static final ModConfigSpec.ConfigValue<List<? extends String>> NEVER, RAW, COOKED, SEED, ROOT;
     public static final ModConfigSpec.BooleanValue CROPS_BY_SEEDS;
+    public static final ModConfigSpec.DoubleValue STAGE_DAYS, HUNGER_PER_DAY, TRAVEL_HUNGER_PER_DAY;
 
     /** the spec's lists (design page, Diet tab), every vanilla food, crop and seed by its rules (2026-11-16 review), then
         the convention tags for raw and cooked meat and fish, so modded meat feeds too; the plant tags are left out, as they
@@ -48,6 +49,15 @@ public final class DrekkiConfig {
         CROPS_BY_SEEDS = b.comment("After the lists: every item in a c:crops/<name> tag is Seed food when a c:seeds/<name> tag",
             "has items (it grows from a separate seed), else Root (the crop itself is planted). Covers modded crops that",
             "follow the convention tags; anything the lists already named keeps its diet.").define("crops_by_seed_tags", true);
+        b.pop();
+        b.comment("Growth (spec, Growth release): travel time a drekki needs per stage, in game days (24000 ticks).",
+            "Travel counts while it is checked out and out of its carrier.").push("growth");
+        STAGE_DAYS = b.defineInRange("days_per_stage", 7.0, 0.01, 1000.0);
+        b.pop();
+        b.comment("Hunger (spec, Hunger): shanks lost per game day, out of ten. It drains everywhere (at a hatchery, in a carrier,",
+            "while its owner is offline), on the world's game time; travelling drains at its own rate.").push("hunger");
+        HUNGER_PER_DAY = b.defineInRange("per_day", 1.0, 0.0, 100.0);
+        TRAVEL_HUNGER_PER_DAY = b.defineInRange("travel_per_day", 2.0, 0.0, 100.0);
         b.pop();
         SPEC = b.build();
     }

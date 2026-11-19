@@ -1,0 +1,27 @@
+{
+  "values": [
+    "minecraft:river",
+    "minecraft:beach",
+    "minecraft:stony_shore",
+    {
+      "id": "biomesoplenty:dune_beach",
+      "required": false
+    },
+    {
+      "id": "biomesoplenty:gravel_beach",
+      "required": false
+    },
+    {
+      "id": "climaterivers:cold_river",
+      "required": false
+    },
+    {
+      "id": "climaterivers:lukewarm_river",
+      "required": false
+    },
+    {
+      "id": "climaterivers:warm_river",
+      "required": false
+    }
+  ]
+}

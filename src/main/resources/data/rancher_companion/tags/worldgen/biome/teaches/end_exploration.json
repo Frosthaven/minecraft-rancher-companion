@@ -1,0 +1,40 @@
+{
+  "values": [
+    "minecraft:end_highlands",
+    "minecraft:end_midlands",
+    "minecraft:end_barrens",
+    "minecraft:small_end_islands",
+    {
+      "id": "biomesoplenty:end_corruption",
+      "required": false
+    },
+    {
+      "id": "biomesoplenty:end_reef",
+      "required": false
+    },
+    {
+      "id": "biomesoplenty:end_wilds",
+      "required": false
+    },
+    {
+      "id": "ad_astra:lunar_wastelands",
+      "required": false
+    },
+    {
+      "id": "ad_astra:orbit",
+      "required": false
+    },
+    {
+      "id": "creatingspace:moon_cave",
+      "required": false
+    },
+    {
+      "id": "creatingspace:moon_plains",
+      "required": false
+    },
+    {
+      "id": "creatingspace:space",
+      "required": false
+    }
+  ]
+}

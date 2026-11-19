@@ -26,14 +26,42 @@ public final class DrekkiRenderer extends MobRenderer<DrekkiEntity, DrekkiModel>
     public void render(DrekkiEntity e, float yaw, float partial, PoseStack ps, MultiBufferSource buf, int light) {
         model = DrekkiModels.get(e);
         shadowRadius = Dims.of(e.stage()).shadow;
+        boolean bob = e.ghost();
+        if (bob) { ps.pushPose(); ps.translate(0, 0.12 + Math.sin((e.tickCount + partial) / 20.0 * 1.6) * 0.08, 0); }  /* a ghost floats with a slow bob */
         super.render(e, yaw, partial, ps, buf, light);
+        if (bob) ps.popPose();
+        if (e.live() && !e.isInvisible()) moodIcon(e, partial, ps, buf, light);
+    }
+
+    private static final ResourceLocation UNEASY = ResourceLocation.fromNamespaceAndPath(dev.frosthaven.ranchercompanion.RancherCompanion.ID, "textures/entity/mood/uneasy.png"),
+        MISERABLE = ResourceLocation.fromNamespaceAndPath(dev.frosthaven.ranchercompanion.RancherCompanion.ID, "textures/entity/mood/miserable.png");
+
+    /** Uneasy or Miserable: a camera-facing icon over its head, bobbing a little, as MineColonies floats its status
+     *  icons (spec, Mood: Cue; the page's moodSprite). Nothing while Content or better */
+    private void moodIcon(DrekkiEntity e, float partial, PoseStack ps, MultiBufferSource buf, int light) {
+        var band = e.band();
+        if (band != dev.frosthaven.ranchercompanion.life.Life.Band.UNEASY && band != dev.frosthaven.ranchercompanion.life.Life.Band.MISERABLE) return;
+        ps.pushPose();
+        ps.translate(0, e.getBbHeight() + 0.5 + Math.sin((e.tickCount + partial) / 20.0 * 2) * 0.04, 0);
+        ps.mulPose(entityRenderDispatcher.cameraOrientation());
+        ps.scale(0.7f, 0.7f, 0.7f);
+        VertexConsumer vc = buf.getBuffer(RenderType.entityCutoutNoCull(band == dev.frosthaven.ranchercompanion.life.Life.Band.UNEASY ? UNEASY : MISERABLE));
+        var pose = ps.last();
+        float[][] q = {{-0.5f, -0.5f, 0, 1}, {0.5f, -0.5f, 1, 1}, {0.5f, 0.5f, 1, 0}, {-0.5f, 0.5f, 0, 0}};
+        for (float[] v : q) vc.addVertex(pose, v[0], v[1], 0).setColor(255, 255, 255, 255).setUv(v[2], v[3])
+            .setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT).setNormal(pose, 0, 1, 0);
+        ps.popPose();
     }
 
     /** a see-through line (Bakeneko) draws translucent; its texture carries the alpha, so barding stays solid */
     @Override
     protected RenderType getRenderType(DrekkiEntity e, boolean visible, boolean translucent, boolean glowing) {
-        return e.lineage().seeThrough() ? RenderType.entityTranslucent(getTextureLocation(e)) : super.getRenderType(e, visible, translucent, glowing);
+        return e.lineage().seeThrough() || e.ghost() ? RenderType.entityTranslucent(getTextureLocation(e)) : super.getRenderType(e, visible, translucent, glowing);
     }
+
+    /** a ghost coming back to life shakes, as a curing zombie villager does */
+    @Override
+    protected boolean isShaking(DrekkiEntity e) { return super.isShaking(e) || e.reviving(); }
 
     @Override
     public ResourceLocation getTextureLocation(DrekkiEntity e) {

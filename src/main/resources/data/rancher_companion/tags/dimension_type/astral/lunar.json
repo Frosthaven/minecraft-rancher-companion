@@ -1,0 +1,12 @@
+{
+  "values": [
+    {
+      "id": "ad_astra:moon",
+      "required": false
+    },
+    {
+      "id": "creatingspace:the_moon",
+      "required": false
+    }
+  ]
+}

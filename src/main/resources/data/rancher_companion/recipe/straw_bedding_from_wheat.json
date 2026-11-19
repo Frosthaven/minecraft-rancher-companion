@@ -1,0 +1,25 @@
+{
+ "neoforge:conditions": [
+  {
+   "type": "neoforge:not",
+   "value": {
+    "type": "neoforge:mod_loaded",
+    "modid": "farmersdelight"
+   }
+  }
+ ],
+ "type": "minecraft:crafting_shaped",
+ "category": "building",
+ "pattern": [
+  "WW"
+ ],
+ "key": {
+  "W": {
+   "item": "minecraft:wheat"
+  }
+ },
+ "result": {
+  "id": "rancher_companion:straw_bedding",
+  "count": 3
+ }
+}

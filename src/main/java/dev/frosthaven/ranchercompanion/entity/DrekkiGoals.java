@@ -30,6 +30,7 @@ final class DrekkiGoals {
         public boolean canUse() {
             Player p = d.ownerPlayer();
             if (p == null || !d.isOut() || p.isSpectator() || d.distanceToSqr(p) < 4 * 4) return false;
+            if (d.eating && d.distanceToSqr(p) < 12 * 12) return false;  /* at a trough near its still owner */
             owner = p;
             return true;
         }

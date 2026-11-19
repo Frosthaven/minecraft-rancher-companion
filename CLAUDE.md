@@ -55,6 +55,10 @@ hatching, the roster, check in and out, the small carrier, petting, names, the t
 - `client/SelfTest`: with `-Drancher_companion.selftest=true` the client plays the pup release's whole flow in the
   world it joins (single player, or a server where the player is an operator), through the game's own client
   interactions, and logs `[selftest] PASS|FAIL <step>` with a screenshot per step, then closes the game.
+  Add `-Drancher_companion.selftest.traits=true` for `client/SelfTestTraits` instead: after the hatch and check out
+  it screenshots the Ponder stable scene, then on a pad 4000 blocks east (away from claims and colonies) teaches every
+  activity trait from the real activity (kills, falls, drowning, fire, powder snow, milk, fishing, trades, XP, a
+  totem, a worn-out tool) and checks each ability as a player meets it. GameTests fake state; this is the real game.
 - `compat/jei/DrekkiJei` (barding dye recipes for JEI) and `compat/ponder/DrekkiPonder` (build guides; schematics and
   lang from `uv run --with nbtlib python -I tools/ponder_scenes.py`): optional, compile only against JEI's and
   Ponder's maven artifacts, registered only when the mod is loaded.

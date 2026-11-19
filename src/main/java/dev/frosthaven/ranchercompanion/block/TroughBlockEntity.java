@@ -14,16 +14,22 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
-/** A trough's food: up to four stacks, sent to clients so the renderer can lay them on the straw. */
+/** A trough's food: up to four stacks, sent to clients so the renderer can lay them on the straw; and its owner, whose
+ *  drekki alone eat from it (spec, Feeding at troughs). */
 public class TroughBlockEntity extends BlockEntity {
     public static final int SLOTS = 4;
     private final NonNullList<ItemStack> items = NonNullList.withSize(SLOTS, ItemStack.EMPTY);
+    private java.util.UUID owner;
 
     public TroughBlockEntity(BlockPos pos, BlockState state) {
         super(DrekkiBlocks.TROUGH_ENTITY.get(), pos, state);
     }
 
     public NonNullList<ItemStack> items() { return items; }
+
+    /** who placed it; a trough placed before 0.4.0 has none until a player uses it */
+    public java.util.UUID owner() { return owner; }
+    public void claim(java.util.UUID player) { if (owner == null) { owner = player; setChanged(); } }
 
     /** the food as a container, for the trough's screen: every change syncs to clients */
     public net.minecraft.world.Container container() {
@@ -79,6 +85,7 @@ public class TroughBlockEntity extends BlockEntity {
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider reg) {
         super.saveAdditional(tag, reg);
         ContainerHelper.saveAllItems(tag, items, reg);
+        if (owner != null) tag.putUUID("Owner", owner);
     }
 
     @Override
@@ -86,6 +93,7 @@ public class TroughBlockEntity extends BlockEntity {
         super.loadAdditional(tag, reg);
         items.clear();
         ContainerHelper.loadAllItems(tag, items, reg);
+        owner = tag.hasUUID("Owner") ? tag.getUUID("Owner") : null;
     }
 
     @Override

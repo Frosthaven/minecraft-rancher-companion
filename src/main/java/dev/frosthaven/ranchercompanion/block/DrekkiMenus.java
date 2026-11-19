@@ -19,7 +19,8 @@ public final class DrekkiMenus {
 
     public static final DeferredHolder<MenuType<?>, MenuType<dev.frosthaven.ranchercompanion.entity.DrekkiMenu>> DREKKI = MENUS.register("drekki",
         () -> IMenuTypeExtension.create((id, inv, buf) -> new dev.frosthaven.ranchercompanion.entity.DrekkiMenu(id, inv,
-            inv.player.level().getEntity(buf.readVarInt()) instanceof dev.frosthaven.ranchercompanion.entity.DrekkiEntity d ? d : null)));
+            inv.player.level().getEntity(buf.readVarInt()) instanceof dev.frosthaven.ranchercompanion.entity.DrekkiEntity d ? d : null,
+            buf.isReadable() && buf.readBoolean())));
 
     public static void register(IEventBus modBus) { MENUS.register(modBus); }
 }

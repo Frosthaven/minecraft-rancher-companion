@@ -1,0 +1,23 @@
+{
+  "values": [
+    "minecraft:jungle",
+    "minecraft:sparse_jungle",
+    "minecraft:bamboo_jungle",
+    {
+      "id": "biomesoplenty:fungal_jungle",
+      "required": false
+    },
+    {
+      "id": "biomesoplenty:rainforest",
+      "required": false
+    },
+    {
+      "id": "biomesoplenty:rocky_rainforest",
+      "required": false
+    },
+    {
+      "id": "biomesoplenty:tropics",
+      "required": false
+    }
+  ]
+}

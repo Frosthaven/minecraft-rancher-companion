@@ -90,34 +90,38 @@ public final class DrekkiPonder implements PonderPlugin {
         scene.configureBasePlate(0, 0, 11);
         scene.showBasePlate();
         scene.idle(10);
-        BlockPos hatch = util.grid().at(5, 1, 5);
+        /* tools/ponder_scenes.py stable(): the design page's decor booth, open toward the viewer (front z 3, fence side x 3) */
+        BlockPos hatch = util.grid().at(6, 1, 6);
         scene.world().showSection(util.select().position(hatch), Direction.DOWN);
         scene.idle(15);
         scene.overlay().showText(70).text("The Drekki Hatchery is where an egg hatches, and where your drekki live when they are not with you")
             .pointAt(util.vector().topOf(hatch)).placeNearTarget().attachKeyFrame();
         scene.idle(80);
 
-        Selection posts = util.select().fromTo(4, 1, 4, 4, 4, 4).add(util.select().fromTo(6, 1, 4, 6, 4, 4))
-            .add(util.select().fromTo(4, 1, 6, 4, 4, 6)).add(util.select().fromTo(6, 1, 6, 6, 4, 6));
-        scene.world().showSection(posts, Direction.DOWN);
+        Selection frame = util.select().fromTo(3, 1, 3, 7, 3, 7).substract(util.select().fromTo(4, 1, 4, 6, 3, 6));
+        scene.world().showSection(frame, Direction.DOWN);
         scene.idle(10);
-        Selection roof = util.select().fromTo(4, 5, 4, 6, 5, 6);
+        Selection roof = util.select().fromTo(3, 4, 3, 7, 4, 7);
         scene.world().showSection(roof, Direction.DOWN);
         scene.idle(15);
-        scene.overlay().showOutlineWithText(roof, 90).colored(PonderPalette.GREEN)
+        scene.overlay().showOutlineWithText(util.select().fromTo(5, 4, 5, 7, 4, 7), 90).colored(PonderPalette.GREEN)
             .text("An egg hatches only under a roof: every block of a 3x3 over the hatchery covered, 3 to 10 blocks up").placeNearTarget().attachKeyFrame();
         scene.idle(100);
-        scene.overlay().showOutlineWithText(util.select().fromTo(5, 2, 5, 5, 3, 5), 70).colored(PonderPalette.WHITE)
+        scene.overlay().showOutlineWithText(util.select().fromTo(6, 2, 6, 6, 3, 6), 70).colored(PonderPalette.WHITE)
             .text("The two blocks right above the hatchery must stay clear").placeNearTarget();
         scene.idle(80);
         scene.overlay().showText(70).text("The 3x3 need not be centered: a hatchery in a corner of the roof works too")
-            .pointAt(util.vector().topOf(5, 5, 5)).placeNearTarget();
+            .pointAt(util.vector().topOf(6, 4, 6)).placeNearTarget();
         scene.idle(80);
-        BlockPos lamp = util.grid().at(3, 1, 3);
+        BlockPos lamp = util.grid().at(5, 3, 4);
         scene.world().showSection(util.select().position(lamp), Direction.DOWN);
         scene.idle(10);
         scene.overlay().showText(60).text("It also needs some light around it").pointAt(util.vector().centerOf(lamp)).placeNearTarget();
         scene.idle(70);
+        /* the roof (and the lantern under it) lifts away so the inside shows from Ponder's camera; it comes back at the end */
+        Selection lid = util.select().fromTo(3, 4, 3, 7, 4, 7).add(util.select().position(lamp));
+        scene.world().hideSection(lid, Direction.UP);
+        scene.idle(20);
 
         scene.overlay().showControls(util.vector().topOf(hatch), Pointing.DOWN, 50).rightClick()
             .withItem(new ItemStack(dev.frosthaven.ranchercompanion.item.DrekkiItems.INTRIGUING_EGG.get()));
@@ -134,30 +138,33 @@ public final class DrekkiPonder implements PonderPlugin {
         scene.idle(90);
         scene.world().modifyBlockEntityNBT(util.select().position(hatch), HatcheryBlockEntity.class, nbt -> nbt.remove("Egg"));
         scene.effects().emitParticles(util.vector().topOf(hatch), scene.effects().simpleParticleEmitter(net.minecraft.core.particles.ParticleTypes.POOF, util.vector().of(0, 0.05, 0)), 6, 2);
-        pup(scene, 5.5, 1, 6.6, 180, 1, 4);
+        pup(scene, 5.5, 1, 4.6, 180, 1, 4);
         scene.idle(20);
         scene.overlay().showText(70).text("The pup appears right next to the hatchery")
-            .pointAt(util.vector().of(5.5, 1.3, 6.6)).placeNearTarget();
+            .pointAt(util.vector().of(5.5, 1.3, 4.6)).placeNearTarget();
         scene.idle(80);
 
-        AABB around = new AABB(2, 1, 2, 9, 1.1, 9);
-        scene.overlay().chaseBoundingBoxOutline(PonderPalette.GREEN, "pen", around, 90);
+        /* each anchor's own 3-block square, drawn on its own and kept while the next joins: the area is their union,
+           so an existing anchor's square never grows (the plate's edge clips a square) */
+        scene.overlay().chaseBoundingBoxOutline(PonderPalette.GREEN, "pen", new AABB(3, 1, 3, 10, 1.1, 10), 330);
         scene.overlay().showText(90).text("Drekki that live here wander within 3 blocks of an anchor. The hatchery is the first anchor")
-            .pointAt(util.vector().of(8.5, 1, 5.5)).placeNearTarget().attachKeyFrame();
+            .pointAt(util.vector().of(9.9, 1, 8.5)).placeNearTarget().attachKeyFrame();
         scene.idle(100);
-        Selection bedding = util.select().fromTo(5, 1, 8, 6, 1, 8);
-        scene.world().showSection(bedding, Direction.DOWN);
+        Selection inside = util.select().fromTo(4, 1, 4, 6, 1, 5).add(util.select().position(5, 1, 6)).add(util.select().position(4, 1, 6));
+        scene.world().showSection(inside, Direction.DOWN);
         scene.idle(10);
-        scene.overlay().chaseBoundingBoxOutline(PonderPalette.GREEN, "pen", new AABB(2, 1, 2, 10, 1.1, 11), 90);
+        scene.overlay().chaseBoundingBoxOutline(PonderPalette.GREEN, "bed", new AABB(1, 1, 1, 10, 1.1, 10), 220);
         scene.overlay().showText(90).text("Straw Bedding is an anchor too: the area grows 3 blocks around it. Drekki like to rest on it, and sleep there at night")
-            .pointAt(util.vector().topOf(5, 0, 8)).placeNearTarget();
+            .pointAt(util.vector().topOf(5, 0, 4)).placeNearTarget();
         scene.idle(100);
-        Selection path = util.select().fromTo(7, 0, 9, 10, 0, 9);
-        scene.world().modifyBlocks(path, s -> net.minecraft.world.level.block.Blocks.DIRT_PATH.defaultBlockState(), false);
-        scene.overlay().chaseBoundingBoxOutline(PonderPalette.GREEN, "pen", new AABB(0, 1, 2, 11, 1.1, 11), 100);
+        Selection path = util.select().fromTo(0, 0, 1, 4, 0, 1).add(util.select().fromTo(5, 0, 0, 5, 0, 2));
+        scene.world().modifyBlocks(path, st -> net.minecraft.world.level.block.Blocks.DIRT_PATH.defaultBlockState(), false);
+        scene.overlay().chaseBoundingBoxOutline(PonderPalette.GREEN, "path", new AABB(0, 1, 0, 9, 1.1, 5), 110);
         scene.overlay().showText(100).text("So is a dirt path. Anchors chain: from the bedding a drekki may follow the path, 3 blocks either side, up to 25 blocks from the hatchery")
-            .pointAt(util.vector().topOf(9, 0, 9)).placeNearTarget().attachKeyFrame();
+            .pointAt(util.vector().topOf(2, 0, 1)).placeNearTarget().attachKeyFrame();
         scene.idle(110);
+        scene.world().showSection(util.select().fromTo(3, 4, 3, 7, 4, 7).add(util.select().position(lamp)), Direction.DOWN);
+        scene.idle(15);
         scene.overlay().showText(80).text("Up to 20 drekki live at one hatchery. Use its screen to check one out, check one in, or release one")
             .pointAt(util.vector().topOf(hatch)).placeNearTarget().attachKeyFrame();
         scene.idle(90);
@@ -230,9 +237,9 @@ public final class DrekkiPonder implements PonderPlugin {
         scene.idle(60);
         scene.overlay().showText(55).text("Root: roots, berries, and crops planted as themselves").pointAt(util.vector().topOf(7, 1, 2)).placeNearTarget();
         scene.idle(60);
-        scene.overlay().showText(90).text("A pup has no diet yet: what it eats most decides it. Fill the troughs nearest its hatchery with the diet you want")
+        scene.overlay().showText(110).text("A pup has no diet yet: what it eats most decides it. It eats from its troughs at random, so to steer it, give it troughs of only the diet you want")
             .pointAt(util.vector().topOf(1, 1, 2)).placeNearTarget().attachKeyFrame();
-        scene.idle(100);
+        scene.idle(120);
         scene.overlay().showText(70).text("Once it is a fledgling its diet is set, and it eats only from troughs holding that diet")
             .pointAt(util.vector().topOf(5, 1, 2)).placeNearTarget();
         scene.idle(80);
@@ -252,7 +259,7 @@ public final class DrekkiPonder implements PonderPlugin {
             .pointAt(util.vector().of(3.5, 1.4, 2.3)).placeNearTarget().attachKeyFrame();
         scene.idle(100);
         scene.overlay().showOutlineWithText(util.select().fromTo(2, 1, 3, 6, 1, 3), 90).colored(PonderPalette.GREEN)
-            .text("Each trough in a line feeds one drekki at a time, so many can eat at once: a line of 10 feeds 10, as long as each has room to stand")
+            .text("Each trough has a spot in front of it, one drekki at a time, so a line feeds many at once as long as each has room to stand")
             .placeNearTarget();
         scene.idle(100);
         scene.world().showSection(util.select().position(5, 1, 2), Direction.DOWN);
@@ -261,12 +268,16 @@ public final class DrekkiPonder implements PonderPlugin {
             .text("A blocked open side feeds no pup or fledgling there: keep the spot in front clear").placeNearTarget().attachKeyFrame();
         scene.idle(90);
         pup(scene, 4.5, 1, 4.9, 180, 3, 8);
+        pup(scene, 7.6, 1, 3.5, 90, 3, 20);
         scene.idle(15);
-        scene.overlay().showText(90).text("Mature drekki are tall enough to eat from the top, from any side that is not blocked")
+        scene.overlay().showText(100).text("Mature drekki eat over the wall: a spot behind each trough, and one at each end of a line. A lone trough feeds up to four")
             .pointAt(util.vector().of(4.5, 2.6, 4.9)).placeNearTarget().attachKeyFrame();
-        scene.idle(100);
-        scene.overlay().showText(90).text("A meal is one item. After it a drekki waits a moment before it eats again, so the others get a turn")
+        scene.idle(110);
+        scene.overlay().showText(90).text("A meal is one item. Then the drekki steps away and waits a moment, so another drekki gets the spot")
             .pointAt(util.vector().topOf(3, 1, 3)).placeNearTarget();
+        scene.idle(100);
+        scene.overlay().showText(90).text("Drekki eat only from their owner's troughs: the player who placed a trough owns it")
+            .pointAt(util.vector().topOf(2, 1, 3)).placeNearTarget().attachKeyFrame();
         scene.idle(100);
         scene.overlay().showText(90).text("Drekki that live at a hatchery use the troughs inside their wander area, so place troughs along your paths and bedding")
             .pointAt(util.vector().topOf(6, 1, 3)).placeNearTarget();

@@ -1,5 +1,7 @@
 package dev.frosthaven.ranchercompanion.entity;
 
+import dev.frosthaven.ranchercompanion.look.Diet;
+
 import dev.frosthaven.ranchercompanion.DrekkiSounds;
 import dev.frosthaven.ranchercompanion.item.DrekkiItems;
 import dev.frosthaven.ranchercompanion.ranch.Ranch;
@@ -30,7 +32,7 @@ public final class DrekkiInteract {
             if (!d.level().isClientSide) pet(d);
             return InteractionResult.sidedSuccess(d.level().isClientSide);
         }
-        if (stack.is(DrekkiItems.SMALL_CARRIER.get()) && !mine) {
+        if (stack.getItem() instanceof dev.frosthaven.ranchercompanion.item.CarrierItem && !mine) {
             if (!d.level().isClientSide) player.displayClientMessage(Component.translatable("message.rancher_companion.not_yours", Ranch.ownerName(d)), true);
             return InteractionResult.sidedSuccess(d.level().isClientSide);
         }
@@ -46,14 +48,40 @@ public final class DrekkiInteract {
             }
             return InteractionResult.sidedSuccess(d.level().isClientSide);
         }
+        /* a ghost under Weakness takes a golden apple and starts to come back (spec, Ghost drekki) */
+        if (mine && stack.is(Items.GOLDEN_APPLE) && d.ghost()) {
+            if (!d.level().isClientSide && dev.frosthaven.ranchercompanion.life.Vitals.startRevive(d)) stack.consume(1, player);
+            return InteractionResult.sidedSuccess(d.level().isClientSide);
+        }
+        /* hand feeding (spec, Hunger: the player's hand at any time): its owner, with food it eats, while it has any room.
+           (while its shank bar is not full). Food it will not take now says why on the action bar instead of opening the screen */
+        if (mine && hand == InteractionHand.MAIN_HAND && !handFeeds(d, stack) && foodDiet(d, stack) != null) {
+            if (!d.level().isClientSide) player.displayClientMessage(d.food() > dev.frosthaven.ranchercompanion.life.Life.FOOD_MAX - 0.5
+                ? Component.translatable("message.rancher_companion.not_hungry")
+                : Component.translatable("message.rancher_companion.wrong_diet", Diet.of(d.diet()).label), true);
+            return InteractionResult.sidedSuccess(d.level().isClientSide);
+        }
+        if (mine && hand == InteractionHand.MAIN_HAND && handFeeds(d, stack)) {
+            if (!d.level().isClientSide) {
+                dev.frosthaven.ranchercompanion.life.Vitals.eat(d, stack.copyWithCount(1), true);
+                d.act(dev.frosthaven.ranchercompanion.look.Anim.FEED, 30);
+                stack.consume(1, player);
+                Ranch.touch(d);
+            }
+            return InteractionResult.sidedSuccess(d.level().isClientSide);
+        }
         /* the drekki screen (its hat slot and your inventory): with an empty hand or any item that does nothing else to a drekki */
         if (mine && hand == InteractionHand.MAIN_HAND && opensScreen(stack)) {
-            if (player instanceof net.minecraft.server.level.ServerPlayer sp)
-                sp.openMenu(new net.minecraft.world.SimpleMenuProvider((id, inv, p) -> new DrekkiMenu(id, inv, d),
-                    d.hasCustomName() ? d.getCustomName() : Component.literal(d.lineage().name())), buf -> buf.writeVarInt(d.getId()));
+            if (player instanceof net.minecraft.server.level.ServerPlayer sp) openScreen(sp, d, false);
             return InteractionResult.sidedSuccess(d.level().isClientSide);
         }
         return null;
+    }
+
+    /** the drekki screen for its owner; traits: open on the Traits tab (the chat offer) */
+    public static void openScreen(net.minecraft.server.level.ServerPlayer sp, DrekkiEntity d, boolean traits) {
+        sp.openMenu(new net.minecraft.world.SimpleMenuProvider((id, inv, p) -> new DrekkiMenu(id, inv, d, traits),
+            d.hasCustomName() ? d.getCustomName() : Component.literal(d.lineage().name())), buf -> { buf.writeVarInt(d.getId()); buf.writeBoolean(traits); });
     }
 
     /** items with their own use on a drekki keep it: carriers, name tags, leads, spawn eggs (hats are handled above) */
@@ -74,8 +102,21 @@ public final class DrekkiInteract {
         ev.setCancellationResult(InteractionResult.sidedSuccess(d.level().isClientSide));
     }
 
-    /** a happy sound, hearts and a short lean-in */
+    /** food it eats now: its diet's (any diet while open), while its shank bar is not full; the client predicts from the default lists */
+    public static boolean handFeeds(DrekkiEntity d, ItemStack stack) {
+        if (d.food() > dev.frosthaven.ranchercompanion.life.Life.FOOD_MAX - 0.5) return false;  /* the bar is not full: half a shank or more missing */
+        var diet = foodDiet(d, stack);
+        return diet != null && (d.stage() == 1 || diet.ordinal() == d.diet());
+    }
+
+    /** the diet a food belongs to (any diet's), or null for no food */
+    private static Diet foodDiet(DrekkiEntity d, ItemStack stack) {
+        return d.level().isClientSide ? dev.frosthaven.ranchercompanion.FoodDiets.byDefault(stack) : dev.frosthaven.ranchercompanion.FoodDiets.of(stack);
+    }
+
+    /** a happy sound, hearts and a short lean-in; Recently pet starts over each time (spec, Mood) */
     private static void pet(DrekkiEntity d) {
+        dev.frosthaven.ranchercompanion.life.Vitals.pet(d);
         if (d.petTicks() > 0) return;
         d.pet();
         d.level().playSound(null, d.getX(), d.getY(), d.getZ(), DrekkiSounds.CALL.get(), SoundSource.NEUTRAL, 0.6f, 1.5f + d.getRandom().nextFloat() * 0.2f);

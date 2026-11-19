@@ -39,7 +39,10 @@ public class HatcheryBlockEntity extends BlockEntity {
     /** the egg's incubation so far, and the game and day time it was last counted at */
     private long eggBase, eggSince, eggSinceDay;
     private final Map<Integer, Set<Long>> pens = new HashMap<>(), beds = new HashMap<>();
-    private long pensAt = Long.MIN_VALUE;
+    /** when the pens were last walked (pensFresh false: walk now). Not a Long.MIN_VALUE start: game time minus it
+     *  overflows, and the pens then never refreshed after the first walk */
+    private boolean pensFresh;
+    private long pensAt;
 
     public HatcheryBlockEntity(BlockPos pos, BlockState state) {
         super(DrekkiBlocks.HATCHERY_ENTITY.get(), pos, state);
@@ -99,8 +102,30 @@ public class HatcheryBlockEntity extends BlockEntity {
     /** the pen a drekki of this stage may use, refreshed every few seconds (spec, Wandering) */
     public Set<Long> pen(int stage) {
         if (level == null) return Set.of();
-        if (level.getGameTime() - pensAt > PEN_EVERY) { pens.clear(); beds.clear(); pensAt = level.getGameTime(); }
+        if (!pensFresh || level.getGameTime() - pensAt > PEN_EVERY) { pens.clear(); beds.clear(); troughs = null; pensAt = level.getGameTime(); pensFresh = true; }
         return pens.computeIfAbsent(stage, s -> new Ground(level).pen(worldPosition, s));
+    }
+
+    private java.util.List<BlockPos> troughs;
+
+    /** the troughs within the leash (loaded ones), refreshed with the pens; the feeding rules check owner, food and spots */
+    public java.util.List<BlockPos> troughs() {
+        if (level == null) return java.util.List.of();
+        pen(1);
+        if (troughs == null) {
+            java.util.List<BlockPos> out = new java.util.ArrayList<>();
+            int r = dev.frosthaven.ranchercompanion.ranch.Ground.LEASH + 1, up = dev.frosthaven.ranchercompanion.ranch.Ground.PEN_UP + 2;
+            for (int cx = (worldPosition.getX() - r) >> 4; cx <= (worldPosition.getX() + r) >> 4; cx++)
+                for (int cz = (worldPosition.getZ() - r) >> 4; cz <= (worldPosition.getZ() + r) >> 4; cz++) {
+                    var chunk = level.getChunkSource().getChunkNow(cx, cz);
+                    if (chunk == null) continue;
+                    for (BlockPos p : chunk.getBlockEntitiesPos())
+                        if (Math.abs(p.getY() - worldPosition.getY()) <= up && Math.abs(p.getX() - worldPosition.getX()) <= r
+                            && Math.abs(p.getZ() - worldPosition.getZ()) <= r && chunk.getBlockEntity(p) instanceof TroughBlockEntity) out.add(p);
+                }
+            troughs = out;
+        }
+        return troughs;
     }
 
     /** the pen's bedding spots for this stage */

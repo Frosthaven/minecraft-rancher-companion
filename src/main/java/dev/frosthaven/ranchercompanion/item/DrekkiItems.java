@@ -34,8 +34,8 @@ public final class DrekkiItems {
         }
     }
 
-    public static final DeferredItem<CarrierItem> SMALL_CARRIER = add(ITEMS.registerItem("small_drekki_carrier", CarrierItem::new, new Item.Properties().stacksTo(1)));
-    public static final DeferredItem<Item> LARGE_CARRIER = single("large_drekki_carrier");
+    public static final DeferredItem<CarrierItem> SMALL_CARRIER = add(ITEMS.registerItem("small_drekki_carrier", p -> new CarrierItem(p, 1), new Item.Properties().stacksTo(1)));
+    public static final DeferredItem<CarrierItem> LARGE_CARRIER = add(ITEMS.registerItem("large_drekki_carrier", p -> new CarrierItem(p, 2), new Item.Properties().stacksTo(1)));
 
     public static final List<DeferredItem<Item>> CRAFTED_HATS = List.of("straw_hat", "cowboy_hat", "chef_toque", "flower_crown",
         "miner_helmet", "viking_helmet", "party_cone", "bucket_hat", "drinking_hat").stream().map(DrekkiItems::single).toList();
@@ -103,8 +103,9 @@ public final class DrekkiItems {
         DrekkiData.COMPONENTS.register(modBus);
         TABS.register(modBus);
         modBus.addListener(FMLCommonSetupEvent.class, e -> e.enqueueWork(ItemHooks::registerCauldronWash));
-        /* pup release: hats come only from the wandering trader (ItemHooks.ensureHats); the large carrier, the tonics and
+        /* hats come only from the wandering trader (ItemHooks.ensureHats); the tonics and
            the hats have no recipe (their recipe files carry neoforge:false) */
         NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.EntityInteract.class, ItemHooks::addTraderEgg);
+        NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.entity.player.PlayerEvent.ItemCraftedEvent.class, CarrierItem::onCrafted);
     }
 }

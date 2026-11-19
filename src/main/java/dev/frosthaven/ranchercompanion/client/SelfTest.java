@@ -37,6 +37,10 @@ public final class SelfTest {
     private SelfTest() {}
 
     public static final boolean ON = Boolean.getBoolean("rancher_companion.selftest");
+    /** with -Drancher_companion.selftest.traits=true: hatch and check out a pup, then only the trait checks */
+    private static final boolean TRAITS = Boolean.getBoolean("rancher_companion.selftest.traits");
+    /** with -Drancher_companion.selftest.ui=true: hatch and check out a pup, then only the trait screen and chat shots */
+    private static final boolean UI = Boolean.getBoolean("rancher_companion.selftest.ui");
 
     /** patience: for a check that waits on the server (movement, AI), how many more 20-tick tries before it fails */
     private record Step(String name, int delay, Runnable act, BooleanSupplier check, boolean shot, int patience) {}
@@ -48,9 +52,9 @@ public final class SelfTest {
     /** the relog step: the world folder to open again once the title screen shows */
     private static String reopen;
 
-    private static Minecraft mc() { return Minecraft.getInstance(); }
+    static Minecraft mc() { return Minecraft.getInstance(); }
 
-    private static void cmd(String c) {
+    static void cmd(String c) {
         Minecraft mc = mc();
         var server = mc.getSingleplayerServer();
         java.util.UUID me = mc.player.getUUID();
@@ -61,7 +65,7 @@ public final class SelfTest {
         else mc.player.connection.sendCommand(c);
     }
 
-    private static void step(String name, int delay, Runnable act, BooleanSupplier check) { STEPS.add(new Step(name, delay, act, check, true, 0)); }
+    static void step(String name, int delay, Runnable act, BooleanSupplier check) { STEPS.add(new Step(name, delay, act, check, true, 0)); }
     private static void shiftClick(int slot) {
         var sc = (net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?>) mc().screen;
         mc().gameMode.handleInventoryMouseClick(sc.getMenu().containerId, slot, 0, net.minecraft.world.inventory.ClickType.QUICK_MOVE, mc().player);
@@ -74,16 +78,16 @@ public final class SelfTest {
         cmd("execute in " + dim + " run fill " + (x - 4) + " " + (y + 1) + " " + (z - 4) + " " + (x + 4) + " " + (y + 4) + " " + (z + 4) + " minecraft:air");
     }
 
-    private static void stepUntil(String name, int delay, int patience, Runnable act, BooleanSupplier check) { STEPS.add(new Step(name, delay, act, check, true, patience)); }
-    private static void quiet(String name, int delay, Runnable act) { STEPS.add(new Step(name, delay, act, null, false, 0)); }
+    static void stepUntil(String name, int delay, int patience, Runnable act, BooleanSupplier check) { STEPS.add(new Step(name, delay, act, check, true, patience)); }
+    static void quiet(String name, int delay, Runnable act) { STEPS.add(new Step(name, delay, act, null, false, 0)); }
 
-    private static String at(BlockPos p) { return p.getX() + " " + p.getY() + " " + p.getZ(); }
+    static String at(BlockPos p) { return p.getX() + " " + p.getY() + " " + p.getZ(); }
 
-    private static void hotbar(int slot, String item) { cmd("item replace entity @s hotbar." + slot + " with " + item); }
+    static void hotbar(int slot, String item) { cmd("item replace entity @s hotbar." + slot + " with " + item); }
 
-    private static void select(int slot) { mc().player.getInventory().selected = slot; }
+    static void select(int slot) { mc().player.getInventory().selected = slot; }
 
-    private static void useOn(BlockPos pos, Direction face) {
+    static void useOn(BlockPos pos, Direction face) {
         Minecraft mc = mc();
         Vec3 hit = Vec3.atCenterOf(pos).add(face.getStepX() * 0.5, face.getStepY() * 0.5, face.getStepZ() * 0.5);
         mc.gameMode.useItemOn(mc.player, InteractionHand.MAIN_HAND, new BlockHitResult(hit, face, pos, false));
@@ -106,23 +110,60 @@ public final class SelfTest {
         });
     }
 
-    private static DrekkiEntity pup() {
+    /** this player's nearest drekki (a world may hold other players' drekki near the test site) */
+    static DrekkiEntity pup() {
         Minecraft mc = mc();
         DrekkiEntity best = null;
-        for (var e : mc.level.entitiesForRendering()) if (e instanceof DrekkiEntity d && d.live() && (best == null || d.distanceTo(mc.player) < best.distanceTo(mc.player))) best = d;
+        for (var e : mc.level.entitiesForRendering()) if (e instanceof DrekkiEntity d && d.live() && mc.player.getUUID().equals(d.owner()) && (best == null || d.distanceTo(mc.player) < best.distanceTo(mc.player))) best = d;
         return best;
     }
 
-    private static void near(DrekkiEntity d) {
+    static void near(DrekkiEntity d) {
         if (d != null) cmd("tp @s " + (d.getX() + 1.2) + " " + d.getY() + " " + (d.getZ() + 1.2));
     }
 
     private static net.minecraft.world.InteractionResult last = net.minecraft.world.InteractionResult.PASS;
 
-    private static void interact(String why) {
+    static void interact(String why) {
         DrekkiEntity d = pup();
         if (d == null) { RancherCompanion.LOG.warn("[selftest] no drekki to {}", why); return; }
         last = mc().gameMode.interact(mc().player, d, InteractionHand.MAIN_HAND);
+    }
+
+    static dev.frosthaven.ranchercompanion.client.screen.DrekkiScreen ds() {
+        return mc().screen instanceof dev.frosthaven.ranchercompanion.client.screen.DrekkiScreen s ? s : null;
+    }
+
+    /** the cursor over a part of the drekki screen (its tooltip shows in the step's screenshot) */
+    static void hoverSpot(String key) { if (ds() != null && ds().spot(key) != null) dev.frosthaven.ranchercompanion.client.screen.DrekkiScreen.testMouse = ds().spot(key); }
+
+    static void clickSpot(String key) { if (ds() != null && ds().spot(key) != null) { int[] c = ds().spot(key); hover(c); ds().mouseClicked(c[0], c[1], 0); } }
+
+    /** the player as the integrated server sees it */
+    static net.minecraft.server.level.ServerPlayer me() {
+        var server = mc().getSingleplayerServer();
+        return server == null ? null : server.getPlayerList().getPlayer(mc().player.getUUID());
+    }
+
+    /** changes the drekki's life on the integrated server (single player), to show each screen state without waiting days */
+    static void life(java.util.function.Consumer<DrekkiEntity> f) {
+        var server = mc().getSingleplayerServer();
+        DrekkiEntity c = pup();
+        if (server == null || c == null) return;
+        java.util.UUID id = c.getUUID();
+        server.execute(() -> { for (var l : server.getAllLevels()) if (l.getEntity(id) instanceof DrekkiEntity d) { f.accept(d); d.syncLife(); } });
+    }
+
+    /** the camera just over the drekki: it and its mood icon in view, the crosshair off it (so Jade's box stays away) */
+    private static void lookOver() {
+        DrekkiEntity d = pup();
+        if (d != null) mc().player.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES, d.position().add(0, d.getBbHeight() + 1.6, 0));
+    }
+
+    /** the camera on the drekki, for Jade */
+    private static void look() {
+        DrekkiEntity d = pup();
+        if (d != null) mc().player.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES, d.position().add(0, d.getBbHeight() * 0.5, 0));
     }
 
     private static HatcheryScreen hs() { return mc().screen instanceof HatcheryScreen s ? s : null; }
@@ -138,11 +179,11 @@ public final class SelfTest {
     }
 
     private static void build() {
+        BlockPos p0 = mc().player.blockPosition();  /* the site, known when the steps are built (later steps use it) */
+        o = new BlockPos(p0.getX(), 201, p0.getZ());
+        hatch = o.offset(3, 0, 0);
+        trough = o.offset(-3, 0, 3);
         quiet("setup", 40, () -> {
-            BlockPos p = mc().player.blockPosition();
-            o = new BlockPos(p.getX(), 201, p.getZ());
-            hatch = o.offset(3, 0, 0);
-            trough = o.offset(-3, 0, 3);
             cmd("gamemode creative");
             cmd("time set 1000");
             cmd("gamerule doMobSpawning false");
@@ -151,6 +192,14 @@ public final class SelfTest {
             cmd("fill " + at(o.offset(36, -1, -3)) + " " + at(o.offset(44, -1, 3)) + " stone");
             cmd("tp @s " + (o.getX() + 0.5) + " " + o.getY() + " " + (o.getZ() + 0.5) + " -90 30");
             cmd("clear @s");
+            /* drekki left by an earlier run in this world: gone, so this run's checks see only its own */
+            var server = mc().getSingleplayerServer();
+            java.util.UUID me = mc().player.getUUID();
+            if (server != null) server.execute(() -> {
+                var r = dev.frosthaven.ranchercompanion.ranch.Ranch.roster(server);
+                for (var e : r.of(me)) r.remove(e.id);
+                for (var l : server.getAllLevels()) for (var en : l.getAllEntities()) if (en instanceof DrekkiEntity d && me.equals(d.owner())) d.discard();
+            });
             cmd("setblock " + at(hatch) + " rancher_companion:hatchery[facing=west]");
             cmd("setblock " + at(o.offset(1, 0, -3)) + " torch");
         });
@@ -173,6 +222,8 @@ public final class SelfTest {
         step("check_out", 30, () -> { if (hs() != null) { hs().press("row0"); hs().press("out"); } }, () -> where(HatcheryView.WITH_YOU));
         quiet("walk_off", 100, () -> { mc().setScreen(null); cmd("tp @s " + (o.getX() + 7.5) + " " + o.getY() + " " + (o.getZ() + 6.5)); });
         stepUntil("follows", 10, 15, () -> {}, () -> pup() != null && pup().distanceTo(mc().player) < 6);
+        if (TRAITS) { SelfTestTraits.build(o); return; }
+        if (UI) { SelfTestTraits.ui(); return; }
         quiet("far_away", 80, () -> cmd("tp @s " + (o.getX() + 40.5) + " " + o.getY() + " " + (o.getZ() + 0.5)));
         stepUntil("teleports_to_owner", 10, 15, () -> {}, () -> pup() != null && pup().distanceTo(mc().player) < 6);
         quiet("back", 80, () -> cmd("tp @s " + (o.getX() + 0.5) + " " + o.getY() + " " + (o.getZ() - 4.5)));
@@ -197,6 +248,15 @@ public final class SelfTest {
             var m = ((dev.frosthaven.ranchercompanion.client.screen.DrekkiScreen) mc().screen).getMenu();
             for (int i = 1; i < m.slots.size(); i++) if (m.slots.get(i).getItem().is(DrekkiItems.hatStack(5).getItem())) { shiftClick(i); break; }
         }, () -> mc().screen instanceof dev.frosthaven.ranchercompanion.client.screen.DrekkiScreen s && s.getMenu().slots.get(0).getItem().is(DrekkiItems.hatStack(5).getItem()));
+        /* the growth release's details: food, mood and its buffs, traits (set on the server to show them now) */
+        quiet("life_for_screens", 20, () -> life(d -> { d.life.food = 6.5; d.life.mood = 70; dev.frosthaven.ranchercompanion.life.Vitals.pet(d);
+            d.life.traits.add(dev.frosthaven.ranchercompanion.trait.Trait.HOOK_LINE_SINKER.id); d.life.traits.add(dev.frosthaven.ranchercompanion.trait.Trait.CLOUD_STOMPERS.id); }));
+        step("drekki_details", 10, () -> {}, () -> ds() != null && pup().food() < 7 && pup().petLeft() > 0);
+        step("drekki_mood_tooltip", 10, () -> hoverSpot("mood"), () -> ds() != null && ds().spot("mood") != null);
+        step("drekki_pet_tooltip", 10, () -> hoverSpot("pet"), () -> ds() != null && ds().spot("pet") != null);
+        step("drekki_traits_tab", 10, () -> clickSpot("tab_traits"), () -> ds() != null && ds().spot("trait1") != null);
+        step("drekki_trait_tooltip", 10, () -> hoverSpot("trait1"), () -> ds() != null);
+        quiet("details_again", 5, () -> { dev.frosthaven.ranchercompanion.client.screen.DrekkiScreen.testMouse = null; clickSpot("tab_details"); });
         quiet("close_screen", 10, () -> mc().setScreen(null));
         quiet("give_sword", 10, () -> hotbar(5, "iron_sword"));
         step("drekki_screen_with_sword", 25, () -> { select(5); interact("open its screen holding a sword"); },
@@ -232,6 +292,20 @@ public final class SelfTest {
             });
             stepUntil("back_after_logging_in", 40, 15, () -> {}, () -> pup() != null && pup().distanceTo(mc().player) < 6);
         }
+        /* growing up on travel: the stage, the astral lock-in and their messages; then the Fledgling's screen */
+        quiet("grow_soon", 10, () -> life(d -> d.life.travel = dev.frosthaven.ranchercompanion.life.Life.stageTicks(dev.frosthaven.ranchercompanion.DrekkiConfig.STAGE_DAYS.get()) - 60));
+        stepUntil("grew_to_fledgling", 80, 15, () -> {}, () -> pup() != null && pup().stage() == 2 && pup().astral() != 0);
+        quiet("near_fledgling", 15, () -> { select(7); near(pup()); });  /* an empty slot: slot 9 holds the hat by now */
+        step("fledgling_screen", 25, () -> interact("open its screen"), () -> ds() != null && ds().getMenu().pack && ds().spot("stance0") != null);
+        step("stance_tooltip", 10, () -> hoverSpot("stance0"), () -> ds() != null);
+        step("stance_aggressive", 15, () -> clickSpot("stance0"), () -> pup().stance() == dev.frosthaven.ranchercompanion.life.Life.Stance.AGGRESSIVE);
+        quiet("close_fledgling", 10, () -> { dev.frosthaven.ranchercompanion.client.screen.DrekkiScreen.testMouse = null; mc().setScreen(null); });
+        quiet("miserable", 30, () -> life(d -> { d.life.food = 0; d.life.mood = 5; d.life.petUntil = 0; }));
+        step("mood_icon_miserable", 10, SelfTest::lookOver, () -> pup() != null && pup().band() == dev.frosthaven.ranchercompanion.life.Life.Band.MISERABLE);
+        step("jade_food", 10, SelfTest::look, () -> pup() != null && pup().food() == 0);
+        quiet("ghost", 30, () -> life(d -> d.life.ghost = true));
+        step("ghost_look", 10, SelfTest::lookOver, () -> pup() != null && pup().ghost());
+        quiet("unghost", 20, () -> life(d -> { d.life.ghost = false; d.life.food = 9; d.life.mood = 60; d.life.stance = dev.frosthaven.ranchercompanion.life.Life.Stance.PASSIVE; }));
         quiet("to_hatchery", 20, () -> { select(8); cmd("tp @s " + (o.getX() + 0.5) + " " + o.getY() + " " + (o.getZ() + 0.5)); });
         quiet("open_for_check_in", 25, () -> useOn(hatch, Direction.NORTH));
         step("check_in", 30, () -> { if (hs() != null) hs().press("in"); }, () -> where(HatcheryView.HERE) && pup() != null && pup().blockPosition().distManhattan(hatch) <= 5);
@@ -275,7 +349,9 @@ public final class SelfTest {
             step("ponder_trough_diets", 10, () -> {}, null);
             quiet("ponder_next_feeding", 300, dev.frosthaven.ranchercompanion.compat.ponder.DrekkiPonder::next);
             step("ponder_trough_feeding_side", 10, () -> {}, null);
-            step("ponder_trough_feeding_top", 300, () -> {}, null);
+            step("ponder_trough_feeding_mature", 100, () -> {}, null);  /* behind, and the line's end */
+            step("ponder_trough_feeding_meal", 110, () -> {}, null);
+            step("ponder_trough_feeding_owner", 80, () -> {}, null);
             quiet("ponder_close", 10, () -> mc().setScreen(null));
         }
         quiet("open_for_release", 25, () -> useOn(hatch, Direction.NORTH));
@@ -297,13 +373,20 @@ public final class SelfTest {
         if (!ON) return;
         Minecraft mc = mc();
         if (mc.level == null || mc.player == null) {
-            if (reopen != null && mc.screen instanceof net.minecraft.client.gui.screens.TitleScreen) {
+            /* back at a menu (vanilla's title screen, or a menu mod's own), not while a world is still closing or loading */
+            var sc = mc.screen;
+            boolean menu = sc != null && !(sc instanceof net.minecraft.client.gui.screens.GenericMessageScreen || sc instanceof net.minecraft.client.gui.screens.ProgressScreen
+                || sc instanceof net.minecraft.client.gui.screens.LevelLoadingScreen || sc instanceof net.minecraft.client.gui.screens.ReceivingLevelScreen
+                || sc instanceof net.minecraft.client.gui.screens.ConnectScreen);
+            if (reopen != null && menu) {
+                RancherCompanion.LOG.info("[selftest] at {}", sc.getClass().getName());
                 String w = reopen; reopen = null;
                 RancherCompanion.LOG.info("[selftest] reopening {}", w);
                 mc.createWorldOpenFlows().openWorld(w, () -> RancherCompanion.LOG.error("[selftest] could not reopen {}", w));
             }
             return;
         }
+        if (TRAITS || UI) SelfTestTraits.tick();
         if (started < 0) { started = 0; build(); timer = 200; RancherCompanion.LOG.info("[selftest] start, {} steps", STEPS.size()); return; }
         if (--timer > 0) return;
         if (index >= 0 && index < STEPS.size()) {

@@ -46,6 +46,18 @@ public final class Ranch {
 
     public static Roster roster(MinecraftServer s) { return Roster.get(s); }
 
+    /** every live drekki, for the effects that look around them */
+    /** the live entity of a drekki by roster id, or null */
+    public static DrekkiEntity liveOf(UUID id) { return live(id); }
+
+    public static java.util.Collection<DrekkiEntity> lives() { return java.util.Collections.unmodifiableCollection(LIVE.values()); }
+
+    /** the other drekki of its base hatchery (spec, Mood: Kinship) */
+    public static int kin(MinecraftServer s, UUID id) {
+        Entry e = roster(s).get(id);
+        return e == null ? 0 : roster(s).kin(e);
+    }
+
     private static void msg(Player p, String key, Object... args) {
         p.displayClientMessage(Component.translatable("message.rancher_companion." + key, args), true);
     }
@@ -71,7 +83,7 @@ public final class Ranch {
             : Component.literal(server.getProfileCache().get(d.owner()).map(com.mojang.authlib.GameProfile::getName).orElse("?"));
     }
 
-    private static CompoundTag save(DrekkiEntity d) {
+    static CompoundTag save(DrekkiEntity d) {
         CompoundTag t = new CompoundTag();
         d.saveWithoutId(t);
         return t;
@@ -85,7 +97,7 @@ public final class Ranch {
     }
 
     /** a new entity from a record, bound to its owner, at a spot (not yet added to the level) */
-    private static DrekkiEntity spawn(ServerLevel level, Entry e, BlockPos at, BlockPos home) {
+    static DrekkiEntity spawn(ServerLevel level, Entry e, BlockPos at, BlockPos home) {
         DrekkiEntity d = RancherCompanion.DREKKI.get().create(level);
         if (d == null) return null;
         d.load(e.save);
@@ -96,8 +108,9 @@ public final class Ranch {
         return d;
     }
 
-    private static void add(ServerLevel level, DrekkiEntity d) {
+    static void add(ServerLevel level, DrekkiEntity d) {
         LIVE.put(d.drekkiId(), d);
+        dev.frosthaven.ranchercompanion.trait.Traits.changed();
         level.addFreshEntity(d);
     }
 
@@ -151,12 +164,22 @@ public final class Ranch {
             return;
         }
         BlockPos at = new Ground(level).place(pos, 1);
+        if (be.egg().has(DrekkiData.CARRIED.get())) {  /* a Phoenix egg brings its drekki back (Death) */
+            ItemStack phoenix = be.egg().copy();
+            if (Death.reborn(p, level, pos, at, phoenix)) {
+                be.takeEgg();
+                poof(level, pos.getX() + 0.5, pos.getY() + 0.8, pos.getZ() + 0.5);
+                openHatchery(p, pos);
+            } else msg(p, "hatch.cold");
+            return;
+        }
         be.takeEgg();
         /* a trader egg: a random bloodline at its muted tier, random horns, dormant eyes (spec, Egg) */
         DrekkiEntity d = RancherCompanion.DREKKI.get().create(level);
         if (d == null) return;
         int fam = level.random.nextInt(Lineage.FAMILIES);
         d.setLook(1, fam * Lineage.TIERS, 0, Astral.DORMANT, level.random.nextInt(5));
+        d.applyStageHealth(true);
         UUID id = UUID.randomUUID();
         d.bind(p.getUUID(), id, pos);
         d.moveTo(at.getX() + 0.5, at.getY(), at.getZ() + 0.5, level.random.nextFloat() * 360, 0);
@@ -271,7 +294,7 @@ public final class Ranch {
         GlobalPos home = Roster.at(level, pos);
         Entry out = r.out(p.getUUID());
         if (out == null) return;
-        if (r.at(home).size() >= HatcheryBlockEntity.CAP) { msg(p, "hatch.full"); return; }
+        if (r.at(home).size() >= HatcheryBlockEntity.CAP) { msg(p, "hatchery.full"); return; }
         BlockPos at = new Ground(level).place(pos, Math.max(1, out.save.getInt("Stage")));
         if (at == null) { msg(p, "no_room"); return; }
         DrekkiEntity d = out.where == Where.OUT ? live(out.id) : null;
@@ -310,6 +333,7 @@ public final class Ranch {
         }
         r.remove(id);
         LIVE.remove(id);
+        dev.frosthaven.ranchercompanion.trait.Traits.changed();
         msg(p, "release.done", name);
     }
 
@@ -382,6 +406,7 @@ public final class Ranch {
                 && e.home.pos().equals(d.home()) && e.home.dimension().equals(ev.getLevel().dimension()));
         if (!ok) { ev.setCanceled(true); return; }
         LIVE.put(d.drekkiId(), d);
+        dev.frosthaven.ranchercompanion.trait.Traits.changed();
     }
 
     public static void onLeave(net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent ev) {
@@ -396,6 +421,7 @@ public final class Ranch {
             return;
         }
         LIVE.remove(d.drekkiId());
+        dev.frosthaven.ranchercompanion.trait.Traits.changed();
         if (d.getRemovalReason() == Entity.RemovalReason.UNLOADED_TO_CHUNK || d.getRemovalReason() == Entity.RemovalReason.UNLOADED_WITH_PLAYER) {
             touch(d);
             /* a checked-out drekki left behind in a chunk that unloaded: back to its owner, once the unload is done */
@@ -403,16 +429,7 @@ public final class Ranch {
         }
     }
 
-    public static void died(DrekkiEntity d) {
-        Roster r = roster(d.level().getServer());
-        Entry e = r.get(d.drekkiId());
-        if (e == null) return;
-        r.remove(e.id);
-        LIVE.remove(e.id);
-        Player owner = d.ownerPlayer();
-        if (owner == null) owner = d.level().getServer().getPlayerList().getPlayer(e.owner);
-        if (owner != null) owner.sendSystemMessage(Component.translatable("message.rancher_companion.died", label(e.save)));
-    }
+    static void forgetLive(UUID id) { LIVE.remove(id); dev.frosthaven.ranchercompanion.trait.Traits.changed(); dev.frosthaven.ranchercompanion.life.Feeding.forget(id); }
 
     /** a player leaves: the checked-out drekki leaves with them, kept as data */
     public static void onLogout(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent ev) {
@@ -426,7 +443,7 @@ public final class Ranch {
 
     /* a checked-out drekki comes back next to its owner on the events that part them, with no polling: login, respawn,
        a dimension change, leaving spectator mode, and its chunk unloading while the owner is online */
-    public static void onLogin(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent ev) { if (ev.getEntity() instanceof ServerPlayer p) bringBack(p); }
+    public static void onLogin(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent ev) { if (ev.getEntity() instanceof ServerPlayer p) { bringBack(p); Death.giveEggs(p); } }
     public static void onRespawn(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerRespawnEvent ev) { if (ev.getEntity() instanceof ServerPlayer p) bringBack(p); }
     public static void onDimension(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerChangedDimensionEvent ev) { if (ev.getEntity() instanceof ServerPlayer p) bringBack(p); }
     /** fires before the mode changes: look again on the next tick */

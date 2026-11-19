@@ -19,10 +19,15 @@ public final class DrekkiModel extends EntityModel<DrekkiEntity> {
     @Override
     public void setupAnim(DrekkiEntity e, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
         DrekkiAnimations.pose(baked, e, ageInTicks / 20.0 + e.phase);
+        tint = e.ghost() ? GHOST : -1;
     }
+
+    /** a ghost: 65% see-through with a faint pale-blue tint (spec, Ghost drekki); set per entity before it draws */
+    static final int GHOST = 0x59CFE4FF;
+    private int tint = -1;
 
     @Override
     public void renderToBuffer(PoseStack ps, VertexConsumer vc, int light, int overlay, int color) {
-        baked.root.render(ps, vc, light, overlay, color);
+        baked.root.render(ps, vc, light, overlay, color == -1 ? tint : color);
     }
 }

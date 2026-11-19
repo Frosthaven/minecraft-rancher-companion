@@ -30,6 +30,9 @@ public final class RancherCompanion {
     public static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(Registries.ENTITY_TYPE, ID);
     public static final DeferredHolder<EntityType<?>, EntityType<DrekkiEntity>> DREKKI = ENTITIES.register("drekki",
         () -> EntityType.Builder.of(DrekkiEntity::new, MobCategory.CREATURE).sized(1.5f, 2.3f).clientTrackingRange(16).build("drekki"));
+    public static final DeferredHolder<EntityType<?>, EntityType<dev.frosthaven.ranchercompanion.combat.ElementalBall>> ELEMENTAL_BALL = ENTITIES.register("elemental_ball",
+        () -> EntityType.Builder.<dev.frosthaven.ranchercompanion.combat.ElementalBall>of(dev.frosthaven.ranchercompanion.combat.ElementalBall::new, MobCategory.MISC)
+            .sized(0.3f, 0.3f).clientTrackingRange(4).updateInterval(10).build("elemental_ball"));
 
     public RancherCompanion(IEventBus modBus, ModContainer container) {
         ENTITIES.register(modBus);
@@ -49,6 +52,10 @@ public final class RancherCompanion {
         NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.level.LevelEvent.Save.class, Ranch::onSave);
         NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.EntityInteract.class, dev.frosthaven.ranchercompanion.entity.DrekkiInteract::onEntityInteract);
         NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.server.ServerStoppedEvent.class, Ranch::onStopped);
+        NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.server.ServerStoppedEvent.class, e -> dev.frosthaven.ranchercompanion.life.Feeding.clear());
+        dev.frosthaven.ranchercompanion.life.LifeEvents.register(NeoForge.EVENT_BUS);
+        dev.frosthaven.ranchercompanion.trait.Learning.register(NeoForge.EVENT_BUS);
+        dev.frosthaven.ranchercompanion.trait.Effects.register(NeoForge.EVENT_BUS);
         modBus.addListener(EntityAttributeCreationEvent.class, e -> e.put(DREKKI.get(), DrekkiEntity.createAttributes().build()));
         NeoForge.EVENT_BUS.addListener(RegisterCommandsEvent.class, DrekkiCommands::register);
         NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerLoggedInEvent.class, Showcase::onLogin);
@@ -58,7 +65,7 @@ public final class RancherCompanion {
         container.registerConfig(net.neoforged.fml.config.ModConfig.Type.SERVER, DrekkiConfig.SPEC);
         modBus.addListener(net.neoforged.fml.event.config.ModConfigEvent.Loading.class, e -> FoodDiets.invalidate());
         modBus.addListener(net.neoforged.fml.event.config.ModConfigEvent.Reloading.class, e -> FoodDiets.invalidate());
-        NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.TagsUpdatedEvent.class, e -> FoodDiets.invalidate());
+        NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.TagsUpdatedEvent.class, e -> { FoodDiets.invalidate(); dev.frosthaven.ranchercompanion.life.Places.invalidate(); });
         if (FMLEnvironment.dist.isClient()) RancherCompanionClient.init(modBus);
     }
 }

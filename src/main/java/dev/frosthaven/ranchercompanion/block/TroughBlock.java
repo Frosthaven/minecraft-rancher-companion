@@ -111,6 +111,7 @@ public class TroughBlock extends BaseEntityBlock {
 
     @Override
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, net.minecraft.world.entity.LivingEntity placer, ItemStack stack) {
+        if (!level.isClientSide && placer instanceof Player p && level.getBlockEntity(pos) instanceof TroughBlockEntity be) be.claim(p.getUUID());
         if (!level.isClientSide && state.getValue(DIET) != 0) setLineDiet(level, pos, state.getValue(DIET));  /* a line joined to a fed one shares its diet */
     }
 
@@ -184,6 +185,7 @@ public class TroughBlock extends BaseEntityBlock {
             return ItemInteractionResult.CONSUME;
         }
         if (!(level.getBlockEntity(pos) instanceof TroughBlockEntity be)) return ItemInteractionResult.FAIL;
+        be.claim(player.getUUID());  /* a trough from before 0.4.0: the first player to use it owns it, like a hatchery */
         int put = be.insert(stack, player.hasInfiniteMaterials());
         if (put == 0) {
             player.displayClientMessage(Component.translatable("block.rancher_companion.trough.full"), true);
@@ -197,12 +199,16 @@ public class TroughBlock extends BaseEntityBlock {
     /** an empty hand opens the trough's screen: its four slots and the player's inventory (spec, Pup release) */
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (!(level.getBlockEntity(pos) instanceof TroughBlockEntity)) return InteractionResult.PASS;
+        if (!(level.getBlockEntity(pos) instanceof TroughBlockEntity be)) return InteractionResult.PASS;
+        if (!level.isClientSide) be.claim(player.getUUID());
         if (player instanceof net.minecraft.server.level.ServerPlayer sp)
             sp.openMenu(new net.minecraft.world.SimpleMenuProvider((id, inv, pl) -> new TroughMenu(id, inv, pos),
                 Component.translatable("block.rancher_companion.trough")), buf -> buf.writeBlockPos(pos));
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
+
+    /** a drekki took food: the line forgets its diet once it is empty */
+    public static void contentsChangedAt(Level level, BlockPos pos) { contentsChanged(level, pos, ItemStack.EMPTY); }
 
     /** after the screen changed a trough's food: the line takes the food's diet, or none once the line is empty */
     static void contentsChanged(Level level, BlockPos pos, ItemStack added) {

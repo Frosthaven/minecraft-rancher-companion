@@ -373,10 +373,17 @@ def loot():
             "random_sequence": f"{NS}:blocks/{name}"})
 
 
-def shaped(name, pattern, key, result, count=1, cat="building"):
+def shaped(name, pattern, key, result, count=1, cat="building", when=None):
     k = {c: ({"tag": v[1:]} if v.startswith("#") else {"item": v}) for c, v in key.items()}
-    put(D / NS / f"recipe/{name}.json", {"type": "minecraft:crafting_shaped", "category": cat, "pattern": pattern, "key": k,
-                                         "result": {"id": f"{NS}:{result}", "count": count}})
+    r = {"type": "minecraft:crafting_shaped", "category": cat, "pattern": pattern, "key": k,
+         "result": {"id": f"{NS}:{result}", "count": count}}
+    if when:
+        r = {"neoforge:conditions": when, **r}
+    put(D / NS / f"recipe/{name}.json", r)
+
+
+FD = [{"type": "neoforge:mod_loaded", "modid": "farmersdelight"}]
+NO_FD = [{"type": "neoforge:not", "value": FD[0]}]
 
 
 def shapeless(name, ingredients, result, count=1, group=None, components=None):
@@ -409,7 +416,9 @@ def recipes():
     shaped("rancher_shingles_stairs", ["S  ", "SS ", "SSS"], {"S": f"{NS}:rancher_shingles"}, "rancher_shingles_stairs", 4)
     cutting("rancher_shingles_slab_from_stonecutting", f"{NS}:rancher_shingles", "rancher_shingles_slab", 2)
     cutting("rancher_shingles_stairs_from_stonecutting", f"{NS}:rancher_shingles", "rancher_shingles_stairs", 1)
-    shaped("straw_bedding", ["WW"], {"W": "minecraft:wheat"}, "straw_bedding", 3)
+    # Farmer's Delight's straw when it is loaded (two side by side: its rope is two stacked); wheat only without it
+    shaped("straw_bedding", ["SS"], {"S": "farmersdelight:straw"}, "straw_bedding", 3, when=FD)
+    shaped("straw_bedding_from_wheat", ["WW"], {"W": "minecraft:wheat"}, "straw_bedding", 3, when=NO_FD)
     shaped("rancher_fence", ["PSP", "PSP"], {"P": f"{NS}:rancher_planks", "S": "minecraft:stick"}, "rancher_fence", 3)
     shaped("rancher_fence_gate", ["SPS", "SPS"], {"P": f"{NS}:rancher_planks", "S": "minecraft:stick"}, "rancher_fence_gate")
     shaped("tufted_leather", ["LNL", "NWN", "LNL"], {"L": "minecraft:leather", "N": N, "W": "#minecraft:wool"}, "tufted_leather", 4)

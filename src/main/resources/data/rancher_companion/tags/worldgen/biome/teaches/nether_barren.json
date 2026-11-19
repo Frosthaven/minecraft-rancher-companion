@@ -1,0 +1,43 @@
+{
+  "values": [
+    "minecraft:nether_wastes",
+    "minecraft:soul_sand_valley",
+    "minecraft:basalt_deltas",
+    {
+      "id": "biomesoplenty:crystalline_chasm",
+      "required": false
+    },
+    {
+      "id": "biomesoplenty:erupting_inferno",
+      "required": false
+    },
+    {
+      "id": "biomesoplenty:visceral_heap",
+      "required": false
+    },
+    {
+      "id": "biomesoplenty:withered_abyss",
+      "required": false
+    },
+    {
+      "id": "ad_astra:infernal_venus_barrens",
+      "required": false
+    },
+    {
+      "id": "ad_astra:venus_wastelands",
+      "required": false
+    },
+    {
+      "id": "ad_astra:mercury_deltas",
+      "required": false
+    },
+    {
+      "id": "creatingspace:venus",
+      "required": false
+    },
+    {
+      "id": "creatingspace:venus_hellground",
+      "required": false
+    }
+  ]
+}

@@ -40,6 +40,30 @@ public class DrekkiEntity extends PathfinderMob {
     /** the owner, synched so the client knows which clicks do something (petting swings the arm, hats, the screen) */
     private static final EntityDataAccessor<java.util.Optional<java.util.UUID>> OWNER = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.OPTIONAL_UUID);
     private static final EntityDataAccessor<Boolean> SLEEPING = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.BOOLEAN);
+    /** its life as the screen, Jade and the mood icon show it: food, effective mood, band, seconds of Recently pet left,
+     *  kin, ghost, stance, and a pinned action loop (Anim index + 1, 0 none) */
+    private static final EntityDataAccessor<Float> FOOD = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Float> MOOD = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Integer> BAND = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> PET_LEFT = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> KIN = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Boolean> GHOST = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Integer> STANCE = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> ACTION = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.INT);
+    /** a ghost shaking back to life (spec, Ghost drekki: revive) */
+    private static final EntityDataAccessor<Boolean> REVIVING = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.BOOLEAN);
+    /** the traits tab: learned trait ids and counted progress */
+    private static final EntityDataAccessor<CompoundTag> TRAITS = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.COMPOUND_TAG);
+
+    /** its life (server: the truth, saved under "Life"; client: unused, the synched values above stand in) */
+    public final dev.frosthaven.ranchercompanion.life.Life life = new dev.frosthaven.ranchercompanion.life.Life();
+    /** its pack from stage 2 (spec, Drekki screen: 9 slots) */
+    private final net.minecraft.world.SimpleContainer pack = new net.minecraft.world.SimpleContainer(9);
+    private boolean caughtUp;
+    /** on its way to a trough or eating: following waits while its owner is near (EatGoal) */
+    boolean eating;
+    /** a heal of its own (regeneration): Hearty does not learn from it */
+    public boolean selfHeal;
 
     /** owner and roster id (null for a showcase drekki), its hatchery, and whether it is checked out (spec, Checkout) */
     private java.util.UUID owner, drekkiId;
@@ -68,6 +92,7 @@ public class DrekkiEntity extends PathfinderMob {
     protected void defineSynchedData(SynchedEntityData.Builder b) {
         super.defineSynchedData(b);
         b.define(STAGE, 3); b.define(LINE, 0); b.define(DIET, 0); b.define(ASTRAL, 1); b.define(HORN, 0); b.define(HAT, 0); b.define(BARDING, 0); b.define(DYE, -1); b.define(ANIM, 0); b.define(LANE, 0f); b.define(OWNED, false); b.define(PET, 0); b.define(SLEEPING, false); b.define(OWNER, java.util.Optional.empty());
+        b.define(FOOD, 10f); b.define(MOOD, 50f); b.define(BAND, 2); b.define(PET_LEFT, 0); b.define(KIN, 0); b.define(GHOST, false); b.define(STANCE, 1); b.define(ACTION, 0); b.define(REVIVING, false); b.define(TRAITS, new CompoundTag());
     }
 
     public int stage() { return entityData.get(STAGE); }
@@ -84,8 +109,74 @@ public class DrekkiEntity extends PathfinderMob {
     public void setGear(int hat, int barding, int dye) { entityData.set(HAT, hat); entityData.set(BARDING, barding); entityData.set(DYE, dye); }
     public Anim anim() {
         if (!entityData.get(OWNED)) return Anim.of(entityData.get(ANIM));
+        if (entityData.get(ACTION) > 0) return Anim.of(entityData.get(ACTION) - 1);
         if (entityData.get(SLEEPING)) return Anim.SLEEP;
         return speedAvg < 0.15 ? Anim.IDLE : speedAvg < 2.6 ? Anim.WALK : Anim.RUN;
+    }
+
+    public float food() { return entityData.get(FOOD); }
+    public float mood() { return entityData.get(MOOD); }
+    public dev.frosthaven.ranchercompanion.life.Life.Band band() { return dev.frosthaven.ranchercompanion.life.Life.Band.values()[entityData.get(BAND)]; }
+    public int petLeft() { return entityData.get(PET_LEFT); }
+    public int kin() { return entityData.get(KIN); }
+    public boolean ghost() { return entityData.get(GHOST); }
+    public boolean reviving() { return entityData.get(REVIVING); }
+    public dev.frosthaven.ranchercompanion.life.Life.Stance stance() { return dev.frosthaven.ranchercompanion.life.Life.Stance.values()[entityData.get(STANCE)]; }
+    public CompoundTag traitView() { return entityData.get(TRAITS); }
+    public net.minecraft.world.SimpleContainer pack() { return pack; }
+
+    /** the server's life to the synched values: kin from the roster, the buffs, the band */
+    public void syncLife() {
+        if (level().isClientSide) return;
+        var l = life;
+        int kin = drekkiId == null || getServer() == null ? 0 : dev.frosthaven.ranchercompanion.ranch.Ranch.kin(getServer(), drekkiId);
+        boolean pet = l.petted(System.currentTimeMillis());
+        double eff = dev.frosthaven.ranchercompanion.life.Life.effective(l.mood, pet, kin);
+        entityData.set(FOOD, (float) l.food);
+        entityData.set(MOOD, (float) eff);
+        entityData.set(BAND, dev.frosthaven.ranchercompanion.life.Life.band(eff, pet, l.food).ordinal());
+        entityData.set(PET_LEFT, pet ? (int) ((l.petUntil - System.currentTimeMillis()) / 1000) : 0);
+        entityData.set(KIN, kin);
+        entityData.set(REVIVING, l.ghost && l.cooldowns.containsKey(dev.frosthaven.ranchercompanion.life.Vitals.REVIVE));
+        entityData.set(STANCE, l.stance.ordinal());
+        CompoundTag v = new CompoundTag();
+        net.minecraft.nbt.ListTag t = new net.minecraft.nbt.ListTag();
+        for (String id : l.traits) t.add(net.minecraft.nbt.StringTag.valueOf(id));
+        v.put("traits", t);
+        CompoundTag pr = new CompoundTag();
+        l.progress.forEach(pr::putInt);
+        v.put("progress", pr);
+        if (l.offer != null) v.putString("offer", l.offer);
+        /* the trait index changes with the traits or the ghost state, not with a cooldown */
+        if (!t.equals(entityData.get(TRAITS).getList("traits", net.minecraft.nbt.Tag.TAG_STRING)) || l.ghost != entityData.get(GHOST))
+            dev.frosthaven.ranchercompanion.trait.Traits.changed();
+        /* when each trait is ready again, in game time (the client counts down against its own clock) */
+        CompoundTag ready = new CompoundTag();
+        long now = dev.frosthaven.ranchercompanion.life.Vitals.now(this);
+        for (String id : l.traits) { Long at = l.cooldowns.get(id); if (at != null && at > now) ready.putLong(id, at); }
+        v.put("ready", ready);
+        if (!v.equals(entityData.get(TRAITS))) entityData.set(TRAITS, v);
+        entityData.set(GHOST, l.ghost);
+    }
+
+    /** a loop to play over its movement for a while (eating, a bite, a ball); 0 ticks ends it */
+    public void act(Anim a, int ticks) { entityData.set(ACTION, ticks > 0 ? a.ordinal() + 1 : 0); actionLeft = ticks; }
+    private int actionLeft;
+
+    /** max health by stage, plus Hearty (spec: 10, 20, 30) */
+    public void applyStageHealth(boolean heal) {
+        var a = getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH);
+        if (a == null) return;
+        double max = dev.frosthaven.ranchercompanion.life.Vitals.maxHealth(stage(), life);
+        if (a.getBaseValue() != max) a.setBaseValue(max);
+        if (heal || getHealth() > max) setHealth((float) max);
+    }
+
+    /** grown into a bigger hitbox: out of any wall it now pokes into */
+    public void onGrown() {
+        if (level().noCollision(this)) return;
+        var p = ownerPlayer();
+        if (isOut() && p != null && p.level() == level()) teleportNear(p.blockPosition()); else goHome();
     }
 
     public boolean isSleepingLoop() { return entityData.get(SLEEPING); }
@@ -176,6 +267,7 @@ public class DrekkiEntity extends PathfinderMob {
     public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
         super.onSyncedDataUpdated(key);
         if (STAGE.equals(key)) refreshDimensions();
+        if (ACTION.equals(key) && level().isClientSide && entityData.get(ACTION) > 0) { phase = -tickCount / 20f; lastF = -1; }
         if (SLEEPING.equals(key) && level().isClientSide) sleptAt = !entityData.get(SLEEPING) ? Double.NaN : tickCount == 0 ? -1e9 : time(0);
     }
 
@@ -191,9 +283,12 @@ public class DrekkiEntity extends PathfinderMob {
     @Override
     protected void registerGoals() {
         goalSelector.addGoal(0, new net.minecraft.world.entity.ai.goal.FloatGoal(this));
-        goalSelector.addGoal(1, new DrekkiGoals.Follow(this));
-        goalSelector.addGoal(2, new DrekkiGoals.Sleep(this));
-        goalSelector.addGoal(3, new DrekkiGoals.Stroll(this));
+        goalSelector.addGoal(1, new dev.frosthaven.ranchercompanion.combat.CombatGoals.Attack(this));
+        goalSelector.addGoal(2, new DrekkiGoals.Follow(this));
+        goalSelector.addGoal(3, new EatGoal(this));
+        goalSelector.addGoal(4, new DrekkiGoals.Sleep(this));
+        goalSelector.addGoal(5, new DrekkiGoals.Stroll(this));
+        targetSelector.addGoal(1, new dev.frosthaven.ranchercompanion.combat.CombatGoals.PickTarget(this));
         goalSelector.addGoal(5, new net.minecraft.world.entity.ai.goal.LookAtPlayerGoal(this, net.minecraft.world.entity.player.Player.class, 6f));
         goalSelector.addGoal(6, new net.minecraft.world.entity.ai.goal.RandomLookAroundGoal(this));
     }
@@ -222,8 +317,9 @@ public class DrekkiEntity extends PathfinderMob {
 
     @Override
     public void die(net.minecraft.world.damagesource.DamageSource cause) {
+        if (!level().isClientSide && owned() && dev.frosthaven.ranchercompanion.ranch.Death.survives(this, cause)) return;
         super.die(cause);
-        if (!level().isClientSide && owned()) dev.frosthaven.ranchercompanion.ranch.Ranch.died(this);
+        if (!level().isClientSide && owned()) dev.frosthaven.ranchercompanion.ranch.Death.died(this);
     }
 
     @Override
@@ -233,6 +329,11 @@ public class DrekkiEntity extends PathfinderMob {
         else {
             if (petTicks() > 0) entityData.set(PET, petTicks() - 1);
             if (stage() == 1 && isAlive() && getHealth() < getMaxHealth()) setHealth(getMaxHealth());  /* a pup hurt before 0.3.2 */
+            if (actionLeft > 0 && --actionLeft == 0) entityData.set(ACTION, 0);
+            if (owned() && isAlive()) {
+                if (!caughtUp) { caughtUp = true; dev.frosthaven.ranchercompanion.life.Vitals.resume(this); }
+                else if (tickCount % 20 == 0) dev.frosthaven.ranchercompanion.life.Vitals.update(this);
+            }
         }
         if (!level().isClientSide && lane() > 0 && anim().speed != 0) laneTick();
     }
@@ -254,16 +355,23 @@ public class DrekkiEntity extends PathfinderMob {
         super.addAdditionalSaveData(tag);
         tag.putInt("Stage", stage()); tag.putInt("Line", line()); tag.putInt("Diet", diet()); tag.putInt("Astral", astral());
         tag.putInt("Horn", horn()); tag.putInt("Hat", hat()); tag.putInt("Barding", barding()); tag.putInt("Dye", dye()); tag.putInt("Anim", entityData.get(ANIM)); tag.putFloat("Lane", lane());
+        tag.put("Life", dev.frosthaven.ranchercompanion.life.LifeTag.save(life));
+        tag.put("Pack", pack.createTag(registryAccess()));
         if (owner != null) { tag.putUUID("Owner", owner); tag.putUUID("DrekkiId", drekkiId); tag.putBoolean("Out", out); if (home != null) tag.putLong("Home", home.asLong()); }
     }
 
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
+        if (tag.contains("Life")) dev.frosthaven.ranchercompanion.life.LifeTag.load(life, tag.getCompound("Life"));
+        if (tag.contains("Pack")) pack.fromTag(tag.getList("Pack", net.minecraft.nbt.Tag.TAG_COMPOUND), registryAccess());
+        caughtUp = false;
         if (tag.contains("Stage")) setLook(tag.getInt("Stage"), tag.getInt("Line"), tag.getInt("Diet"), tag.getInt("Astral"), tag.getInt("Horn"));
         if (tag.contains("Hat")) setGear(tag.getInt("Hat"), tag.getInt("Barding"), tag.getInt("Dye"));
         if (tag.contains("Anim")) setAnim(Anim.of(tag.getInt("Anim")), tag.getFloat("Lane"));
+        applyStageHealth(false);
         if (tag.hasUUID("Owner")) bind(tag.getUUID("Owner"), tag.getUUID("DrekkiId"), tag.contains("Home") ? BlockPos.of(tag.getLong("Home")) : null);
+        syncLife();
     }
 
     @Override
