@@ -30,7 +30,7 @@ public final class DrekkiAnimations {
             case GLIDE -> glide(P, t, k);
             case JUMP -> jump(P, t, k);
             case FALL -> fall(P, t, k);
-            case SLEEP -> sleep(P, t);
+            case SLEEP -> sleep(P, t, e.sleepTime(t));
             case FEED -> feed(P, t, k, stage);
             case BITE -> bite(P, t, k);
             case POUNCE -> pounce(P, t, k);
@@ -118,10 +118,10 @@ public final class DrekkiAnimations {
         P.lift(y); P.body.y -= (float) (crouch * P.crouchPx); P.body.rx = (float) (0.12 * a); P.mouth(0.25 * a); P.flare((0.35 + sin(t * 22) * 0.15) * a); P.tail.rx = (float) (P.tailBase + 0.5 * a);
     }
 
-    static void sleep(Rig P, double t) {
+    static void sleep(Rig P, double t, double T) {
         double ground = P.crouchPx / 0.4 / 2 + 0.5;
         P.neck1.orderYXZ = P.neck2.orderYXZ = P.head.orderYXZ = true;
-        double T = loop(t, 8) * 8, s = ease((T - 0.6) / 1.8), legs = ease(s / 0.7), neck = ease((s - 0.25) / 0.75), tail = ease((s - 0.15) / 0.75), br = sin(t * 1.4) * s;
+        double s = ease((T - 0.6) / 1.8), legs = ease(s / 0.7), neck = ease((s - 0.25) / 0.75), tail = ease((s - 0.15) / 0.75), br = sin(t * 1.4) * s;
         P.body.y = (float) (P.bodyY + (ground - P.bodyY) * legs + br * 0.3); P.legPose(2.0 * legs, -4.6 * legs, 2.6 * legs);
         P.neck1.rx = (float) (P.neck1Base + 1.4 * neck); P.neck1.ry = (float) (-0.3 * neck); P.neck2.rx = (float) (P.neckBase + 0.8 * neck); P.neck2.ry = (float) (-0.3 * neck);
         /* level the head along the neck's line, 30 degrees clockwise, blended from the standing pitch as it lies down */

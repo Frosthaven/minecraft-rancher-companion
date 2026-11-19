@@ -78,7 +78,7 @@ public final class DrekkiParticles {
                     if (R.nextDouble() < 0.6 + 0.4 * d) spark(c, rnd(-0.4, 0.1) * k, 0.05, rnd(-0.2, 0.2) * k, -rnd(1, 2.5) * k, rnd(0.2, 0.6) * k, 0, 0.5, 0.07 * (0.5 + 0.5 * k), DUST, 2, age);
                     if (d > 0.3) for (int i = 0; i < 2; i++) spark(c, 4.4, rnd(0.2, 1.6) * k, rnd(-1.4, 1.4) * k, -9, 0, 0, 0.9, 0.05, WIND, 0, age); }
                 case GLIDE -> { double H = 1.3 + 0.9 * k; for (int i = 0; i < 2; i++) spark(c, 4.4, H + rnd(-1, 1) * k, rnd(-1.6, 1.6) * k, -7, 0, 0, 1.1, 0.05, WIND, 0, age); }
-                case SLEEP -> { double s = ease((Anim.loop(tf, 8) * 8 - 0.6) / 1.8);
+                case SLEEP -> { double s = ease((e.sleepTime(tf) - 0.6) / 1.8);
                     if (s > 0.99 && R.nextDouble() < 0.012) { spark(c, m.z, m.y + 0.1 * k, -m.x, 0.12, 0.45, 0, 2.0, 0.09 * (0.5 + 0.5 * k), SNORE, 0, age); } }
                 case FEED -> { double W = Anim.FEED_W, T = Anim.loop(tf, W + 4.2) * (W + 4.2), f = (T - W) / 4.2;
                     if (T >= W && f >= 0.6 && f < 0.72 && R.nextDouble() < 0.035) { spark(c, m.z, m.y - 0.05, -m.x + rnd(-0.1, 0.1) * k, rnd(0.1, 0.3) * k, 0, 0, 0.5, 0.04 * (0.5 + 0.5 * k), HAY, 6, age); } }

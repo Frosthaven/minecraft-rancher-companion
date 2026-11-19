@@ -162,10 +162,21 @@ public class DrekkiEntity extends PathfinderMob {
     /** Seconds into the loops, shared by the model, the particles and the lane. */
     public double time(float partial) { return (tickCount + partial) / 20.0 + phase; }
 
+    /** client side: the loop time a live drekki fell asleep at (NaN awake; far back when it was asleep as it came into view) */
+    private double sleptAt = Double.NaN;
+
+    /** Seconds into the sleep loop: a showcase drekki repeats the page's 8 s loop; a live one lies down once, then stays down. */
+    public double sleepTime(double t) {
+        if (!live()) return Anim.loop(t, 8) * 8;
+        if (Double.isNaN(sleptAt)) sleptAt = t;
+        return t - sleptAt;
+    }
+
     @Override
     public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
         super.onSyncedDataUpdated(key);
         if (STAGE.equals(key)) refreshDimensions();
+        if (SLEEPING.equals(key) && level().isClientSide) sleptAt = !entityData.get(SLEEPING) ? Double.NaN : tickCount == 0 ? -1e9 : time(0);
     }
 
     @Override
