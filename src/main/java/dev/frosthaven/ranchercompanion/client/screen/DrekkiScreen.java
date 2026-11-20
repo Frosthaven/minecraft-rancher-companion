@@ -4,6 +4,7 @@ import dev.frosthaven.ranchercompanion.RancherCompanion;
 import dev.frosthaven.ranchercompanion.entity.DrekkiEntity;
 import dev.frosthaven.ranchercompanion.entity.DrekkiMenu;
 import dev.frosthaven.ranchercompanion.life.Life;
+import dev.frosthaven.ranchercompanion.trait.Tips;
 import dev.frosthaven.ranchercompanion.look.Astral;
 import dev.frosthaven.ranchercompanion.look.Diet;
 import dev.frosthaven.ranchercompanion.trait.Trait;
@@ -168,7 +169,9 @@ public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
             g.blit(SPR, ix, ty - 1, SX, BUFF_Y, 9, 9);
             spot("pet", ix, ty - 1, 9, 9);
             if (Art.in(rx, ry, ix, ty - 1, 9, 9)) tip = List.of(Component.translatable("screen.rancher_companion.drekki.pet").withStyle(ChatFormatting.LIGHT_PURPLE),
-                Component.translatable("screen.rancher_companion.drekki.pet.desc", Math.max(1, d.petLeft() / 60)).withStyle(ChatFormatting.GRAY));
+                Component.translatable("screen.rancher_companion.drekki.pet.desc").withStyle(ChatFormatting.GRAY),
+                Component.translatable("screen.rancher_companion.drekki.pet.duration", Tips.time(Life.PET_MILLIS / 50)).withStyle(ChatFormatting.GOLD),
+                Component.translatable("screen.rancher_companion.drekki.pet.ends_in", Tips.time(d.petLeft() * 20L)).withStyle(ChatFormatting.RED));
             ix += 10;
         }
         if (d.kin() > 0) {
