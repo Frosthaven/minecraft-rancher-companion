@@ -242,7 +242,6 @@
   "screen.rancher_companion.drekki.ghost": "%s, ghost",
   "screen.rancher_companion.drekki.food": "Food %s of %s",
   "screen.rancher_companion.drekki.mood": "Mood: %s",
-  "screen.rancher_companion.drekki.mood_value": "Mood %s of 100",
   "screen.rancher_companion.drekki.pet": "Recently pet",
   "screen.rancher_companion.drekki.pet.desc": "One mood band up.",
   "screen.rancher_companion.drekki.pet.duration": "Duration: %s",

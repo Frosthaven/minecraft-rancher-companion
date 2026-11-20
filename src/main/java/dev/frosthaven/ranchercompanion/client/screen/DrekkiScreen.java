@@ -181,10 +181,10 @@ public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
         }
     }
 
-    /** the band's value, effects and reasons (spec, Mood: the hover tooltip) */
+    /** the band's name, effects and reasons (spec, Mood: the hover tooltip) */
     private List<Component> moodTip(DrekkiEntity d, Life.Band band) {
         List<Component> t = new ArrayList<>();
-        t.add(Component.translatable("screen.rancher_companion.drekki.mood_value", Math.round(d.mood())).withStyle(s -> s.withColor(BAND_COLOR[band.ordinal()])));
+        t.add(Component.translatable("mood.rancher_companion." + band.name().toLowerCase()).withStyle(s -> s.withColor(BAND_COLOR[band.ordinal()])));
         t.add(Component.translatable("mood.rancher_companion." + band.name().toLowerCase() + ".desc").withStyle(ChatFormatting.GRAY));
         if (d.food() <= 0) t.add(Component.translatable("screen.rancher_companion.drekki.reason.hungry").withStyle(ChatFormatting.RED));
         var owner = d.ownerPlayer();

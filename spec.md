@@ -1217,7 +1217,7 @@ Pups grow, eat, feel and learn; growth stops at stage 2 (Fledgling) until a late
 - Ponder: the trough scenes show the spots (front, back, ends), owner-only troughs and diet planning (keep diets
   apart to steer a hatchling).
 - Drekki screen (as built): the name over two tabs, Details and Traits (the name only since 2026-11-20: no stage, no ghost tag). Details: hearts (ten to a row), ten
-  food shanks, bloodline, astral, diet, and the mood band in its color (hover: value, effect, reasons), then the buff
+  food shanks, bloodline, astral, diet, and the mood band in its color (hover: band name, effect, reasons; no number), then the buff
   icons, Recently pet (effect, gold Duration and red "Ends in" lines, as a trait's cooldown) and Kinship (kin and bonus). Traits: one line per slot of its stage, learned ones
   in green with their effect on hover, the offer in gold with a check and a cross, free ones dim; no learning progress. From stage 2 the three stance buttons sit
   at the foot of the info well (icons from the design page, tooltip each). The
