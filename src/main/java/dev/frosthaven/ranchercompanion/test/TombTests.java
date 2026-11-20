@@ -51,6 +51,10 @@ public final class TombTests {
             "the barding and the satchel are in it");
         t.assertTrue(be.name().equals(name) && be.date().matches("\\d\\d-\\d\\d-\\d{4}"), "name " + be.name() + ", date " + be.date());
         t.assertTrue(Ranch.roster(t.getLevel().getServer()).get(d.drekkiId()) == null, "its record is gone");
+        var rec = be.drekki();
+        t.assertTrue(rec.getInt("Stage") == 2 && rec.contains("Line") && rec.contains("Life") && rec.getInt("Barding") > 0
+            && !rec.contains("BardingItem") && !rec.contains("Accessory"), "the tombstone keeps its look and life, not its worn items: " + rec.getAllKeys());
+        t.assertFalse(be.getUpdateTag(t.getLevel().registryAccess()).contains("Drekki"), "the record is not sent to clients");
         var state = t.getLevel().getBlockState(pos);
         t.assertTrue(state.getDestroyProgress(p, t.getLevel(), pos) == 0, "it cannot be mined while it holds gear");
         t.assertFalse(state.onDestroyedByPlayer(t.getLevel(), pos, p, true, t.getLevel().getFluidState(pos)), "nor broken in creative");
@@ -60,6 +64,7 @@ public final class TombTests {
         var drops = Block.getDrops(state, t.getLevel(), pos, be);
         t.assertTrue(drops.size() == 1 && name.equals(drops.get(0).get(DrekkiData.TOMB_NAME.get())) && be.date().equals(drops.get(0).get(DrekkiData.TOMB_DATE.get())),
             "it drops itself with the name and date: " + drops);
+        t.assertTrue(rec.equals(drops.get(0).get(DrekkiData.TOMB_DREKKI.get())), "and with the drekki's record");
         t.succeed();
     }
 
@@ -108,7 +113,8 @@ public final class TombTests {
         t.getLevel().setBlock(placed, DrekkiBlocks.TOMBSTONE.get().defaultBlockState(), 3);
         TombstoneBlockEntity again = (TombstoneBlockEntity) t.getLevel().getBlockEntity(placed);
         again.applyComponentsFromItemStack(mined);
-        t.assertTrue(again.name().equals(be.name()) && again.date().equals(be.date()), "the placed one reads its name and date back");
+        t.assertTrue(again.name().equals(be.name()) && again.date().equals(be.date()) && again.drekki().equals(be.drekki()) && !again.drekki().isEmpty(),
+            "the placed one reads its name, date and record back");
         t.runAfterDelay(TombstoneBlockEntity.VANISH / 2, () -> {
             t.assertTrue(t.getLevel().getBlockState(pos).is(DrekkiBlocks.TOMBSTONE.get()), "it stays while it holds gear");
             be.items().clearContent();

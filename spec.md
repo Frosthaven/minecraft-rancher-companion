@@ -911,6 +911,10 @@ Decided 2026-11-20 (the pack has the Corpse mod; this mod does not depend on it)
   and "Died <date>". Anyone may take the gear (as the pack's corpses).
 - It cannot be mined while it holds anything. Mined empty (pickaxe), it drops itself with the drekki's name and the real
   date it died (MM-dd-yyyy) on its tooltip; placed again it keeps them, and Jade's hover shows them.
+- It keeps the drekki's record as it fell (2026-11-20): look (stage, bloodline, diet, astral, horn, hat, barding tier
+  and dyes), life (traits, learning, mood, stats) and name, without the worn items (those are in the tombstone). Kept
+  for a later mechanic and never shown: not in a tooltip, not sent to clients with the placed block; a mined tombstone
+  item carries it and gives it back when placed.
 - A death's tombstone vanishes 30 s (600 ticks) after it is emptied, the Corpse mod's default for an empty corpse; one
   a player places stays.
 - Map marker: with JourneyMap installed, the owner gets a death waypoint where the tombstone stands, JourneyMap's death

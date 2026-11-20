@@ -139,6 +139,10 @@ public final class Death {
         if (d.owner() == null) return;
         java.util.List<ItemStack> gear = new java.util.ArrayList<>(java.util.List.of(
             d.hat() > 0 ? DrekkiItems.hatStack(d.hat()) : ItemStack.EMPTY, d.bardingItem(), d.accessory()));
+        /* its record as it fell, look and all (kept for later; spec, Tombstone): the worn items are in the tombstone, not in it */
+        net.minecraft.nbt.CompoundTag record = Ranch.save(d);
+        record.remove("BardingItem");
+        record.remove("Accessory");
         if (d.hat() > 0) d.setGear(0, d.barding(), d.dye());
         d.setBardingItem(ItemStack.EMPTY);
         d.setAccessory(ItemStack.EMPTY);
@@ -146,7 +150,7 @@ public final class Death {
         ServerLevel level = (ServerLevel) d.level();
         BlockPos at = d.blockPosition();
         /* nothing worn: no tombstone (an empty one would only vanish), the marker still shows where */
-        BlockPos tomb = gear.stream().allMatch(ItemStack::isEmpty) ? null : Tombs.place(level, at, d.getDirection().getOpposite(), name, gear);
+        BlockPos tomb = gear.stream().allMatch(ItemStack::isEmpty) ? null : Tombs.place(level, at, d.getDirection().getOpposite(), name, gear, record);
         if (tomb == null) gear.stream().filter(s -> !s.isEmpty()).forEach(d::spawnAtLocation);  /* no free spot: as before */
         Tombs.mark(d.getServer(), d.owner(), name, level, tomb != null ? tomb : at);
     }

@@ -28,6 +28,8 @@ public final class TombstoneBlockEntity extends BlockEntity {
 
     private final SimpleContainer items = new SimpleContainer(SLOTS);
     private String name = "", date = "";
+    /** the drekki's record when it died: look, life, traits (spec, Tombstone; kept for later, never shown or sent) */
+    private CompoundTag drekki = new CompoundTag();
     /** placed by a death: it vanishes once empty */
     private boolean natural;
     private long emptySince = -1;
@@ -41,12 +43,14 @@ public final class TombstoneBlockEntity extends BlockEntity {
     public String name() { return name; }
     public String date() { return date; }
     public boolean natural() { return natural; }
+    public CompoundTag drekki() { return drekki.copy(); }
     public boolean holdsItems() { return !items.isEmpty(); }
 
     /** a death's tombstone: what it wore goes in, and it vanishes once taken */
-    public void fill(String name, String date, java.util.List<ItemStack> gear) {
+    public void fill(String name, String date, java.util.List<ItemStack> gear, CompoundTag record) {
         this.name = name;
         this.date = date;
+        this.drekki = record.copy();
         this.natural = true;
         for (int i = 0; i < Math.min(SLOTS, gear.size()); i++) items.setItem(i, gear.get(i));
         setChanged();
@@ -67,6 +71,7 @@ public final class TombstoneBlockEntity extends BlockEntity {
         tag.putString("Date", date);
         tag.putBoolean("Natural", natural);
         tag.putLong("EmptySince", emptySince);
+        if (!drekki.isEmpty()) tag.put("Drekki", drekki);
         NonNullList<ItemStack> list = NonNullList.withSize(SLOTS, ItemStack.EMPTY);
         for (int i = 0; i < SLOTS; i++) list.set(i, items.getItem(i));
         ContainerHelper.saveAllItems(tag, list, reg);
@@ -79,6 +84,7 @@ public final class TombstoneBlockEntity extends BlockEntity {
         date = tag.getString("Date");
         natural = tag.getBoolean("Natural");
         emptySince = tag.contains("EmptySince") ? tag.getLong("EmptySince") : -1;
+        drekki = tag.getCompound("Drekki");
         NonNullList<ItemStack> list = NonNullList.withSize(SLOTS, ItemStack.EMPTY);
         ContainerHelper.loadAllItems(tag, list, reg);
         for (int i = 0; i < SLOTS; i++) items.setItem(i, list.get(i));
@@ -90,6 +96,7 @@ public final class TombstoneBlockEntity extends BlockEntity {
         super.applyImplicitComponents(in);
         name = in.getOrDefault(DrekkiData.TOMB_NAME.get(), "");
         date = in.getOrDefault(DrekkiData.TOMB_DATE.get(), "");
+        drekki = in.getOrDefault(DrekkiData.TOMB_DREKKI.get(), new CompoundTag()).copy();
     }
 
     @Override
@@ -97,9 +104,10 @@ public final class TombstoneBlockEntity extends BlockEntity {
         super.collectImplicitComponents(b);
         if (!name.isEmpty()) b.set(DrekkiData.TOMB_NAME.get(), name);
         if (!date.isEmpty()) b.set(DrekkiData.TOMB_DATE.get(), date);
+        if (!drekki.isEmpty()) b.set(DrekkiData.TOMB_DREKKI.get(), drekki.copy());
     }
 
-    /** the client knows the name, date and items, for the screen and Jade */
-    @Override public CompoundTag getUpdateTag(HolderLookup.Provider reg) { return saveWithoutMetadata(reg); }
+    /** the client knows the name, date and items, for the screen and Jade; not the drekki's record */
+    @Override public CompoundTag getUpdateTag(HolderLookup.Provider reg) { CompoundTag t = saveWithoutMetadata(reg); t.remove("Drekki"); return t; }
     @Override public Packet<ClientGamePacketListener> getUpdatePacket() { return ClientboundBlockEntityDataPacket.create(this); }
 }

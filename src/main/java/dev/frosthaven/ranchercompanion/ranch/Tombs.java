@@ -32,12 +32,12 @@ public final class Tombs {
     public static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("MM-dd-yyyy");
 
     /** the tombstone for a drekki that died, its gear in it; where it stands, or null when no spot is free */
-    public static BlockPos place(ServerLevel level, BlockPos at, Direction facing, String name, List<ItemStack> gear) {
+    public static BlockPos place(ServerLevel level, BlockPos at, Direction facing, String name, List<ItemStack> gear, CompoundTag record) {
         BlockPos p = spot(level, at);
         if (p == null) return null;
         level.setBlock(p, DrekkiBlocks.TOMBSTONE.get().defaultBlockState().setValue(TombstoneBlock.FACING, facing), 3);
         if (!(level.getBlockEntity(p) instanceof TombstoneBlockEntity be)) return null;
-        be.fill(name, LocalDate.now().format(DATE), gear);
+        be.fill(name, LocalDate.now().format(DATE), gear, record);
         return p;
     }
 

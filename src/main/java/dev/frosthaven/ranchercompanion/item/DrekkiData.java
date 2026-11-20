@@ -38,6 +38,10 @@ public final class DrekkiData {
         b -> b.persistent(Codec.STRING).networkSynchronized(ByteBufCodecs.STRING_UTF8));
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<String>> TOMB_DATE = COMPONENTS.registerComponentType("tomb_date",
         b -> b.persistent(Codec.STRING).networkSynchronized(ByteBufCodecs.STRING_UTF8));
+    /** a tombstone's drekki record (its look, life and traits; not its gear, which is in the tombstone), kept for later
+     *  and never shown (spec, Tombstone) */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<net.minecraft.nbt.CompoundTag>> TOMB_DREKKI = COMPONENTS.registerComponentType("tomb_drekki",
+        b -> b.persistent(net.minecraft.nbt.CompoundTag.CODEC).networkSynchronized(ByteBufCodecs.COMPOUND_TAG));
     /** what the carrier shows on hover: the drekki's name or bloodline */
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<String>> CARRIED_NAME = COMPONENTS.registerComponentType("carried_name",
         b -> b.persistent(Codec.STRING).networkSynchronized(ByteBufCodecs.STRING_UTF8));
