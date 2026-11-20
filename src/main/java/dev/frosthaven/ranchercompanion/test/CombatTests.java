@@ -26,7 +26,7 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 /**
  * Fledgling combat by stance and diet, and death (spec, Growth release): the bite and the Elemental ball, Passive and
- * pups never fighting, the Phoenix egg there and back, a ghost's second death, and a ghost's revive.
+ * pups never fighting, the Phoenix egg there and back, a ghost only gone by /kill, and a ghost's revive.
  */
 @GameTestHolder(RancherCompanion.ID)
 @PrefixGameTestTemplate(false)
@@ -106,7 +106,7 @@ public final class CombatTests {
     }
 
     @GameTest(template = "floor", timeoutTicks = 100)
-    public static void aGhostThatDiesIsGone(GameTestHelper t) {
+    public static void aGhostOnlyGoesByKill(GameTestHelper t) {
         ServerPlayer p = LifeTests.player(t);
         DrekkiEntity d = out(t, p, 2, Diet.RAW, Life.Stance.PASSIVE);
         Roster r = Ranch.roster(t.getLevel().getServer());
@@ -114,8 +114,17 @@ public final class CombatTests {
         d.life.ghost = true;
         d.syncLife();
         t.assertTrue(Vitals.now(d) > 0 && !dev.frosthaven.ranchercompanion.combat.CombatGoals.fights(d), "a ghost never fights");
-        d.hurt(d.damageSources().generic(), 1000);
-        t.runAfterDelay(2, () -> { t.assertTrue(r.get(e.id) == null, "a ghost's death deletes its record"); t.succeed(); });
+        float hp = d.getHealth();
+        for (var s : java.util.List.of(d.damageSources().generic(), d.damageSources().lava(), d.damageSources().fall(), d.damageSources().fellOutOfWorld(),
+                d.damageSources().playerAttack(p))) { d.invulnerableTime = 0; d.hurt(s, 1000); }
+        t.assertTrue(d.isAlive() && d.getHealth() == hp && r.get(e.id) != null, "nothing hurts a ghost: " + d.getHealth());
+        /* fallen out of the world, it comes back */
+        d.teleportTo(d.getX(), t.getLevel().getMinBuildHeight() - 70, d.getZ());
+        t.runAfterDelay(5, () -> {
+            t.assertTrue(d.isAlive() && d.getY() > t.getLevel().getMinBuildHeight(), "out of the void, back: y " + d.getY());
+            d.kill();  /* /kill still removes it, gone for good */
+            t.runAfterDelay(2, () -> { t.assertTrue(r.get(e.id) == null, "/kill deletes a ghost's record"); t.succeed(); });
+        });
     }
 
     @GameTest(template = "floor", timeoutTicks = 100)

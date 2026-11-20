@@ -383,7 +383,15 @@ public class DrekkiEntity extends PathfinderMob {
      *  reach it, so a stuck one can be removed */
     @Override
     public boolean isInvulnerableTo(net.minecraft.world.damagesource.DamageSource s) {
+        if (life.ghost) return !s.is(net.minecraft.world.damagesource.DamageTypes.GENERIC_KILL);  /* a ghost cannot die again; /kill still removes it */
         return super.isInvulnerableTo(s) || stage() == 1 && !s.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY);
+    }
+
+    /** a ghost that falls out of the world comes back (spec, Ghost drekki) instead of falling forever */
+    @Override
+    protected void onBelowWorld() {
+        if (life.ghost && !level().isClientSide && owned()) { dev.frosthaven.ranchercompanion.ranch.Death.bringBack(this); return; }
+        super.onBelowWorld();
     }
 
     /** stage 1 is never a target: no mob picks it (spec, Pup release) */

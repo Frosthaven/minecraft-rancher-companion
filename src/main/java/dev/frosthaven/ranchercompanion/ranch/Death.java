@@ -22,7 +22,7 @@ import net.minecraft.world.item.ItemStack;
 /**
  * A drekki's death (spec, Growth release: Death; Ghost drekki; Phoenix Heart). Phoenix Heart always wins: it turns into
  * its egg, which brings it back at a hatchery after 4 days. Otherwise a Fledgling or older has a 33% chance to return
- * as a ghost; a ghost that dies, or a drekki whose roll fails, is gone for good. Each death is a red line to the owner.
+ * as a ghost (which cannot die again; only /kill removes it); a drekki whose roll fails is gone for good. Each death is a red line to the owner.
  */
 public final class Death {
     private Death() {}
@@ -49,10 +49,7 @@ public final class Death {
         d.clearFire();
         d.removeAllEffects();
         d.setTarget(null);
-        if (d.getY() < d.level().getMinBuildHeight()) {  /* fell out of the world: back where it belongs */
-            Player p = d.ownerPlayer();
-            if (d.isOut() && p != null && p.level() == d.level()) d.teleportNear(p.blockPosition()); else d.goHome();
-        }
+        if (d.getY() < d.level().getMinBuildHeight()) bringBack(d);  /* fell out of the world: back where it belongs */
         d.syncLife();
         d.ghostChanged();
         Ranch.touch(d);
@@ -132,6 +129,14 @@ public final class Death {
         Ranch.forgetLive(e.id);
         tell(d.getServer(), e.owner, Component.translatable("message.rancher_companion.died",
             Vitals.who(d)).withStyle(ChatFormatting.RED));
+    }
+
+    /** out of the void: to its owner when it travels with them here, else home */
+    public static void bringBack(DrekkiEntity d) {
+        d.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+        d.resetFallDistance();
+        Player p = d.ownerPlayer();
+        if (d.isOut() && p != null && p.level() == d.level()) d.teleportNear(p.blockPosition()); else d.goHome();
     }
 
     /** its hat, barding and bag into a tombstone where it is (dropped when no spot is free), and the owner's marker */

@@ -938,6 +938,8 @@ Decided 2026-11-05:
 - Only its owner ever sees a ghost (2026-11-20): the server sends it to its owner alone, so other players never see,
   hear or touch it; the soul leaving it is the owner's alone too. Revived, everyone sees it again. No mob targets a
   ghost, and a mob already after it lets go.
+- A ghost cannot die again (2026-11-20): nothing hurts it (fire, lava, falls, drowning, players). Only /kill removes it,
+  gone for good; one that falls out of the world comes back to its owner (when out with them) or home.
 - Traits: it keeps every trait, but none work while it is a ghost, and it cannot learn new ones. They all return
   on revive, and they pass in breeding as usual.
 - Revive, like curing a zombie villager: hit it with a splash potion of Weakness, then give it a golden apple. It
