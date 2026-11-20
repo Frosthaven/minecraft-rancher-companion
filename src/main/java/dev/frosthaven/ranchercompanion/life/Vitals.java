@@ -34,7 +34,7 @@ public final class Vitals {
     public static final int STAGE_CAP = 2;
     /** a gap longer than this between two updates of a live drekki was not live time (its chunk stopped ticking) */
     private static final long LIVE_GAP = 200;
-    private static final int[] HEALTH = {10, 20, 30};
+    private static final int[] HEALTH = {10, 30, 50};
 
     public static long now(DrekkiEntity d) { return d.getServer().overworld().getGameTime(); }
 
@@ -59,7 +59,7 @@ public final class Vitals {
         l.stamp = now;
         reviveTick(d, now);
         boolean travelling = d.isOut();
-        l.food = Math.max(0, l.food - Life.drain(dt, hungerRate(d, travelling)));
+        if (!l.ghost) l.food = Math.max(0, l.food - Life.drain(dt, hungerRate(d, travelling)));  /* a ghost does not get hungry */
         if (travelling) grow(d, dt);
         mood(d, dt);
         d.syncLife();
@@ -112,6 +112,8 @@ public final class Vitals {
         if (at == null || at > now) return;
         d.life.cooldowns.remove(REVIVE);
         d.life.ghost = false;
+        d.syncLife();
+        d.ghostChanged();  /* other players see it again */
         d.setHealth(d.getMaxHealth());
         Ranch.touch(d);
         burst(d, 0xFFF3B0);
@@ -157,6 +159,7 @@ public final class Vitals {
         }
         d.setLook(stage, d.line(), diet, d.astral(), d.horn());
         d.applyStageHealth(true);
+        d.outgrowBarding();
         d.onGrown();
         Ranch.touch(d);
         tell(d, Component.translatable("message.rancher_companion.grew", who(d), Component.translatable("stage.rancher_companion." + stage)));

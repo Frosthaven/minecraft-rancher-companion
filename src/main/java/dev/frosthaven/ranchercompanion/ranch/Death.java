@@ -21,13 +21,13 @@ import net.minecraft.world.item.ItemStack;
 
 /**
  * A drekki's death (spec, Growth release: Death; Ghost drekki; Phoenix Heart). Phoenix Heart always wins: it turns into
- * its egg, which brings it back at a hatchery after 4 days. Otherwise a Fledgling or older has a 15% chance to return
+ * its egg, which brings it back at a hatchery after 4 days. Otherwise a Fledgling or older has a 33% chance to return
  * as a ghost; a ghost that dies, or a drekki whose roll fails, is gone for good. Each death is a red line to the owner.
  */
 public final class Death {
     private Death() {}
 
-    public static final double GHOST_CHANCE = 0.15;
+    public static final double GHOST_CHANCE = 0.33;
     /** a Phoenix egg incubates 4 days: it starts a day behind an egg's 3 */
     public static final long PHOENIX_START = -Incubation.DAY;
 
@@ -36,11 +36,14 @@ public final class Death {
         Entry e = Ranch.roster(d.getServer()).get(d.drekkiId());
         if (e == null) return false;
         if (!d.life.ghost && d.life.traits.contains(Trait.PHOENIX_HEART.id)) { phoenix(d, e); return true; }
-        if (!d.life.ghost && d.stage() >= 2 && d.getRandom().nextDouble() < GHOST_CHANCE) { ghost(d); return true; }
+        if (!d.life.ghost && d.stage() >= 2 && d.getRandom().nextDouble() < GHOST_CHANCE) { turnGhost(d); return true; }
         return false;
     }
 
-    private static void ghost(DrekkiEntity d) {
+    /** a ghost wears nothing (spec, Ghost drekki): its hat, barding and bag go into a tombstone where it died, with the
+     *  owner's death marker, as a real death leaves them */
+    public static void turnGhost(DrekkiEntity d) {
+        gearToTomb(d);
         d.life.ghost = true;
         d.setHealth(d.getMaxHealth());
         d.clearFire();
@@ -51,9 +54,14 @@ public final class Death {
             if (d.isOut() && p != null && p.level() == d.level()) d.teleportNear(p.blockPosition()); else d.goHome();
         }
         d.syncLife();
+        d.ghostChanged();
         Ranch.touch(d);
-        if (d.level() instanceof ServerLevel sl) sl.sendParticles(ParticleTypes.SOUL, d.getX(), d.getY() + 0.5, d.getZ(), 20, 0.3, 0.4, 0.3, 0.02);
-        d.playSound(SoundEvents.SOUL_ESCAPE.value(), 1f, 0.8f);
+        /* the soul leaving is seen and heard by its owner only, as the ghost is */
+        ServerPlayer owner = d.getServer().getPlayerList().getPlayer(d.owner());
+        if (owner != null && owner.level() == d.level()) {
+            ((ServerLevel) d.level()).sendParticles(owner, ParticleTypes.SOUL, false, d.getX(), d.getY() + 0.5, d.getZ(), 20, 0.3, 0.4, 0.3, 0.02);
+            owner.playNotifySound(SoundEvents.SOUL_ESCAPE.value(), net.minecraft.sounds.SoundSource.NEUTRAL, 1f, 0.8f);
+        }
         tell(d.getServer(), d.owner(), Component.translatable("message.rancher_companion.died_ghost", Vitals.who(d)).withStyle(ChatFormatting.RED));
     }
 
@@ -113,17 +121,34 @@ public final class Death {
         return true;
     }
 
-    /** gone for good: its record is deleted, its hat and pack drop where it fell */
+    /** gone for good: its record is deleted; a tombstone where it fell holds its hat, barding and bag (the bag keeps what it
+     *  holds; spec, Tombstone), and the owner's map gets a death marker */
     public static void died(DrekkiEntity d) {
         Roster r = Ranch.roster(d.getServer());
         Entry e = r.get(d.drekkiId());
         if (e == null) return;
-        if (d.hat() > 0) d.spawnAtLocation(DrekkiItems.hatStack(d.hat()));
-        for (int i = 0; i < d.pack().getContainerSize(); i++) if (!d.pack().getItem(i).isEmpty()) d.spawnAtLocation(d.pack().removeItemNoUpdate(i));
+        gearToTomb(d);
         r.remove(e.id);
         Ranch.forgetLive(e.id);
-        tell(d.getServer(), e.owner, Component.translatable(d.life.ghost ? "message.rancher_companion.died_ghost_gone" : "message.rancher_companion.died",
+        tell(d.getServer(), e.owner, Component.translatable("message.rancher_companion.died",
             Vitals.who(d)).withStyle(ChatFormatting.RED));
+    }
+
+    /** its hat, barding and bag into a tombstone where it is (dropped when no spot is free), and the owner's marker */
+    private static void gearToTomb(DrekkiEntity d) {
+        if (d.owner() == null) return;
+        java.util.List<ItemStack> gear = new java.util.ArrayList<>(java.util.List.of(
+            d.hat() > 0 ? DrekkiItems.hatStack(d.hat()) : ItemStack.EMPTY, d.bardingItem(), d.accessory()));
+        if (d.hat() > 0) d.setGear(0, d.barding(), d.dye());
+        d.setBardingItem(ItemStack.EMPTY);
+        d.setAccessory(ItemStack.EMPTY);
+        String name = Ranch.label(Ranch.save(d)).getString();
+        ServerLevel level = (ServerLevel) d.level();
+        BlockPos at = d.blockPosition();
+        /* nothing worn: no tombstone (an empty one would only vanish), the marker still shows where */
+        BlockPos tomb = gear.stream().allMatch(ItemStack::isEmpty) ? null : Tombs.place(level, at, d.getDirection().getOpposite(), name, gear);
+        if (tomb == null) gear.stream().filter(s -> !s.isEmpty()).forEach(d::spawnAtLocation);  /* no free spot: as before */
+        Tombs.mark(d.getServer(), d.owner(), name, level, tomb != null ? tomb : at);
     }
 
     private static void tell(net.minecraft.server.MinecraftServer s, java.util.UUID owner, Component msg) {

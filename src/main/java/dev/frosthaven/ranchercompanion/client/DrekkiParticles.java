@@ -3,6 +3,7 @@ package dev.frosthaven.ranchercompanion.client;
 import dev.frosthaven.ranchercompanion.client.rig.Baked;
 import dev.frosthaven.ranchercompanion.entity.DrekkiEntity;
 import dev.frosthaven.ranchercompanion.look.Anim;
+import dev.frosthaven.ranchercompanion.look.Dims;
 import dev.frosthaven.ranchercompanion.look.Lineage;
 import dev.frosthaven.ranchercompanion.look.Palette;
 import dev.frosthaven.ranchercompanion.showcase.Layout;
@@ -65,7 +66,7 @@ public final class DrekkiParticles {
     private static boolean cross(double lastF, double f, double at) { return lastF < at && f >= at; }
 
     private static void emit(DrekkiEntity e) {
-        Anim a = e.anim(); int stage = e.stage(); double k = Anim.stageK(stage), t = e.time(0);
+        Anim a = e.anim(); int stage = e.stage(); double k = Anim.worldK(stage), t = e.time(0);
         float yaw = e.yBodyRot;
         Ctx c = new Ctx(e, e.getX(), e.getY(), e.getZ(), Layout.forward(yaw), Layout.right(yaw), e.lane() > 0 && a.speed != 0 ? a.speedAt(stage, t) : 0);
         sparkle(c, e.lineage(), stage, t);
@@ -130,10 +131,10 @@ public final class DrekkiParticles {
     /** the page's sparkle() for the rare lines: cubes born in a box around the body, n of them alive at once, each living the config's life */
     private static void sparkle(Ctx c, Lineage L, int stage, double t) {
         Lineage.Sparkle s = L.sparkle(); if (s == null) return;
-        double pk = PK[Math.max(1, Math.min(3, stage)) - 1], px = pk / 16, rate = s.n() / s.life() / 20;  /* spawns per tick */
+        double pk = PK[Math.max(1, Math.min(3, stage)) - 1] * Dims.of(stage).scale, px = pk / 16, rate = s.n() / s.life() / 20;  /* spawns per tick */
         int n = (int) rate + (R.nextDouble() < rate - (int) rate ? 1 : 0); if (n == 0) return;
         Baked b = DrekkiModels.get(c.e).baked; DrekkiAnimations.pose(b, c.e, t);
-        double lift = b.rig.root.y / 16.0, fwd = b.rig.root.z / 16.0;  /* the page parents the cubes to the root: they ride its lift and forward offset */
+        double lift = b.rig.root.y / 16.0 * b.rig.D.scale, fwd = b.rig.root.z / 16.0 * b.rig.D.scale;  /* the page parents the cubes to the root: they ride its lift and forward offset */
         float[] box = s.box(); List<Integer> col = L.particles();
         for (int i = 0; i < n; i++) {
             double x = (R.nextDouble() * 2 - 1) * box[0] * px, y = (box[1] + R.nextDouble() * box[2]) * px, z = (R.nextDouble() * 2 - 1) * box[3] * px, bu = s.burst() * px, wn = s.wander() * px;

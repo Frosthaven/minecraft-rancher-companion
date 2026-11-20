@@ -22,9 +22,10 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
 
 /**
- * JEI (optional; JEI loads this class itself, nothing else touches it): every barding tier with each of the 16 dyes, as
- * crafting recipes to look up. Display only: real dyeing is vanilla's armor dye recipe, which mixes dyes as leather
- * armor does and shows in JEI only as one special recipe.
+ * JEI (optional; JEI loads this class itself, nothing else touches it): every barding item (both stages) and every plain
+ * bag with each of the 16 dyes, as crafting recipes to look up: the dye left of the item colors its main part, right of
+ * it its trim (spec, Dyeing). Display only: the real recipe is DyeRecipe, which blends as leather does. Bags that are
+ * Sophisticated backpacks show Sophisticated's own dye recipe instead.
  */
 @JeiPlugin
 public final class DrekkiJei implements IModPlugin {
@@ -36,14 +37,21 @@ public final class DrekkiJei implements IModPlugin {
     @Override
     public void registerRecipes(IRecipeRegistration reg) {
         List<RecipeHolder<CraftingRecipe>> out = new ArrayList<>();
-        for (Barding tier : Barding.values()) {
-            var item = DrekkiItems.BARDING.get(tier).get();
-            for (DyeColor c : DyeColor.values()) {
-                ItemStack dyed = DyedItemColor.applyDyes(new ItemStack(item), List.of(DyeItem.byColor(c)));
-                NonNullList<Ingredient> in = NonNullList.of(Ingredient.EMPTY, Ingredient.of(item), Ingredient.of(DyeItem.byColor(c)));
-                out.add(new RecipeHolder<>(ResourceLocation.fromNamespaceAndPath(RancherCompanion.ID, "jei/dye_" + tier.id() + "_" + c.getName()),
-                    new ShapelessRecipe("rancher_companion_barding_dye", CraftingBookCategory.EQUIPMENT, dyed, in)));
-            }
+        List<net.minecraft.world.item.Item> items = new ArrayList<>();
+        DrekkiItems.allBarding().forEach(i -> items.add(i.get()));
+        DrekkiItems.BAGS.forEach(i -> { if (i.get() instanceof dev.frosthaven.ranchercompanion.item.BagItem) items.add(i.get()); });
+        for (var item : items) {
+            String id = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item).getPath();
+            for (DyeColor c : DyeColor.values())
+                for (boolean trim : new boolean[]{false, true}) {
+                    ItemStack dyed = new ItemStack(item);
+                    int rgb = c.getTextureDiffuseColor() & 0xFFFFFF;
+                    dev.frosthaven.ranchercompanion.item.Dyeing.set(dyed, trim ? -1 : rgb, trim ? rgb : -1);
+                    var pattern = net.minecraft.world.item.crafting.ShapedRecipePattern.of(
+                        java.util.Map.of('I', Ingredient.of(item), 'D', Ingredient.of(DyeItem.byColor(c))), List.of(trim ? "ID" : "DI"));
+                    out.add(new RecipeHolder<>(ResourceLocation.fromNamespaceAndPath(RancherCompanion.ID, "jei/dye_" + id + "_" + c.getName() + (trim ? "_trim" : "_main")),
+                        new net.minecraft.world.item.crafting.ShapedRecipe("rancher_companion_dye", CraftingBookCategory.EQUIPMENT, pattern, dyed)));
+                }
         }
         reg.addRecipes(RecipeTypes.CRAFTING, out);
     }

@@ -1,47 +1,9 @@
-"""Barding icon art: the plate silhouette, the strap layer, and a grayscale material pattern per tier.
+"""Barding art: a grayscale material pattern per tier, painted on the 3D barding's plates (tools/item_models.py).
 
 Digits 1 (dark) to 5 (white) are gray levels; the game multiplies them by the dye or the tier's plate color.
 """
 
-# '#' takes the material, 'o' is the plate's dark edge. A side view: head plate, neck, body, two leg skirts.
-SHAPE = [
-    "................",
-    "..ooo...........",
-    ".o###o..........",
-    ".o####o.........",
-    "..o####o........",
-    "...o###ooooooo..",
-    "...o##########o.",
-    "..o###########o.",
-    "..o###########o.",
-    "..o###########o.",
-    "..o###ooooo###o.",
-    "..o##o.....o##o.",
-    "..o##o.....o##o.",
-    "..o##o.....o##o.",
-    "..oooo.....oooo.",
-    "................",
-]
 
-# Untinted: leather straps (s, t) and a brass buckle (b) over the plate.
-STRAPS = [
-    "................",
-    "................",
-    "................",
-    "................",
-    "................",
-    "....ttt.........",
-    "........ss......",
-    "........ss......",
-    "........bb......",
-    "........ss......",
-    "................",
-    "................",
-    "................",
-    "................",
-    "................",
-    "................",
-]
 
 
 def _grid(fn):
@@ -99,3 +61,6 @@ MATERIALS = {
     "diamond": _grid(_diamond),
     "netherite": _grid(_netherite),
 }
+
+
+

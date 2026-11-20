@@ -6,15 +6,16 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.trading.ItemCost;
 import net.minecraft.world.item.trading.MerchantOffer;
 
-/** Vanilla hooks for the items: a water cauldron washes dye off barding, and the wandering trader sells hats and the egg (both added when a player opens it). */
+/** Vanilla hooks for the items: a water cauldron washes dye off barding, bags, hatcheries and troughs, and the wandering trader sells hats and the egg (both added when a player opens it). */
 public final class ItemHooks {
     private ItemHooks() {}
 
     static final int HAT_PRICE = 12, EGG_PRICE = 6;
 
-    /** Same as leather armor: a water cauldron removes the dyed color and uses one level of water. */
     static void registerCauldronWash() {
-        DrekkiItems.BARDING.values().forEach(item -> CauldronInteraction.WATER.map().put(item.get(), CauldronInteraction.DYED_ITEM));
+        /* one named action for every dyeable item, so the Haven pack's bleach recognizes them all (LeatherWash) */
+        DrekkiItems.allBarding().forEach(item -> CauldronInteraction.WATER.map().put(item.get(), LeatherWash.INSTANCE));
+        DrekkiItems.BAGS.forEach(item -> CauldronInteraction.WATER.map().put(item.get(), LeatherWash.INSTANCE));
         CauldronInteraction.WATER.map().put(dev.frosthaven.ranchercompanion.block.DrekkiBlocks.HATCHERY.get().asItem(), LeatherWash.INSTANCE);
         CauldronInteraction.WATER.map().put(dev.frosthaven.ranchercompanion.block.DrekkiBlocks.TROUGH.get().asItem(), LeatherWash.INSTANCE);
     }

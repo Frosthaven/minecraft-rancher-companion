@@ -29,9 +29,10 @@ class CoplanarTest {
                 if (hat == 0) pairs += Coplanar.clashes(r).size();
                 check(r, "stage 1 " + d + " horn " + horn + " hat " + hat, bad);
             }
-            for (int stage = 2; stage <= 3; stage++) for (int barding : new int[]{0, 4}) {
-                Rig r = new Rig(new Rig.Look(stage, 0x7d8a5c, -1, 0x8a9a6a, 1, d, horn, false, 0, barding, -1, 0x7d8a5c, 0f, false));
-                check(r, "stage " + stage + " " + d + " horn " + horn + " barding " + barding, bad);
+            for (int stage = 2; stage <= 3; stage++) for (int barding : new int[]{0, 4}) for (int bag = 0; bag <= 6; bag++) {
+                if (bag > 0 && dev.frosthaven.ranchercompanion.look.Gear.BAG_STAGE[bag] > stage) continue;  /* a saddlebag from stage 3 */
+                Rig r = new Rig(new Rig.Look(stage, 0x7d8a5c, -1, 0x8a9a6a, 1, d, horn, false, 0, barding, -1, 0x7d8a5c, 0f, false, -1, bag, -1, -1));
+                check(r, "stage " + stage + " " + d + " horn " + horn + " barding " + barding + " bag " + bag, bad);
             }
         }
         System.out.println("stage 1 clashing pairs the growth separates (all diets and horns, no hat): " + pairs);

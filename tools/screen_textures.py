@@ -5,7 +5,7 @@ a body of dithered material, sunk wells framed by a bevel, and tab-shaped button
 leather, the body dark oak, the frame worn steel, the wells dark leather, and the text thread.
 
 Run: uv run --with pillow python -I tools/screen_textures.py
-Writes assets/rancher_companion/textures/gui/{hatchery,trough,drekki,drekki_pack,drekki_sprites}.png (256x256 sheets). The Java screens use the same
+Writes assets/rancher_companion/textures/gui/{hatchery,trough,tombstone,drekki,drekki_gear,drekki_sprites}.png (256x256 sheets). The Java screens use the same
 numbers (HatcheryScreen, TroughScreen): change both together.
 """
 from pathlib import Path
@@ -192,10 +192,33 @@ def trough():
     s.save("trough")
 
 
+# ---- the tombstone: the trough's frame, the gear's well (hat, barding, accessory) and the date under it ----
+def tombstone():
+    s = Sheet()
+    W, H = 176, 166
+    s.wood(0, 0, W, H)
+    s.leather(3, 3, W - 6, 14)
+    s.frame(0, 0, W, H)
+    for x in range(3, W - 3):
+        s.put(x, 17, STEEL[0]); s.put(x, 18, STEEL[2])
+    s.well(55, 27, 3 * 18 + 14, 32)      # the gear's well (TombstoneMenu SLOT_X 62 = 61 + 1)
+    for i in range(3):
+        s.slot(61 + i * 18, 33)
+    s.rect(3, 73, W - 6, 90, STEEL[1])
+    for x in range(3, W - 3):
+        s.put(x, 73, STEEL[0]); s.put(x, 74, STEEL[2])
+    for r in range(3):
+        for c in range(9):
+            s.slot(7 + c * 18, 83 + r * 18)
+    for c in range(9):
+        s.slot(7 + c * 18, 141)
+    s.save("tombstone")
+
+
 # ---- the drekki (spec, Drekki screen): the hat slot, the model, the details or traits, the stance at the foot of the
-# details (stage 2 on), the pack (stage 2 on: one row of 9), the player's inventory below, centered. Two sheets: drekki
-# (no pack, 220 x 220) and drekki_pack (220 x 244); the tabs, buttons and icons on drekki_sprites. The top is wider than
-# a container (Minecraft's font needs the room for trait names); the pack and the inventory keep vanilla's 176, centered.
+# details (stage 2 on), the barding and accessory slots under the hat (stage 2 on), the player's inventory below, centered. Two sheets: drekki
+# (stage 1, 220 x 220) and drekki_gear (stage 2 on, its barding and accessory slots); the tabs, buttons and icons on drekki_sprites. The top is wider than
+# a container (Minecraft's font needs the room for trait names); the inventory keeps vanilla's 176, centered.
 # DrekkiMenu and DrekkiScreen use the same numbers.
 STANCE_ICONS = {  # the design page's STANCE_ICON grids, 8 x 8
     "aggressive": (['......SS', '.....SWS', '....SWS.', '.B.SWS..', '..BWS...', '..HB....', '.H..B...', 'H.......'],
@@ -236,12 +259,13 @@ def drekki_sprites(s):
         pixels(s, SX + i * 10, BUFF_Y, rows, pal)
 
 
-def drekki(pack):
-    """two parts, as Sophisticated Backpacks steps its screen: the drekki's part on top, 220 wide (hat, model, info, and
-    the pack row from stage 2), and the player's inventory below it, vanilla's 176 wide, centered; clear beside it"""
+def drekki(gear):
+    """two parts, as Sophisticated Backpacks steps its screen: the drekki's part on top, 220 wide (hat, from stage 2 the
+    barding and accessory slots under it, model, info), and the player's inventory below it, vanilla's 176 wide,
+    centered; clear beside it. A drekki carries no pack: its storage is the bag in its accessory slot (spec, Accessory)"""
     s = Sheet()
     W, IX = 220, 22                       # IX: where the 176-wide inventory part starts
-    top = 152 if pack else 128            # the top part's height; the inventory part hangs from its bottom edge
+    top = 128                             # the top part's height; the inventory part hangs from its bottom edge
     H = top + 92
     s.wood(0, 0, W, top)
     s.leather(3, 3, W - 6, 14)
@@ -251,9 +275,9 @@ def drekki(pack):
     s.slot(7, 26)                         # the hat
     s.well(28, 22, 52, 100)               # the model
     s.well(83, 22, 131, 100)              # the details or traits, the stance at its foot
-    if pack:
-        for c in range(9):
-            s.slot(IX + 7 + c * 18, 128)
+    if gear:
+        s.slot(7, 46)                     # the barding
+        s.slot(7, 66)                     # the accessory
     # the inventory part: its own steel frame, joined to the top part's bottom edge (the frames overlap there)
     py = top - 3
     s.rect(IX, py, 176, H - py, STEEL[1])
@@ -267,7 +291,7 @@ def drekki(pack):
             s.slot(IX + 7 + c * 18, top + 8 + r * 18)
     for c in range(9):
         s.slot(IX + 7 + c * 18, top + 66)
-    s.save("drekki_pack" if pack else "drekki")
+    s.save("drekki_gear" if gear else "drekki")
 
 
 def drekki_sheet_sprites():
@@ -279,6 +303,7 @@ def drekki_sheet_sprites():
 if __name__ == "__main__":
     hatchery()
     trough()
+    tombstone()
     drekki(False)
     drekki(True)
     drekki_sheet_sprites()

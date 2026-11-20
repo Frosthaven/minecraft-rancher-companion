@@ -1,7 +1,6 @@
 {
-  "parent": "minecraft:item/generated",
+  "parent": "rancher_companion:item/barding_mature",
   "textures": {
-    "layer0": "rancher_companion:item/diamond_barding",
-    "layer1": "rancher_companion:item/diamond_barding_straps"
+    "plate": "rancher_companion:item/barding_diamond_plate"
   }
 }

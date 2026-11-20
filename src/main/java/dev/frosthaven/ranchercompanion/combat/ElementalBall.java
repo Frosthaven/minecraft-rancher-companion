@@ -53,9 +53,19 @@ public final class ElementalBall extends ThrowableProjectile {
         if (hit.getEntity() instanceof LivingEntity t) t.hurt(damageSources().indirectMagic(this, owner), DAMAGE);
     }
 
+    /** a hit at once, never added to the world: the target is too close for a ball in flight */
+    public void strike(LivingEntity t) {
+        t.hurt(damageSources().indirectMagic(this, getOwner()), DAMAGE);
+        burst();
+    }
+
     @Override
     protected void onHit(HitResult hit) {
         super.onHit(hit);
+        burst();
+    }
+
+    private void burst() {
         if (level() instanceof ServerLevel sl) {
             sl.sendParticles(new DustParticleOptions(MAGIC, 1.2f), getX(), getY() + 0.15, getZ(), 16, 0.2, 0.2, 0.2, 0.05);
             sl.sendParticles(ParticleTypes.END_ROD, getX(), getY() + 0.15, getZ(), 4, 0.1, 0.1, 0.1, 0.05);

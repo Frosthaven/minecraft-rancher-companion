@@ -130,10 +130,16 @@ public final class Feeding {
         return ItemStack.EMPTY;
     }
 
-    /** a meal from its pack (from stage 2): when it has no usable trough, or is out with its owner on the move */
+    /** a meal from the bag it wears (stage 2 on): when it has no usable trough, or is out with its owner on the move.
+     *  Only a bag with a feeding upgrade feeds it (Sophisticated Backpacks; spec, Accessory: bags), and only food its
+     *  filter allows; a plain bag holds food but never feeds it */
     public static ItemStack fromPack(DrekkiEntity d) {
-        var pack = d.pack();
-        for (int i = 0; i < pack.getContainerSize(); i++) if (Vitals.eats(d, pack.getItem(i))) return pack.removeItem(i, 1);
+        var bag = d.bagStorage();
+        if (bag == null || d.accessory().getItem() instanceof dev.frosthaven.ranchercompanion.item.BagItem) return ItemStack.EMPTY;
+        for (int i = 0; i < bag.getSlots(); i++) {
+            ItemStack s = bag.getStackInSlot(i);
+            if (Vitals.eats(d, s) && dev.frosthaven.ranchercompanion.compat.sophisticated.SophBags.feeds(d.accessory(), s)) return bag.extractItem(i, 1, false);
+        }
         return ItemStack.EMPTY;
     }
 

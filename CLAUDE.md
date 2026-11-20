@@ -6,7 +6,7 @@ dependencies; the Haven pack (`../minecraft-haven-pack`) may ship it later, but 
 
 **State:** public on GitHub (`Frosthaven/minecraft-rancher-companion`), in the Haven pack since 0.2.0 (the teaser:
 blocks, trough, trader egg; see `spec.md` "Teaser release"). 0.3.0 is the pup release (`spec.md` "Pup release"):
-hatching, the roster, check in and out, the small carrier, petting, names, the trader's hats, the trough screen. Push to `main` only when the user asks. The design is in `spec.md` (every decision, open questions at the end) and on the design page listed in
+hatching, the roster, check in and out, the small carrier, petting, names, the trader's hats, the trough screen. 0.4.0 is the growth release: Fledglings, hunger, mood, traits, combat, barding and bags, tombstones and ghosts. Push to `main` only when the user asks. The design is in `spec.md` (every decision, open questions at the end) and on the design page listed in
 `artifacts.md`; keep both in step with any change. Ask the user before inventing a feature.
 
 ## Layout (`src/main/java/dev/frosthaven/ranchercompanion`)
@@ -18,7 +18,8 @@ hatching, the roster, check in and out, the small carrier, petting, names, the t
 - `entity/DrekkiEntity`: synched look (stage, lineage, diet, astral, horn, hat, barding, dye) and a pinned loop; stage sets the hitbox.
 - `item/`: `DrekkiItems` registers every item (barding, carriers, hats, tonics, the egg) in display order (`ALL`) plus the
   creative tab; recipes are JSON under `data/rancher_companion/recipe`; barding is dyeable (`#minecraft:dyeable`).
-  Item icons come from `tools/item_icons.py` (`uv run --with pillow python -I tools/item_icons.py`).
+  Item icons come from `tools/item_icons.py` (`uv run --with pillow python -I tools/item_icons.py`); the 3D models
+  (bags, carriers, tombstone) and their textures from `tools/item_models.py` (same command).
   Showcase mobs are NoAi; the travelling loops move them down a lane on the server and cut back.
 - `client/rig/`: the design page's rig, ported one to one. `Rig` builds the same groups and cubes in the page's space
   (y up, z forward, pixels) with the page's pose helpers (`gait`, `legPose`, `legMix`, `mouth`, `flare`, `lift`,
@@ -49,6 +50,8 @@ hatching, the roster, check in and out, the small carrier, petting, names, the t
   world as a drekki stands in it: placement, the pen, the stable's ceiling and light checks).
 - `entity/DrekkiGoals` (follow the owner with the catch-up teleport, stroll and sleep in the pen, pen-bound
   navigation) and `entity/DrekkiInteract` (petting, hats, owner-only name tags and carriers).
+- `block/TombstoneBlock` + `TombstoneBlockEntity` + `TombstoneMenu`, `ranch/Tombs` (placing it at a death, the owner's
+  death marker, kept for the next login when away): a drekki gone for good leaves its gear there.
 - `block/HatcheryBlockEntity` (owner, anvil name, the egg and its incubation, the pens; puts back missing drekki),
   `block/TroughMenu` + `DrekkiMenus`. `net/` the hatchery screen's packets. `client/screen/` the hatchery and trough
   screens, drawn from `tools/screen_textures.py` (`uv run --with pillow python -I tools/screen_textures.py`).
@@ -59,7 +62,12 @@ hatching, the roster, check in and out, the small carrier, petting, names, the t
   it screenshots the Ponder stable scene, then on a pad 4000 blocks east (away from claims and colonies) teaches every
   activity trait from the real activity (kills, falls, drowning, fire, powder snow, milk, fishing, trades, XP, a
   totem, a worn-out tool) and checks each ability as a player meets it. GameTests fake state; this is the real game.
-- `compat/jei/DrekkiJei` (barding dye recipes for JEI) and `compat/ponder/DrekkiPonder` (build guides; schematics and
+  `-Drancher_companion.selftest.gear=true` runs `SelfTestTraits.gear` instead: barding and bags through the real
+  drekki screen (shift-clicks, the stage checks, the bag screen), a hit into the barding, both dye recipes, and close
+  shots of the gear on a Fledgling and a Mature. Run it in the pack too: with Sophisticated Backpacks the bags are its
+  backpacks (compat/sophisticated).
+- `compat/journeymap/DrekkiMap` (the magenta death marker; JourneyMap finds it by its annotation),
+  `compat/jei/DrekkiJei` (barding dye recipes for JEI) and `compat/ponder/DrekkiPonder` (build guides; schematics and
   lang from `uv run --with nbtlib python -I tools/ponder_scenes.py`): optional, compile only against JEI's and
   Ponder's maven artifacts, registered only when the mod is loaded.
 - `test/RanchTests`: GameTests (`./gradlew runGameTestServer`) for hatch, check out and in, carrier, release,

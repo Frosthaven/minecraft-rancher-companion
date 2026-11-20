@@ -114,8 +114,8 @@ A block the player builds. Requirements:
   - Code, with h the hatchery's y: some offset (ox, oz) in -2..0 x -2..0 such that for every dx, dz in 0..2, some y
     in h+3..h+10 at (x+ox+dx, z+oz+dz) has a non-empty collision shape; and (x, h+1), (x, h+2) have none.
   - The roof can be any size or shape, sloped or uneven, as long as such a 3x3 sits over the hatchery.
-  - Beside the hatchery that leaves 3 blocks of air above the floor, which fits a standing stage 3 (2.3 tall). A
-    ridden stage 3 is about 3.3 tall.
+  - Beside the hatchery that leaves 3 blocks of air above the floor, which fits a standing stage 3 (1.725 tall since
+    2026-11-20). A ridden stage 3 is about 2.7 tall.
 - Light level above 0 on all sides of the block.
 
 Look (proposal, design page): in the mod's style (see Style). A dark oak chest bound in dark steel (corner posts,
@@ -147,6 +147,8 @@ Two craftable items:
   player can make one right after the hatch.
 - Large carrier, shaped: `I L I / L C L / I _ I` (4 iron ingots, 3 leather, 1 small carrier). An upgrade: a drekki
   in the small carrier stays inside.
+- Their items are 3D models (2026-11-20; not placeable): a crate with leather sides, a grated door, feet and a handle,
+  the small one framed in wood, the large one in iron with rivets.
 - Small drekki carrier: holds a stage 1 drekki.
 - Large drekki carrier: holds a stage 2 drekki.
 - Stage 3 cannot use a carrier at all.
@@ -164,14 +166,16 @@ Two craftable items:
 ### Stage 2
 
 - Length: 7 game days of travel (revised 2026-11-18; server config).
-- Size: about a wolf.
+- Size: about a wolf. Revised 2026-11-20: 75% of the page's pixel model (hitbox 0.75 wide, 0.975 tall; was 1.0 x 1.3).
 - Needs the large carrier.
 - Has its diet's basic attack (Bite or Elemental ball), no cooldown ability.
 
 ### Stage 3
 
 - Length: permanent (fully grown).
-- Size: a horse, or slightly smaller.
+- Size: a horse, or slightly smaller. Revised 2026-11-20: 75% of the page's pixel model, about a player's height (hitbox
+  1.125 wide, 1.725 tall; was 1.5 x 2.3). The page's pixel table and loops stay as they are; one scale per stage
+  (1, 0.75, 0.75) sets the model, hitbox, shadow, particles, travel speeds and the room it needs in the world.
 - Can be mounted and ridden like a horse.
 - Every ability. No built-in glide or slow fall: flight comes only from the Wings of Hope trait (elytra-style
   while ridden, dive to gain speed, pull up to climb), so only a ridden stage 3 flies.
@@ -195,7 +199,8 @@ line reads "Astral: <name>".
 
 Health and food: at the top of the Details tab, as vanilla's HUD draws a player's: a row of hearts (full, half, empty; ten to a
 row, so a stage 3 drekki's extra hearts wrap) and a row of ten drumstick shanks for the hunger meter. Max health:
-10, 20 and 30 by stage (decided 2026-11-18).
+10, 30 and 50 by stage (decided 2026-11-18; Fledgling and Mature raised 2026-11-20 from 20 and 30: a Fledgling at 20
+had half a tamed wolf's 40 and barely won a fight with one skeleton).
 
 Screen style (all the mod's screens), after the UI remix's Sophisticated Backpacks redesign (minecraft-create-ui-remix,
 `backpack-art.js`): the top is the remix's own leather, the body of its generated
@@ -231,8 +236,75 @@ The screen shows:
 Inventory by stage. Items stay in their slots when the drekki grows.
 
 - Stage 1: no pack (the hat slot only, see Look).
-- Stage 2: a pack of 9 slots (one row).
-- Stage 3: a pack of 27 slots (three rows), a saddle slot (needed to ride) and a barding slot.
+- Revised 2026-11-20: a drekki gets no storage from growing. Storage comes from a bag in its accessory slot (stage 2 and 3;
+  accessory, not bag: other accessories may come later),
+  drawn on the drekki: two bags side by side on top of the back, either side of the spine, behind the saddle, with a
+  strap over both (not on the flanks: the folded wings flare outward toward the back and would cut through them).
+  - Drekki Satchel (stage 2 and 3): 9 slots; small pouches with a brass buckle.
+  - Saddlebag (stage 3): 27 slots; tiers as Sophisticated Backpacks has them (the bag ringed by 8 ingots keeps its
+    contents): iron 36, gold 45, diamond 54, netherite 63 (smithing table). The trim shows the tier.
+  - With Sophisticated Backpacks installed, the satchel and saddlebags are registered as its backpack items (its
+    storage and upgrades; upgrade slots 1, 1, 2, 3, 4, 6 from the satchel up). Slots and upgrade slots
+    stay under Sophisticated's backpack of the same tier at every tier (satchel/leather 9+1 vs 27+1, saddlebag/copper
+    27+1 vs 45+1, iron 36+2 vs 54+2, gold 45+3 vs 81+3, diamond 54+4 vs 108+5, netherite 63+6 vs 120+7); only these bags go in the accessory slot, never
+    Sophisticated's own. Without it they are plain bags, their contents on the item as a shulker box keeps them.
+    Opening the bag a drekki wears (2026-11-20): right-click it in the drekki screen's accessory slot (a left click
+    still takes it), as a placed shulker box opens; with Sophisticated, also its own Open Backpack key (whatever it is
+    bound to) while looking at one's own drekki, and over the bag in the drekki screen's accessory slot or in one's own
+    inventory, as over a backpack. That screen is Sophisticated's own storage screen (its slots, upgrade slots, upgrade tabs and
+    sorting) through Core's StorageContainerMenuBase, the base its storage-on-entities screens use (2026-11-20); only
+    its settings screen stays with the held bag. The drekki ticks the bag's upgrades where it stands (magnet, pickup),
+    except feeding: on a drekki a feeding upgrade feeds the drekki only (its pack meals), never players around it.
+  - Placing (2026-11-20): sneak + right-click on a block places a bag, as a Sophisticated backpack is placed. With
+    Sophisticated it becomes a block of ours drawn as the satchel or saddlebag (not a backpack), one per bag, that is
+    Sophisticated's backpack block underneath (its block entity, added to their block entity type), so its screen,
+    upgrades, Create contraptions and breaking work as for any backpack; the leather and trim take the bag's dyes and
+    the metal its tier. Without it, a Drekki Bag
+    block of its own: right-click opens it, breaking it gives the same bag back with what it holds and its dyes, as a
+    shulker box (also in creative when it holds anything); pick-block gives the bag.
+  - Packs in packs (2026-11-20): without Sophisticated a bag is a shulker box of its size (no bag or shulker box goes
+    inside). With it, its own rule holds for every backpack, ours included, both ways: refused unless the outer one
+    has an Inception upgrade and the inner one has none; whether a bag fits in shulker boxes and bundles is
+    Sophisticated's setting.
+  - Pack meals (2026-11-20): a drekki eats from its bag only when the bag has an enabled feeding upgrade, and only
+    food that upgrade's filter allows; without Sophisticated the bags are storage only, like shulker boxes of their size. Our bags
+    cannot be placed as a block or worn by a player. Sophisticated's dye recipe colors them, with the same column rule.
+  - Unequipping a bag that holds items: the items stay in it (the bag carries them); it can go back on any drekki of
+    the right stage, or be opened in hand with Sophisticated. A drekki that dies for good leaves its hat, barding and
+    bag in its tombstone (see Tombstone).
+  - Icons (2026-11-20): the bags' items are their 3D model (the placed bag's model, dyed), not flat icons.
+  - Outgrown barding (Fledgling barding on a drekki that grows to Mature) goes to its owner's inventory, or drops.
+- Stage 2: an accessory slot and a barding slot. Stage 3: an accessory slot, a saddle slot (needed to ride) and a barding
+  slot.
+- Barding is split by stage (2026-11-20): Fledgling barding and Mature barding are separate items in every tier. The
+  existing barding items are the Mature barding (ids kept). Fledgling barding recipe: `M _ M / M L M` (5 material, 1
+  leather; leather barding `L _ L / L L L`); netherite: Fledgling diamond barding in a smithing table, as for Mature.
+- Barding works as wolf armor does (2026-11-20): while it holds, damage goes into its durability, one point per point
+  of damage, and the drekki takes none; damage in vanilla's `bypasses_wolf_armor` tag still reaches the drekki. It
+  breaks when used up and is repaired with its material on an anvil. The armor values above only show in tooltips.
+  Durability (Fledgling 30 health, Mature 50; a wolf in wolf armor is 40 + 64 = 104):
+
+  | Tier | Fledgling | Mature |
+  |------|-----------|--------|
+  | Wood | 24 | 34 |
+  | Leather | 32 | 45 |
+  | Stone | 48 | 67 |
+  | Iron | 74 (30 + 74 = an armored wolf) | 104 (50 + 104 = 154, above it) |
+  | Gold | 90 | 126 |
+  | Diamond | 120 | 169 |
+  | Netherite | 150 | 211 |
+
+- Dyeing (2026-11-20), barding and bags alike, as Sophisticated Backpacks dyes: two colors, main (barding plates, bag
+  leather) and trim (barding rims, bag flaps and strap). In the crafting grid only the column counts: dyes left of the
+  item color the main, right of it the trim, in its column both. Each craft averages the dyes with the side's current
+  color (one sample, however it was made; an undyed side does not count), vanilla's leather rule, so re-dyeing blends
+  a step at a time. A water cauldron washes both. The bags' metal (clasps, tier strips) never takes dye.
+  Washing and bleach (2026-11-20): every dyeable item of the mod (barding, bags with or without Sophisticated, the
+  hatchery, the trough) uses one named cauldron action, `LeatherWash`, which the Haven pack's bleach runs by name, so
+  bleach takes both dyes off all of them.
+- Barding icons (2026-11-20): 3D, a pile of the pieces laid down: the chest piece lying flat (its rim along the front,
+  two strapped buckles across it), two neck bands resting on it, overlapping and tilted over its sides at 22.5 degrees;
+  a Mature pile is bigger with a face and a knee plate peeking out from under it. Plates show the main dye (or the tier's color) with the tier's material pattern, rims the trim dye.
 - Barding: new craftable drekki armor in seven tiers, drawn on the rig as plates over the chest, neck, head, legs (a greave down the front of each
   shank and a sabaton wrapping the front half of the foot, from the ankle to just before the toes and talons) and tail (a ring on each segment but the tip).
   - Armor: wood 2, leather 3, stone 4, iron 5, gold 7, diamond 11 (horse armor's values where it has the tier);
@@ -533,7 +605,7 @@ Decided 2026-11-04. A player has one drekki checked out at a time; the rest are 
   there"); Move… brings it over first. A drekki with no hatchery can be checked out or moved from any hatchery.
 - Placement (revised 2026-11-16), one rule for every time a drekki appears at a hatchery (check-out, check-in, a move,
   a hatch, the roster placing a missing one): within 3 blocks of the hatchery block, preferring right next to it. A spot
-  fits when it stands on a solid block, out of liquid, with room for the stage's hitbox (stage 3 needs 2x3x2 clear).
+  fits when it stands on a solid block, out of liquid, with room for the stage's hitbox (stage 3 needs 2x2x2 clear since 2026-11-20; stage 2, 1x1x1).
   Revised 2026-11-17: the search walks out from the hatchery (a flood fill in walking steps), stepping only between
   neighboring spots a drekki can walk between, so a fence, wall or closed gate stops it; it takes the first spot that
   fits, so spots inside a pen come first, nearest walk first. Only when none fits does it try the spots it could not
@@ -590,7 +662,8 @@ effect (see Mood), so other systems can soften or sharpen it later.
 - While hungry, mood falls 2 a minute. Eating gives +5 mood and ends the drain. It never starves to death.
   Hibernation Plan makes the meter drain 33% slower.
 - Food: the player's hand at any time. A checked-out drekki eats at a trough while its owner stands still, else
-  from its pack. A drekki at home (checked in) goes to the troughs first, then its pack (the pack opens at stage 2).
+  from its bag. A drekki at home (checked in) goes to the troughs first, then its bag. Its bag feeds it only with a
+  Sophisticated feeding upgrade (see Accessory: bags).
 
 ### Feeding at troughs (proposal 2026-11-16)
 
@@ -612,7 +685,7 @@ effect (see Mood), so other systems can soften or sharpen it later.
 - A meal is one item. Then it releases the spot, strolls a few blocks off and waits a short pause before it can claim
   again, so a waiting drekki gets the spot.
 - A path that fails for a few seconds marks that trough unreachable for about a minute; it tries the next. With no
-  usable trough it eats from its pack; with an empty pack it stays hungry, and its mood shows it.
+  usable trough it eats from its bag (with a feeding upgrade); otherwise it stays hungry, and its mood shows it.
 
 ## Mood
 
@@ -621,7 +694,7 @@ effect, in bands.
 
 | Mood | Band | Effects |
 |------|------|---------|
-| 90-100, Recently pet and above half food | Thriving | One-off activities teach at 75%; each counted activity counts double |
+| 85-100, Recently pet and above half food | Thriving | One-off activities teach at 75%; each counted activity counts double |
 | 75-100 | Happy | One-off activities teach at 50% (double) |
 | 50-74 | Content | Normal (one-off activities teach at 25%) |
 | 25-49 | Uneasy | No regeneration; one-off activities teach at 12.5% |
@@ -631,8 +704,11 @@ effect, in bands.
   of it (by it or by a player).
 - Falls: -2 a minute while hungry, -1 for each 2 health it loses, -1 a minute while checked out and more than
   30 blocks from its owner.
-- Recently pet (decided 2026-11-18): petting gives a buff, +10 mood, for 1 hour of real time (72,000 ticks); petting
-  again resets it. It shows as a buff icon on the drekki screen. Thriving needs it, so only active care reaches it.
+- Recently pet (decided 2026-11-18, changed 2026-11-20): petting gives a buff for 1 hour of real time (72,000 ticks)
+  that lifts the band one step (Miserable to Uneasy, Uneasy to Content, Content to Happy); petting again resets it.
+  Happy goes to Thriving only from 85 with above half food, else it stays Happy; without the buff a drekki is never
+  Thriving, so only active care reaches it. The mood value itself does not change. It shows as a buff icon on the
+  drekki screen. (Was +10 mood, which often left the band where it was.)
 - Kinship (decided 2026-11-18): +25/9 mood (about 2.8) for each other drekki whose home is the same hatchery, checked
   out or not, up to 9 others (+25). With 9 kin its mood never falls below 25, so it is never Miserable. A buff icon
   shows the count.
@@ -821,14 +897,43 @@ The same rules as the rare lines, but the egg takes only one time in sixteen (th
   parents. The hatchery sits at x 19, y 83, any z, in any dimension (1983, an easter egg). Both numbers are
   server config values (`glitch_x`, `glitch_y`) that default to 19 and 83, so a server can move the spot.
 
+### Tombstone
+
+Decided 2026-11-20 (the pack has the Corpse mod; this mod does not depend on it):
+
+- A drekki that dies for good (no ghost, no Phoenix Heart), or turns into a ghost, leaves a Drekki Tombstone where it fell,
+  holding its worn gear: hat, barding and accessory (the bag keeps what it holds). Wearing nothing, it leaves none (the
+  marker still shows where). The spot is the death spot or the nearest free one around
+  and above it, on solid ground when it can be; with no free spot the gear drops as before.
+- Model: a headstone of our own on a plinth, a stepped round top, a drekki's horned head carved on its face, a name line
+  and a small purple crystal at its foot. Its item is the same 3D model.
+- Right-click opens it in the mod's screen style (the trough's frame): "Here lies <name>", its three gear slots (take only)
+  and "Died <date>". Anyone may take the gear (as the pack's corpses).
+- It cannot be mined while it holds anything. Mined empty (pickaxe), it drops itself with the drekki's name and the real
+  date it died (MM-dd-yyyy) on its tooltip; placed again it keeps them, and Jade's hover shows them.
+- A death's tombstone vanishes 30 s (600 ticks) after it is emptied, the Corpse mod's default for an empty corpse; one
+  a player places stays.
+- Map marker: with JourneyMap installed, the owner gets a death waypoint where the tombstone stands, JourneyMap's death
+  X in magenta ("<name> died"), like the player's own red one. An owner who is away gets it at the next login.
+
 ### Ghost drekki
 
 Decided 2026-11-05:
 
-- When a drekki dies, there is a 15% chance it turns into a ghost drekki instead of being lost.
+- When a drekki dies, there is a 33% chance (raised from 15% on 2026-11-20) it turns into a ghost drekki instead of
+  being lost.
 - A ghost is like a normal drekki, but it cannot use abilities (so it has no cooldowns), cannot be mounted, and
   gives no area traits to players near it.
 - It can still be checked in and out, and it can breed.
+- Revised 2026-11-20: a ghost wears nothing and is mostly hands-off. Turning into a ghost puts its hat, barding and bag
+  in a tombstone where it died, with the owner's death marker (see Tombstone). Its screen opens read-only (traits,
+  health, stance shown; gear slots and stance locked, "A ghost does not fight." on the stance buttons). It follows its
+  owner and takes name tags; no petting, hats, hand feeding or carrier-free changes of gear, and it never fights. It
+  does not get hungry or eat (troughs, pack meals), so its food stays where it was until it is revived. Carriers, check
+  in and out, breeding and the revive steps work as before.
+- Only its owner ever sees a ghost (2026-11-20): the server sends it to its owner alone, so other players never see,
+  hear or touch it; the soul leaving it is the owner's alone too. Revived, everyone sees it again. No mob targets a
+  ghost, and a mob already after it lets go.
 - Traits: it keeps every trait, but none work while it is a ghost, and it cannot learn new ones. They all return
   on revive, and they pass in breeding as usual.
 - Revive, like curing a zombie villager: hit it with a splash potion of Weakness, then give it a golden apple. It
@@ -862,7 +967,7 @@ Diet picks the position (where it fights from) and the two abilities. Damage is 
   - Bite: melee attack.
   - Pounce: jumping attack from up to 5 blocks away, also usable close up. 2x Bite damage. 15 s cooldown.
 - Cooked (magical damage): stays at max range.
-  - Elemental ball: ranged, slightly less damage than Bite.
+  - Elemental ball: ranged, slightly less damage than Bite. A target too close for a ball in flight is hit at once.
   - Elemental breath: a cone up to 4 blocks that hits everything in it, slightly more damage than the ball. 15 s cooldown.
 - Seed (physical support): stays in melee range, goes to the player to use Steel edge.
   - Bite: melee attack.
@@ -880,7 +985,9 @@ No trait sets anything on fire: a burning mob lights the player and the ground. 
 stand in. Traits use vanilla status effects wherever one fits.
 
 Baseline for every drekki, no trait needed: one-block step like a horse, catch-up teleport when more than 24
-blocks behind, never tramples crops, and from stage 2 its pack picks up what the player cannot carry.
+blocks behind (decided 2026-11-20: only to a spot with room and firm ground and no lava or fire in or around it,
+unless fire cannot hurt it, as with Fire Resistance; with no such spot it stays put; it arrives unhurt, with no fall
+carried over and no fire), never tramples crops, and from stage 2 its pack picks up what the player cannot carry.
 
 ## Breed traits (proposal)
 
@@ -1103,7 +1210,7 @@ Pups grow, eat, feel and learn; growth stops at stage 2 (Fledgling) until a late
   that dies is gone for good, as is a drekki whose roll fails. Phoenix Heart wins over both.
 - Ponder: the trough scenes show the spots (front, back, ends), owner-only troughs and diet planning (keep diets
   apart to steer a hatchling).
-- Drekki screen (as built): the name and stage over two tabs, Details and Traits. Details: hearts (ten to a row), ten
+- Drekki screen (as built): the name over two tabs, Details and Traits (the name only since 2026-11-20: no stage, no ghost tag). Details: hearts (ten to a row), ten
   food shanks, bloodline, astral, diet, and the mood band in its color (hover: value, effect, reasons), then the buff
   icons, Recently pet (minutes left) and Kinship (kin and bonus). Traits: one line per slot of its stage, learned ones
   in green with their effect on hover, the offer in gold with a check and a cross, free ones dim; no learning progress. From stage 2 the three stance buttons sit

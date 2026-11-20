@@ -18,14 +18,22 @@ public final class RancherCompanionClient {
         modBus.addListener(EntityRenderersEvent.RegisterRenderers.class, e -> e.registerEntityRenderer(RancherCompanion.ELEMENTAL_BALL.get(), net.minecraft.client.renderer.entity.NoopRenderer::new));
         modBus.addListener(RegisterColorHandlersEvent.Item.class, BardingColors::register);
         modBus.addListener(RegisterColorHandlersEvent.Block.class, BlockClient::blockColors);
+        if (dev.frosthaven.ranchercompanion.item.Bags.sophisticated())
+            modBus.addListener(RegisterColorHandlersEvent.Block.class, dev.frosthaven.ranchercompanion.compat.sophisticated.client.SophColors::blocks);
         modBus.addListener(RegisterColorHandlersEvent.Item.class, BlockClient::itemColors);
         modBus.addListener(EntityRenderersEvent.RegisterRenderers.class, BlockClient::renderers);
         NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, DrekkiParticles::tick);
         NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.entity.player.ItemTooltipEvent.class, ItemSubtext::onTooltip);
+        /* Sophisticated's open-backpack key opens one's own drekki's bag while looking at it */
+        if (dev.frosthaven.ranchercompanion.item.Bags.sophisticated())
+            NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.client.event.ClientTickEvent.Pre.class, dev.frosthaven.ranchercompanion.compat.sophisticated.client.SophKeys::onTick);
         modBus.addListener(net.neoforged.neoforge.client.event.RegisterMenuScreensEvent.class,
             e -> {
                 e.register(dev.frosthaven.ranchercompanion.block.DrekkiMenus.TROUGH.get(), dev.frosthaven.ranchercompanion.client.screen.TroughScreen::new);
                 e.register(dev.frosthaven.ranchercompanion.block.DrekkiMenus.DREKKI.get(), dev.frosthaven.ranchercompanion.client.screen.DrekkiScreen::new);
+                e.register(dev.frosthaven.ranchercompanion.block.DrekkiMenus.BAG.get(), dev.frosthaven.ranchercompanion.client.screen.BagScreen::new);
+                e.register(dev.frosthaven.ranchercompanion.block.DrekkiMenus.TOMBSTONE.get(), dev.frosthaven.ranchercompanion.client.screen.TombstoneScreen::new);
+                if (dev.frosthaven.ranchercompanion.item.Bags.sophisticated()) dev.frosthaven.ranchercompanion.compat.sophisticated.client.SophBagScreen.register(e);
             });
         /* Ponder's build guides, only with Ponder loaded (it comes with Create); compat/ponder is never touched otherwise */
         if (net.neoforged.fml.ModList.get().isLoaded("ponder")) dev.frosthaven.ranchercompanion.compat.ponder.DrekkiPonder.register();

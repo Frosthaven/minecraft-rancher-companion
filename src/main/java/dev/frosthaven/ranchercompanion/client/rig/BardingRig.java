@@ -4,7 +4,7 @@ import dev.frosthaven.ranchercompanion.look.Dims;
 import dev.frosthaven.ranchercompanion.look.Gear;
 
 /**
- * The design page's barding plates on a stage 3 rig, one to one: breastplate, neck bands and throat plates, face and
+ * The design page's barding plates on a stage 2 or 3 rig, one to one: breastplate, neck bands and throat plates, face and
  * brow plates, greaves and sabatons, tail rings. Each plate's box kind is {@link #KIND} plus the tier, so the bake paints
  * it with that material's texture. Every plate has its own whole size and a part-pixel offset from its neighbours, so
  * no two faces share a plane.
@@ -17,8 +17,8 @@ final class BardingRig {
 
     private static int R(double v) { return Math.round((float) v); }
 
-    static void build(Rig r, int tier, int dye) {
-        Dims D = r.D; int kind = KIND + tier, pl = Gear.plate(tier, dye), rim = Gear.rim(tier, dye);
+    static void build(Rig r, int tier, int dye, int trimDye) {
+        Dims D = r.D; int kind = KIND + tier, pl = Gear.plate(tier, dye), rim = Gear.rim(tier, trimDye);
         float bw = D.body[0], bh = D.body[1], bd = D.body[2];
         float nw = D.neck[0], nh1 = D.neck[1], nh2 = D.neck[2], nd = D.neck[3];
         float hw = D.head[0], hh = D.head[1], hd = D.head[2], mw = D.muzzle[0], md = D.muzzle[2];

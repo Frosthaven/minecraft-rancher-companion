@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "S": {
+      "tag": "c:strings"
+    },
+    "L": {
+      "tag": "c:leathers"
+    },
+    "B": {
+      "tag": "c:barrels/wooden"
+    }
+  },
+  "pattern": [
+    "SLS",
+    "LBL",
+    "LLL"
+  ],
+  "result": {
+    "count": 1,
+    "id": "rancher_companion:satchel"
+  }
+}

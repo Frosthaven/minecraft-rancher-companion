@@ -4,7 +4,9 @@ import dev.frosthaven.ranchercompanion.RancherCompanion;
 import dev.frosthaven.ranchercompanion.entity.DrekkiEntity;
 import dev.frosthaven.ranchercompanion.life.Life;
 import net.minecraft.resources.ResourceLocation;
+import snownee.jade.api.BlockAccessor;
 import snownee.jade.api.EntityAccessor;
+import snownee.jade.api.IBlockComponentProvider;
 import snownee.jade.api.IEntityComponentProvider;
 import snownee.jade.api.ITooltip;
 import snownee.jade.api.IWailaClientRegistration;
@@ -14,7 +16,8 @@ import snownee.jade.api.config.IPluginConfig;
 import snownee.jade.api.ui.IElementHelper;
 
 /**
- * Jade (optional): a drekki's food as a row of vanilla shanks under Jade's hearts (spec, Growth release). Jade finds this
+ * Jade (optional): a drekki's food as a row of vanilla shanks under Jade's hearts (spec, Growth release), and a
+ * tombstone's drekki and date (spec, Tombstone). Jade finds this
  * class by its annotation and loads it only when Jade is installed; the food is the entity's synched value.
  */
 @WailaPlugin
@@ -24,6 +27,23 @@ public final class DrekkiJade implements IWailaPlugin {
     @Override
     public void registerClient(IWailaClientRegistration r) {
         r.registerEntityComponent(Food.INSTANCE, DrekkiEntity.class);
+        r.registerBlockComponent(Tomb.INSTANCE, dev.frosthaven.ranchercompanion.block.TombstoneBlock.class);
+    }
+
+    static final ResourceLocation TOMB_UID = ResourceLocation.fromNamespaceAndPath(RancherCompanion.ID, "tombstone");
+
+    /** the name and date the client already has (the block entity's update tag) */
+    enum Tomb implements IBlockComponentProvider {
+        INSTANCE;
+
+        @Override
+        public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
+            if (accessor.getBlockEntity() instanceof dev.frosthaven.ranchercompanion.block.TombstoneBlockEntity be)
+                dev.frosthaven.ranchercompanion.item.TombstoneItem.lines(be.name(), be.date()).forEach(tooltip::add);
+        }
+
+        @Override
+        public ResourceLocation getUid() { return TOMB_UID; }
     }
 
     enum Food implements IEntityComponentProvider {

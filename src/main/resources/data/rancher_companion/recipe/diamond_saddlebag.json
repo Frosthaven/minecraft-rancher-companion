@@ -1,0 +1,21 @@
+{
+  "type": "rancher_companion:keep_shaped",
+  "category": "equipment",
+  "key": {
+    "M": {
+      "tag": "c:gems/diamond"
+    },
+    "B": {
+      "item": "rancher_companion:gold_saddlebag"
+    }
+  },
+  "pattern": [
+    "MMM",
+    "MBM",
+    "MMM"
+  ],
+  "result": {
+    "count": 1,
+    "id": "rancher_companion:diamond_saddlebag"
+  }
+}

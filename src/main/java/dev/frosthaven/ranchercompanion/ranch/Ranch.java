@@ -443,7 +443,7 @@ public final class Ranch {
 
     /* a checked-out drekki comes back next to its owner on the events that part them, with no polling: login, respawn,
        a dimension change, leaving spectator mode, and its chunk unloading while the owner is online */
-    public static void onLogin(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent ev) { if (ev.getEntity() instanceof ServerPlayer p) { bringBack(p); Death.giveEggs(p); } }
+    public static void onLogin(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent ev) { if (ev.getEntity() instanceof ServerPlayer p) { bringBack(p); Death.giveEggs(p); Tombs.onLogin(p); } }
     public static void onRespawn(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerRespawnEvent ev) { if (ev.getEntity() instanceof ServerPlayer p) bringBack(p); }
     public static void onDimension(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerChangedDimensionEvent ev) { if (ev.getEntity() instanceof ServerPlayer p) bringBack(p); }
     /** fires before the mode changes: look again on the next tick */

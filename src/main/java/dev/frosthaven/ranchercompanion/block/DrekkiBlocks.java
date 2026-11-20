@@ -81,6 +81,19 @@ public final class DrekkiBlocks {
         }
     }
 
+    /** a plain bag placed in the world (no item of its own: the bag item places it) */
+    public static final DeferredBlock<BagBlock> BAG = BLOCKS.register("drekki_bag",
+        () -> new BagBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.WHITE_WOOL).strength(0.8f).noOcclusion()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BagBlockEntity>> BAG_ENTITY = BLOCK_ENTITIES.register("drekki_bag",
+        () -> BlockEntityType.Builder.of(BagBlockEntity::new, BAG.get()).build(null));
+
+    /** a drekki's tombstone (spec, Tombstone): a death places it; its item is made in DrekkiItems, outside the tab */
+    public static final DeferredBlock<TombstoneBlock> TOMBSTONE = BLOCKS.register("tombstone",
+        () -> new TombstoneBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.COBBLED_DEEPSLATE).strength(2f, 3600000f).noOcclusion()
+            .pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK)));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<TombstoneBlockEntity>> TOMBSTONE_ENTITY = BLOCK_ENTITIES.register("tombstone",
+        () -> BlockEntityType.Builder.of(TombstoneBlockEntity::new, TOMBSTONE.get()).build(null));
+
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<TroughBlockEntity>> TROUGH_ENTITY = BLOCK_ENTITIES.register("trough",
         () -> BlockEntityType.Builder.of(TroughBlockEntity::new, TROUGH.get()).build(null));
 

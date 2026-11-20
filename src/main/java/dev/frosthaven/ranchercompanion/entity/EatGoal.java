@@ -40,7 +40,7 @@ final class EatGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        if (!d.owned() || d.getTarget() != null || d.isSleepingLoop() || !d.life.wantsFood()) return false;
+        if (!d.owned() || d.life.ghost || d.getTarget() != null || d.isSleepingLoop() || !d.life.wantsFood()) return false;  /* a ghost does not eat */
         if (d.level().getGameTime() < pauseUntil) return false;
         boolean still = !d.isOut() || ownerStill();
         if (--nextLook > 0) return false;

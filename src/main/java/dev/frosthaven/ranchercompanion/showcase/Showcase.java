@@ -53,7 +53,7 @@ public final class Showcase {
         }
         n += gear(level);
         for (int stage = 1; stage <= 3; stage++) {
-            List<Anim> anims = Layout.animsAt(stage); double k = Anim.stageK(stage), z = Layout.stageRowZ(stage);
+            List<Anim> anims = Layout.animsAt(stage); double k = Anim.worldK(stage), z = Layout.stageRowZ(stage);
             for (int i = 0; i < anims.size(); i++) {
                 Anim a = anims.get(i); double x = Layout.BX + i * Layout.ANIM_DX[stage - 1];
                 int diet = switch (a) { case BITE, POUNCE, RUN, FALL, GLIDE, DASH, SLEEP -> 0; case BALL, BREATH -> 1; case GUARD, WALK, JUMP, FEED -> 2; case REJUV -> 3; default -> 0; };

@@ -39,6 +39,11 @@ public final class RancherCompanion {
         dev.frosthaven.ranchercompanion.block.DrekkiBlocks.register(modBus);
         DrekkiSounds.SOUNDS.register(modBus);
         DrekkiItems.register(modBus);
+        dev.frosthaven.ranchercompanion.item.DrekkiRecipes.register(modBus);
+        if (dev.frosthaven.ranchercompanion.item.Bags.sophisticated()) {
+            dev.frosthaven.ranchercompanion.compat.sophisticated.SophMenus.register(modBus);
+            dev.frosthaven.ranchercompanion.compat.sophisticated.SophBlocks.register(modBus);
+        }
         dev.frosthaven.ranchercompanion.block.DrekkiMenus.register(modBus);
         modBus.addListener(net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent.class, dev.frosthaven.ranchercompanion.net.DrekkiNet::register);
         /* owning drekki: the roster keeps each one in the world once (ranch/Ranch) */

@@ -55,6 +55,6 @@ public final class Baked {
         dest.set(local);
         Quaternionf q = new Quaternionf();
         for (Node c = n; c != null; c = c.parent) { quat(c, q).transform(dest); dest.add(c.x, c.y, c.z); }
-        return dest.mul(1 / 16f);
+        return dest.mul(rig.D.scale / 16f);
     }
 }

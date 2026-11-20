@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:smithing_transform",
+  "addition": {
+    "tag": "c:ingots/netherite"
+  },
+  "base": {
+    "item": "rancher_companion:diamond_saddlebag"
+  },
+  "result": {
+    "count": 1,
+    "id": "rancher_companion:netherite_saddlebag"
+  },
+  "template": {
+    "item": "minecraft:netherite_upgrade_smithing_template"
+  }
+}

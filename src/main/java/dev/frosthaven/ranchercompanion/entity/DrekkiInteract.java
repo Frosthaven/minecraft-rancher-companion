@@ -27,7 +27,7 @@ public final class DrekkiInteract {
         if (!d.live()) return null;  /* live() is synched, so the client agrees and swings the arm on a click that does something */
         ItemStack stack = player.getItemInHand(hand);
         boolean mine = player.getUUID().equals(d.owner());
-        if (stack.isEmpty() && player.isSecondaryUseActive()) {
+        if (stack.isEmpty() && player.isSecondaryUseActive() && !d.ghost()) {
             if (hand != InteractionHand.MAIN_HAND) return InteractionResult.PASS;
             if (!d.level().isClientSide) pet(d);
             return InteractionResult.sidedSuccess(d.level().isClientSide);
@@ -37,7 +37,7 @@ public final class DrekkiInteract {
             return InteractionResult.sidedSuccess(d.level().isClientSide);
         }
         int hat = DrekkiItems.hatIndex(stack);
-        if (hat > 0 && mine) {
+        if (hat > 0 && mine && !d.ghost()) {
             if (!d.level().isClientSide) {
                 int old = d.hat();
                 d.setGear(hat, d.barding(), d.dye());
@@ -55,13 +55,13 @@ public final class DrekkiInteract {
         }
         /* hand feeding (spec, Hunger: the player's hand at any time): its owner, with food it eats, while it has any room.
            (while its shank bar is not full). Food it will not take now says why on the action bar instead of opening the screen */
-        if (mine && hand == InteractionHand.MAIN_HAND && !handFeeds(d, stack) && foodDiet(d, stack) != null) {
+        if (mine && hand == InteractionHand.MAIN_HAND && !d.ghost() && !handFeeds(d, stack) && foodDiet(d, stack) != null) {
             if (!d.level().isClientSide) player.displayClientMessage(d.food() > dev.frosthaven.ranchercompanion.life.Life.FOOD_MAX - 0.5
                 ? Component.translatable("message.rancher_companion.not_hungry")
                 : Component.translatable("message.rancher_companion.wrong_diet", Diet.of(d.diet()).label), true);
             return InteractionResult.sidedSuccess(d.level().isClientSide);
         }
-        if (mine && hand == InteractionHand.MAIN_HAND && handFeeds(d, stack)) {
+        if (mine && hand == InteractionHand.MAIN_HAND && !d.ghost() && handFeeds(d, stack)) {
             if (!d.level().isClientSide) {
                 dev.frosthaven.ranchercompanion.life.Vitals.eat(d, stack.copyWithCount(1), true);
                 d.act(dev.frosthaven.ranchercompanion.look.Anim.FEED, 30);

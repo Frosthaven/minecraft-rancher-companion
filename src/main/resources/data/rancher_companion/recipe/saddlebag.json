@@ -1,0 +1,24 @@
+{
+  "type": "rancher_companion:keep_shaped",
+  "category": "equipment",
+  "key": {
+    "S": {
+      "tag": "c:strings"
+    },
+    "L": {
+      "tag": "c:leathers"
+    },
+    "T": {
+      "item": "rancher_companion:satchel"
+    }
+  },
+  "pattern": [
+    "SLS",
+    "LTL",
+    "LLL"
+  ],
+  "result": {
+    "count": 1,
+    "id": "rancher_companion:saddlebag"
+  }
+}

@@ -73,6 +73,14 @@ configurations {
 repositories {
     maven { url 'https://maven.blamejared.com' }  // JEI's API, for the optional compat/jei plugin
     maven { url 'https://maven.createmod.net' }   // Ponder (Create's), for the optional compat/ponder scenes
+    exclusiveContent {                             // Sophisticated Backpacks and Core, for the optional compat/sophisticated bags
+        forRepository { maven { url 'https://cursemaven.com' } }
+        filter { includeGroup 'curse.maven' }
+    }
+    exclusiveContent {                             // JourneyMap's API, for the optional compat/journeymap death markers
+        forRepository { maven { url 'https://jm.gserv.me/repository/maven-public/' } }
+        filter { includeGroup 'info.journeymap' }
+    }
     exclusiveContent {                             // Jade, for the optional compat/jade tooltip (Modrinth's maven)
         forRepository { maven { url 'https://api.modrinth.com/maven' } }
         filter { includeGroup 'maven.modrinth' }
@@ -86,6 +94,12 @@ dependencies {
     compileOnly('net.createmod.ponder:ponder-neoforge:1.0.82+mc1.21.1') { transitive = false }
     // Jade 15.10.6+neoforge (the Haven pack's; Modrinth version id eYz2YBGT): compile only, used only when Jade is loaded (compat/jade)
     compileOnly 'maven.modrinth:jade:eYz2YBGT'
+    // JourneyMap's API 2.0.0 for 1.21.1 (the API JourneyMap 6.0.2 bundles; it is published only as a snapshot)
+    compileOnly 'info.journeymap:journeymap-api-neoforge:2.0.0-1.21.1-SNAPSHOT'
+    // Sophisticated Backpacks 3.26.9.2195 and Core 1.5.7.2381 (the Haven pack's; CurseForge file ids 9083940, 9083874):
+    // compile only, used only when Sophisticated Backpacks is loaded (compat/sophisticated)
+    compileOnly 'curse.maven:sophisticated-backpacks-422301:9083940'
+    compileOnly 'curse.maven:sophisticated-core-618298:9083874'
     testImplementation platform('org.junit:junit-bom:5.10.2')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'

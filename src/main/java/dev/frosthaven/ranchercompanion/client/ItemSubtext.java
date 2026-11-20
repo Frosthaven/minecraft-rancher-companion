@@ -13,12 +13,20 @@ public final class ItemSubtext {
     private ItemSubtext() {}
 
     public static void onTooltip(ItemTooltipEvent e) {
+        if (wornBag(e)) e.getToolTip().add(1, Component.translatable("screen.rancher_companion.drekki.bag").withStyle(ChatFormatting.YELLOW));
         String kind = kind(e.getItemStack());
         if (kind == null || e.getToolTip().isEmpty()) return;
         e.getToolTip().add(1, Component.translatable("tooltip.rancher_companion.kind." + kind).withStyle(ChatFormatting.GRAY));
         if (dev.frosthaven.ranchercompanion.item.CarrierItem.notYours(e.getItemStack(), e.getEntity()))
             e.getToolTip().add(Component.translatable("item.rancher_companion.small_drekki_carrier.not_yours",
                 e.getItemStack().getOrDefault(dev.frosthaven.ranchercompanion.item.DrekkiData.CARRIED_OWNER_NAME.get(), "?")).withStyle(ChatFormatting.RED));
+    }
+
+    /** on the bag a drekki wears, in its screen's accessory slot: how to open it */
+    private static boolean wornBag(net.neoforged.neoforge.event.entity.player.ItemTooltipEvent e) {
+        var mc = net.minecraft.client.Minecraft.getInstance();
+        return mc.screen instanceof dev.frosthaven.ranchercompanion.client.screen.DrekkiScreen ds && ds.getSlotUnderMouse() != null
+            && ds.getSlotUnderMouse().index == 2 && ds.getMenu().gear && ds.getSlotUnderMouse().getItem() == e.getItemStack();
     }
 
     private static String kind(ItemStack s) {
@@ -28,6 +36,7 @@ public final class ItemSubtext {
         if (DrekkiItems.hatIndex(s) > 0) return "hat";
         if (p.endsWith("_barding")) return "barding";
         if (p.endsWith("_carrier")) return "carrier";
+        if (s.getItem() instanceof dev.frosthaven.ranchercompanion.item.DrekkiBag) return "accessory";
         if (p.endsWith("_tonic")) return "tonic";
         if (p.equals("intriguing_egg") || p.startsWith("creative_egg")) return "egg";
         return null;

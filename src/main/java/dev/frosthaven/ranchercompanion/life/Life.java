@@ -13,7 +13,7 @@ import java.util.function.IntUnaryOperator;
  */
 public final class Life {
     public static final int DAY = 24000, FOOD_MAX = 10, MOOD_START = 50, KIN_MAX = 9;
-    public static final double PET_MOOD = 10, KIN_FULL = 25;
+    public static final double KIN_FULL = 25;
     /** Recently pet lasts an hour of real time (spec, Mood) */
     public static final long PET_MILLIS = 3_600_000L;
 
@@ -46,7 +46,7 @@ public final class Life {
     public enum Stance { AGGRESSIVE, REACTIVE, PASSIVE }
 
     public enum Band {
-        MISERABLE(0), UNEASY(25), CONTENT(50), HAPPY(75), THRIVING(90);
+        MISERABLE(0), UNEASY(25), CONTENT(50), HAPPY(75), THRIVING(85);
         public final int from;
         Band(int from) { this.from = from; }
     }
@@ -98,18 +98,19 @@ public final class Life {
     /** Kinship: 25/9 for each other drekki of its hatchery, up to 9, so nine kin hold it at 25 (never Miserable) */
     public static double kinBonus(int kin) { return Math.min(KIN_MAX, Math.max(0, kin)) * KIN_FULL / KIN_MAX; }
 
-    /** the mood its effects use: its own plus the buffs, 0 to 100 */
-    public static double effective(double mood, boolean petted, int kin) {
-        return Math.max(0, Math.min(100, mood + (petted ? PET_MOOD : 0) + kinBonus(kin)));
+    /** the mood its bands read: its own plus Kinship, 0 to 100 */
+    public static double effective(double mood, int kin) {
+        return Math.max(0, Math.min(100, mood + kinBonus(kin)));
     }
 
-    /** Thriving needs active care: 90 or more with Recently pet and above half food; else the plain bands */
+    /** the plain band, then Recently pet lifts it one band for the hour. Thriving is only ever a pet's lift, and only
+     *  from 85 with above half food; a Happy drekki short of that stays Happy (spec, Mood) */
     public static Band band(double effective, boolean petted, double food) {
-        if (effective >= Band.THRIVING.from && petted && food > FOOD_MAX / 2.0) return Band.THRIVING;
-        if (effective >= Band.HAPPY.from) return Band.HAPPY;
-        if (effective >= Band.CONTENT.from) return Band.CONTENT;
-        if (effective >= Band.UNEASY.from) return Band.UNEASY;
-        return Band.MISERABLE;
+        Band plain = effective >= Band.HAPPY.from ? Band.HAPPY : effective >= Band.CONTENT.from ? Band.CONTENT
+            : effective >= Band.UNEASY.from ? Band.UNEASY : Band.MISERABLE;
+        if (!petted) return plain;
+        if (plain != Band.HAPPY) return Band.values()[plain.ordinal() + 1];
+        return effective >= Band.THRIVING.from && food > FOOD_MAX / 2.0 ? Band.THRIVING : Band.HAPPY;
     }
 
     /** a one-off activity's chance to teach in a band (spec, Traits and Mood) */

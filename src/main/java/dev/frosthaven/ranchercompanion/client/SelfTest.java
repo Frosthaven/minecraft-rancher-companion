@@ -41,6 +41,7 @@ public final class SelfTest {
     private static final boolean TRAITS = Boolean.getBoolean("rancher_companion.selftest.traits");
     /** with -Drancher_companion.selftest.ui=true: hatch and check out a pup, then only the trait screen and chat shots */
     private static final boolean UI = Boolean.getBoolean("rancher_companion.selftest.ui");
+    private static final boolean GEAR = Boolean.getBoolean("rancher_companion.selftest.gear");
 
     /** patience: for a check that waits on the server (movement, AI), how many more 20-tick tries before it fails */
     private record Step(String name, int delay, Runnable act, BooleanSupplier check, boolean shot, int patience) {}
@@ -224,6 +225,7 @@ public final class SelfTest {
         stepUntil("follows", 10, 15, () -> {}, () -> pup() != null && pup().distanceTo(mc().player) < 6);
         if (TRAITS) { SelfTestTraits.build(o); return; }
         if (UI) { SelfTestTraits.ui(); return; }
+        if (GEAR) { SelfTestTraits.gear(o); return; }
         quiet("far_away", 80, () -> cmd("tp @s " + (o.getX() + 40.5) + " " + o.getY() + " " + (o.getZ() + 0.5)));
         stepUntil("teleports_to_owner", 10, 15, () -> {}, () -> pup() != null && pup().distanceTo(mc().player) < 6);
         quiet("back", 80, () -> cmd("tp @s " + (o.getX() + 0.5) + " " + o.getY() + " " + (o.getZ() - 4.5)));
@@ -296,7 +298,7 @@ public final class SelfTest {
         quiet("grow_soon", 10, () -> life(d -> d.life.travel = dev.frosthaven.ranchercompanion.life.Life.stageTicks(dev.frosthaven.ranchercompanion.DrekkiConfig.STAGE_DAYS.get()) - 60));
         stepUntil("grew_to_fledgling", 80, 15, () -> {}, () -> pup() != null && pup().stage() == 2 && pup().astral() != 0);
         quiet("near_fledgling", 15, () -> { select(7); near(pup()); });  /* an empty slot: slot 9 holds the hat by now */
-        step("fledgling_screen", 25, () -> interact("open its screen"), () -> ds() != null && ds().getMenu().pack && ds().spot("stance0") != null);
+        step("fledgling_screen", 25, () -> interact("open its screen"), () -> ds() != null && ds().getMenu().gear && ds().spot("stance0") != null);
         step("stance_tooltip", 10, () -> hoverSpot("stance0"), () -> ds() != null);
         step("stance_aggressive", 15, () -> clickSpot("stance0"), () -> pup().stance() == dev.frosthaven.ranchercompanion.life.Life.Stance.AGGRESSIVE);
         quiet("close_fledgling", 10, () -> { dev.frosthaven.ranchercompanion.client.screen.DrekkiScreen.testMouse = null; mc().setScreen(null); });
@@ -386,7 +388,7 @@ public final class SelfTest {
             }
             return;
         }
-        if (TRAITS || UI) SelfTestTraits.tick();
+        if (TRAITS || UI || GEAR) SelfTestTraits.tick();
         if (started < 0) { started = 0; build(); timer = 200; RancherCompanion.LOG.info("[selftest] start, {} steps", STEPS.size()); return; }
         if (--timer > 0) return;
         if (index >= 0 && index < STEPS.size()) {

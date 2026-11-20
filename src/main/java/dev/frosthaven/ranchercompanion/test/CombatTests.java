@@ -20,6 +20,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.Husk;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
@@ -131,5 +132,36 @@ public final class CombatTests {
         t.assertTrue(d.reviving() && p.getMainHandItem().isEmpty(), "Weakness, then the apple: it shakes");
         d.life.cooldowns.put(Vitals.REVIVE, Vitals.now(d));  /* skip the 3 minutes */
         t.succeedWhen(() -> t.assertTrue(!d.life.ghost && !d.reviving(), "it is a normal drekki again"));
+    }
+
+    /** the catch-up teleport never lands it in or beside lava: with no safe spot by the owner it stays put; with Fire
+     *  Resistance lava is no danger, so it may */
+    @GameTest(template = "floor", timeoutTicks = 40)
+    public static void teleportNeverLandsInLava(GameTestHelper t) {
+        ServerPlayer p = LifeTests.player(t);
+        DrekkiEntity d = out(t, p, 2, Diet.RAW, Life.Stance.PASSIVE);
+        BlockPos at = LifeTests.H.offset(2, 0, 2);
+        for (int dx = -4; dx <= 4; dx++) for (int dz = -4; dz <= 4; dz++)
+            if (dx != 0 || dz != 0) t.setBlock(at.offset(dx, -1, dz), Blocks.LAVA);
+        BlockPos before = d.blockPosition();
+        for (int i = 0; i < 40; i++) d.teleportNear(t.absolutePos(at));
+        t.assertTrue(d.blockPosition().equals(before), "no safe spot: it stays put, not at " + t.relativePos(d.blockPosition()));
+        d.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 200));
+        for (int i = 0; i < 40 && d.blockPosition().equals(before); i++) d.teleportNear(t.absolutePos(at));
+        t.assertTrue(!d.blockPosition().equals(before), "with Fire Resistance lava is no danger");
+        t.succeed();
+    }
+
+    /** it arrives unhurt: a fall it was in the middle of is not carried over */
+    @GameTest(template = "floor", timeoutTicks = 60)
+    public static void teleportCarriesNoFall(GameTestHelper t) {
+        ServerPlayer p = LifeTests.player(t);
+        DrekkiEntity d = out(t, p, 2, Diet.RAW, Life.Stance.PASSIVE);
+        BlockPos before = d.blockPosition();
+        d.fallDistance = 30;
+        for (int i = 0; i < 20 && d.blockPosition().equals(before); i++) d.teleportNear(t.absolutePos(LifeTests.H.offset(2, 0, 2)));
+        t.assertTrue(!d.blockPosition().equals(before), "it teleported");
+        float health = d.getHealth();
+        t.runAfterDelay(20, () -> { t.assertTrue(d.isAlive() && d.getHealth() == health, "it lands unhurt: " + d.getHealth() + " of " + health); t.succeed(); });
     }
 }

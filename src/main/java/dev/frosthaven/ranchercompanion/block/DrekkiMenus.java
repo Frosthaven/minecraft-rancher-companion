@@ -22,5 +22,13 @@ public final class DrekkiMenus {
             inv.player.level().getEntity(buf.readVarInt()) instanceof dev.frosthaven.ranchercompanion.entity.DrekkiEntity d ? d : null,
             buf.isReadable() && buf.readBoolean())));
 
+    /** the bag a drekki wears (spec, Accessory: bags) */
+    public static final DeferredHolder<MenuType<?>, MenuType<dev.frosthaven.ranchercompanion.entity.BagMenu>> BAG = MENUS.register("drekki_bag",
+        () -> IMenuTypeExtension.create(dev.frosthaven.ranchercompanion.entity.BagMenu::client));
+
+    /** a drekki's tombstone (spec, Tombstone) */
+    public static final DeferredHolder<MenuType<?>, MenuType<TombstoneMenu>> TOMBSTONE = MENUS.register("tombstone",
+        () -> IMenuTypeExtension.create((id, inv, buf) -> new TombstoneMenu(id, inv, buf.readBlockPos())));
+
     public static void register(IEventBus modBus) { MENUS.register(modBus); }
 }

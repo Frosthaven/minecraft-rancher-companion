@@ -1,0 +1,28 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "sophisticatedbackpacks"
+    }
+  ],
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "rolls": 1.0,
+      "name": "main",
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "rancher_companion:netherite_saddlebag"
+        }
+      ],
+      "functions": [
+        {
+          "function": "sophisticatedbackpacks:copy_backpack_data"
+        }
+      ]
+    }
+  ],
+  "random_sequence": "rancher_companion:blocks/placed_netherite_saddlebag"
+}

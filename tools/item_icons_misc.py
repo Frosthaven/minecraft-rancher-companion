@@ -32,33 +32,7 @@ def _tonic(light, dark, sparkle=None):
 
 
 ICONS = {
-    "small_drekki_carrier": (_pad([
-        ".....hhhhhh.....",
-        ".....h....h.....",
-        "..oooooooooooo..",
-        "..oSSSSSSSSSSo..",
-        "..oSlwwwwwwlSo..",
-        "..oSlwWwwWwlSo..",
-        "..oSlwwwwwwlSo..",
-        "..oSlwwWwwwlSo..",
-        "..oSSSSSSSSSSo..",
-        "..oooooooooooo..",
-        "..oo........oo..",
-    ], 2), {"o": "4a3018", "h": "6a4020", "S": "a07840", "l": "8b5a2b", "w": "e8e4dc", "W": "c8c4bc"}),
-    "large_drekki_carrier": (_pad([
-        "....hhhhhhhh....",
-        "....h......h....",
-        ".oooooooooooooo.",
-        ".oIIIIIIIIIIIIo.",
-        ".oIlrllllllrlIo.",
-        ".oIllllllllllIo.",
-        ".oIIIIIIIIIIIIo.",
-        ".oIllllllllllIo.",
-        ".oIlrllllllrlIo.",
-        ".oIIIIIIIIIIIIo.",
-        ".oooooooooooooo.",
-        ".oo..........oo.",
-    ], 1), {"o": "2c2c30", "h": "5a3a1e", "I": "c8ccd0", "l": "8b5a2b", "r": "f0f0f0"}),
+    # the carriers are 3D models now (tools/item_models.py)
     "bloodline_tonic": _tonic("d03838", "902020"),
     "heirloom_tonic": _tonic("e8b830", "b08018"),
     "clean_slate_tonic": _tonic("eef4f8", "c0ccd8"),

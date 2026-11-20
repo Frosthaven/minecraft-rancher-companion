@@ -14,16 +14,23 @@ import org.junit.jupiter.api.Test;
 class LifeTest {
     @Test
     void nineKinKeepItFromMiserable() {
-        assertEquals(Band.UNEASY, Life.band(Life.effective(0, false, 9), false, 0));
-        assertEquals(Band.MISERABLE, Life.band(Life.effective(0, false, 8), false, 0));
-        assertEquals(Life.effective(0, false, 9), Life.effective(0, false, 30), 1e-9);  /* capped at nine */
+        assertEquals(Band.UNEASY, Life.band(Life.effective(0, 9), false, 0));
+        assertEquals(Band.MISERABLE, Life.band(Life.effective(0, 8), false, 0));
+        assertEquals(Life.effective(0, 9), Life.effective(0, 30), 1e-9);  /* capped at nine */
     }
 
     @Test
-    void thrivingNeedsPettingAndFood() {
-        assertEquals(Band.HAPPY, Life.band(100, false, 10));
+    void aPetLiftsItOneBand() {
+        assertEquals(Band.UNEASY, Life.band(0, true, 0));
+        assertEquals(Band.HAPPY, Life.band(50, true, 0));  /* the bottom of Content: the case +10 missed */
+        assertEquals(Band.HAPPY, Life.band(100, false, 10));  /* never Thriving without a pet */
+    }
+
+    @Test
+    void thrivingNeeds85APetAndFood() {
+        assertEquals(Band.THRIVING, Life.band(85, true, 6));
+        assertEquals(Band.HAPPY, Life.band(84, true, 10));
         assertEquals(Band.HAPPY, Life.band(100, true, 5));
-        assertEquals(Band.THRIVING, Life.band(Life.effective(80, true, 0), true, 6));
     }
 
     @Test

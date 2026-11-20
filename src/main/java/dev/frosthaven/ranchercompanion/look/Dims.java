@@ -5,6 +5,10 @@ public final class Dims {
     public float[] body, thigh, shank, foot, toe, neck, neckA, head, muzzle, jaw, eye, horn, ear, wingArm, wingFin, wingPanel, plumeCarn, plumeHerb, sickleSeg;
     public float[][] tail;
     public float hipX, hipZ, hipSink, thighA, shankA, talon, headTilt, crestH, fang, spineLen = 1, tailUp, saddleD, saddleZ, shadow;
+    /** the whole model's scale in the world (decided 2026-11-20: Fledgling and Mature at 75% of the page's pixel sizes),
+     *  and the hitbox in blocks at that scale. The pixel sizes and the loops stay the page's; everything in the world
+     *  (hitbox, shadow, particles, travel speeds, room to stand) follows the scale. */
+    public float scale = 1, hitW, hitH;
     public int crest, sickleN;
     public boolean rump, hook, hornParts, wingFlank, legDetail, saddle;
 
@@ -20,6 +24,7 @@ public final class Dims {
         d.eye = f(2.1f, 1.6f); d.horn = f(0.6f, 2.4f); d.ear = f(0.4f, 1.4f, 1.6f); d.crest = 1; d.crestH = 1.6f;
         d.wingArm = f(0.7f, 2.2f); d.wingFin = f(0.7f, 2.4f); d.wingPanel = f(0.4f, 1.6f, 2.4f);
         d.tail = new float[][]{f(1.6f, 1.6f, 3)}; d.tailUp = 18; d.plumeCarn = f(0.5f, 1.5f, 1.6f, 1); d.plumeHerb = f(0.6f, 1.6f, 2.8f, 4); d.shadow = 0.28f;
+        d.hitW = 0.5f; d.hitH = 0.55f;
 
         d = S2;
         d.body = f(8, 6.8f, 14); d.rump = true; d.hipX = 3.4f; d.hipZ = -1.5f; d.hipSink = 2;
@@ -29,6 +34,7 @@ public final class Dims {
         d.wingArm = f(1.4f, 6); d.wingFin = f(1, 8.5f); d.wingPanel = f(1.0f, 7.5f, 13); d.wingFlank = true;
         d.tail = new float[][]{f(3, 3, 7), f(2.2f, 2.2f, 6)}; d.tailUp = 14; d.plumeCarn = f(0.7f, 2.6f, 3, 1); d.plumeHerb = f(0.9f, 3, 7, 6);
         d.sickleSeg = f(3.5f, 3.5f, 3); d.sickleN = 3; d.shadow = 0.62f;
+        d.scale = 0.75f; d.hitW = 0.75f; d.hitH = 0.975f;  /* was 1.0 x 1.3 at full size */
 
         d = S3;
         d.body = f(11, 9.5f, 24); d.rump = true; d.hipX = 5; d.hipZ = -3.5f; d.hipSink = 2.3f;
@@ -37,7 +43,8 @@ public final class Dims {
         d.eye = f(3.3f, 2.5f); d.horn = f(1.5f, 8); d.hornParts = true; d.spineLen = 2; d.ear = f(0.6f, 2.6f, 3.2f); d.crest = 3; d.crestH = 4.5f;
         d.wingArm = f(1.8f, 10); d.wingFin = f(1.3f, 14); d.wingPanel = f(1.0f, 12, 22); d.wingFlank = true; d.legDetail = true;
         d.tail = new float[][]{f(4, 4, 9), f(3, 3, 8), f(2.2f, 2.2f, 7)}; d.tailUp = 10; d.plumeCarn = f(0.8f, 3.4f, 4, 2); d.plumeHerb = f(1.1f, 4, 11, 7);
-        d.sickleSeg = f(5, 5, 4); d.sickleN = 3; d.saddle = true; d.saddleD = 9.5f; d.saddleZ = 5; d.shadow = 0.95f;
+        d.sickleSeg = f(5, 5, 4); d.sickleN = 3; d.saddle = true; d.saddleD = 9.5f; d.saddleZ = 1;  /* 4 px back (2026-11-20): the page moved it so a player-size rider clears the head */ d.shadow = 0.95f;
+        d.scale = 0.75f; d.hitW = 1.125f; d.hitH = 1.725f;  /* was 1.5 x 2.3 */
     }
 
     public static Dims of(int stage) { return stage <= 1 ? S1 : stage == 2 ? S2 : S3; }

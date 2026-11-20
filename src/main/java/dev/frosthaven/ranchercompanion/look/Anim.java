@@ -24,9 +24,12 @@ public enum Anim {
     /** Scene scale per stage: distances, lanes and particles follow the drekki's size. */
     public static double stageK(int stage) { return stage == 1 ? 0.42 : stage == 2 ? 0.7 : 1.0; }
 
+    /** stageK in the world: the loops' model-space k times the stage's model scale (particles, travel, stand-ins) */
+    public static double worldK(int stage) { return stageK(stage) * Dims.of(stage).scale; }
+
     /** Speed in blocks per second at a stage and loop time; the dash bursts out of the run and eases back. */
     public double speedAt(int stage, double t) {
-        double k = stageK(stage);
+        double k = worldK(stage);
         if (speed >= 0) return speed * k;
         double f = loop(t, 3.4), d = f < 0.45 ? Math.sin(f / 0.45 * Math.PI) : 0;
         return (3.4 + 4.5 * d) * k;

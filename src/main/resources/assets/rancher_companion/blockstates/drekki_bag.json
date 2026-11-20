@@ -1,0 +1,94 @@
+{
+  "variants": {
+    "facing=north,kind=1": {
+      "model": "rancher_companion:block/drekki_satchel"
+    },
+    "facing=north,kind=2": {
+      "model": "rancher_companion:block/drekki_saddlebag"
+    },
+    "facing=north,kind=3": {
+      "model": "rancher_companion:block/drekki_saddlebag"
+    },
+    "facing=north,kind=4": {
+      "model": "rancher_companion:block/drekki_saddlebag"
+    },
+    "facing=north,kind=5": {
+      "model": "rancher_companion:block/drekki_saddlebag"
+    },
+    "facing=north,kind=6": {
+      "model": "rancher_companion:block/drekki_saddlebag"
+    },
+    "facing=east,kind=1": {
+      "model": "rancher_companion:block/drekki_satchel",
+      "y": 90
+    },
+    "facing=east,kind=2": {
+      "model": "rancher_companion:block/drekki_saddlebag",
+      "y": 90
+    },
+    "facing=east,kind=3": {
+      "model": "rancher_companion:block/drekki_saddlebag",
+      "y": 90
+    },
+    "facing=east,kind=4": {
+      "model": "rancher_companion:block/drekki_saddlebag",
+      "y": 90
+    },
+    "facing=east,kind=5": {
+      "model": "rancher_companion:block/drekki_saddlebag",
+      "y": 90
+    },
+    "facing=east,kind=6": {
+      "model": "rancher_companion:block/drekki_saddlebag",
+      "y": 90
+    },
+    "facing=south,kind=1": {
+      "model": "rancher_companion:block/drekki_satchel",
+      "y": 180
+    },
+    "facing=south,kind=2": {
+      "model": "rancher_companion:block/drekki_saddlebag",
+      "y": 180
+    },
+    "facing=south,kind=3": {
+      "model": "rancher_companion:block/drekki_saddlebag",
+      "y": 180
+    },
+    "facing=south,kind=4": {
+      "model": "rancher_companion:block/drekki_saddlebag",
+      "y": 180
+    },
+    "facing=south,kind=5": {
+      "model": "rancher_companion:block/drekki_saddlebag",
+      "y": 180
+    },
+    "facing=south,kind=6": {
+      "model": "rancher_companion:block/drekki_saddlebag",
+      "y": 180
+    },
+    "facing=west,kind=1": {
+      "model": "rancher_companion:block/drekki_satchel",
+      "y": 270
+    },
+    "facing=west,kind=2": {
+      "model": "rancher_companion:block/drekki_saddlebag",
+      "y": 270
+    },
+    "facing=west,kind=3": {
+      "model": "rancher_companion:block/drekki_saddlebag",
+      "y": 270
+    },
+    "facing=west,kind=4": {
+      "model": "rancher_companion:block/drekki_saddlebag",
+      "y": 270
+    },
+    "facing=west,kind=5": {
+      "model": "rancher_companion:block/drekki_saddlebag",
+      "y": 270
+    },
+    "facing=west,kind=6": {
+      "model": "rancher_companion:block/drekki_saddlebag",
+      "y": 270
+    }
+  }
+}

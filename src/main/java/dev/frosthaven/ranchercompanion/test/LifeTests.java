@@ -93,7 +93,7 @@ public final class LifeTests {
             t.assertTrue(d.stage() == 2, "grown: stage " + d.stage() + ", travel " + d.life.travel);
             t.assertTrue(d.diet() == Diet.SEED.ordinal(), "the diet it ate most: " + Diet.of(d.diet()));
             t.assertTrue(d.astral() == Astral.AERO, "the astral it counted most: " + Astral.NAMES[d.astral()]);
-            t.assertTrue(d.getMaxHealth() == 20 && d.getHealth() == 20, "fledgling health " + d.getHealth() + "/" + d.getMaxHealth());
+            t.assertTrue(d.getMaxHealth() == 30 && d.getHealth() == 30, "fledgling health " + d.getHealth() + "/" + d.getMaxHealth());
         });
     }
 
@@ -125,15 +125,16 @@ public final class LifeTests {
         t.succeed();
     }
 
-    /** a hungry Fledgling out with its owner and no trough eats from its pack */
+    /** a plain bag holds food but never feeds the drekki: only a Sophisticated feeding upgrade does (spec, Accessory: bags) */
     @GameTest(template = "floor", timeoutTicks = 200)
-    public static void eatsFromItsPack(GameTestHelper t) {
+    public static void aPlainBagNeverFeedsIt(GameTestHelper t) {
         ServerPlayer p = player(t);
         DrekkiEntity d = CombatTests.out(t, p, 2, Diet.ROOT, Life.Stance.PASSIVE);
         d.life.food = 5;
-        d.pack().setItem(0, new ItemStack(Items.CARROT, 2));
-        t.succeedWhen(() -> t.assertTrue(d.life.food > 5.5 && d.pack().getItem(0).getCount() < 2,
-            "ate from its pack: food " + d.life.food + ", carrots " + d.pack().getItem(0).getCount()));
+        d.setAccessory(new ItemStack(dev.frosthaven.ranchercompanion.item.DrekkiItems.BAGS.get(0).get()));
+        d.bagStorage().insertItem(0, new ItemStack(Items.CARROT, 2), false);
+        t.runAfterDelay(180, () -> { t.assertTrue(d.bagStorage().getStackInSlot(0).getCount() == 2,
+            "the carrots stayed in the satchel: " + d.bagStorage().getStackInSlot(0).getCount()); t.succeed(); });
     }
 
     @GameTest(template = "floor", timeoutTicks = 600)

@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "rancher_companion:block/tombstone"
+    },
+    "facing=east": {
+      "model": "rancher_companion:block/tombstone",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "rancher_companion:block/tombstone",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "rancher_companion:block/tombstone",
+      "y": 270
+    }
+  }
+}

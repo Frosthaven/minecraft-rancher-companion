@@ -30,6 +30,14 @@ public final class DrekkiData {
         b -> b.persistent(UUIDUtil.CODEC).networkSynchronized(UUIDUtil.STREAM_CODEC));
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<String>> CARRIED_OWNER_NAME = COMPONENTS.registerComponentType("carried_owner_name",
         b -> b.persistent(Codec.STRING).networkSynchronized(ByteBufCodecs.STRING_UTF8));
+    /** the trim's dye (barding rims, bag flaps and strap), beside vanilla's dyed color for the main part (spec, Dyeing) */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> TRIM_COLOR = COMPONENTS.registerComponentType("trim_color",
+        b -> b.persistent(Codec.INT).networkSynchronized(ByteBufCodecs.INT));
+    /** a tombstone's drekki and the date it died, MM-dd-yyyy (spec, Tombstone) */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<String>> TOMB_NAME = COMPONENTS.registerComponentType("tomb_name",
+        b -> b.persistent(Codec.STRING).networkSynchronized(ByteBufCodecs.STRING_UTF8));
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<String>> TOMB_DATE = COMPONENTS.registerComponentType("tomb_date",
+        b -> b.persistent(Codec.STRING).networkSynchronized(ByteBufCodecs.STRING_UTF8));
     /** what the carrier shows on hover: the drekki's name or bloodline */
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<String>> CARRIED_NAME = COMPONENTS.registerComponentType("carried_name",
         b -> b.persistent(Codec.STRING).networkSynchronized(ByteBufCodecs.STRING_UTF8));

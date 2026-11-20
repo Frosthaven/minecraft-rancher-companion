@@ -26,7 +26,7 @@ class AnimTest {
     void dashSpeedPeaksThenEasesBackToTheRun() {
         double run = Anim.RUN.speedAt(3, 0);
         assertEquals(run, Anim.DASH.speedAt(3, 0), 1e-9);
-        assertEquals(run + 4.5, Anim.DASH.speedAt(3, 3.4 * 0.225), 1e-6);
+        assertEquals(run + 4.5 * Anim.worldK(3), Anim.DASH.speedAt(3, 3.4 * 0.225), 1e-6);  /* the burst scales with the stage like the run */
         assertEquals(run, Anim.DASH.speedAt(3, 3.0), 1e-9);
     }
 

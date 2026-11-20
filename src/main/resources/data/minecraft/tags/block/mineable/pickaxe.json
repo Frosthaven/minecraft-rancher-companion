@@ -2,6 +2,7 @@
  "values": [
   "rancher_companion:rancher_shingles",
   "rancher_companion:rancher_shingles_slab",
-  "rancher_companion:rancher_shingles_stairs"
+  "rancher_companion:rancher_shingles_stairs",
+  "rancher_companion:tombstone"
  ]
 }

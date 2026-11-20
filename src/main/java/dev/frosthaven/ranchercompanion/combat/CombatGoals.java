@@ -133,6 +133,9 @@ public final class CombatGoals {
                 ElementalBall b = RancherCompanion.ELEMENTAL_BALL.get().create(d.level());
                 if (b == null) return;
                 b.setOwner(d);
+                /* point blank: a ball made inside the target's box never meets it, so it hits at once */
+                double close = d.getBbWidth() / 2 + t.getBbWidth() / 2 + 1.5;
+                if (d.distanceToSqr(t) <= close * close) { b.setPos(t.getX(), t.getY(0.5), t.getZ()); b.strike(t); return; }
                 b.setPos(d.getX(), d.getEyeY() - 0.1, d.getZ());
                 double dx = t.getX() - d.getX(), dy = t.getY(0.5) - (d.getEyeY() - 0.1), dz = t.getZ() - d.getZ();
                 b.shoot(dx, dy, dz, 1.0f, 1.0f);

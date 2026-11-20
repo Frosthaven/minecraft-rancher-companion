@@ -25,14 +25,26 @@ public final class DrekkiItems {
     /** Every item in display order: barding by tier, carriers, crafted hats, trader hats, tonics, egg, then the blocks. */
     public static final List<DeferredItem<? extends Item>> ALL = new ArrayList<>();
 
-    public static final Map<Barding, DeferredItem<Item>> BARDING = new java.util.EnumMap<>(Barding.class);
+    /** Mature barding (the original ids) and Fledgling barding, by tier (spec, Barding: split by stage) */
+    public static final Map<Barding, DeferredItem<BardingItem>> BARDING = new java.util.EnumMap<>(Barding.class),
+        FLEDGLING_BARDING = new java.util.EnumMap<>(Barding.class);
     static {
-        for (Barding tier : Barding.values()) {
-            Item.Properties props = new Item.Properties().stacksTo(1);
+        for (int stage : new int[]{2, 3}) for (Barding tier : Barding.values()) {
+            Item.Properties props = new Item.Properties();
             if (tier == Barding.NETHERITE) props.fireResistant();
-            BARDING.put(tier, add(ITEMS.registerSimpleItem(tier.id(), props)));
+            (stage == 2 ? FLEDGLING_BARDING : BARDING).put(tier, add(ITEMS.registerItem(tier.id(stage), p -> new BardingItem(tier, stage, p), props)));
         }
     }
+
+    /** every barding item, both stages */
+    public static java.util.stream.Stream<DeferredItem<BardingItem>> allBarding() {
+        return java.util.stream.Stream.concat(FLEDGLING_BARDING.values().stream(), BARDING.values().stream());
+    }
+
+    /** the bags by Gear.BAGS index (1..6): the satchel, then the saddlebag's tiers (spec, Accessory: bags) */
+    public static final List<DeferredItem<? extends Item>> BAGS = java.util.stream.IntStream.range(1, dev.frosthaven.ranchercompanion.look.Gear.BAGS.length)
+        .mapToObj(k -> add(ITEMS.registerItem(dev.frosthaven.ranchercompanion.look.Gear.BAGS[k], p -> dev.frosthaven.ranchercompanion.item.Bags.create(k, p),
+            k == 6 ? new Item.Properties().fireResistant() : new Item.Properties()))).collect(java.util.stream.Collectors.toList());
 
     public static final DeferredItem<CarrierItem> SMALL_CARRIER = add(ITEMS.registerItem("small_drekki_carrier", p -> new CarrierItem(p, 1), new Item.Properties().stacksTo(1)));
     public static final DeferredItem<CarrierItem> LARGE_CARRIER = add(ITEMS.registerItem("large_drekki_carrier", p -> new CarrierItem(p, 2), new Item.Properties().stacksTo(1)));
@@ -56,6 +68,10 @@ public final class DrekkiItems {
     /** one item per block, in the blocks' tab order (hatchery, trough, then the decor set) */
     public static final List<DeferredItem<net.minecraft.world.item.BlockItem>> BLOCK_ITEMS =
         dev.frosthaven.ranchercompanion.block.DrekkiBlocks.ITEM_ORDER.stream().map(b -> add(ITEMS.registerSimpleBlockItem(b))).toList();
+
+    /** a drekki's tombstone: only a death makes one, so it is not in the tab */
+    public static final DeferredItem<TombstoneItem> TOMBSTONE = ITEMS.registerItem("tombstone",
+        p -> new TombstoneItem(dev.frosthaven.ranchercompanion.block.DrekkiBlocks.TOMBSTONE.get(), p), new Item.Properties().stacksTo(1));
 
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB = TABS.register("drekki_rancher", () -> CreativeModeTab.builder()
         .title(Component.translatable("itemGroup." + RancherCompanion.ID))

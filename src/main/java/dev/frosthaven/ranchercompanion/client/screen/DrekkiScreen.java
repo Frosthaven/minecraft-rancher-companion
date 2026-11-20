@@ -21,25 +21,26 @@ import net.minecraft.world.entity.player.Inventory;
 
 /**
  * The drekki screen (spec, Drekki screen; design page, UI tab), drawn from tools/screen_textures.py's drekki sheets: the
- * name and stage over two tabs (Details, Traits), the hat slot, the drekki's own model (it turns to follow the mouse),
+ * name over two tabs (Details, Traits), the hat slot, the drekki's own model (it turns to follow the mouse),
  * then Details (hearts, food, bloodline, astral, diet, mood with its buffs) or Traits (its slots by stage, each with its
  * tooltip), the stance buttons at the foot from stage 2, its pack from stage 2, and the player's inventory below.
  */
 public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
     private static final ResourceLocation TEX = ResourceLocation.fromNamespaceAndPath(RancherCompanion.ID, "textures/gui/drekki.png"),
-        TEX_PACK = ResourceLocation.fromNamespaceAndPath(RancherCompanion.ID, "textures/gui/drekki_pack.png"),
+        TEX_GEAR = ResourceLocation.fromNamespaceAndPath(RancherCompanion.ID, "textures/gui/drekki_gear.png"),
         SPR = ResourceLocation.fromNamespaceAndPath(RancherCompanion.ID, "textures/gui/drekki_sprites.png");
     private static final ResourceLocation HEART = ResourceLocation.withDefaultNamespace("hud/heart/full"),
         HALF = ResourceLocation.withDefaultNamespace("hud/heart/half"), EMPTY = ResourceLocation.withDefaultNamespace("hud/heart/container"),
         FOOD = ResourceLocation.withDefaultNamespace("hud/food_full"), FOOD_HALF = ResourceLocation.withDefaultNamespace("hud/food_half"),
         FOOD_EMPTY = ResourceLocation.withDefaultNamespace("hud/food_empty");
     private static final net.minecraft.world.item.ItemStack GHOST_HAT = dev.frosthaven.ranchercompanion.item.DrekkiItems.hatStack(5);
+    /** the faint items in the empty barding and accessory slots: what goes there */
+    private net.minecraft.world.item.ItemStack ghostBarding, ghostBag;
     /** drekki_sprites (tools/screen_textures.py: SX, TAB_*, STANCE_*, ICON_Y, BUFF_Y) */
     private static final int SX = 0, TAB_W = 40, TAB_H = 12, STANCE = 14, STANCE_Y = 40, ICON_Y = 56, BUFF_Y = 66;
     /** the wells: model 28..80 x 22..122, info 83..214; text from 86, 125 wide; the tabs at the header's right */
     private static final int INFO_X = 86, INFO_W = 125, WELL_TOP = 22, WELL_BOTTOM = 122, TAB1 = 134, TAB2 = 174;
     private static final int[] BAND_COLOR = {0xFFC04050, 0xFFF0B040, 0xFFC9A45A, 0xFF6AA83E, 0xFF7FF0DC};
-    private static final int GHOST_COLOR = 0xFFAFD8F0;
 
     private boolean traitsTab;
     /** where this frame drew each part, in screen coordinates (the self test hovers and clicks them) */
@@ -58,28 +59,40 @@ public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
         super(menu, inv, title);
         traitsTab = menu.traitsTab;
         imageWidth = 220;
-        imageHeight = menu.pack ? 244 : 220;
+        imageHeight = 220;
         inventoryLabelY = 10000;  /* the steel panel needs no label */
     }
 
-    private ResourceLocation tex() { return menu.pack ? TEX_PACK : TEX; }
+    private ResourceLocation tex() { return menu.gear ? TEX_GEAR : TEX; }
 
     @Override
     protected void renderBg(GuiGraphics g, float pt, int mx, int my) {
         g.blit(tex(), leftPos, topPos, 0, 0, imageWidth, imageHeight);
-        /* an empty hat slot shows a dim straw hat: the item, then the slot's own fill over it at 70% */
-        if (menu.slots.get(0).getItem().isEmpty()) {
-            int x = leftPos + DrekkiMenu.HAT_X, y = topPos + DrekkiMenu.HAT_Y;
-            g.renderFakeItem(GHOST_HAT, x, y);
-            g.pose().pushPose();
-            g.pose().translate(0, 0, 250);
-            g.fill(x, y, x + 16, y + 16, 0xB3221428);
-            g.pose().popPose();
-        }
+        /* an empty equipment slot shows what goes there, dim: the item, then the slot's own fill over it at 70% */
         DrekkiEntity d = menu.drekki;
+        ghost(g, 0, GHOST_HAT, DrekkiMenu.HAT_Y);
+        if (menu.gear && d != null) {
+            if (ghostBarding == null) {
+                ghostBarding = new net.minecraft.world.item.ItemStack((d.stage() == 2 ? dev.frosthaven.ranchercompanion.item.DrekkiItems.FLEDGLING_BARDING
+                    : dev.frosthaven.ranchercompanion.item.DrekkiItems.BARDING).get(dev.frosthaven.ranchercompanion.item.Barding.IRON).get());
+                ghostBag = new net.minecraft.world.item.ItemStack(dev.frosthaven.ranchercompanion.item.DrekkiItems.BAGS.get(d.stage() == 2 ? 0 : 1).get());
+            }
+            ghost(g, 1, ghostBarding, DrekkiMenu.BARDING_Y);
+            ghost(g, 2, ghostBag, DrekkiMenu.ACCESSORY_Y);
+        }
         if (d == null) return;
-        int k = d.stage() == 1 ? 42 : d.stage() == 2 ? 26 : 16;
+        int k = d.stage() == 1 ? 42 : d.stage() == 2 ? 35 : 21;  /* the frame as before: the model is at 75% from stage 2 (Dims.scale) */
         InventoryScreen.renderEntityInInventoryFollowsMouse(g, leftPos + 29, topPos + 23, leftPos + 79, topPos + 121, k, 0.0625f, mx, my, d);
+    }
+
+    private void ghost(GuiGraphics g, int slot, net.minecraft.world.item.ItemStack item, int sy) {
+        if (!menu.slots.get(slot).getItem().isEmpty()) return;
+        int x = leftPos + DrekkiMenu.HAT_X, y = topPos + sy;
+        g.renderFakeItem(item, x, y);
+        g.pose().pushPose();
+        g.pose().translate(0, 0, 250);
+        g.fill(x, y, x + 16, y + 16, 0xB3221428);
+        g.pose().popPose();
     }
 
     @Override
@@ -87,12 +100,11 @@ public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
         DrekkiEntity d = menu.drekki;
         tip = null;
         spots.clear();
+        if (menu.gear) spot("accessory", DrekkiMenu.HAT_X, DrekkiMenu.ACCESSORY_Y, 16, 16);  /* the self test right-clicks the bag here */
         int rx = mx - leftPos, ry = my - topPos;
         g.drawString(font, title, 8, 6, Art.THREAD, false);
         if (d == null) return;
-        Component stage = Component.translatable("stage.rancher_companion." + d.stage());
-        if (d.ghost()) stage = Component.translatable("screen.rancher_companion.drekki.ghost", stage);
-        g.drawString(font, stage, 8 + font.width(title) + 6, 6, d.ghost() ? GHOST_COLOR : Art.DIM, false);
+        /* the name only (2026-11-20): no stage, no ghost tag */
         tab(g, TAB1, false, rx, ry);
         tab(g, TAB2, true, rx, ry);
         spot("tab_details", TAB1, 4, TAB_W, TAB_H);
@@ -113,13 +125,14 @@ public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
         int x = INFO_X, y = 26;
         int hearts = (int) Math.ceil(d.getMaxHealth() / 2), full = (int) d.getHealth() / 2;
         boolean half = ((int) Math.ceil(d.getHealth())) % 2 == 1;
-        for (int i = 0; i < hearts; i++) {  /* vanilla's HUD: ten to a row, 8 px apart */
-            int hx = x + (i % 10) * 8, hy = y + (i / 10) * 9;
+        int perRow = hearts > 20 ? 13 : 10;  /* vanilla's ten to a row; a Mature's 25 take 13 so they stay two rows over the text */
+        for (int i = 0; i < hearts; i++) {  /* vanilla's HUD: 8 px apart */
+            int hx = x + (i % perRow) * 8, hy = y + (i / perRow) * 9;
             g.blitSprite(EMPTY, hx, hy, 9, 9);
             if (i < full) g.blitSprite(HEART, hx, hy, 9, 9);
             else if (i == full && half) g.blitSprite(HALF, hx, hy, 9, 9);
         }
-        y += ((hearts + 9) / 10) * 9 + 1;
+        y += ((hearts + perRow - 1) / perRow) * 9 + 1;
         float food = Life.shownFood(d.food());
         for (int i = 0; i < Life.FOOD_MAX; i++) {
             int fx = x + i * 8;
@@ -155,7 +168,7 @@ public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
             g.blit(SPR, ix, ty - 1, SX, BUFF_Y, 9, 9);
             spot("pet", ix, ty - 1, 9, 9);
             if (Art.in(rx, ry, ix, ty - 1, 9, 9)) tip = List.of(Component.translatable("screen.rancher_companion.drekki.pet").withStyle(ChatFormatting.LIGHT_PURPLE),
-                Component.translatable("screen.rancher_companion.drekki.pet.desc", (int) Life.PET_MOOD, Math.max(1, d.petLeft() / 60)).withStyle(ChatFormatting.GRAY));
+                Component.translatable("screen.rancher_companion.drekki.pet.desc", Math.max(1, d.petLeft() / 60)).withStyle(ChatFormatting.GRAY));
             ix += 10;
         }
         if (d.kin() > 0) {
@@ -173,7 +186,7 @@ public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
         if (d.food() <= 0) t.add(Component.translatable("screen.rancher_companion.drekki.reason.hungry").withStyle(ChatFormatting.RED));
         var owner = d.ownerPlayer();
         if (owner != null && owner.distanceToSqr(d) > 30 * 30) t.add(Component.translatable("screen.rancher_companion.drekki.reason.far").withStyle(ChatFormatting.RED));
-        if (d.petLeft() > 0) t.add(Component.translatable("screen.rancher_companion.drekki.reason.pet", (int) Life.PET_MOOD).withStyle(ChatFormatting.GREEN));
+        if (d.petLeft() > 0) t.add(Component.translatable("screen.rancher_companion.drekki.reason.pet").withStyle(ChatFormatting.GREEN));
         if (d.kin() > 0) t.add(Component.translatable("screen.rancher_companion.drekki.reason.kin", Math.round(Life.kinBonus(d.kin()))).withStyle(ChatFormatting.GREEN));
         return t;
     }
@@ -259,12 +272,14 @@ public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
         int y = WELL_BOTTOM - STANCE - 2;
         for (Life.Stance s : Life.Stance.values()) {
             int x = INFO_X + s.ordinal() * (STANCE + 2);
-            boolean on = d.stance() == s, hover = Art.in(rx, ry, x, y, STANCE, STANCE);
+            boolean on = d.stance() == s, over = Art.in(rx, ry, x, y, STANCE, STANCE), hover = over && !d.ghost();
             spot("stance" + s.ordinal(), x, y, STANCE, STANCE);
             g.blit(SPR, x, y, SX + (on ? 1 : hover ? 2 : 0) * STANCE, STANCE_Y, STANCE, STANCE);
             g.blit(SPR, x + 3, y + 3, SX + s.ordinal() * 8, ICON_Y, 8, 8);
-            if (hover) tip = List.of(Component.translatable("stance.rancher_companion." + s.name().toLowerCase()).withStyle(ChatFormatting.WHITE),
-                Component.translatable("stance.rancher_companion." + s.name().toLowerCase() + ".desc").withStyle(ChatFormatting.GRAY));
+            if (over) tip = d.ghost() ? List.of(Component.translatable("stance.rancher_companion." + s.name().toLowerCase()).withStyle(ChatFormatting.WHITE),
+                    Component.translatable("screen.rancher_companion.drekki.ghost_stance").withStyle(ChatFormatting.GRAY))
+                : List.of(Component.translatable("stance.rancher_companion." + s.name().toLowerCase()).withStyle(ChatFormatting.WHITE),
+                    Component.translatable("stance.rancher_companion." + s.name().toLowerCase() + ".desc").withStyle(ChatFormatting.GRAY));
         }
     }
 
@@ -274,12 +289,31 @@ public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
         return y;
     }
 
+    /** Sophisticated's Open Backpack key over the bag it wears opens that bag (spec, Accessory: bags) */
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (menu.gear && menu.drekki != null && hoveredSlot != null && hoveredSlot.index == 2 && hoveredSlot.hasItem() && menu.getCarried().isEmpty()
+            && dev.frosthaven.ranchercompanion.item.Bags.sophisticated()
+            && dev.frosthaven.ranchercompanion.compat.sophisticated.client.SophKeys.isOpenKey(keyCode, scanCode)) {
+            if (minecraft != null && minecraft.gameMode != null) minecraft.gameMode.handleInventoryButtonClick(menu.containerId, DrekkiMenu.BAG);
+            return true;
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
     @Override
     public boolean mouseClicked(double mx, double my, int button) {
         double rx = mx - leftPos, ry = my - topPos;
         if (button == 0 && Art.in(rx, ry, TAB1, 4, TAB_W, TAB_H)) { traitsTab = false; click(); return true; }
         if (button == 0 && Art.in(rx, ry, TAB2, 4, TAB_W, TAB_H)) { traitsTab = true; click(); return true; }
         DrekkiEntity d = menu.drekki;
+        /* right-click the bag it wears to open it, as a placed shulker box opens (spec, Accessory: bags); a left click still takes it */
+        if (button == 1 && menu.gear && d != null && menu.getCarried().isEmpty() && menu.slots.get(2).hasItem()
+            && Art.in(rx, ry, DrekkiMenu.HAT_X, DrekkiMenu.ACCESSORY_Y, 16, 16)) {
+            if (minecraft != null && minecraft.gameMode != null) minecraft.gameMode.handleInventoryButtonClick(menu.containerId, DrekkiMenu.BAG);
+            click();
+            return true;
+        }
         int offerY = d == null || !traitsTab ? -1 : offerRow(d);
         if (button == 0 && offerY >= 0) for (int b = 0; b < 2; b++)
             if (Art.in(rx, ry, b == 0 ? YES_X : NO_X, offerY - 1, ANSWER, ANSWER)) {
@@ -287,7 +321,7 @@ public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
                 click();
                 return true;
             }
-        if (button == 0 && d != null && d.stage() >= 2) for (Life.Stance s : Life.Stance.values()) {
+        if (button == 0 && d != null && d.stage() >= 2 && !d.ghost()) for (Life.Stance s : Life.Stance.values()) {
             int x = INFO_X + s.ordinal() * (STANCE + 2), y = WELL_BOTTOM - STANCE - 2;
             if (Art.in(rx, ry, x, y, STANCE, STANCE)) {
                 if (minecraft != null && minecraft.gameMode != null) minecraft.gameMode.handleInventoryButtonClick(menu.containerId, s.ordinal());

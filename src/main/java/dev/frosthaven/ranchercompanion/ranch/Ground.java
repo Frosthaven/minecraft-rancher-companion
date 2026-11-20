@@ -51,7 +51,8 @@ public final class Ground implements Flood.Grid {
     /** the spot right for a drekki of this stage: stage 1 fits in one block; bigger ones need their hitbox clear */
     public boolean fits(long p, int stage) {
         int x = Flood.x(p), y = Flood.y(p), z = Flood.z(p);
-        int h = stage == 1 ? 1 : stage == 2 ? 2 : 3, w = stage == 3 ? 2 : 1;
+        var d = dev.frosthaven.ranchercompanion.look.Dims.of(stage);
+        int h = (int) Math.ceil(d.hitH), w = (int) Math.ceil(d.hitW);
         for (int dx = 0; dx < w; dx++) for (int dz = 0; dz < w; dz++) {
             if (!stand(x + dx, y, z + dz)) return false;
             for (int dy = 1; dy < h; dy++) if (top(x + dx, y + dy, z + dz) != 0) return false;

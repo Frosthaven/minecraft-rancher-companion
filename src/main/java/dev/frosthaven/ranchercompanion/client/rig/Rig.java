@@ -20,7 +20,13 @@ public final class Rig {
     /** trim: the lighter trim color, or -1 for a lighter shade of the fur (the page's o.trim). */
     /** hat: Gear.HATS index (0 none); barding: Gear.BARDING tier (0 none, stage 3 only); dye: an RGB barding dye or -1. */
     /** sheenHex and sheen: the line's glow color and strength (0 for no sheen); see: a see-through line (Bakeneko). */
-    public record Look(int stage, int fur, int trim, int legTint, int astral, Diet diet, int horn, boolean spread, int hat, int barding, int dye, int sheenHex, float sheen, boolean see) {}
+    public record Look(int stage, int fur, int trim, int legTint, int astral, Diet diet, int horn, boolean spread, int hat, int barding, int dye, int sheenHex, float sheen, boolean see,
+                       int dye2, int bag, int bagDye, int bagDye2) {
+        /** no barding trim dye and no bag */
+        public Look(int stage, int fur, int trim, int legTint, int astral, Diet diet, int horn, boolean spread, int hat, int barding, int dye, int sheenHex, float sheen, boolean see) {
+            this(stage, fur, trim, legTint, astral, diet, horn, spread, hat, barding, dye, sheenHex, sheen, see, -1, 0, -1, -1);
+        }
+    }
 
     public static final class Leg {
         public final Node thigh, knee, ankle;
@@ -154,7 +160,9 @@ public final class Rig {
         /* dorsal line: dark fins on carnivores, feather tufts on herbivores from stage 2 */
         float sf = D.spineLen, kk = bh / 11;
         spine(neck1, 0, nh1 * 0.35, -nd / 2 + 0.2, kk * 0.8, sf, furL, furD, furD2); spine(neck1, 0, nh1 * 0.75, -nd / 2 + 0.2, kk * 0.8, sf, furL, furD, furD2);
-        for (double z = bd / 2 - 2.5; z > -bd / 2 + 2; z -= 3.4 * kk) { if (D.saddle && z < D.saddleZ + D.saddleD / 2 + 1 && z > D.saddleZ - D.saddleD / 2 - 1) continue; spine(body, 0, bh / 2 + 0.5 * kk, z, kk, sf, furL, furD, furD2); }
+        BagRig.Layout bagAt = o.bag > 0 && stage >= dev.frosthaven.ranchercompanion.look.Gear.BAG_STAGE[o.bag] ? BagRig.layout(D, o.bag) : null;  /* no spines under the bags, as under the saddle */
+        for (double z = bd / 2 - 2.5; z > -bd / 2 + 2; z -= 3.4 * kk) { if (D.saddle && z < D.saddleZ + D.saddleD / 2 + 1 && z > D.saddleZ - D.saddleD / 2 - 1) continue;
+            if (bagAt != null && z < bagAt.z() + bagAt.d() / 2 + 1 && z > bagAt.z() - bagAt.d() / 2 - 1) continue; spine(body, 0, bh / 2 + 0.5 * kk, z, kk, sf, furL, furD, furD2); }
 
         /* wings */
         float pt = D.wingPanel[0], ph2 = D.wingPanel[1], pl = D.wingPanel[2];
@@ -223,7 +231,8 @@ public final class Rig {
                 else { cube(body, 0.7, 5.5, 1.4, s * (bw / 2 + 0.35), top - 2.5, sz + 0.5, SADDLE_D); cube(body, 1.6, 1.8, 2.6, s * (bw / 2 + 0.6), top - 5.8, sz + 0.5, IRON); }
             }
         }
-        if (o.barding > 0 && stage == 3) BardingRig.build(this, o.barding, o.dye);
+        if (o.barding > 0 && stage >= 2) BardingRig.build(this, o.barding, o.dye, o.dye2);
+        if (bagAt != null) BagRig.build(this, o.bag, o.bagDye, o.bagDye2);
         crouchPx = bh * 0.4f;
         for (Node nd0 : all) nd0.bake();
     }

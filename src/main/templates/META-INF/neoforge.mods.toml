@@ -47,3 +47,21 @@ config="${mod_id}.mixins.json"
     versionRange="[15,)"
     ordering="NONE"
     side="BOTH"
+
+# JourneyMap (optional): a magenta death marker where one's drekki died (compat/journeymap); its versions read
+# "1.21.1-6.0.2", so any version is let in: the plugin needs only its API 2.0, which 6.x bundles
+[[dependencies.${mod_id}]]
+    modId="journeymap"
+    type="optional"
+    versionRange="*"
+    ordering="NONE"
+    side="CLIENT"
+
+# Sophisticated Backpacks (optional): the drekki bags are its backpack items when it is installed (compat/sophisticated);
+# it loads first so its item class is ready
+[[dependencies.${mod_id}]]
+    modId="sophisticatedbackpacks"
+    type="optional"
+    versionRange="[3.26,)"
+    ordering="AFTER"
+    side="BOTH"

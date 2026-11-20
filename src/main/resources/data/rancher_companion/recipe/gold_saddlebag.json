@@ -1,0 +1,21 @@
+{
+  "type": "rancher_companion:keep_shaped",
+  "category": "equipment",
+  "key": {
+    "M": {
+      "tag": "c:ingots/gold"
+    },
+    "B": {
+      "item": "rancher_companion:iron_saddlebag"
+    }
+  },
+  "pattern": [
+    "MMM",
+    "MBM",
+    "MMM"
+  ],
+  "result": {
+    "count": 1,
+    "id": "rancher_companion:gold_saddlebag"
+  }
+}

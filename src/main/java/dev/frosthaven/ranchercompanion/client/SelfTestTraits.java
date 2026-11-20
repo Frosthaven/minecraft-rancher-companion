@@ -401,7 +401,7 @@ final class SelfTestTraits {
         String id = "@e[type=rancher_companion:drekki,limit=1,sort=nearest]";
         learn(Trait.HEARTY, 8, 1, () -> { cmd("damage " + id + " 4"); life(d -> d.life.cooldowns.remove("hearty_heal"));
             after(5, () -> cmd("effect give " + id + " instant_health 1 0")); });
-        check("hearty_max_health", 10, 3, () -> {}, "max health", () -> sd() == null ? -1 : sd().getMaxHealth(), () -> sd() != null && sd().getMaxHealth() == 26);
+        check("hearty_max_health", 10, 3, () -> {}, "max health", () -> sd() == null ? -1 : sd().getMaxHealth(), () -> sd() != null && sd().getMaxHealth() == 36);
 
         fresh("totem");
         learn(Trait.PHOENIX_HEART, 3, 2, () -> { cmd("item replace entity @s weapon.offhand with totem_of_undying"); cmd("damage @s 100 minecraft:generic"); });
@@ -470,6 +470,493 @@ final class SelfTestTraits {
                 }
             }
         return null;
+    }
+
+    /** a right click on a spot of the drekki screen */
+    private static void rightClickSpot(String key) {
+        var ds = ds(); if (ds == null || ds.spot(key) == null) return;
+        int[] c = ds.spot(key); ds.mouseClicked(c[0], c[1], 1);
+    }
+
+    /** a plain click on a menu slot (button 0 left, 1 right), as a player does */
+    private static void click(int slot, int button) {
+        if (mc().player != null && mc().gameMode != null)
+            mc().gameMode.handleInventoryMouseClick(mc().player.containerMenu.containerId, slot, button, net.minecraft.world.inventory.ClickType.PICKUP, mc().player);
+    }
+
+    private static int countOf(net.neoforged.neoforge.items.IItemHandler h, net.minecraft.world.item.Item item) {
+        int n = 0; for (int i = 0; i < h.getSlots(); i++) if (h.getStackInSlot(i).is(item)) n += h.getStackInSlot(i).getCount(); return n;
+    }
+
+    /** shift-click a menu slot, as a player does */
+    private static void shiftClick(int slot) {
+        if (mc().player != null && mc().gameMode != null)
+            mc().gameMode.handleInventoryMouseClick(mc().player.containerMenu.containerId, slot, 0, net.minecraft.world.inventory.ClickType.QUICK_MOVE, mc().player);
+    }
+
+    /** a recipe's result for a grid, from the server's recipe manager */
+    private static ItemStack craft(net.minecraft.world.item.crafting.CraftingInput in) {
+        var srv = mc().getSingleplayerServer(); if (srv == null) return ItemStack.EMPTY;
+        var l = srv.overworld();
+        return l.getRecipeManager().getRecipeFor(net.minecraft.world.item.crafting.RecipeType.CRAFTING, in, l).map(h -> h.value().assemble(in, l.registryAccess())).orElse(ItemStack.EMPTY);
+    }
+
+    /** -Drancher_companion.selftest.gear: barding and bags in the real game (spec, Barding; Accessory: bags; Dyeing) with
+     *  whatever storage mod is installed: the screen's slots by shift-click, the bag screen, a hit into the barding, the
+     *  dye recipes, and the look at both stages */
+    static void gear(BlockPos site) {
+        o = site;
+        String id = "@e[type=rancher_companion:drekki,limit=1,sort=nearest]";
+        quiet("gear_fledgling", 30, () -> { tp(o.getX() + 0.5, o.getY(), o.getZ() + 0.5);
+            life(d -> { d.setLook(2, 32, 0, 2, 0); d.applyStageHealth(true); d.teleportTo(o.getX() + 2.5, o.getY(), o.getZ() + 0.5); });
+            hotbar(0, "rancher_companion:fledgling_iron_barding"); hotbar(1, "rancher_companion:satchel"); hotbar(2, "minecraft:apple 5"); hotbar(3, "rancher_companion:iron_barding"); });
+        quiet("gear_near", 15, () -> { select(8); near(pup()); });
+        step("gear_screen_empty", 25, () -> interact("open its screen"), () -> ds() != null && ds().getMenu().gear);
+        step("gear_wrong_stage_refused", 10, () -> shiftClick(3 + 27 + 3), () -> pup() != null && pup().barding() == 0);
+        step("gear_barding_on", 15, () -> shiftClick(3 + 27), () -> pup() != null && pup().barding() == 4);
+        step("gear_satchel_on", 15, () -> shiftClick(3 + 27 + 1), () -> pup() != null && pup().bag() == 1);
+        step("gear_bag_tooltip", 10, () -> hoverSpot("accessory"), () -> ds() != null);
+        boolean soph = dev.frosthaven.ranchercompanion.item.Bags.sophisticated();
+        step("gear_bag_opens", 20, () -> rightClickSpot("accessory"), () -> mc().screen instanceof dev.frosthaven.ranchercompanion.client.screen.BagScreen
+            || soph && mc().screen != null && mc().screen.getClass().getSimpleName().equals("SophBagScreen"));
+        if (!soph) step("gear_apples_in", 20, () -> shiftClick(9 + 27 + 2), () -> sd() != null && sd().bagStorage() != null && hasItem(sd().bagStorage(), Items.APPLE));
+        else {
+            /* Sophisticated: a feeding upgrade in the bag's upgrade slot, carrots in the bag, a hungry Fledgling eats; the
+               screen again with the upgrade and its tab */
+            quiet("gear_soph_close", 10, () -> mc().setScreen(null));
+            quiet("gear_soph_feeding", 20, () -> life(d -> {
+                dev.frosthaven.ranchercompanion.compat.sophisticated.SophBags.installForTest(d.accessory(), "sophisticatedbackpacks:feeding_upgrade");
+                d.bagStorage().insertItem(0, new ItemStack(Items.BEEF, 4), false);
+                d.life.food = 5; }));
+            stepUntil("gear_soph_eats_with_feeding", 10, 20, () -> {}, () -> sd() != null && sd().life.food > 5.5);
+            /* the feeding upgrade feeds the drekki only: a hungry player right beside it gets nothing from the bag */
+            /* a control first: the same hungry player far from the drekki, so the pack's own hunger rules are known */
+            quiet("gear_soph_survival", 15, () -> cmd("gamemode survival"));
+            quiet("gear_soph_far_hungry", 10, () -> { life(d -> d.teleportTo(o.getX() + 6.5, o.getY(), o.getZ() + 6.5)); cmd("tp @s " + (o.getX() - 7.5) + " " + o.getY() + " " + (o.getZ() - 7.5)); });  /* on the platform, well past the 3-block reach */
+            quiet("gear_soph_far_set", 5, () -> server(m -> m.getFoodData().setFoodLevel(6)));
+            quiet("gear_soph_far_wait", 120, () -> {});
+            quiet("gear_soph_far_read", 5, () -> farFood = me() == null ? -1 : me().getFoodData().getFoodLevel());
+            quiet("gear_soph_near_hungry", 15, () -> near(pup()));
+            quiet("gear_soph_near_set", 5, () -> server(m -> m.getFoodData().setFoodLevel(6)));
+            quiet("gear_soph_full_drekki", 5, () -> life(d -> { d.life.food = 10; beefBefore = countOf(d.bagStorage(), Items.BEEF); }));
+            check("gear_soph_player_not_fed", 120, 0, () -> {}, "beef in the bag before and after a hungry player stood by a full drekki (equal = it fed nobody)",
+                () -> beefBefore + " -> " + count("minecraft:beef") + " (player food " + (me() == null ? "-" : me().getFoodData().getFoodLevel()) + ", far " + farFood + ")",
+                () -> beefBefore > 0 && count("minecraft:beef") == beefBefore);
+            /* and the reason: on a drekki the feeding upgrade never runs its own tick, the one that feeds players nearby */
+            check("gear_soph_feeding_never_ticked", 5, 0, () -> {}, "the worn bag's feeding upgrade cooldown (0 = its tick never ran)",
+                () -> sd() == null ? "-" : String.valueOf(dev.frosthaven.ranchercompanion.compat.sophisticated.SophBags.feedingNeverTicked(sd().accessory())),
+                () -> sd() != null && dev.frosthaven.ranchercompanion.compat.sophisticated.SophBags.feedingNeverTicked(sd().accessory()));
+            quiet("gear_soph_creative_again", 5, () -> { cmd("gamemode creative"); server(m -> m.getFoodData().setFoodLevel(20)); });
+            quiet("gear_soph_near", 10, () -> near(pup()));
+            step("gear_soph_screen_again", 25, () -> interact("open its screen"), () -> ds() != null);
+            step("gear_soph_bag_with_upgrade", 20, () -> rightClickSpot("accessory"), () -> mc().screen != null && mc().screen.getClass().getSimpleName().equals("SophBagScreen"));
+            /* Sophisticated's stashing works on the worn bag: apples dropped on it (right-click with them on the cursor), and
+               the bag on the cursor right-clicking apples in the inventory */
+            quiet("gear_soph_stash_close", 10, () -> mc().setScreen(null));
+            quiet("gear_soph_stash_give", 15, () -> { hotbar(4, "minecraft:apple 3"); hotbar(5, "minecraft:apple 2"); near(pup()); });
+            step("gear_soph_stash_screen", 25, () -> interact("open its screen"), () -> ds() != null);
+            step("gear_soph_drop_onto_bag", 20, () -> { click(3 + 27 + 4, 0); click(2, 1); },
+                () -> sd() != null && sd().bagStorage() != null && countOf(sd().bagStorage(), Items.APPLE) >= 3);
+            quiet("gear_soph_put_down", 10, () -> { if (!mc().player.containerMenu.getCarried().isEmpty()) click(3 + 27 + 4, 0); });
+            step("gear_soph_bag_on_cursor", 20, () -> { click(2, 0); click(3 + 27 + 5, 1); },
+                () -> !mc().player.containerMenu.getCarried().isEmpty() && mc().player.getInventory().getItem(5).isEmpty());
+            step("gear_soph_bag_back", 15, () -> click(2, 0), () -> pup() != null && pup().bag() == 1 && mc().player.containerMenu.getCarried().isEmpty()
+                && sd() != null && sd().bagStorage() != null && countOf(sd().bagStorage(), Items.APPLE) >= 5);
+            /* Sophisticated's Open Backpack key over the worn bag in the drekki screen opens it */
+            step("gear_soph_key_in_screen", 20, () -> dev.frosthaven.ranchercompanion.compat.sophisticated.client.SophKeys.pressInScreenForTest(
+                    mc().player.containerMenu.slots.get(2)),
+                () -> mc().screen != null && mc().screen.getClass().getSimpleName().equals("SophBagScreen"));
+            /* and over a bag in one's own inventory, as over a backpack */
+            quiet("gear_soph_key_inv_close", 10, () -> mc().setScreen(null));
+            quiet("gear_soph_key_inv_give", 10, () -> { hotbar(6, "rancher_companion:satchel"); hotbar(7, "rancher_companion:netherite_saddlebag");
+                hotbar(8, "rancher_companion:small_drekki_carrier"); hotbar(3, "rancher_companion:large_drekki_carrier"); });
+            quiet("gear_soph_key_inv_open", 10, () -> mc().setScreen(new net.minecraft.client.gui.screens.inventory.InventoryScreen(mc().player)));
+            step("gear_icons_3d", 10, () -> {}, () -> mc().player.getInventory().getItem(8).is(DrekkiItems.SMALL_CARRIER.get()));  /* the 3D bag and carrier icons */
+            step("gear_soph_key_in_inventory", 20, () -> dev.frosthaven.ranchercompanion.compat.sophisticated.client.SophKeys.pressInScreenForTest(
+                    mc().player.inventoryMenu.slots.stream().filter(sl -> sl.container == mc().player.getInventory() && sl.getContainerSlot() == 6).findFirst().orElseThrow()),
+                () -> mc().screen != null && mc().screen.getClass().getName().contains("sophisticatedbackpacks"));
+            quiet("gear_soph_key_inv_clear", 10, () -> { mc().setScreen(null); for (int h : new int[]{3, 6, 7, 8}) hotbar(h, "minecraft:air"); });
+            /* Sophisticated's own Open Backpack key, looking at the drekki, opens its bag too */
+            quiet("gear_soph_key_close", 10, () -> mc().setScreen(null));
+            quiet("gear_soph_key_aim", 15, () -> { var d = pup(); if (d != null) cmd("tp @s " + (d.getX() + 2.5) + " " + d.getY() + " " + d.getZ() + " 90 20"); });
+            step("gear_soph_key_opens", 20, dev.frosthaven.ranchercompanion.compat.sophisticated.client.SophKeys::pressForTest,
+                () -> mc().screen != null && mc().screen.getClass().getSimpleName().equals("SophBagScreen"));
+        }
+        quiet("gear_close", 10, () -> mc().setScreen(null));
+        check("gear_hit_into_barding", 10, 3, () -> { server(m -> { var d = sd(); if (d != null) { d.invulnerableTime = 0; d.hurt(d.damageSources().generic(), 10); } }); },
+            "barding wear and health", () -> sd() == null ? "-" : sd().bardingItem().getDamageValue() + " " + sd().getHealth(),
+            () -> sd() != null && sd().bardingItem().getDamageValue() == 10 && sd().getHealth() == sd().getMaxHealth());
+        check("gear_dye_barding", 5, 0, () -> {}, "barding dyed red left, blue right", () -> {
+                var r = craft(net.minecraft.world.item.crafting.CraftingInput.of(3, 1, java.util.List.of(new ItemStack(Items.RED_DYE), new ItemStack(DrekkiItems.FLEDGLING_BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.IRON).get()), new ItemStack(Items.BLUE_DYE))));
+                return Integer.toHexString(dev.frosthaven.ranchercompanion.item.Dyeing.main(r)) + "/" + Integer.toHexString(dev.frosthaven.ranchercompanion.item.Dyeing.trim(r)); },
+            () -> { var r = craft(net.minecraft.world.item.crafting.CraftingInput.of(3, 1, java.util.List.of(new ItemStack(Items.RED_DYE), new ItemStack(DrekkiItems.FLEDGLING_BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.IRON).get()), new ItemStack(Items.BLUE_DYE))));
+                return dev.frosthaven.ranchercompanion.item.Dyeing.main(r) >= 0 && dev.frosthaven.ranchercompanion.item.Dyeing.trim(r) >= 0 && dev.frosthaven.ranchercompanion.item.Dyeing.main(r) != dev.frosthaven.ranchercompanion.item.Dyeing.trim(r); });
+        check("gear_dye_satchel", 5, 0, () -> {}, "satchel dyed (Sophisticated's recipe when it is installed)", () -> {
+                var r = craft(net.minecraft.world.item.crafting.CraftingInput.of(3, 1, java.util.List.of(new ItemStack(Items.LIME_DYE), new ItemStack(DrekkiItems.BAGS.get(0).get()), new ItemStack(Items.PURPLE_DYE))));
+                return r.getItem() + " " + Integer.toHexString(dev.frosthaven.ranchercompanion.item.Dyeing.main(r)) + "/" + Integer.toHexString(dev.frosthaven.ranchercompanion.item.Dyeing.trim(r)); },
+            () -> { var r = craft(net.minecraft.world.item.crafting.CraftingInput.of(3, 1, java.util.List.of(new ItemStack(Items.LIME_DYE), new ItemStack(DrekkiItems.BAGS.get(0).get()), new ItemStack(Items.PURPLE_DYE))));
+                return dev.frosthaven.ranchercompanion.item.Dyeing.main(r) >= 0 && dev.frosthaven.ranchercompanion.item.Dyeing.trim(r) >= 0; });
+        lookAt("gear_fledgling", 1.0);
+        /* a Mature: Mature barding and an iron saddlebag, dyed */
+        quiet("gear_mature", 30, () -> { cmd("gamemode creative"); life(d -> {
+            d.setNoAi(false); d.setBardingItem(ItemStack.EMPTY); d.setLook(3, 32, 0, 2, 0); d.applyStageHealth(true);
+            ItemStack bard = new ItemStack(DrekkiItems.BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.DIAMOND).get());
+            dev.frosthaven.ranchercompanion.item.Dyeing.set(bard, -1, 0x3c44aa); d.setBardingItem(bard);
+            d.setAccessory(new ItemStack(DrekkiItems.BAGS.get(2).get())); d.teleportTo(o.getX() + 2.5, o.getY(), o.getZ() + 0.5); }); });
+        quiet("gear_mature_near", 15, () -> { select(8); near(pup()); });
+        step("gear_mature_screen", 25, () -> interact("open its screen"), () -> ds() != null && pup() != null && pup().bag() == 3 && pup().barding() == 6);
+        if (dev.frosthaven.ranchercompanion.item.Bags.sophisticated()) {
+            /* Sophisticated's rule for packs in packs: refused by default, taken with an Inception upgrade in the outer one */
+            check("gear_soph_no_backpack_in_bag", 10, 0, () -> {}, "a Sophisticated backpack into the saddlebag (refused)",
+                () -> sd() == null ? "-" : String.valueOf(sd().bagStorage().insertItem(0, new ItemStack(BuiltInRegistries.ITEM.get(net.minecraft.resources.ResourceLocation.parse("sophisticatedbackpacks:backpack"))), true).isEmpty()),
+                () -> sd() != null && !sd().bagStorage().insertItem(0, new ItemStack(BuiltInRegistries.ITEM.get(net.minecraft.resources.ResourceLocation.parse("sophisticatedbackpacks:backpack"))), true).isEmpty()
+                    && !sd().bagStorage().insertItem(0, new ItemStack(DrekkiItems.BAGS.get(0).get()), true).isEmpty());
+            quiet("gear_soph_inception", 10, () -> life(d -> dev.frosthaven.ranchercompanion.compat.sophisticated.SophBags.installForTest(d.accessory(), "sophisticatedbackpacks:inception_upgrade", 0)));
+            check("gear_soph_inception_takes_backpack", 10, 0, () -> {}, "a Sophisticated backpack and a satchel into the saddlebag with Inception (taken)",
+                () -> sd() == null ? "-" : sd().bagStorage().insertItem(0, new ItemStack(BuiltInRegistries.ITEM.get(net.minecraft.resources.ResourceLocation.parse("sophisticatedbackpacks:backpack"))), true).isEmpty()
+                    + " " + sd().bagStorage().insertItem(1, new ItemStack(DrekkiItems.BAGS.get(0).get()), true).isEmpty(),
+                () -> sd() != null && sd().bagStorage().insertItem(0, new ItemStack(BuiltInRegistries.ITEM.get(net.minecraft.resources.ResourceLocation.parse("sophisticatedbackpacks:backpack"))), true).isEmpty()
+                    && sd().bagStorage().insertItem(1, new ItemStack(DrekkiItems.BAGS.get(0).get()), true).isEmpty());
+        }
+        step("gear_mature_bag", 20, () -> rightClickSpot("accessory"), () -> mc().screen instanceof dev.frosthaven.ranchercompanion.client.screen.BagScreen bs && bs.getMenu().rows == 4
+            || mc().screen != null && mc().screen.getClass().getSimpleName().equals("SophBagScreen"));
+        quiet("gear_mature_close", 10, () -> mc().setScreen(null));
+        lookAt("gear_mature", 1.7);
+        if (dev.frosthaven.ranchercompanion.item.Bags.sophisticated()) { upgrades(); placed(); }
+        tomb();
+        bleach();
+    }
+
+    /** the Haven pack's bleach (haven_compat, when installed) takes both dyes off barding and a bag */
+    private static String bleached = "";
+
+    private static void bleach() {
+        /* the 3D barding heaps in the inventory: undyed, dyed two colors, Fledgling and Mature */
+        quiet("barding_icons_give", 15, () -> { cmd("gamemode survival"); server(m -> {
+            var inv = m.getInventory(); inv.clearContent();
+            ItemStack a = new ItemStack(DrekkiItems.FLEDGLING_BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.IRON).get());
+            ItemStack b = a.copy(); dev.frosthaven.ranchercompanion.item.Dyeing.set(b, 0xb02e26, 0x3c44aa);
+            ItemStack c = new ItemStack(DrekkiItems.BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.GOLD).get());
+            ItemStack d = new ItemStack(DrekkiItems.BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.NETHERITE).get());
+            ItemStack e = new ItemStack(DrekkiItems.BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.DIAMOND).get()); dev.frosthaven.ranchercompanion.item.Dyeing.set(e, 0x80c71f, 0xf9fffe);
+            ItemStack f = new ItemStack(DrekkiItems.FLEDGLING_BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.WOOD).get());
+            ItemStack g = new ItemStack(DrekkiItems.FLEDGLING_BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.LEATHER).get());
+            ItemStack h = new ItemStack(DrekkiItems.BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.STONE).get());
+            ItemStack[] all = {a, b, c, d, e, f, g, h};
+            for (int i = 0; i < all.length; i++) { inv.setItem(i, all[i]); inv.setItem(9 + i, all[i].copy()); } }); });
+        quiet("barding_icons_open", 15, () -> mc().setScreen(new net.minecraft.client.gui.screens.inventory.InventoryScreen(mc().player)));
+        step("barding_icons_3d", 15, () -> {}, () -> mc().screen instanceof net.minecraft.client.gui.screens.inventory.InventoryScreen);
+        quiet("barding_icons_close", 10, () -> { mc().setScreen(null); cmd("gamemode creative"); });
+        /* in the world: Fledgling (small) and Mature (large) barding in item frames on a wall, and lying on the ground */
+        quiet("barding_world_setup", 20, () -> server(m -> {
+            var l = m.level(); BlockPos b = o.offset(9, 0, -9);
+            for (int x = -2; x <= 2; x++) for (int y = 0; y <= 2; y++) l.setBlockAndUpdate(b.offset(x, y, -1), net.minecraft.world.level.block.Blocks.SPRUCE_PLANKS.defaultBlockState());
+            for (int x = -2; x <= 2; x++) for (int z = 0; z <= 3; z++) for (int y = 0; y <= 2; y++) if (!(z == 0 && y == 0)) l.setBlockAndUpdate(b.offset(x, y, z), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+            ItemStack small = new ItemStack(DrekkiItems.FLEDGLING_BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.IRON).get());
+            ItemStack large = new ItemStack(DrekkiItems.BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.GOLD).get());
+            ItemStack smallDyed = small.copy(); dev.frosthaven.ranchercompanion.item.Dyeing.set(smallDyed, 0xb02e26, 0x3c44aa);
+            ItemStack largeDyed = new ItemStack(DrekkiItems.BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.DIAMOND).get()); dev.frosthaven.ranchercompanion.item.Dyeing.set(largeDyed, 0x80c71f, 0xf9fffe);
+            int i = 0;
+            for (ItemStack it : new ItemStack[]{small, large, smallDyed, largeDyed}) {
+                var f = new net.minecraft.world.entity.decoration.ItemFrame(l, b.offset(-1 + (i % 2) * 2 + (i / 2 == 1 ? 0 : 0), 1 + (i / 2 == 0 ? 1 : 0), 0), Direction.SOUTH);
+                f.setItem(it.copy(), false); l.addFreshEntity(f);
+                var e = new net.minecraft.world.entity.item.ItemEntity(l, b.getX() - 1.2 + i * 0.8 + 0.5, b.getY() + 0.05, b.getZ() + 1.6, it.copy(), 0, 0, 0);
+                e.setPickUpDelay(Short.MAX_VALUE); e.setUnlimitedLifetime(); e.setNoGravity(true); l.addFreshEntity(e);
+                i++;
+            }
+            m.teleportTo(b.getX() + 0.5, b.getY(), b.getZ() + 3.6); m.setYRot(180); m.setXRot(22); }));
+        quiet("barding_world_look", 25, () -> cmd("tp @s " + (o.getX() + 9.5) + " " + o.getY() + " " + (o.getZ() - 9 + 3.6) + " 180 22"));
+        step("barding_world_frames_and_ground", 20, () -> {}, () -> true);
+        quiet("barding_world_down", 20, () -> cmd("tp @s " + (o.getX() + 9.5) + " " + (o.getY() + 0.4) + " " + (o.getZ() - 9 + 3.0) + " 180 55"));
+        step("barding_world_ground_close", 20, () -> {}, () -> true);
+        if (!net.neoforged.fml.ModList.get().isLoaded("haven_compat")) return;
+        check("bleach_dyeables", 10, 3, () -> server(m -> {
+                StringBuilder out = new StringBuilder();
+                for (ItemStack s : java.util.List.of(new ItemStack(DrekkiItems.FLEDGLING_BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.IRON).get()),
+                        new ItemStack(DrekkiItems.BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.GOLD).get()), new ItemStack(DrekkiItems.BAGS.get(0).get()),
+                        new ItemStack(DrekkiItems.BAGS.get(5).get()))) {
+                    if (s.getItem() instanceof dev.frosthaven.ranchercompanion.item.DrekkiBag && dev.frosthaven.ranchercompanion.item.Bags.sophisticated())
+                        dev.frosthaven.ranchercompanion.compat.sophisticated.SophBags.dyeForTest(s, 0xff0000, 0x0000ff);
+                    else dev.frosthaven.ranchercompanion.item.Dyeing.set(s, 0xff0000, 0x0000ff);
+                    try {
+                        var r = (java.util.List<?>) Class.forName("dev.frosthaven.havencompat.bleach.BleachProcess")
+                            .getMethod("process", ItemStack.class, net.minecraft.world.level.Level.class).invoke(null, s, m.level());
+                        ItemStack b = r == null || r.isEmpty() ? ItemStack.EMPTY : (ItemStack) r.get(0);
+                        out.append(BuiltInRegistries.ITEM.getKey(s.getItem()).getPath()).append(':')
+                            .append(b.isEmpty() ? "unchanged" : dev.frosthaven.ranchercompanion.item.Dyeing.main(b) + "/" + dev.frosthaven.ranchercompanion.item.Dyeing.trim(b)).append(' ');
+                    } catch (ReflectiveOperationException e) { out.append(e).append(' '); }
+                }
+                bleached = out.toString().trim(); }),
+            "each item after bleach (main/trim, -1 is undyed)", () -> bleached,
+            () -> !bleached.isEmpty() && !bleached.contains("unchanged") && !bleached.contains("Exception") && bleached.split("-1/-1", -1).length == 5);
+    }
+
+    private static net.minecraft.world.item.Item item(String id) { return BuiltInRegistries.ITEM.get(net.minecraft.resources.ResourceLocation.parse(id)); }
+
+    private static int count(String id) {
+        var d = sd(); if (d == null || d.bagStorage() == null) return -1;
+        return countOf(d.bagStorage(), item(id));
+    }
+
+    /** Sophisticated's upgrades on a bag a Mature wears: every upgrade accepted or refused as a backpack of the same tier
+     *  does, then the ones that act on their own working where the drekki stands (magnet, compacting, auto-smelting,
+     *  stack), the screen with their tabs, and one held in a player's inventory (pickup) */
+    private static void upgrades() {
+        quiet("upg_bag", 20, () -> { cmd("gamemode creative"); mc().options.hideGui = false;
+            life(d -> { d.setNoAi(false); d.setAccessory(new ItemStack(DrekkiItems.BAGS.get(5).get())); d.teleportTo(o.getX() + 2.5, o.getY(), o.getZ() + 0.5); }); });
+        check("upg_parity", 10, 0, () -> {}, "netherite saddlebag vs Sophisticated's netherite backpack",
+            () -> sd() == null ? "-" : dev.frosthaven.ranchercompanion.compat.sophisticated.SophBags.upgradeParity(sd().accessory(), new ItemStack(item("sophisticatedbackpacks:netherite_backpack"))),
+            () -> sd() != null && dev.frosthaven.ranchercompanion.compat.sophisticated.SophBags.upgradeParity(sd().accessory(), new ItemStack(item("sophisticatedbackpacks:netherite_backpack"))).endsWith("none"));
+        quiet("upg_install", 15, () -> life(d -> {
+            String[] ups = {"magnet_upgrade", "advanced_compacting_upgrade", "auto_smelting_upgrade", "stack_upgrade_tier_1"};
+            for (int i = 0; i < ups.length; i++) dev.frosthaven.ranchercompanion.compat.sophisticated.SophBags.installForTest(d.accessory(), "sophisticatedbackpacks:" + ups[i], i);
+            dev.frosthaven.ranchercompanion.compat.sophisticated.SophBags.openFiltersForTest(d.accessory()); }));  /* their filters start as an empty allow list */
+        check("upg_stack", 10, 0, () -> {}, "slot limit with a stack upgrade (over 64)",
+            () -> sd() == null ? "-" : sd().bagStorage().getSlotLimit(0), () -> sd() != null && sd().bagStorage().getSlotLimit(0) > 64);
+        /* the advanced compacting upgrade does 3x3 recipes that undo: nine nuggets make an ingot */
+        check("upg_compacting", 10, 3, () -> life(d -> d.bagStorage().insertItem(10, new ItemStack(Items.IRON_NUGGET, 9), false)),
+            "9 nuggets in: an ingot", () -> count("minecraft:iron_ingot") + " ingots, " + count("minecraft:iron_nugget") + " nuggets", () -> count("minecraft:iron_ingot") >= 1);
+        quiet("upg_smelt_in", 10, () -> life(d -> {
+            d.bagStorage().insertItem(20, new ItemStack(Items.RAW_GOLD, 2), false); d.bagStorage().insertItem(21, new ItemStack(Items.COAL, 2), false); }));
+        stepUntil("upg_auto_smelting", 20, 20, () -> {}, () -> count("minecraft:gold_ingot") >= 1);  /* 20 tries a second apart: a smelt takes 10 s */
+        quiet("upg_magnet_drop", 10, () -> server(m -> { var d = sd(); if (d != null) {
+            var e = new net.minecraft.world.entity.item.ItemEntity(m.level(), d.getX() + 2, d.getY() + 0.5, d.getZ(), new ItemStack(Items.EMERALD, 3));  /* the basic magnet reaches 3 blocks */
+            m.level().addFreshEntity(e); } }));
+        stepUntil("upg_magnet", 10, 30, () -> {}, () -> count("minecraft:emerald") >= 3);
+        quiet("upg_near", 15, () -> { select(8); near(pup()); });
+        step("upg_screen", 25, () -> interact("open its screen"), () -> ds() != null);
+        step("upg_tabs", 25, () -> rightClickSpot("accessory"), () -> mc().screen != null && mc().screen.getClass().getSimpleName().equals("SophBagScreen"));
+        quiet("upg_close", 10, () -> mc().setScreen(null));
+        /* held: a satchel with a pickup upgrade in the player's inventory picks up as a backpack does */
+        quiet("upg_held_away", 15, () -> cmd("tp @s " + (o.getX() - 7.5) + " " + o.getY() + " " + (o.getZ() - 7.5)));  /* away from the drekki's magnet */
+        quiet("upg_held", 15, () -> server(m -> {
+            ItemStack bag = new ItemStack(DrekkiItems.BAGS.get(0).get());
+            dev.frosthaven.ranchercompanion.compat.sophisticated.SophBags.installForTest(bag, "sophisticatedbackpacks:pickup_upgrade", 0);
+            dev.frosthaven.ranchercompanion.compat.sophisticated.SophBags.openFiltersForTest(bag);
+            m.getInventory().setItem(7, bag);  /* ours alone (a backpack earlier in the inventory takes the pickup first) */
+            for (int i = 0; i < 36; i++) if (i != 7 && i != 6 && m.getInventory().getItem(i).isEmpty()) m.getInventory().setItem(i, new ItemStack(Items.DIRT, 64));  /* a full inventory: the bag must take it */
+            var e = new net.minecraft.world.entity.item.ItemEntity(m.level(), m.getX(), m.getY() + 0.5, m.getZ(), new ItemStack(Items.LAPIS_LAZULI, 5));
+            m.level().addFreshEntity(e); }));
+        check("upg_held_pickup", 40, 3, () -> {}, "lapis picked into the held satchel", () -> heldLapis(7), () -> heldLapis(7) >= 5);
+        quiet("upg_held_clear", 10, () -> cmd("clear @s minecraft:dirt"));
+    }
+
+    private static int heldLapis(int slot) {
+        var m = me(); if (m == null) return -1;
+        ItemStack bag = m.getInventory().getItem(slot);
+        if (bag.isEmpty()) return -2;
+        return countOf(dev.frosthaven.ranchercompanion.compat.sophisticated.SophBags.handler(bag), Items.LAPIS_LAZULI);
+    }
+
+    /** a satchel placed in the world (Sophisticated's backpack block), carried round on a Create bearing with its colors,
+     *  then broken back into the same satchel with what it holds */
+    private static void placed() {
+        BlockPos bearing = o.offset(-6, 0, 4), bagAt = bearing.above();
+        quiet("place_setup", 30, () -> { cmd("gamemode creative"); mc().options.hideGui = false;
+            cmd("setblock " + at(bearing.below()) + " create:creative_motor[facing=up]");
+            cmd("setblock " + at(bearing) + " create:mechanical_bearing[facing=up]"); });
+        quiet("place_bag", 20, () -> {
+            server(m -> {
+                ItemStack bag = new ItemStack(DrekkiItems.BAGS.get(0).get());
+                dev.frosthaven.ranchercompanion.compat.sophisticated.SophBags.dyeForTest(bag, 0x80c71f, 0x8932b8);
+                m.setItemInHand(InteractionHand.MAIN_HAND, bag); m.setShiftKeyDown(true);
+                var hit = new net.minecraft.world.phys.BlockHitResult(bearing.getCenter().add(0, 0.5, 0), Direction.UP, bearing, false);
+                bag.useOn(new net.minecraft.world.item.context.UseOnContext(m, InteractionHand.MAIN_HAND, hit));
+                m.setShiftKeyDown(false);
+                m.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);  /* an empty hand assembles the bearing */
+            });
+            cmd("tp @s " + (bearing.getX() + 3.5) + " " + (bearing.getY() + 1) + " " + (bearing.getZ() + 0.5) + " 90 20"); });
+        check("place_is_a_backpack_block", 10, 3, () -> {}, "the satchel placed as our satchel block (Sophisticated's backpack block entity)",
+            () -> { var l = mc().getSingleplayerServer() == null ? null : mc().getSingleplayerServer().overworld(); return l == null ? "-" : l.getBlockState(bagAt).toString(); },
+            () -> { var l = mc().getSingleplayerServer() == null ? null : mc().getSingleplayerServer().overworld();
+                return l != null && BuiltInRegistries.BLOCK.getKey(l.getBlockState(bagAt).getBlock()).getPath().equals("placed_satchel")
+                    && mc().level.getBlockEntity(bagAt) instanceof net.p3pp3rf1y.sophisticatedbackpacks.backpack.BackpackBlockEntity; });
+        quiet("place_items", 10, () -> server(m -> RancherCompanion.LOG.info("[selftest] placed bag after apples: {}",
+            dev.frosthaven.ranchercompanion.compat.sophisticated.SophBags.insertPlacedForTest(m.level(), bagAt, new ItemStack(Items.APPLE, 9)))));
+        quiet("place_close", 10, () -> cmd("tp @s " + (bearing.getX() + 2.2) + " " + (bearing.getY() + 1.4) + " " + (bearing.getZ() + 0.5) + " 90 25"));
+        step("place_still", 15, () -> {}, () -> true);
+        step("place_assemble", 20, () -> { select(8); useOn(bearing, Direction.EAST); server(m -> assemble(m.level(), bearing)); }, () -> {
+            var l = mc().getSingleplayerServer() == null ? null : mc().getSingleplayerServer().overworld();
+            return l != null && l.getBlockState(bagAt).isAir(); });
+        quiet("place_turning", 25, () -> {});
+        step("place_on_contraption", 5, () -> {}, () -> true);
+        quiet("place_turning_more", 15, () -> {});
+        step("place_on_contraption_later", 5, () -> {}, () -> true);
+        step("place_disassemble", 40, () -> server(m -> disassemble(m.level(), bearing)), () -> {
+            var l = mc().getSingleplayerServer() == null ? null : mc().getSingleplayerServer().overworld();
+            return l != null && !l.getBlockState(bagAt).isAir(); });
+        quiet("place_before_break", 10, () -> server(m -> { breakDrops = "";
+            RancherCompanion.LOG.info("[selftest] after the ride: {} holds {}", m.level().getBlockState(bagAt),
+                dev.frosthaven.ranchercompanion.compat.sophisticated.SophBags.insertPlacedForTest(m.level(), bagAt, ItemStack.EMPTY)); }));
+        check("place_breaks_into_satchel", 10, 3, () -> server(m -> { m.level().destroyBlock(bagAt, true); breakDrops = dropAt(m.level(), bagAt); }),
+            "the dropped satchel, its colors and apples", () -> breakDrops, () -> breakDrops.contains("satchel") && breakDrops.contains("apple"));
+    }
+
+    private static BlockPos tombAt;
+    private static int marksBefore;
+
+    private static int marks() {
+        return net.neoforged.fml.ModList.get().isLoaded("journeymap") ? dev.frosthaven.ranchercompanion.compat.journeymap.DrekkiMap.marksForTest().size() : -1;
+    }
+
+    /** the drekki dies for good (spec, Tombstone): its tombstone holds its gear, opens in our screen, shows its name and
+     *  date on Jade's hover, the owner's map gets the magenta death X, and emptied it mines into the named item */
+    private static void tomb() {
+        quiet("tomb_setup", 20, () -> { mc().setScreen(null); cmd("gamemode creative"); mc().options.hideGui = false; cmd("time set 6000");
+            marksBefore = marks();
+            server(m -> { var d = sd(); if (d == null) return;
+                d.setCustomName(net.minecraft.network.chat.Component.literal("Ember"));
+                d.setGear(3, d.barding(), d.dye());
+                if (d.bardingItem().isEmpty()) d.setBardingItem(new ItemStack(DrekkiItems.FLEDGLING_BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.IRON).get()));
+                m.teleportTo(d.getX() + 3, d.getY(), d.getZ()); }); });
+        check("tomb_placed", 20, 3, () -> server(m -> { var d = sd(); if (d == null) return;
+                BlockPos at = d.blockPosition();
+                dev.frosthaven.ranchercompanion.ranch.Death.turnGhost(d);  /* a ghost wears nothing: its gear goes to a tombstone */
+                for (BlockPos p : BlockPos.betweenClosed(at.offset(-2, -1, -2), at.offset(2, 6, 2)))
+                    if (m.level().getBlockEntity(p) instanceof dev.frosthaven.ranchercompanion.block.TombstoneBlockEntity) { tombAt = p.immutable(); break; } }),
+            "the tombstone and what it holds", () -> {
+                var be = tombAt == null || mc().level == null ? null : mc().level.getBlockEntity(tombAt) instanceof dev.frosthaven.ranchercompanion.block.TombstoneBlockEntity b ? b : null;
+                return be == null ? "none" : be.name() + " " + be.date() + " " + be.items().getItem(0) + " " + be.items().getItem(1) + " " + be.items().getItem(2); },
+            () -> tombAt != null && mc().level.getBlockEntity(tombAt) instanceof dev.frosthaven.ranchercompanion.block.TombstoneBlockEntity b
+                && b.name().equals("Ember") && !b.items().getItem(1).isEmpty());
+        /* the ghost's screen: read-only (spec, Ghost drekki) */
+        quiet("ghost_near", 15, () -> { hotbar(7, "rancher_companion:fledgling_iron_barding"); select(8); near(pup()); });
+        step("ghost_screen", 25, () -> interact("open its screen"), () -> ds() != null && ds().getMenu().locked());
+        step("ghost_stance_locked", 15, () -> hoverSpot("stance0"), () -> ds() != null && ds().getMenu().locked());
+        check("ghost_gear_locked", 10, 0, () -> { click(3 + 27 + 7, 0); click(1, 0); click(3 + 27 + 7, 0); }, "the barding slot after a click with a barding on the cursor",
+            () -> mc().player.containerMenu.getSlot(1).getItem(), () -> mc().player.containerMenu.getSlot(1).getItem().isEmpty());
+        quiet("ghost_close", 10, () -> { dev.frosthaven.ranchercompanion.client.screen.DrekkiScreen.testMouse = null; mc().setScreen(null); });
+        /* the ghost dies for good, wearing nothing: no second tombstone */
+        check("ghost_dies_no_second_tomb", 25, 3, () -> server(m -> { var d = sd(); if (d == null) return;
+                d.setHealth(0); d.die(d.damageSources().genericKill()); }),
+            "tombstones around", () -> tombsAround(), () -> tombsAround() == 1 && sd() == null);
+        /* in front of its carved face, looking at it: the model, and Jade's hover with the name and date */
+        quiet("tomb_look", 25, () -> { if (tombAt == null) return;
+            var f = mc().level.getBlockState(tombAt).getValue(dev.frosthaven.ranchercompanion.block.TombstoneBlock.FACING);
+            var eye = tombAt.getCenter().add(f.getStepX() * 2.2, 0.1, f.getStepZ() * 2.2);
+            float yaw = f.getOpposite().toYRot();
+            cmd("tp @s " + eye.x + " " + (tombAt.getY()) + " " + eye.z + " " + yaw + " 25"); });
+        step("tomb_model_and_jade", 45, () -> {}, () -> mc().hitResult instanceof net.minecraft.world.phys.BlockHitResult h && h.getBlockPos().equals(tombAt));
+        if (net.neoforged.fml.ModList.get().isLoaded("journeymap"))
+            check("tomb_journeymap_x", 5, 3, () -> {}, "JourneyMap markers from this mod, before and now",
+                () -> marksBefore + " -> " + marks(), () -> marks() > marksBefore);
+        step("tomb_screen", 25, () -> useOn(tombAt, Direction.UP),
+            () -> mc().screen instanceof dev.frosthaven.ranchercompanion.client.screen.TombstoneScreen);
+        check("tomb_full_wont_mine", 10, 0, () -> {}, "destroy progress while full (what the client mines by)", () -> tombAt == null ? "-"
+                : mc().level.getBlockState(tombAt).getDestroyProgress(mc().player, mc().level, tombAt),
+            () -> tombAt != null && mc().level.getBlockState(tombAt).getDestroyProgress(mc().player, mc().level, tombAt) == 0);
+        check("tomb_take_all", 15, 3, () -> { for (int i = 0; i < 3; i++) shiftClick(i); }, "what is left in it",
+            () -> mc().level.getBlockEntity(tombAt) instanceof dev.frosthaven.ranchercompanion.block.TombstoneBlockEntity b ? b.items().isEmpty() : "-",
+            () -> mc().level.getBlockEntity(tombAt) instanceof dev.frosthaven.ranchercompanion.block.TombstoneBlockEntity b && b.items().isEmpty());
+        quiet("tomb_close", 10, () -> { mc().setScreen(null); cmd("gamemode survival");
+            for (String b : new String[]{"satchel", "saddlebag", "iron_saddlebag", "gold_saddlebag", "diamond_saddlebag", "netherite_saddlebag"})
+                cmd("clear @s rancher_companion:" + b);  /* the taken bag's magnet would pull the mined tombstone into it */ hotbar(0, "minecraft:netherite_pickaxe"); select(0); });
+        check("tomb_mines_into_item", 20, 3, () -> server(m -> m.gameMode.destroyBlock(tombAt)), "the tombstone item, its name and date",
+            () -> tombItem(), () -> tombItem().startsWith("Ember "));
+        quiet("tomb_pick_up", 25, () -> server(m -> {
+            for (var e : m.level().getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, new net.minecraft.world.phys.AABB(tombAt).inflate(3)))
+                if (e.getItem().is(DrekkiItems.TOMBSTONE.get())) { m.getInventory().setItem(1, e.getItem().copy()); e.discard(); }
+            for (int i = 0; i < 36; i++) if (i != 1 && m.getInventory().getItem(i).is(DrekkiItems.TOMBSTONE.get())) {
+                m.getInventory().setItem(1, m.getInventory().getItem(i).copy()); m.getInventory().setItem(i, ItemStack.EMPTY); } }));
+        quiet("tomb_inv", 15, () -> mc().setScreen(new net.minecraft.client.gui.screens.inventory.InventoryScreen(mc().player)));  /* survival: the plain inventory */
+        step("tomb_item_tooltip", 20, () -> {
+            if (!(mc().screen instanceof net.minecraft.client.gui.screens.inventory.InventoryScreen s)) return;
+            var slot = mc().player.inventoryMenu.slots.stream().filter(sl -> sl.container == mc().player.getInventory() && sl.getContainerSlot() == 1).findFirst().orElseThrow();
+            var w = mc().getWindow();
+            double x = (s.getGuiLeft() + slot.x + 8) * w.getGuiScale(), y = (s.getGuiTop() + slot.y + 8) * w.getGuiScale();
+            org.lwjgl.glfw.GLFW.glfwSetCursorPos(w.getWindow(), x, y);
+            try {  /* the game's own copy of the cursor, which the screen reads (the headless display sends no move event) */
+                var mh = net.minecraft.client.MouseHandler.class;
+                var fx = mh.getDeclaredField("xpos"); fx.setAccessible(true); fx.setDouble(mc().mouseHandler, x);
+                var fy = mh.getDeclaredField("ypos"); fy.setAccessible(true); fy.setDouble(mc().mouseHandler, y);
+            } catch (ReflectiveOperationException e) { throw new IllegalStateException(e); }
+        }, () -> mc().player.getInventory().getItem(1).is(DrekkiItems.TOMBSTONE.get())
+            && mc().screen instanceof net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?> cs && cs.getSlotUnderMouse() != null
+            && cs.getSlotUnderMouse().getItem().is(DrekkiItems.TOMBSTONE.get()));
+        quiet("tomb_done", 10, () -> { mc().setScreen(null); cmd("gamemode creative"); });
+    }
+
+    private static int tombsAround() {
+        if (tombAt == null) return -1;
+        int n = 0;
+        for (BlockPos p : BlockPos.betweenClosed(tombAt.offset(-4, -3, -4), tombAt.offset(4, 6, 4)))
+            if (mc().level.getBlockEntity(p) instanceof dev.frosthaven.ranchercompanion.block.TombstoneBlockEntity) n++;
+        return n;
+    }
+
+    /** the tombstone item lying where it was mined: "name date", or what is there */
+    private static String tombItem() {
+        var m = me(); if (m == null || tombAt == null) return "-";
+        for (var e : m.level().getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, new net.minecraft.world.phys.AABB(tombAt).inflate(3)))
+            if (e.getItem().is(DrekkiItems.TOMBSTONE.get()))
+                return e.getItem().get(dev.frosthaven.ranchercompanion.item.DrekkiData.TOMB_NAME.get()) + " " + e.getItem().get(dev.frosthaven.ranchercompanion.item.DrekkiData.TOMB_DATE.get());
+        for (int i = 0; i < 36; i++) { ItemStack it = m.getInventory().getItem(i);  /* picked up at once */
+            if (it.is(DrekkiItems.TOMBSTONE.get())) return it.get(dev.frosthaven.ranchercompanion.item.DrekkiData.TOMB_NAME.get()) + " " + it.get(dev.frosthaven.ranchercompanion.item.DrekkiData.TOMB_DATE.get()); }
+        return "none, block " + mc().level.getBlockState(tombAt);
+    }
+
+    /** Create's bearing: assemble on its next tick (what an empty-hand click does), and log why when it cannot */
+    private static void assemble(net.minecraft.world.level.Level l, BlockPos bearing) {
+        try {
+            var be = l.getBlockEntity(bearing);
+            if (be == null) { RancherCompanion.LOG.info("[selftest] no bearing block entity"); return; }
+            field(be.getClass(), "assembleNextTick").setBoolean(be, true);
+            l.getServer().execute(() -> l.getServer().execute(() -> {
+                try {
+                    var ex = be.getClass().getMethod("getLastAssemblyException").invoke(be);
+                    RancherCompanion.LOG.info("[selftest] bearing running={} assembly problem={}", field(be.getClass(), "running").getBoolean(be), ex);
+                } catch (ReflectiveOperationException e) { RancherCompanion.LOG.info("[selftest] bearing state unreadable: {}", e.toString()); }
+            }));
+        } catch (ReflectiveOperationException e) { RancherCompanion.LOG.info("[selftest] bearing not driven: {}", e.toString()); }
+    }
+
+    /** Create's bearing: back into blocks (what a second empty-hand click does) */
+    private static void disassemble(net.minecraft.world.level.Level l, BlockPos bearing) {
+        try { var be = l.getBlockEntity(bearing); if (be != null) be.getClass().getMethod("disassemble").invoke(be); }
+        catch (ReflectiveOperationException e) { RancherCompanion.LOG.info("[selftest] bearing not stopped: {}", e.toString()); }
+    }
+
+    private static java.lang.reflect.Field field(Class<?> c, String name) throws NoSuchFieldException {
+        for (Class<?> k = c; k != null; k = k.getSuperclass())
+            try { var f = k.getDeclaredField(name); f.setAccessible(true); return f; } catch (NoSuchFieldException ignored) {}
+        throw new NoSuchFieldException(name);
+    }
+
+    private static String breakDrops = "";
+
+    /** on the server thread: the items lying around a spot, a bag's contents and colors spelled out */
+    private static String dropAt(net.minecraft.world.level.Level l, BlockPos p) {
+        StringBuilder b = new StringBuilder();
+        for (var e : l.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, new AABB(p).inflate(3))) {
+            ItemStack s = e.getItem();
+            b.append(BuiltInRegistries.ITEM.getKey(s.getItem())).append(' ');
+            if (s.getItem() instanceof dev.frosthaven.ranchercompanion.item.DrekkiBag) {
+                var h = dev.frosthaven.ranchercompanion.item.Dyeing.storage(s);
+                for (int i = 0; i < h.getSlots(); i++) if (!h.getStackInSlot(i).isEmpty()) b.append(BuiltInRegistries.ITEM.getKey(h.getStackInSlot(i).getItem())).append(' ');
+                b.append(Integer.toHexString(dev.frosthaven.ranchercompanion.item.Dyeing.main(s))).append('/').append(Integer.toHexString(dev.frosthaven.ranchercompanion.item.Dyeing.trim(s)));
+            }
+        }
+        return b.toString();
+    }
+
+    /** close shots of the drekki's back with its gear, the HUD hidden: from behind and above, then from the side; k scales
+     *  the distance to its size. It stands still, facing south, away from the test hatchery */
+    private static void lookAt(String name, double k) {
+        quiet(name + "_place", 20, () -> { cmd("gamerule sendCommandFeedback false");
+            life(d -> { d.setNoAi(true); d.teleportTo(o.getX() - 3.5, o.getY(), o.getZ() - 2.5); d.setYRot(0); d.yBodyRot = 0; d.setYHeadRot(0); });
+            cmd("gamemode spectator"); mc().options.hideGui = true;
+            cmd("tp @s " + (o.getX() - 3.5 + 1.3 * k) + " " + (o.getY() + 1.2 * k) + " " + (o.getZ() - 2.5 - 1.4 * k) + " 43 32"); });
+        step(name + "_back", 20, () -> {}, () -> true);
+        quiet(name + "_side", 15, () -> cmd("tp @s " + (o.getX() - 3.5 + 2.2 * k) + " " + (o.getY() + 0.6 * k) + " " + (o.getZ() - 2.5 + 0.2 * k) + " 95 12"));
+        step(name + "_side_shot", 15, () -> {}, () -> true);
+        quiet(name + "_hud", 5, () -> mc().options.hideGui = false);
+    }
+
+    private static int farFood = -1, beefBefore = -1;
+
+    private static boolean hasItem(net.neoforged.neoforge.items.IItemHandler h, net.minecraft.world.item.Item item) {
+        for (int i = 0; i < h.getSlots(); i++) if (h.getStackInSlot(i).is(item)) return true;
+        return false;
     }
 
     /** the game's own cursor position (what screens are drawn with), set inside the game: no desktop input */

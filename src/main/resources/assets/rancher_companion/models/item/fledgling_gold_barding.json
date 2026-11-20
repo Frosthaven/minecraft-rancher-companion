@@ -1,0 +1,6 @@
+{
+  "parent": "rancher_companion:item/barding_fledgling",
+  "textures": {
+    "plate": "rancher_companion:item/barding_gold_plate"
+  }
+}

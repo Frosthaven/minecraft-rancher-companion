@@ -29,6 +29,16 @@ public final class BlockClient {
         e.register((state, level, pos, tint) -> tint == 0 ? opaque(LeatherDye.tint(state.getValue(TroughBlock.COLOR))) : -1,
             DrekkiBlocks.HATCHERY.get(), DrekkiBlocks.TROUGH.get());
         DrekkiBlocks.TUFTED_COLOR.forEach((block, i) -> e.register((state, level, pos, tint) -> tint == 0 ? opaque(LeatherDye.tint(i)) : -1, block.get()));
+        /* a placed plain bag: its leather (0) and trim (1) by the bag's dyes, its metal (2) by its tier */
+        e.register((state, level, pos, tint) -> {
+            var bag = level != null && pos != null && level.getBlockEntity(pos) instanceof dev.frosthaven.ranchercompanion.block.BagBlockEntity be ? be.bag() : ItemStack.EMPTY;
+            return switch (tint) {
+                case 0 -> opaque(dev.frosthaven.ranchercompanion.look.Gear.bagMain(dev.frosthaven.ranchercompanion.item.Dyeing.main(bag)));
+                case 1 -> opaque(dev.frosthaven.ranchercompanion.look.Gear.bagTrim(dev.frosthaven.ranchercompanion.item.Dyeing.trim(bag)));
+                case 2 -> opaque(dev.frosthaven.ranchercompanion.look.Gear.BAG_METAL[state.getValue(dev.frosthaven.ranchercompanion.block.BagBlock.KIND)]);
+                default -> -1;
+            };
+        }, DrekkiBlocks.BAG.get());
     }
 
     /** a dyed hatchery or trough item carries its color in its block state component */
