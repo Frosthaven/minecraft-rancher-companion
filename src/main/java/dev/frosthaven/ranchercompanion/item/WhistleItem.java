@@ -26,8 +26,10 @@ public final class WhistleItem extends Item {
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         if (player instanceof ServerPlayer sp) {
-            level.playSound(null, player.blockPosition(), SoundEvents.NOTE_BLOCK_FLUTE.value(), SoundSource.PLAYERS, 1f, 1.9f);
-            Ranch.whistle(sp);
+            /* one tone for stay; two short ones, the second higher, for follow */
+            boolean stays = Ranch.whistle(sp);
+            level.playSound(null, player.blockPosition(), SoundEvents.NOTE_BLOCK_FLUTE.value(), SoundSource.PLAYERS, 1f, stays ? 1.5f : 1.6f);
+            if (!stays) Ranch.after(sp.server, 3, () -> { if (sp.isAlive()) sp.level().playSound(null, sp.blockPosition(), SoundEvents.NOTE_BLOCK_FLUTE.value(), SoundSource.PLAYERS, 1f, 2f); });
             player.getCooldowns().addCooldown(this, 20);  /* one toggle a blow */
         }
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);

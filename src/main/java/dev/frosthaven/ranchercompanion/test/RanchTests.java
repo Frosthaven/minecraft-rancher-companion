@@ -269,7 +269,7 @@ public final class RanchTests {
             List<DrekkiEntity> ds = drekki(t, p);
             DrekkiEntity live = Ranch.liveOf(e.id);
             Roster.Entry now = Ranch.roster(t.getLevel().getServer()).get(e.id);
-            t.assertTrue(ds.size() == 1 && ds.get(0).distanceTo(p) < 6 && ds.get(0).level() == p.level(),
+            t.assertTrue(ds.size() == 1 && ds.get(0).distanceTo(p) < 9 && ds.get(0).level() == p.level(),  /* the catch-up looks up to 6 blocks out each way */
                 what + ": " + ds.size() + " drekki" + (ds.isEmpty() ? "" : ", " + ds.get(0).distanceTo(p) + " blocks away")
                     + " | roster " + (now == null ? "none" : now.where) + ", live " + (live == null ? "none" : live.blockPosition() + " removed " + live.getRemovalReason()
                     + " alive " + live.isAlive() + " owner " + p.getUUID().equals(live.owner())) + ", player " + p.blockPosition());
@@ -318,7 +318,7 @@ public final class RanchTests {
             t.assertTrue(drekki(t, p).isEmpty(), "the drekki is in the other dimension");
             Ranch.onDimension(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerChangedDimensionEvent(p,
                 net.minecraft.world.level.Level.NETHER, net.minecraft.world.level.Level.OVERWORLD));
-            besideOwner(t, p, h, e, "back on a dimension change");
+            t.runAfterDelay(Ranch.ARRIVE_WAIT + 5, () -> besideOwner(t, p, h, e, "back on a dimension change, the old way for an owner who stands still"));
         });
     }
 
@@ -336,7 +336,31 @@ public final class RanchTests {
         t.runAfterDelay(3, () -> {
             t.assertTrue(drekki(t, p).isEmpty(), "the drekki is in the other level, and no event came");
             Ranch.onPlayerJoinLevel(new net.neoforged.neoforge.event.entity.EntityJoinLevelEvent(p, p.level()));
-            t.runAfterDelay(2, () -> besideOwner(t, p, h, e, "back when its owner joined the level"));
+            t.runAfterDelay(Ranch.ARRIVE_WAIT + 5, () -> besideOwner(t, p, h, e, "back when its owner joined the level"));
+        });
+    }
+
+    /** an owner who walks on after changing level: the drekki appears on a spot they stood on, not one picked around them */
+    @GameTest(template = "floor")
+    public static void afterALevelChangeItAppearsWhereItsOwnerWalked(GameTestHelper t) {
+        BlockPos h = stable(t);
+        ServerPlayer p = player(t);
+        Roster.Entry e = hatch(t, p, h);
+        DrekkiEntity d = checkedOut(t, p, h, e);
+        var nether = t.getLevel().getServer().getLevel(net.minecraft.world.level.Level.NETHER);
+        t.runAfterDelay(2, () -> d.changeDimension(new net.minecraft.world.level.portal.DimensionTransition(nether, new net.minecraft.world.phys.Vec3(0.5, 64, 0.5),
+            net.minecraft.world.phys.Vec3.ZERO, 0, 0, net.minecraft.world.level.portal.DimensionTransition.DO_NOTHING)));
+        var step = new net.minecraft.world.phys.Vec3(p.getX() + 2, p.getY(), p.getZ());
+        t.runAfterDelay(3, () -> {
+            Ranch.onPlayerJoinLevel(new net.neoforged.neoforge.event.entity.EntityJoinLevelEvent(p, p.level()));
+            t.runAfterDelay(3, () -> { t.assertTrue(drekki(t, p).isEmpty(), "it waits while its owner has not walked"); p.moveTo(step); p.setOnGround(true); });
+            t.runAfterDelay(6, () -> p.moveTo(step.x + 3, step.y, step.z));
+            t.runAfterDelay(9, () -> {
+                List<DrekkiEntity> ds = drekki(t, p);
+                t.assertTrue(ds.size() == 1 && Math.hypot(ds.get(0).getX() - step.x, ds.get(0).getZ() - step.z) < 0.1, "on the spot its owner stood on: " + (ds.isEmpty() ? "none" : ds.get(0).position() + " for " + step));
+                Ranch.act(p, h, Ranch.Action.RELEASE, e.id);
+                t.succeed();
+            });
         });
     }
 

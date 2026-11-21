@@ -330,6 +330,8 @@ A checked-out drekki follows its owner (the default) or stays. Every stage, pups
 - **Drekki Whistle** (shapeless: bone, iron nugget, string; one per stack; a one second cooldown). It changes the
   owner's checked-out drekki between staying and following. A drekki that is not with its owner (another dimension, an
   unloaded chunk, or more than 30 blocks away) always comes to them and follows instead, whatever it was doing.
+  Told to follow by the whistle it jumps to its owner, near or far. One tone for stay; two short tones, the second
+  higher, for follow.
 - **Message** on the action bar, from the buttons and the whistle alike: "Your drekki is staying" or "Your drekki is
   following you", with its name when it has one.
 - **Where it stays.** The roster keeps the spot (`Entry.stay`). While that chunk is loaded and the owner is online the
@@ -1028,7 +1030,11 @@ unless fire cannot hurt it, as with Fire Resistance; with no such spot it stays 
 carried over and no fire; the server then sends it to players as new, not as a move: owners saw no drekki after a
 catch-up while other players did, 2026-11-21), comes along to another dimension with its owner (on the game's dimension change, and when the
 owner joins another level, which catches portal mods that skip that event, as Immersive Portals in the Haven pack does;
-no timer; 2026-11-20; an owned drekki never goes through a portal itself and is never placed in a portal block: it
+no timer; 2026-11-20. After a level change it appears on a spot its owner stood on there, once they are 2 blocks
+past it (decided 2026-11-21: a spot a player walked over is on the right side of the portal, in the open and in their
+path; spots picked around the owner landed in the frame, behind it and out of sight). Until then it is kept as data. An
+owner who does not walk within 3 seconds gets it by the catch-up rule. The server looks each tick only while an owner
+waits. An owned drekki never goes through a portal itself and is never placed in a portal block: it
 looks 2 to 3 blocks from its owner, then up to 6, first for a spot the owner can see (a clear line from their eyes), and while the owner still stands in the portal, only on the
 owner's side of it: one landed behind the frame, walled off, 2026-11-21. One left on its owner's block, on the portal's surface, was carried
 back through by Immersive Portals and stuck in the frame, 2026-11-21), never tramples crops, and from stage 2 its pack picks up what the player cannot carry.

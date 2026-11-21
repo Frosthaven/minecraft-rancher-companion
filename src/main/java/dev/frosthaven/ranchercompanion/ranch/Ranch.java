@@ -451,13 +451,14 @@ public final class Ranch {
         DrekkiEntity d = live(out.id);
         if (d != null) { r.snapshot(out, save(d)); d.discard(); }
         STAYS.remove(p.getUUID());
+        ARRIVALS.remove(p.getUUID());
     }
 
     /* a checked-out drekki comes back next to its owner on the events that part them, with no polling: login, respawn,
        a dimension change, leaving spectator mode, and its chunk unloading while the owner is online */
     public static void onLogin(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent ev) { if (ev.getEntity() instanceof ServerPlayer p) { bringBack(p); Death.giveEggs(p); Tombs.onLogin(p); } }
     public static void onRespawn(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerRespawnEvent ev) { if (ev.getEntity() instanceof ServerPlayer p) bringBack(p); }
-    public static void onDimension(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerChangedDimensionEvent ev) { if (ev.getEntity() instanceof ServerPlayer p) bringBack(p); }
+    public static void onDimension(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerChangedDimensionEvent ev) { if (ev.getEntity() instanceof ServerPlayer p) follow(p); }
 
     /** the owner joins a level: their checked-out drekki comes along when it is loaded in another one. Some portal mods
      *  move the player without the game's dimension change event (Immersive Portals, inside the Haven pack's Aeronautics,
@@ -475,6 +476,16 @@ public final class Ranch {
     private static final Map<UUID, Integer> RECHECK = new HashMap<>();
 
     public static void onServerTick(net.neoforged.neoforge.event.tick.ServerTickEvent.Post ev) {
+        if (!ARRIVALS.isEmpty()) {
+            int tick = ev.getServer().getTickCount();
+            ARRIVALS.entrySet().removeIf(en -> arrive(ev.getServer(), en.getKey(), en.getValue(), tick));
+        }
+        if (!DUE.isEmpty()) {
+            int tick = ev.getServer().getTickCount();
+            List<Runnable> run = new ArrayList<>();
+            DUE.removeIf(en -> { if (en.getKey() > tick) return false; run.add(en.getValue()); return true; });
+            run.forEach(Runnable::run);
+        }
         if (RECHECK.isEmpty()) return;
         int now = ev.getServer().getTickCount();
         RECHECK.entrySet().removeIf(en -> {
@@ -497,10 +508,49 @@ public final class Ranch {
         if (out == null || out.where != Where.OUT) return;
         DrekkiEntity d = live(out.id);
         if (d == null || d.level() == p.level() || out.stay != null) return;
-        bringBack(p);
-        DrekkiEntity n = live(out.id);
-        dev.frosthaven.ranchercompanion.RancherCompanion.LOG.info("Drekki {} brought to {} in {} at {} (owner at {})", out.id, p.getName().getString(), p.level().dimension().location(),
-            n == null ? "?" : n.blockPosition().toShortString(), p.blockPosition().toShortString());
+        /* it leaves the level it was in now, and waits as data for a spot its owner walks over here (arrive) */
+        roster(p.server).snapshot(out, save(d));
+        d.discard();
+        ARRIVALS.put(p.getUUID(), new Arrival(p.level().dimension(), p.position(), p.server.getTickCount()));
+        dev.frosthaven.ranchercompanion.Debug.log("server: {} arrived in {} at {}; the drekki waits for a spot they walk over", p.getName().getString(),
+            p.level().dimension().location(), p.blockPosition().toShortString());
+    }
+
+    /** an owner who just changed level. Their drekki appears on a spot they stood on after it, once they are 2 blocks
+     *  past that spot: wherever a player walked is a good place to stand, on the right side of any portal, in the open,
+     *  in their path. Spots picked around the owner landed in the portal's frame, behind it and out of sight
+     *  (2026-11-21). An owner who does not walk (stands still, falls, flies) gets it the old way after 3 seconds */
+    private static final class Arrival {
+        final net.minecraft.resources.ResourceKey<Level> level; final net.minecraft.world.phys.Vec3 from; final int tick;
+        net.minecraft.world.phys.Vec3 step;
+        Arrival(net.minecraft.resources.ResourceKey<Level> level, net.minecraft.world.phys.Vec3 from, int tick) { this.level = level; this.from = from; this.tick = tick; }
+    }
+    private static final Map<UUID, Arrival> ARRIVALS = new HashMap<>();
+    public static final int ARRIVE_WAIT = 60;
+
+    /** one waiting owner, each tick while they wait; true when done with them */
+    private static boolean arrive(MinecraftServer s, UUID id, Arrival a, int now) {
+        ServerPlayer p = s.getPlayerList().getPlayer(id);
+        if (p == null) return true;
+        Entry out = roster(s).out(id);
+        if (out == null || out.where != Where.OUT || out.stay != null || live(out.id) != null || !p.isAlive() || p.isSpectator()
+            || p.level().dimension() != a.level || now - a.tick > ARRIVE_WAIT) {
+            later(s, () -> bringBack(p));  /* the old way, whatever still applies */
+            return true;
+        }
+        if (a.step == null) {
+            if (p.onGround() && Math.hypot(p.getX() - a.from.x, p.getZ() - a.from.z) >= 1.5) a.step = p.position();
+            return false;
+        }
+        if (p.position().distanceToSqr(a.step) < 2 * 2) return false;
+        DrekkiEntity n = spawn(p.serverLevel(), out, BlockPos.containing(a.step), null);
+        if (n == null) return true;
+        n.moveTo(a.step.x, a.step.y, a.step.z, p.getYRot(), 0);
+        if (!p.level().noCollision(n)) { later(s, () -> bringBack(p)); return true; }  /* a taller drekki under a low ceiling */
+        add(p.serverLevel(), n);
+        dev.frosthaven.ranchercompanion.RancherCompanion.LOG.info("Drekki {} brought to {} in {} at {}, where they walked (owner at {})", out.id, p.getName().getString(),
+            p.level().dimension().location(), n.blockPosition().toShortString(), p.blockPosition().toShortString());
+        return true;
     }
     /** fires before the mode changes: look again on the next tick */
     public static void onGameMode(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerChangeGameModeEvent ev) {
@@ -520,6 +570,7 @@ public final class Ranch {
         Entry out = r.out(p.getUUID());
         if (out == null || out.where != Where.OUT) return;
         if (out.stay != null) { STAYS.put(p.getUUID(), out.stay); place(p.server, out); return; }  /* told to stay: at its spot, not with them */
+        if (ARRIVALS.containsKey(p.getUUID())) return;  /* it waits for a spot its owner walks over */
         DrekkiEntity d = live(out.id);
         if (d != null && d.level() == p.level()) {
             if (d.distanceTo(p) > 12) d.teleportNear(p);
@@ -564,19 +615,26 @@ public final class Ranch {
     }
 
     /** the whistle: a drekki with its owner changes between staying and following; one that is not comes to them and follows */
-    public static void whistle(ServerPlayer p) {
+    public static boolean whistle(ServerPlayer p) {
         Entry out = roster(p.server).out(p.getUUID());
-        setStay(p, out != null && out.stay == null);
+        return setStay(p, out != null && out.stay == null, true);
     }
 
+    public static boolean setStay(ServerPlayer p, boolean stay) { return setStay(p, stay, false); }
+
+    /** work for a later tick (the whistle's second note): the tick it is due, and what to do */
+    private static final List<Map.Entry<Integer, Runnable>> DUE = new ArrayList<>();
+    public static void after(MinecraftServer s, int ticks, Runnable r) { DUE.add(Map.entry(s.getTickCount() + ticks, r)); }
+
     /** the screen's Stay and Follow, and the whistle. Stay holds only for a drekki with its owner (loaded, the same
-     *  level, within 30 blocks); otherwise this calls it to them, following */
-    public static void setStay(ServerPlayer p, boolean stay) {
+     *  level, within 30 blocks); otherwise this calls it to them, following. call (the whistle): following, it jumps to
+     *  them from wherever it is, near too. Returns whether it stays now */
+    private static boolean setStay(ServerPlayer p, boolean stay, boolean call) {
         Roster r = roster(p.server);
         Entry out = r.out(p.getUUID());
-        if (out == null || out.where != Where.OUT) { msg(p, "stay.none"); return; }
+        if (out == null || out.where != Where.OUT) { msg(p, "stay.none"); return false; }
         DrekkiEntity d = live(out.id);
-        if (d != null && d.ghost()) { msg(p, "stay.none"); return; }
+        if (d != null && d.ghost()) { msg(p, "stay.none"); return false; }
         stay &= d != null && d.level() == p.level() && d.distanceToSqr(p) <= WITH * WITH;
         if (stay) {
             r.stay(out, Roster.at(d.level(), d.blockPosition()));
@@ -585,11 +643,14 @@ public final class Ranch {
         } else {
             r.stay(out, null);
             STAYS.remove(p.getUUID());
+            ARRIVALS.remove(p.getUUID());  /* called: it comes now */
             if (d != null) d.setStaying(false);
             bringBack(p);
+            if (call && d != null && !d.isRemoved() && d.level() == p.level()) d.teleportNear(p);  /* bringBack moves only a far one */
         }
         Component who = out.save.contains("CustomName") ? label(out.save) : Component.translatable("drekki.rancher_companion.yours");
         msg(p, stay ? "stay.on" : "stay.off", who);
+        return stay;
     }
 
     /** the world saves: every live drekki's state goes to the roster first, so the roster saved with it is current */
