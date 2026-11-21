@@ -130,6 +130,7 @@
   "item.rancher_companion.small_drekki_carrier.empty": "Empty",
   "tooltip.rancher_companion.kind.hat": "Drekki Hat",
   "tooltip.rancher_companion.kind.barding": "Drekki Barding",
+  "tooltip.rancher_companion.barding.knockback": "Hostile Knockback Immunity",
   "tooltip.rancher_companion.kind.carrier": "Drekki Carrier",
   "tooltip.rancher_companion.kind.accessory": "Drekki Accessory",
   "tooltip.rancher_companion.kind.tonic": "Drekki Tonic",

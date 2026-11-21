@@ -248,6 +248,28 @@ public final class CombatTests {
     }
 
     @GameTest(template = "floor")
+    public static void bardingStopsAnEnemysPushNotAPlayers(GameTestHelper t) {
+        ServerPlayer p = LifeTests.player(t);
+        DrekkiEntity d = out(t, p, 2, Diet.RAW, Life.Stance.PASSIVE);
+        Husk z = zombie(t, new BlockPos(3, 1, 3));
+        z.moveTo(d.getX() + 1, d.getY(), d.getZ());
+        p.moveTo(d.getX() + 1, d.getY(), d.getZ());
+        d.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+        d.hurt(d.damageSources().mobAttack(z), 2);
+        t.assertTrue(d.getDeltaMovement().x < 0, "bare, a monster's hit pushes it: " + d.getDeltaMovement());
+        d.setBardingItem(GearTests.fledglingBarding(dev.frosthaven.ranchercompanion.item.Barding.IRON));
+        d.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO); d.invulnerableTime = 0;
+        d.hurt(d.damageSources().mobAttack(z), 2);
+        t.assertTrue(d.getDeltaMovement().x == 0, "in barding, it does not: " + d.getDeltaMovement());
+        t.runAfterDelay(1, () -> {
+            d.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO); d.invulnerableTime = 0;
+            d.hurt(d.damageSources().playerAttack(p), 2);
+            t.assertTrue(d.getDeltaMovement().x < 0, "a player's push still moves it: " + d.getDeltaMovement());
+            t.succeed();
+        });
+    }
+
+    @GameTest(template = "floor")
     public static void noPlayerHurtsADrekki(GameTestHelper t) {
         ServerPlayer p = LifeTests.player(t);
         DrekkiEntity d = out(t, p, 2, Diet.RAW, Life.Stance.PASSIVE);

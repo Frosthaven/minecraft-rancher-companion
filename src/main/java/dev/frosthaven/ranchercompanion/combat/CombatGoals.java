@@ -121,9 +121,11 @@ public final class CombatGoals {
                 else if (dist <= 8 * 8 && sees) d.getNavigation().stop();
                 if (cooldown == 0 && sees && dist <= 10 * 10) { d.act(Anim.BALL, 56); strikeIn = 8; cooldown = 40; }
             } else {
+                /* it reaches as far as the game's melee mobs do (a zombie's rule: its box grown 0.83 a side meets the
+                   target's), and never less than before. A zombie hit it from further off than it could bite */
                 double reach = d.getBbWidth() / 2 + t.getBbWidth() / 2 + 1.0;
                 if (--repath <= 0) { d.getNavigation().moveTo(t, 1.2); repath = 8; }
-                if (cooldown == 0 && dist <= reach * reach) { d.act(Anim.BITE, 32); strikeIn = 6; cooldown = 24; }
+                if (cooldown == 0 && (dist <= reach * reach || d.isWithinMeleeAttackRange(t))) { d.act(Anim.BITE, 32); strikeIn = 6; cooldown = 24; }
             }
         }
 
@@ -142,8 +144,9 @@ public final class CombatGoals {
                 d.level().addFreshEntity(b);
                 d.playSound(dev.frosthaven.ranchercompanion.DrekkiSounds.FIRE_SHOT.get(), 0.7f, 1.2f);
             } else {
-                double reach = d.getBbWidth() / 2 + t.getBbWidth() / 2 + 1.3;
-                if (d.distanceToSqr(t) > reach * reach) return;
+                /* a bite begun in reach lands: a hit that knocks the drekki back in its 6 ticks no longer spoils it
+                   (2026-11-21: in water a zombie kept it from ever biting). Not on a target that has gone far */
+                if (d.level() != t.level() || d.distanceToSqr(t) > 6 * 6) return;
                 if (t.hurt(d.damageSources().mobAttack(d), BITE)) d.playSound(dev.frosthaven.ranchercompanion.DrekkiSounds.BITE2.get(), 0.8f, 1.1f);
             }
         }

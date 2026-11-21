@@ -508,12 +508,24 @@ public class DrekkiEntity extends PathfinderMob {
      *  so its push still moves the drekki, a pup too; nothing else of it counts (no barding wear, no grudge, no kill credit) */
     @Override
     public boolean hurt(net.minecraft.world.damagesource.DamageSource s, float amount) {
-        if (level().isClientSide || !byPlayer(s) || s.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY)) return super.hurt(s, amount);
+        if (level().isClientSide) return super.hurt(s, amount);
+        if (!byPlayer(s) || s.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY)) {
+            if (s.getEntity() != null && !bardingItem.isEmpty()) braced = tickCount;  /* a mob's hit on barding: no push */
+            return super.hurt(s, amount);
+        }
+        braced = -1;
         boolean hit = super.hurt(s, 0);
         setLastHurtByMob(null);
         lastHurtByPlayer = null; lastHurtByPlayerTime = 0;
         return hit;
     }
+
+    /** the tick a mob hit it while it wore barding: barding of every tier stops the push of an enemy's hit (the hit's
+     *  own and a strong mob's extra shove, which follows in the same tick). A player's push still moves it */
+    private int braced = -1;
+
+    @Override
+    public void knockback(double strength, double x, double z) { if (braced != tickCount) super.knockback(strength, x, z); }
 
     @Override
     public boolean causeFallDamage(float distance, float multiplier, net.minecraft.world.damagesource.DamageSource s) { return isVehicle() && super.causeFallDamage(distance, multiplier, s); }

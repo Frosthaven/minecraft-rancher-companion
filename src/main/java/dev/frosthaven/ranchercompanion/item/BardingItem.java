@@ -20,6 +20,11 @@ public class BardingItem extends Item {
     }
 
     @Override
+    public void appendHoverText(ItemStack stack, TooltipContext context, java.util.List<net.minecraft.network.chat.Component> lines, net.minecraft.world.item.TooltipFlag flag) {
+        lines.add(net.minecraft.network.chat.Component.translatable("tooltip.rancher_companion.barding.knockback").withStyle(net.minecraft.ChatFormatting.BLUE));
+    }
+
+    @Override
     public boolean isValidRepairItem(ItemStack self, ItemStack repair) {
         return switch (tier) {
             case WOOD -> repair.is(ItemTags.PLANKS);

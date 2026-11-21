@@ -994,6 +994,9 @@ damage whose source or direct entity is a player lands for no damage, so its pus
 a pup too; it wears no barding, starts no fight and gives no kill credit. A harmful effect a player applies is refused. An owner's area
 spells kept hitting her own drekki. Monsters and the rest of the world still hurt it.
 
+Barding of every tier gives Hostile Knockback Immunity (decided 2026-11-21; its own blue line in the tooltip): a
+mob's hit does not push a drekki that wears barding. A player's push still moves it.
+
 Safety (decided 2026-11-21): with no rider, lava and falls never hurt a drekki, and lava does not set it on fire. It
 keeps out of lava and fire all the same: with no rider it never walks into either, whatever the detour. A catch-up or the whistle lands it on any
 spot that is not itself on fire or in lava: lava beside the spot or below it does not rule the spot out. The exception is a drekki lava cannot harm anyway (immune by nature, or under Fire
@@ -1012,7 +1015,8 @@ fall cannot hurt it, it takes drops of up to 24 blocks to reach its owner (the g
 Diet picks the position (where it fights from) and the two abilities. Damage is relative to Bite until balancing:
 
 - Raw (physical damage): stays in melee range and closes the distance with Pounce.
-  - Bite: melee attack.
+  - Bite: melee attack. It reaches as far as the game's melee mobs do (a zombie's rule), and a bite begun in reach
+    lands 6 ticks later even if the drekki was knocked back meanwhile (decided 2026-11-21).
   - Pounce: jumping attack from up to 5 blocks away, also usable close up. 2x Bite damage. 15 s cooldown.
 - Cooked (magical damage): stays at max range.
   - Elemental ball: ranged, slightly less damage than Bite. A target too close for a ball in flight is hit at once.
