@@ -1029,7 +1029,7 @@ carried over and no fire; the server then sends it to players as new, not as a m
 catch-up while other players did, 2026-11-21), comes along to another dimension with its owner (on the game's dimension change, and when the
 owner joins another level, which catches portal mods that skip that event, as Immersive Portals in the Haven pack does;
 no timer; 2026-11-20; an owned drekki never goes through a portal itself and is never placed in a portal block: it
-looks 2 to 3 blocks from its owner, then up to 6, and while the owner still stands in the portal, only on the
+looks 2 to 3 blocks from its owner, then up to 6, first for a spot the owner can see (a clear line from their eyes), and while the owner still stands in the portal, only on the
 owner's side of it: one landed behind the frame, walled off, 2026-11-21. One left on its owner's block, on the portal's surface, was carried
 back through by Immersive Portals and stuck in the frame, 2026-11-21), never tramples crops, and from stage 2 its pack picks up what the player cannot carry.
 

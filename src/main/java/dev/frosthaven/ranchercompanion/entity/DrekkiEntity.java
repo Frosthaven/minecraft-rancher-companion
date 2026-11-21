@@ -319,6 +319,14 @@ public class DrekkiEntity extends PathfinderMob {
             if (side != null && !side.test(p)) { dev.frosthaven.ranchercompanion.Debug.log("server: spot {} skipped, the other side of the owner's portal", p.toShortString()); continue; }
             var box = getBoundingBox().move(p.subtract(blockPosition()));
             if (!safeAt(p, box)) continue;
+            /* where they can see it, while such a spot turns up (the first 20 tries): one landed a block down behind
+               a ledge, 3 blocks from its owner, too close to walk over, and the owner saw no drekki (2026-11-21) */
+            if (who != null && i < 20 && level().clip(new net.minecraft.world.level.ClipContext(who.getEyePosition(), box.getCenter(),
+                net.minecraft.world.level.ClipContext.Block.COLLIDER, net.minecraft.world.level.ClipContext.Fluid.NONE, this)).getType() != net.minecraft.world.phys.HitResult.Type.MISS) {
+                dev.frosthaven.ranchercompanion.Debug.log("server: spot {} skipped, out of the owner's sight", p.toShortString());
+                continue;
+            }
+            dev.frosthaven.ranchercompanion.Debug.log("server: {} lands at {}", dev.frosthaven.ranchercompanion.Debug.of(this), p.toShortString());
             moveTo(p.getX() + 0.5, p.getY(), p.getZ() + 0.5, getYRot(), getXRot());
             sendFresh();
             resetFallDistance();
