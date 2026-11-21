@@ -164,7 +164,8 @@ public final class RanchTests {
         Roster.Entry e = hatch(t, p, h);
         DrekkiEntity d = drekki(t, p).get(0);
         var src = t.getLevel().damageSources();
-        for (var s : new net.minecraft.world.damagesource.DamageSource[]{src.playerAttack(p), src.fall(), src.lava(), src.drown(), src.explosion(null, null), src.cactus()})
+        d.hurt(src.playerAttack(p), 6f);  /* a player's hit lands for its push only, on a pup too */
+        for (var s : new net.minecraft.world.damagesource.DamageSource[]{src.fall(), src.lava(), src.drown(), src.explosion(null, null), src.cactus()})
             t.assertTrue(!d.hurt(s, 6f), "hurt by " + s.getMsgId());
         t.assertTrue(d.getHealth() == d.getMaxHealth(), "full health: " + d.getHealth());
         t.assertTrue(!d.isInvulnerableTo(src.genericKill()) && !d.isInvulnerableTo(src.fellOutOfWorld()), "/kill and the void still reach it");

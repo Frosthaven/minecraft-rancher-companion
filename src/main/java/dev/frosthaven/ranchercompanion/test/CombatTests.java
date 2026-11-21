@@ -256,8 +256,15 @@ public final class CombatTests {
         var src = d.damageSources();
         var arrow = new net.minecraft.world.entity.projectile.Arrow(net.minecraft.world.entity.EntityType.ARROW, t.getLevel());
         float health = d.getHealth();
-        t.assertTrue(!d.hurt(src.playerAttack(p), 6) && !d.hurt(src.playerAttack(other), 6) && !d.hurt(src.arrow(arrow, other), 6)
-            && !d.hurt(src.indirectMagic(arrow, p), 6) && d.getHealth() == health, "no player's hit, arrow or spell lands: " + d.getHealth() + " of " + health);
+        other.moveTo(d.getX() + 1, d.getY(), d.getZ());
+        d.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+        t.assertTrue(d.hurt(src.playerAttack(other), 6) && d.getDeltaMovement().x < 0, "a player's hit pushes it back: " + d.getDeltaMovement());
+        d.invulnerableTime = 0;
+        d.hurt(src.playerAttack(p), 6); d.invulnerableTime = 0;
+        d.hurt(src.arrow(arrow, other), 6); d.invulnerableTime = 0;
+        d.hurt(src.indirectMagic(arrow, p), 6); d.invulnerableTime = 0;
+        t.assertTrue(d.getHealth() == health && d.getLastHurtByMob() == null, "no player's hit, arrow or spell takes health or starts a fight: " + d.getHealth() + " of " + health);
+        t.assertTrue(!d.hurt(src.lava(), 4) && !d.causeFallDamage(40, 1, src.fall()) && !d.isOnFire() && d.getHealth() == health, "lava and falls do not hurt it");
         t.assertTrue(!d.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.POISON, 100), other), "nor a player's poison");
         Husk z = zombie(t, new BlockPos(3, 1, 3));
         t.assertTrue(d.hurt(src.mobAttack(z), 2) && d.getHealth() < health, "a monster still hurts it");

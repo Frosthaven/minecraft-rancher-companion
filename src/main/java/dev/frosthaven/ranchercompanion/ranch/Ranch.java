@@ -646,7 +646,11 @@ public final class Ranch {
             ARRIVALS.remove(p.getUUID());  /* called: it comes now */
             if (d != null) d.setStaying(false);
             bringBack(p);
-            if (call && d != null && !d.isRemoved() && d.level() == p.level()) d.teleportNear(p);  /* bringBack moves only a far one */
+            DrekkiEntity n = call ? live(out.id) : null;
+            if (n != null && n.level() == p.level()) {
+                n.teleportNear(p);  /* bringBack moves only a far one */
+                if (n.distanceToSqr(p) > 8 * 8) n.jumpTo(p.position());  /* no safe spot around them (flying, over lava): onto their own */
+            }
         }
         Component who = out.save.contains("CustomName") ? label(out.save) : Component.translatable("drekki.rancher_companion.yours");
         msg(p, stay ? "stay.on" : "stay.off", who);

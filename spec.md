@@ -330,7 +330,8 @@ A checked-out drekki follows its owner (the default) or stays. Every stage, pups
 - **Drekki Whistle** (shapeless: bone, iron nugget, string; one per stack; a one second cooldown). It changes the
   owner's checked-out drekki between staying and following. A drekki that is not with its owner (another dimension, an
   unloaded chunk, or more than 30 blocks away) always comes to them and follows instead, whatever it was doing.
-  Told to follow by the whistle it jumps to its owner, near or far. One tone for stay; two short tones, the second
+  Told to follow by the whistle it jumps to its owner, near or far; with no safe spot around them (they fly, or stand
+  over lava) it lands on their own position. One tone for stay; two short tones, the second
   higher, for follow.
 - **Message** on the action bar, from the buttons and the whistle alike: "Your drekki is staying" or "Your drekki is
   following you", with its name when it has one.
@@ -989,8 +990,13 @@ screen; a new stage 2 drekki starts Reactive.
 
 No player hurts a drekki (decided 2026-11-21): not its owner, not another player, by hand, tool, arrow, spell (Ars
 Nouveau, Iron's Spells) or a splash of a harmful potion, whatever the server's PvP or a mod's friendly fire setting. Any
-damage whose source or direct entity is a player is refused, as is a harmful effect a player applies. An owner's area
-spells kept hitting her own drekki. Monsters, falls and the world still hurt it.
+damage whose source or direct entity is a player lands for no damage, so its push (knockback) still moves the drekki,
+a pup too; it wears no barding, starts no fight and gives no kill credit. A harmful effect a player applies is refused. An owner's area
+spells kept hitting her own drekki. Monsters and the rest of the world still hurt it.
+
+Safety (decided 2026-11-21): with no rider, lava and falls never hurt a drekki, and lava does not set it on fire. It
+never swims in lava: it walks out along the bottom or its catch-up takes it out. Because a fall cannot hurt it, it takes
+drops of up to 24 blocks to reach its owner (the game's mobs stop at 3).
 
 - Aggressive: fights any hostile mob within 10 blocks, and everything Reactive answers. Hostile means a monster;
   neutral mobs (endermen, zombified piglins, wolves, bees) only while they are angry. It leaves creepers alone, as

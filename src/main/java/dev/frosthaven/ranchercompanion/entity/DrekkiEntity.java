@@ -291,6 +291,14 @@ public class DrekkiEntity extends PathfinderMob {
         dev.frosthaven.ranchercompanion.Debug.log("server: {} taken from {}", dev.frosthaven.ranchercompanion.Debug.of(this), p.getName().getString());
     }
 
+    /** onto an exact spot, with no check of the ground: the whistle's last resort, its owner's own position (in the
+     *  air or over lava it falls or sinks unhurt) */
+    public void jumpTo(Vec3 at) {
+        moveTo(at.x, at.y, at.z, getYRot(), getXRot());
+        sendFresh();
+        resetFallDistance(); clearFire(); getNavigation().stop();
+    }
+
     /** after a jump (a catch-up, a return to its pen): players get it as new, not as a move update. After a catch-up an
      *  owner's game showed no drekki while another player's did (after a waystone, and after outrunning it at home,
      *  2026-11-21). The cause on the owner's side is not known; a new copy does not depend on the old one */
@@ -423,7 +431,10 @@ public class DrekkiEntity extends PathfinderMob {
 
     @Override
     protected void registerGoals() {
-        goalSelector.addGoal(0, new net.minecraft.world.entity.ai.goal.FloatGoal(this));
+        /* it swims in water, never in lava: it walks out along the bottom, unhurt, or its catch-up takes it out */
+        goalSelector.addGoal(0, new net.minecraft.world.entity.ai.goal.FloatGoal(this) {
+            @Override public boolean canUse() { return (isVehicle() || !isInLava()) && super.canUse(); }
+        });
         goalSelector.addGoal(1, new dev.frosthaven.ranchercompanion.combat.CombatGoals.Attack(this));
         goalSelector.addGoal(2, new DrekkiGoals.Follow(this));
         goalSelector.addGoal(3, new EatGoal(this));
@@ -442,6 +453,7 @@ public class DrekkiEntity extends PathfinderMob {
      *  Wolf.actuallyHurt does it, so a hit the barding takes moves nothing else (mood, events) */
     @Override
     protected void actuallyHurt(net.minecraft.world.damagesource.DamageSource source, float amount) {
+        if (amount <= 0) return;  /* a player's hit: the push only */
         if (!bardingItem.isEmpty() && !source.is(net.minecraft.tags.DamageTypeTags.BYPASSES_WOLF_ARMOR) && level() instanceof net.minecraft.server.level.ServerLevel sl) {
             bardingItem.hurtAndBreak(net.minecraft.util.Mth.ceil(amount), sl, this, item -> {
                 playSound(net.minecraft.sounds.SoundEvents.WOLF_ARMOR_BREAK);
@@ -469,11 +481,37 @@ public class DrekkiEntity extends PathfinderMob {
     @Override
     public boolean isInvulnerableTo(net.minecraft.world.damagesource.DamageSource s) {
         if (life.ghost) return !s.is(net.minecraft.world.damagesource.DamageTypes.GENERIC_KILL);  /* a ghost cannot die again; /kill still removes it */
-        /* no player hurts a drekki, its owner or another, by hand, tool, arrow or spell, whatever the server's PvP
-           or a mod's friendly fire says (2026-11-21: an owner's area spells kept hitting her own) */
-        if (s.getEntity() instanceof net.minecraft.world.entity.player.Player || s.getDirectEntity() instanceof net.minecraft.world.entity.player.Player) return true;
-        return super.isInvulnerableTo(s) || stage() == 1 && !s.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY);
+        /* a safety rule (2026-11-21): with no rider, lava and falls never hurt it, so following its owner cannot kill it */
+        if (!isVehicle() && (s.is(net.minecraft.world.damagesource.DamageTypes.FALL) || s.is(net.minecraft.world.damagesource.DamageTypes.LAVA))) return true;
+        return super.isInvulnerableTo(s) || stage() == 1 && !byPlayer(s) && !s.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY);
     }
+
+    private static boolean byPlayer(net.minecraft.world.damagesource.DamageSource s) {
+        return s.getEntity() instanceof net.minecraft.world.entity.player.Player || s.getDirectEntity() instanceof net.minecraft.world.entity.player.Player;
+    }
+
+    /** no player hurts a drekki, its owner or another, by hand, tool, arrow or spell, whatever the server's PvP or a
+     *  mod's friendly fire says (2026-11-21: an owner's area spells kept hitting her own). The hit lands for no damage,
+     *  so its push still moves the drekki, a pup too; nothing else of it counts (no barding wear, no grudge, no kill credit) */
+    @Override
+    public boolean hurt(net.minecraft.world.damagesource.DamageSource s, float amount) {
+        if (level().isClientSide || !byPlayer(s) || s.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY)) return super.hurt(s, amount);
+        boolean hit = super.hurt(s, 0);
+        setLastHurtByMob(null);
+        lastHurtByPlayer = null; lastHurtByPlayerTime = 0;
+        return hit;
+    }
+
+    @Override
+    public boolean causeFallDamage(float distance, float multiplier, net.minecraft.world.damagesource.DamageSource s) { return isVehicle() && super.causeFallDamage(distance, multiplier, s); }
+
+    /** lava neither burns it nor sets it on fire */
+    @Override
+    public void lavaHurt() { if (isVehicle()) super.lavaHurt(); }
+
+    /** falls cannot hurt it, so it takes a long drop to reach its owner (the game's mobs stop at 3 blocks) */
+    @Override
+    public int getMaxFallDistance() { return isVehicle() ? super.getMaxFallDistance() : 24; }
 
     /** nor a harmful effect from a player (a splash of poison) */
     @Override
