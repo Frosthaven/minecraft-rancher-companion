@@ -26,7 +26,7 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 /**
  * Fledgling combat by stance and diet, and death (spec, Growth release): the bite and the Elemental ball, Passive and
- * pups never fighting, the Phoenix egg there and back, a ghost only gone by /kill, and a ghost's revive.
+ * pups never fighting, doors (through an open one, never opening one), the Phoenix egg there and back, a ghost only gone by /kill, and a ghost's revive.
  */
 @GameTestHolder(RancherCompanion.ID)
 @PrefixGameTestTemplate(false)
@@ -50,6 +50,41 @@ public final class CombatTests {
         Husk z = t.spawn(EntityType.HUSK, rel);
         z.setNoAi(true);
         return z;
+    }
+
+    /** a 3-high stone wall across the floor at z 9 with an oak door in it at x 6, open or closed; the owner beyond it */
+    private static void doorway(GameTestHelper t, ServerPlayer p, DrekkiEntity d, boolean open) {
+        for (int x = 0; x < 13; x++) for (int y = 1; y <= 3; y++) if (x != 6 || y == 3) t.setBlock(new BlockPos(x, y, 9), Blocks.STONE);
+        var door = Blocks.OAK_DOOR.defaultBlockState().setValue(net.minecraft.world.level.block.DoorBlock.FACING, net.minecraft.core.Direction.NORTH)
+            .setValue(net.minecraft.world.level.block.DoorBlock.OPEN, open);
+        var half = net.minecraft.world.level.block.DoorBlock.HALF;
+        var lower = net.minecraft.world.level.block.state.properties.DoubleBlockHalf.LOWER;
+        var upper = net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER;
+        t.getLevel().setBlock(t.absolutePos(new BlockPos(6, 1, 9)), door.setValue(half, lower), 18);  /* 2 | 16: no shape updates between the halves */
+        t.getLevel().setBlock(t.absolutePos(new BlockPos(6, 2, 9)), door.setValue(half, upper), 18);
+        d.moveTo(t.absoluteVec(new net.minecraft.world.phys.Vec3(4.5, 1, 6.5)));
+        p.moveTo(t.absoluteVec(new net.minecraft.world.phys.Vec3(6.5, 1, 12.5)));
+    }
+
+    @GameTest(template = "floor", timeoutTicks = 200)
+    public static void aMatureWalksThroughAnOpenDoor(GameTestHelper t) {
+        ServerPlayer p = LifeTests.player(t);
+        DrekkiEntity d = out(t, p, 3, Diet.RAW, Life.Stance.PASSIVE);
+        t.assertTrue(d.getBbWidth() <= 0.625f, "a Mature fits beside an open door's panel: " + d.getBbWidth());
+        doorway(t, p, d, true);
+        t.succeedWhen(() -> t.assertTrue(d.getZ() > t.absoluteVec(new net.minecraft.world.phys.Vec3(0, 0, 9.5)).z, "through the door: " + d.position()));
+    }
+
+    @GameTest(template = "floor", timeoutTicks = 200)
+    public static void noDrekkiOpensAClosedDoor(GameTestHelper t) {
+        ServerPlayer p = LifeTests.player(t);
+        DrekkiEntity d = out(t, p, 2, Diet.RAW, Life.Stance.PASSIVE);
+        doorway(t, p, d, false);
+        t.runAfterDelay(160, () -> {
+            t.assertTrue(d.getZ() < t.absoluteVec(new net.minecraft.world.phys.Vec3(0, 0, 9)).z, "still behind the closed door: " + d.position());
+            t.assertFalse(t.getBlockState(new BlockPos(6, 1, 9)).getValue(net.minecraft.world.level.block.DoorBlock.OPEN), "the door stays shut");
+            t.succeed();
+        });
     }
 
     @GameTest(template = "floor", timeoutTicks = 300)

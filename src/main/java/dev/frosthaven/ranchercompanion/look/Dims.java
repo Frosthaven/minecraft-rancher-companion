@@ -34,7 +34,7 @@ public final class Dims {
         d.wingArm = f(1.4f, 6); d.wingFin = f(1, 8.5f); d.wingPanel = f(1.0f, 7.5f, 13); d.wingFlank = true;
         d.tail = new float[][]{f(3, 3, 7), f(2.2f, 2.2f, 6)}; d.tailUp = 14; d.plumeCarn = f(0.7f, 2.6f, 3, 1); d.plumeHerb = f(0.9f, 3, 7, 6);
         d.sickleSeg = f(3.5f, 3.5f, 3); d.sickleN = 3; d.shadow = 0.62f;
-        d.scale = 0.75f; d.hitW = 0.75f; d.hitH = 0.975f;  /* was 1.0 x 1.3 at full size */
+        d.scale = 0.75f; d.hitW = 0.6f; d.hitH = 0.975f;  /* a wolf's width, narrower than the model: an open door's panel leaves 0.625 at the block's middle (2026-11-20) */
 
         d = S3;
         d.body = f(11, 9.5f, 24); d.rump = true; d.hipX = 5; d.hipZ = -3.5f; d.hipSink = 2.3f;
@@ -44,7 +44,7 @@ public final class Dims {
         d.wingArm = f(1.8f, 10); d.wingFin = f(1.3f, 14); d.wingPanel = f(1.0f, 12, 22); d.wingFlank = true; d.legDetail = true;
         d.tail = new float[][]{f(4, 4, 9), f(3, 3, 8), f(2.2f, 2.2f, 7)}; d.tailUp = 10; d.plumeCarn = f(0.8f, 3.4f, 4, 2); d.plumeHerb = f(1.1f, 4, 11, 7);
         d.sickleSeg = f(5, 5, 4); d.sickleN = 3; d.saddle = true; d.saddleD = 9.5f; d.saddleZ = 1;  /* 4 px back (2026-11-20): the page moved it so a player-size rider clears the head */ d.shadow = 0.95f;
-        d.scale = 0.75f; d.hitW = 1.125f; d.hitH = 1.725f;  /* was 1.5 x 2.3 */
+        d.scale = 0.75f; d.hitW = 0.6f; d.hitH = 1.725f;  /* as stage 2: through an open door (2026-11-20; was 1.125) */
     }
 
     public static Dims of(int stage) { return stage <= 1 ? S1 : stage == 2 ? S2 : S3; }

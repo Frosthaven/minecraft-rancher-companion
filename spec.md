@@ -166,7 +166,7 @@ Two craftable items:
 ### Stage 2
 
 - Length: 7 game days of travel (revised 2026-11-18; server config).
-- Size: about a wolf. Revised 2026-11-20: 75% of the page's pixel model (hitbox 0.75 wide, 0.975 tall; was 1.0 x 1.3).
+- Size: about a wolf. Revised 2026-11-20: 75% of the page's pixel model (hitbox 0.6 wide since 2026-11-20, a wolf's width, so it fits an open door; 0.975 tall; was 1.0 x 1.3).
 - Needs the large carrier.
 - Has its diet's basic attack (Bite or Elemental ball), no cooldown ability.
 
@@ -174,7 +174,7 @@ Two craftable items:
 
 - Length: permanent (fully grown).
 - Size: a horse, or slightly smaller. Revised 2026-11-20: 75% of the page's pixel model, about a player's height (hitbox
-  1.125 wide, 1.725 tall; was 1.5 x 2.3). The page's pixel table and loops stay as they are; one scale per stage
+  0.6 wide since 2026-11-20 so it fits an open door, whose panel leaves 0.625 at the block's middle; was 1.125 by scale, 1.5 at full size; 1.725 tall). The page's pixel table and loops stay as they are; one scale per stage
   (1, 0.75, 0.75) sets the model, hitbox, shadow, particles, travel speeds and the room it needs in the world.
 - Can be mounted and ridden like a horse.
 - Every ability. No built-in glide or slow fall: flight comes only from the Wings of Hope trait (elytra-style
@@ -598,14 +598,14 @@ Decided 2026-11-04. A player has one drekki checked out at a time; the rest are 
   night it walks to a bedding spot and sleeps until morning (the sleep loop); with no bedding in reach it sleeps by the
   hatchery. Its pathfinding treats spots outside the area as blocked, and one found outside (after
   a block is broken) walks back in. The hatchery caches its anchors and refreshes them when a block in range changes.
-  Spawn spots (above) must lie in the area too. It never wanders into unloaded chunks. Their area traits (Homes & Gardens, Creature
+  Spawn spots (above) must lie in the area too. It never wanders into unloaded chunks. Every age walks through an open door or gate; none opens a closed one (2026-11-20). Their area traits (Homes & Gardens, Creature
   Comforts and the like) work there, under the no-stacking rule.
 - Checkout, check-in and swaps happen only at a hatchery screen, and only for drekki that live at that hatchery
   (revised 2026-11-16): one living elsewhere shows Check out, Pair and Trade disabled ("Lives at <name>: check it out
   there"); Move… brings it over first. A drekki with no hatchery can be checked out or moved from any hatchery.
 - Placement (revised 2026-11-16), one rule for every time a drekki appears at a hatchery (check-out, check-in, a move,
   a hatch, the roster placing a missing one): within 3 blocks of the hatchery block, preferring right next to it. A spot
-  fits when it stands on a solid block, out of liquid, with room for the stage's hitbox (stage 3 needs 2x2x2 clear since 2026-11-20; stage 2, 1x1x1).
+  fits when it stands on a solid block, out of liquid, with room for the stage's hitbox (stage 3 needs 1x2x1 clear since its narrower hitbox, 2026-11-20; stage 2, 1x1x1).
   Revised 2026-11-17: the search walks out from the hatchery (a flood fill in walking steps), stepping only between
   neighboring spots a drekki can walk between, so a fence, wall or closed gate stops it; it takes the first spot that
   fits, so spots inside a pen come first, nearest walk first. Only when none fits does it try the spots it could not

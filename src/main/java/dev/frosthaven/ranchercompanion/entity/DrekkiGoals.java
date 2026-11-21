@@ -170,8 +170,8 @@ final class DrekkiGoals {
         @Override
         protected PathFinder createPathFinder(int maxVisitedNodes) {
             nodeEvaluator = new PenNodes();
-            nodeEvaluator.setCanPassDoors(false);
-            nodeEvaluator.setCanOpenDoors(false);
+            nodeEvaluator.setCanPassDoors(true);   /* open doors and gates: every age walks through (the wander area still bounds a checked-in one) */
+            nodeEvaluator.setCanOpenDoors(false);  /* none opens a closed door */
             return new PathFinder(nodeEvaluator, maxVisitedNodes);
         }
     }
