@@ -1001,7 +1001,8 @@ stand in. Traits use vanilla status effects wherever one fits.
 Baseline for every drekki, no trait needed: one-block step like a horse, catch-up teleport when more than 24
 blocks behind (decided 2026-11-20: only to a spot with room and firm ground and no lava or fire in or around it,
 unless fire cannot hurt it, as with Fire Resistance; with no such spot it stays put; it arrives unhurt, with no fall
-carried over and no fire), comes along to another dimension with its owner (on the game's dimension change, and when the
+carried over and no fire; after a jump of more than 16 blocks the server sends it to players as new, so an owner
+whose game had dropped its old chunk still sees it, 2026-11-21), comes along to another dimension with its owner (on the game's dimension change, and when the
 owner joins another level, which catches portal mods that skip that event, as Immersive Portals in the Haven pack does;
 no timer; 2026-11-20; an owned drekki never goes through a portal itself and is never placed in a portal block: it
 looks 2 to 3 blocks from its owner, then up to 6. One left on its owner's block, on the portal's surface, was carried

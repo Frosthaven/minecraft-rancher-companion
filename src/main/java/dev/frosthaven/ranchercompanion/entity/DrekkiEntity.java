@@ -281,7 +281,15 @@ public class DrekkiEntity extends PathfinderMob {
             BlockPos p = pos.offset(dx, dy, dz);
             var box = getBoundingBox().move(p.subtract(blockPosition()));
             if (!safeAt(p, box)) continue;
+            boolean jump = distanceToSqr(p.getX() + 0.5, p.getY(), p.getZ() + 0.5) > 16 * 16;
             moveTo(p.getX() + 0.5, p.getY(), p.getZ() + 0.5, getYRot(), getXRot());
+            /* a long jump: players get it fresh. A plain move update reached an owner's game that had already dropped
+               the old chunk; its copy there was frozen, never moved, and the owner saw no drekki (after a waystone and
+               after a respawn, 2026-11-21) */
+            if (jump && isAddedToLevel() && level() instanceof net.minecraft.server.level.ServerLevel sl) {
+                sl.getChunkSource().removeEntity(this);
+                sl.getChunkSource().addEntity(this);
+            }
             resetFallDistance();
             clearFire();
             getNavigation().stop();
