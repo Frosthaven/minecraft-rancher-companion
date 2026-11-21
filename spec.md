@@ -158,14 +158,14 @@ Two craftable items:
 
 ### Stage 1
 
-- Length: 7 game days of travel (revised 2026-11-18; server config).
+- Length: 6 game days of travel (revised 2026-11-20, was 7; server config). Eye lock-in at 3 days, 60 minutes of play.
 - Size: very small, about a slime.
 - Fits the small carrier.
 - No attacks, no cooldown abilities.
 
 ### Stage 2
 
-- Length: 7 game days of travel (revised 2026-11-18; server config).
+- Length: 6 game days of travel (revised 2026-11-20, was 7; server config).
 - Size: about a wolf. Revised 2026-11-20: 75% of the page's pixel model (hitbox 0.6 wide since 2026-11-20, a wolf's width, so it fits an open door; 0.975 tall; was 1.0 x 1.3).
 - Needs the large carrier.
 - Has its diet's basic attack (Bite or Elemental ball), no cooldown ability.
@@ -1196,7 +1196,7 @@ Hatch a first egg, keep the pup, carry it, name it, pet it. Growth and learning 
 
 Pups grow, eat, feel and learn; growth stops at stage 2 (Fledgling) until a later release.
 
-- Growth: travel time counts (out of the carrier, checked out); 7 days per stage, server config. Existing drekki
+- Growth: travel time counts (out of the carrier, checked out); 6 days per stage (was 7 until 2026-11-20), server config. Existing drekki
   start at 0, no head start. A stage 2 drekki does not grow further yet. Stage-up: a chat line to the owner ("Your
   drekki is now a Fledgling") and a particle burst.
 - Astral: locks 50% through stage 1 (see Astral affinity). A chat line to the owner names it (hover for what it

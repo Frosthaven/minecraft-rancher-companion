@@ -52,7 +52,7 @@ public final class DrekkiConfig {
         b.pop();
         b.comment("Growth (spec, Growth release): travel time a drekki needs per stage, in game days (24000 ticks).",
             "Travel counts while it is checked out and out of its carrier.").push("growth");
-        STAGE_DAYS = b.defineInRange("days_per_stage", 7.0, 0.01, 1000.0);
+        STAGE_DAYS = b.defineInRange("days_per_stage", 6.0, 0.01, 1000.0);
         b.pop();
         b.comment("Hunger (spec, Hunger): shanks lost per game day, out of ten. It drains everywhere (at a hatchery, in a carrier,",
             "while its owner is offline), on the world's game time; travelling drains at its own rate.").push("hunger");
