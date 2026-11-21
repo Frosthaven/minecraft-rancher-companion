@@ -226,6 +226,7 @@ public final class CombatTests {
             t.assertTrue(d.blockPosition().equals(spot), "it did not follow: " + d.blockPosition() + " from " + spot);
             Ranch.whistle(p);  /* with its owner: the whistle changes it over */
             t.assertTrue(!d.isStaying() && Ranch.roster(t.getLevel().getServer()).out(p.getUUID()).stay == null, "it follows again");
+            t.assertTrue(d.blockPosition().equals(spot), "near, with a way to walk, it is not jumped to its owner: " + d.blockPosition());
             t.succeedWhen(() -> t.assertTrue(d.distanceTo(p) < 5, "it came: " + d.distanceTo(p)));
         });
     }

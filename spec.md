@@ -330,8 +330,9 @@ A checked-out drekki follows its owner (the default) or stays. Every stage, pups
 - **Drekki Whistle** (shapeless: bone, iron nugget, string; one per stack; a one second cooldown). It changes the
   owner's checked-out drekki between staying and following. A drekki that is not with its owner (another dimension, an
   unloaded chunk, or more than 30 blocks away) always comes to them and follows instead, whatever it was doing.
-  Told to follow by the whistle it jumps to its owner, near or far; with no safe spot around them (they fly, or stand
-  over lava) it lands on their own position, unless that is in lava or fire. One tone for stay; two short tones, the second
+  Told to follow by the whistle it walks to its owner when it is within 20 blocks and a path reaches them; from
+  further, or with no way to walk there, it jumps to them. With no safe spot around them (they fly) it lands on their
+  own position, unless that is in lava or fire. One tone for stay; two short tones, the second
   higher, for follow.
 - **Message** on the action bar, from the buttons and the whistle alike: "Your drekki is staying" or "Your drekki is
   following you", with its name when it has one.

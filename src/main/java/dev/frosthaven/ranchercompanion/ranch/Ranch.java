@@ -589,6 +589,8 @@ public final class Ranch {
     private static final Map<UUID, GlobalPos> STAYS = new HashMap<>();
     /** within this of its owner a drekki is with them: the whistle and the screen toggle it; beyond, they call it first */
     static final double WITH = 30;
+    /** called by the whistle from within this, it walks to its owner when a path reaches them */
+    static final double CALL_WALK = 20;
 
     /** a staying drekki stands at its spot while that chunk is loaded and its owner is online; otherwise it is data */
     private static void place(MinecraftServer s, Entry out) {
@@ -645,12 +647,15 @@ public final class Ranch {
             STAYS.remove(p.getUUID());
             ARRIVALS.remove(p.getUUID());  /* called: it comes now */
             if (d != null) d.setStaying(false);
-            bringBack(p);
-            DrekkiEntity n = call ? live(out.id) : null;
-            if (n != null && n.level() == p.level()) {
-                n.teleportNear(p);  /* bringBack moves only a far one */
-                if (n.distanceToSqr(p) > 8 * 8) n.jumpTo(p.position());  /* no safe spot around them (they fly): onto their own, unless that is in lava or fire */
-            }
+            if (call && d != null && d.level() == p.level()) {
+                /* the whistle: it walks over when it can. It jumps to them only from more than 20 blocks or with no
+                   way to walk there */
+                var path = d.distanceToSqr(p) > CALL_WALK * CALL_WALK ? null : d.getNavigation().createPath(p, 1);
+                if (path == null || !path.canReach()) {
+                    d.teleportNear(p);
+                    if (d.distanceToSqr(p) > 8 * 8) d.jumpTo(p.position());  /* no safe spot around them (they fly): onto their own, unless that is in lava or fire */
+                }
+            } else bringBack(p);
         }
         Component who = out.save.contains("CustomName") ? label(out.save) : Component.translatable("drekki.rancher_companion.yours");
         msg(p, stay ? "stay.on" : "stay.off", who);
