@@ -1003,7 +1003,9 @@ blocks behind (decided 2026-11-20: only to a spot with room and firm ground and 
 unless fire cannot hurt it, as with Fire Resistance; with no such spot it stays put; it arrives unhurt, with no fall
 carried over and no fire), comes along to another dimension with its owner (on the game's dimension change, and when the
 owner joins another level, which catches portal mods that skip that event, as Immersive Portals in the Haven pack does;
-no timer; 2026-11-20), never tramples crops, and from stage 2 its pack picks up what the player cannot carry.
+no timer; 2026-11-20; an owned drekki never goes through a portal itself and is never placed in a portal block: it
+looks 2 to 3 blocks from its owner, then up to 6. One left on its owner's block, on the portal's surface, was carried
+back through by Immersive Portals and stuck in the frame, 2026-11-21), never tramples crops, and from stage 2 its pack picks up what the player cannot carry.
 
 ## Breed traits (proposal)
 

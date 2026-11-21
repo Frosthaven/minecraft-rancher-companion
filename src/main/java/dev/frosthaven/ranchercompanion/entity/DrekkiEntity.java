@@ -271,11 +271,12 @@ public class DrekkiEntity extends PathfinderMob {
     }
 
     /** next to a block (its owner's feet): the first clear spot in a 5x5 around it, as tamed mobs teleport */
-    /** to a safe spot 2 to 3 blocks from pos, or nowhere: it stays put rather than land somewhere that hurts it.
-     *  It arrives unhurt: no fall carried over, no fire. */
+    /** to a safe spot 2 to 3 blocks from pos, then up to 6 when none is free there, or nowhere: it stays put rather than
+     *  land somewhere that hurts it. It arrives unhurt: no fall carried over, no fire. */
     public void teleportNear(BlockPos pos) {
-        for (int i = 0; i < 10; i++) {
-            int dx = random.nextInt(-3, 4), dz = random.nextInt(-3, 4), dy = random.nextInt(-1, 2);
+        for (int i = 0; i < 30; i++) {
+            int r = i < 10 ? 3 : 6;  /* a cramped portal room had no spot within 3, and the drekki stayed in the portal */
+            int dx = random.nextInt(-r, r + 1), dz = random.nextInt(-r, r + 1), dy = random.nextInt(-1, 2);
             if (Math.abs(dx) < 2 && Math.abs(dz) < 2) continue;
             BlockPos p = pos.offset(dx, dy, dz);
             var box = getBoundingBox().move(p.subtract(blockPosition()));
@@ -292,6 +293,7 @@ public class DrekkiEntity extends PathfinderMob {
      *  Resistance) */
     private boolean safeAt(BlockPos p, net.minecraft.world.phys.AABB box) {
         if (!level().noCollision(this, box)) return false;
+        if (level().getBlockStates(box).anyMatch(s -> s.is(net.minecraft.tags.BlockTags.PORTALS))) return false;  /* never in a portal */
         var type = net.minecraft.world.level.pathfinder.WalkNodeEvaluator.getPathTypeStatic(this, p);
         boolean fireproof = fireImmune() || hasEffect(net.minecraft.world.effect.MobEffects.FIRE_RESISTANCE);
         if (fireproof && (type == net.minecraft.world.level.pathfinder.PathType.LAVA || type == net.minecraft.world.level.pathfinder.PathType.DANGER_FIRE
@@ -378,6 +380,15 @@ public class DrekkiEntity extends PathfinderMob {
         }
         super.actuallyHurt(source, amount);
     }
+
+    /** an owned drekki never goes through a portal itself: its owner's crossing brings it along (Ranch.follow). One
+     *  placed on its owner's block, on a portal's surface, was carried back through by Immersive Portals and stuck
+     *  there (2026-11-21); that mod asks this before it carries a mob */
+    @Override
+    public boolean canChangeDimensions(net.minecraft.world.level.Level from, net.minecraft.world.level.Level to) { return !owned() && super.canChangeDimensions(from, to); }
+
+    @Override
+    public boolean canUsePortal(boolean allowPassengers) { return !owned() && super.canUsePortal(allowPassengers); }
 
     /** a pup takes no damage (spec, Pup release): nothing fights it, so it never needs healing. The void and /kill still
      *  reach it, so a stuck one can be removed */
