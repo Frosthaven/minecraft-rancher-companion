@@ -273,12 +273,19 @@ public class DrekkiEntity extends PathfinderMob {
     /** next to a block (its owner's feet): the first clear spot in a 5x5 around it, as tamed mobs teleport */
     /** to a safe spot 2 to 3 blocks from pos, then up to 6 when none is free there, or nowhere: it stays put rather than
      *  land somewhere that hurts it. It arrives unhurt: no fall carried over, no fire. */
-    public void teleportNear(BlockPos pos) {
+    public void teleportNear(BlockPos pos) { teleportNear(pos, null); }
+
+    /** the same, next to who: when they stand in a portal (they just came out of it), only on their side of it */
+    public void teleportNear(net.minecraft.world.entity.Entity who) { teleportNear(who.blockPosition(), who); }
+
+    private void teleportNear(BlockPos pos, net.minecraft.world.entity.Entity who) {
+        var side = who == null ? null : portalSide(who);
         for (int i = 0; i < 30; i++) {
             int r = i < 10 ? 3 : 6;  /* a cramped portal room had no spot within 3, and the drekki stayed in the portal */
             int dx = random.nextInt(-r, r + 1), dz = random.nextInt(-r, r + 1), dy = random.nextInt(-1, 2);
             if (Math.abs(dx) < 2 && Math.abs(dz) < 2) continue;
             BlockPos p = pos.offset(dx, dy, dz);
+            if (side != null && !side.test(p)) continue;
             var box = getBoundingBox().move(p.subtract(blockPosition()));
             if (!safeAt(p, box)) continue;
             moveTo(p.getX() + 0.5, p.getY(), p.getZ() + 0.5, getYRot(), getXRot());
@@ -296,14 +303,38 @@ public class DrekkiEntity extends PathfinderMob {
         }
     }
 
+    /** a portal block: the game's own, and a portal mod's by its block's name (Immersive Portals fills a frame with
+     *  immersive_portals:nether_portal_block, which is in no portal tag) */
+    private static boolean portal(net.minecraft.world.level.block.state.BlockState s) {
+        return s.is(net.minecraft.tags.BlockTags.PORTALS) || net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(s.getBlock()).getPath().contains("portal");
+    }
+
+    /** who stands in a portal block: the spots on their side of the portal's surface (the block's middle), or null when
+     *  they stand in none or the side cannot be told. A drekki landed behind the frame its owner had just walked out
+     *  of, walled off from them (2026-11-21). The portal runs along the axis with a portal block next to this one, or
+     *  for a portal one block wide, with the frame on both sides */
+    private java.util.function.Predicate<BlockPos> portalSide(net.minecraft.world.entity.Entity who) {
+        BlockPos b = who.blockPosition();
+        if (!portal(level().getBlockState(b))) return null;
+        var X = net.minecraft.core.Direction.Axis.X; var Z = net.minecraft.core.Direction.Axis.Z;
+        boolean px = portal(level().getBlockState(b.east())) || portal(level().getBlockState(b.west()));
+        boolean pz = portal(level().getBlockState(b.north())) || portal(level().getBlockState(b.south()));
+        if (px == pz) {  /* one block wide: the frame is solid on both sides along the portal */
+            px = !level().getBlockState(b.east()).getCollisionShape(level(), b.east()).isEmpty() && !level().getBlockState(b.west()).getCollisionShape(level(), b.west()).isEmpty();
+            pz = !level().getBlockState(b.north()).getCollisionShape(level(), b.north()).isEmpty() && !level().getBlockState(b.south()).getCollisionShape(level(), b.south()).isEmpty();
+            if (px == pz) return null;
+        }
+        var across = px ? Z : X;
+        double surface = b.get(across) + 0.5, at = who.position().get(across) - surface;
+        if (Math.abs(at) < 1e-3) return null;
+        return p -> (p.get(across) + 0.5 - surface) * at >= 0;
+    }
+
     /** room to stand, firm ground, and no lava or fire in or around it, unless fire cannot hurt it (immune, or Fire
      *  Resistance) */
     private boolean safeAt(BlockPos p, net.minecraft.world.phys.AABB box) {
         if (!level().noCollision(this, box)) return false;
-        /* never in a portal: the game's own, and a portal mod's by its block's name (Immersive Portals fills a frame
-           with immersive_portals:nether_portal_block, which is in no portal tag) */
-        if (level().getBlockStates(box).anyMatch(s -> s.is(net.minecraft.tags.BlockTags.PORTALS)
-            || net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(s.getBlock()).getPath().contains("portal"))) return false;
+        if (level().getBlockStates(box).anyMatch(DrekkiEntity::portal)) return false;  /* never in a portal */
         var type = net.minecraft.world.level.pathfinder.WalkNodeEvaluator.getPathTypeStatic(this, p);
         boolean fireproof = fireImmune() || hasEffect(net.minecraft.world.effect.MobEffects.FIRE_RESISTANCE);
         if (fireproof && (type == net.minecraft.world.level.pathfinder.PathType.LAVA || type == net.minecraft.world.level.pathfinder.PathType.DANGER_FIRE

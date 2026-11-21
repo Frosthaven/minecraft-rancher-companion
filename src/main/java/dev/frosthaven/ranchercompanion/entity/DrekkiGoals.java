@@ -52,7 +52,7 @@ final class DrekkiGoals {
             if (!far) d.getLookControl().setLookAt(owner, 10f, d.getMaxHeadXRot());
             if (--recalc > 0) return;
             recalc = adjustedTickDelay(10);
-            if (far) d.teleportNear(owner.blockPosition());
+            if (far) d.teleportNear(owner);
             else d.getNavigation().moveTo(owner, d.distanceToSqr(owner) > 8 * 8 ? 1.6 : 1.1);
         }
     }

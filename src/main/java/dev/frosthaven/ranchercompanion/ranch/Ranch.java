@@ -509,13 +509,13 @@ public final class Ranch {
         if (out == null || out.where != Where.OUT) return;
         DrekkiEntity d = live(out.id);
         if (d != null && d.level() == p.level()) {
-            if (d.distanceTo(p) > 12) d.teleportNear(p.blockPosition());
+            if (d.distanceTo(p) > 12) d.teleportNear(p);
             return;
         }
         if (d != null) { r.snapshot(out, save(d)); d.discard(); }
         DrekkiEntity n = spawn(p.serverLevel(), out, p.blockPosition(), null);
         if (n == null) return;
-        n.teleportNear(p.blockPosition());
+        n.teleportNear(p);
         add(p.serverLevel(), n);
     }
 
