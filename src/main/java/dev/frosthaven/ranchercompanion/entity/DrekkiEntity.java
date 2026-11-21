@@ -300,7 +300,10 @@ public class DrekkiEntity extends PathfinderMob {
      *  Resistance) */
     private boolean safeAt(BlockPos p, net.minecraft.world.phys.AABB box) {
         if (!level().noCollision(this, box)) return false;
-        if (level().getBlockStates(box).anyMatch(s -> s.is(net.minecraft.tags.BlockTags.PORTALS))) return false;  /* never in a portal */
+        /* never in a portal: the game's own, and a portal mod's by its block's name (Immersive Portals fills a frame
+           with immersive_portals:nether_portal_block, which is in no portal tag) */
+        if (level().getBlockStates(box).anyMatch(s -> s.is(net.minecraft.tags.BlockTags.PORTALS)
+            || net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(s.getBlock()).getPath().contains("portal"))) return false;
         var type = net.minecraft.world.level.pathfinder.WalkNodeEvaluator.getPathTypeStatic(this, p);
         boolean fireproof = fireImmune() || hasEffect(net.minecraft.world.effect.MobEffects.FIRE_RESISTANCE);
         if (fireproof && (type == net.minecraft.world.level.pathfinder.PathType.LAVA || type == net.minecraft.world.level.pathfinder.PathType.DANGER_FIRE
