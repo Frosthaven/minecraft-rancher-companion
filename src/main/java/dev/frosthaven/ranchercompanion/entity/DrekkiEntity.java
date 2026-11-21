@@ -505,13 +505,12 @@ public class DrekkiEntity extends PathfinderMob {
         if (life.ghost) return !s.is(net.minecraft.world.damagesource.DamageTypes.GENERIC_KILL);  /* a ghost cannot die again; /kill still removes it */
         /* a safety rule (2026-11-21): with no rider, lava and falls never hurt it, so following its owner cannot kill it */
         if (!isVehicle() && (s.is(net.minecraft.world.damagesource.DamageTypes.FALL) || s.is(net.minecraft.world.damagesource.DamageTypes.LAVA))) return true;
-        /* nor a Create train running it over (by the damage type's id: Create is not a dependency). It cannot ride, so
-           its catch-up lands it beside its owner's moving train */
-        if (s.typeHolder().unwrapKey().map(k -> k.location().equals(RUN_OVER)).orElse(false)) return true;
+        /* nor any Create machine: a train running it over (it cannot ride, so its catch-up lands it beside its owner's
+           moving train), a drill, a saw, crushing wheels, a roller, a fan's fire. By the damage type's namespace, Create's
+           and its addons' ("create..."): Create is not a dependency */
+        if (s.typeHolder().unwrapKey().map(k -> k.location().getNamespace().startsWith("create")).orElse(false)) return true;
         return super.isInvulnerableTo(s) || stage() == 1 && !byPlayer(s) && !s.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY);
     }
-
-    private static final net.minecraft.resources.ResourceLocation RUN_OVER = net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("create", "run_over");
 
     private static boolean byPlayer(net.minecraft.world.damagesource.DamageSource s) {
         return s.getEntity() instanceof net.minecraft.world.entity.player.Player || s.getDirectEntity() instanceof net.minecraft.world.entity.player.Player;

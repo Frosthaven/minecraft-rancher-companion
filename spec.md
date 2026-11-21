@@ -1004,8 +1004,9 @@ spells kept hitting her own drekki. Monsters and the rest of the world still hur
 Barding of every tier gives Hostile Knockback Immunity (decided 2026-11-21; its own blue line in the tooltip): a
 mob's hit does not push a drekki that wears barding. A player's push still moves it.
 
-Safety (decided 2026-11-21): with no rider, lava and falls never hurt a drekki, and lava does not set it on fire. A
-Create train running it over does not hurt it either (damage type `create:run_over`). It
+Safety (decided 2026-11-21): with no rider, lava and falls never hurt a drekki, and lava does not set it on fire. No
+Create machine hurts it either: a train running it over, a drill, a saw, crushing wheels, a roller, a fan's fire (every
+damage type of Create and its addons, by the `create...` namespace). It
 keeps out of lava and fire all the same: with no rider it never walks into either, whatever the detour. A catch-up or the whistle lands it on any
 spot that is not itself on fire or in lava: lava beside the spot or below it does not rule the spot out. The exception is a drekki lava cannot harm anyway (immune by nature, or under Fire
 Resistance from a trait or a potion): it may walk and land there. One knocked into lava floats, to get out. Because a
