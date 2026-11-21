@@ -14,10 +14,22 @@ public final class Baked {
     public final ResourceLocation sheen;
     /** the mouth in the built pose, entity space blocks */
     public final Vector3f mouthRest;
+    /** the textures as registered: another mod may release or replace them (see {@link #alive}) */
+    private final net.minecraft.client.renderer.texture.AbstractTexture[] made;
 
-    Baked(Rig rig, ModelPart root, ResourceLocation texture, ResourceLocation eyes, ResourceLocation sheen) {
-        this.rig = rig; this.root = root; this.texture = texture; this.eyes = eyes; this.sheen = sheen;
+    Baked(Rig rig, ModelPart root, ResourceLocation texture, ResourceLocation eyes, ResourceLocation sheen, net.minecraft.client.renderer.texture.AbstractTexture... made) {
+        this.rig = rig; this.root = root; this.texture = texture; this.eyes = eyes; this.sheen = sheen; this.made = made;
         this.mouthRest = point(rig.head, rig.mouthLocal, new Vector3f());
+    }
+
+    /** false once a texture is no longer the one baked here: JourneyMap releases every mob texture it made a minimap icon
+     *  from when resources reload (as on joining a server with a resource pack), and the drekki then drew black and
+     *  magenta, or not at all (2026-11-20) */
+    public boolean alive() {
+        var tm = net.minecraft.client.Minecraft.getInstance().getTextureManager();
+        ResourceLocation[] at = {texture, eyes, sheen};
+        for (int i = 0; i < made.length; i++) if (tm.getTexture(at[i], null) != made[i]) return false;
+        return true;
     }
 
     /** The node's rotation as a quaternion in the page's space: XYZ Euler, YXZ for the sleeping neck, or an override. */

@@ -311,9 +311,10 @@ public final class RanchTests {
         Roster.Entry e = hatch(t, p, h);
         DrekkiEntity d = checkedOut(t, p, h, e);
         var nether = t.getLevel().getServer().getLevel(net.minecraft.world.level.Level.NETHER);
-        d.changeDimension(new net.minecraft.world.level.portal.DimensionTransition(nether, new net.minecraft.world.phys.Vec3(0.5, 64, 0.5),
-            net.minecraft.world.phys.Vec3.ZERO, 0, 0, net.minecraft.world.level.portal.DimensionTransition.DO_NOTHING));
-        t.runAfterDelay(1, () -> {
+        /* after the mock player's own join (which brings its drekki along a tick later), then into the Nether */
+        t.runAfterDelay(2, () -> d.changeDimension(new net.minecraft.world.level.portal.DimensionTransition(nether, new net.minecraft.world.phys.Vec3(0.5, 64, 0.5),
+            net.minecraft.world.phys.Vec3.ZERO, 0, 0, net.minecraft.world.level.portal.DimensionTransition.DO_NOTHING)));
+        t.runAfterDelay(3, () -> {
             t.assertTrue(drekki(t, p).isEmpty(), "the drekki is in the other dimension");
             Ranch.onDimension(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerChangedDimensionEvent(p,
                 net.minecraft.world.level.Level.NETHER, net.minecraft.world.level.Level.OVERWORLD));
@@ -321,7 +322,7 @@ public final class RanchTests {
         });
     }
 
-    /** a portal mod that moves the player without the dimension change event: the once-a-second check brings it */
+    /** a portal mod that moves the player without the dimension change event: the player joining the level brings it */
     @GameTest(template = "floor")
     public static void otherLevelWithoutTheEventBringsItBack(GameTestHelper t) {
         BlockPos h = stable(t);
@@ -329,12 +330,13 @@ public final class RanchTests {
         Roster.Entry e = hatch(t, p, h);
         DrekkiEntity d = checkedOut(t, p, h, e);
         var nether = t.getLevel().getServer().getLevel(net.minecraft.world.level.Level.NETHER);
-        d.changeDimension(new net.minecraft.world.level.portal.DimensionTransition(nether, new net.minecraft.world.phys.Vec3(0.5, 64, 0.5),
-            net.minecraft.world.phys.Vec3.ZERO, 0, 0, net.minecraft.world.level.portal.DimensionTransition.DO_NOTHING));
-        t.runAfterDelay(1, () -> {
+        /* after the mock player's own join (which brings its drekki along a tick later), then into the Nether */
+        t.runAfterDelay(2, () -> d.changeDimension(new net.minecraft.world.level.portal.DimensionTransition(nether, new net.minecraft.world.phys.Vec3(0.5, 64, 0.5),
+            net.minecraft.world.phys.Vec3.ZERO, 0, 0, net.minecraft.world.level.portal.DimensionTransition.DO_NOTHING)));
+        t.runAfterDelay(3, () -> {
             t.assertTrue(drekki(t, p).isEmpty(), "the drekki is in the other level, and no event came");
-            Ranch.follow(p);
-            besideOwner(t, p, h, e, "back by the once-a-second check");
+            Ranch.onPlayerJoinLevel(new net.neoforged.neoforge.event.entity.EntityJoinLevelEvent(p, p.level()));
+            t.runAfterDelay(2, () -> besideOwner(t, p, h, e, "back when its owner joined the level"));
         });
     }
 

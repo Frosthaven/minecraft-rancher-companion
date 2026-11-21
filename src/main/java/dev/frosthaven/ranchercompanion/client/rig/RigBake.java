@@ -88,11 +88,14 @@ public final class RigBake {
         ResourceLocation tex = ResourceLocation.fromNamespaceAndPath(RancherCompanion.ID, "dynamic/" + key);
         ResourceLocation eyes = ResourceLocation.fromNamespaceAndPath(RancherCompanion.ID, "dynamic/" + key + "_eyes");
         if (DUMP) dump(fur, key);
-        Minecraft.getInstance().getTextureManager().register(tex, new DynamicTexture(fur));
-        Minecraft.getInstance().getTextureManager().register(eyes, new DynamicTexture(glow));
-        ResourceLocation sheenTex = null;
-        if (sheen != null) { sheenTex = ResourceLocation.fromNamespaceAndPath(RancherCompanion.ID, "dynamic/" + key + "_sheen"); Minecraft.getInstance().getTextureManager().register(sheenTex, new DynamicTexture(sheen)); }
-        return new Baked(rig, baked, tex, eyes, sheenTex);
+        DynamicTexture furT = new DynamicTexture(fur), glowT = new DynamicTexture(glow);
+        Minecraft.getInstance().getTextureManager().register(tex, furT);
+        Minecraft.getInstance().getTextureManager().register(eyes, glowT);
+        if (sheen == null) return new Baked(rig, baked, tex, eyes, null, furT, glowT);
+        ResourceLocation sheenTex = ResourceLocation.fromNamespaceAndPath(RancherCompanion.ID, "dynamic/" + key + "_sheen");
+        DynamicTexture sheenT = new DynamicTexture(sheen);
+        Minecraft.getInstance().getTextureManager().register(sheenTex, sheenT);
+        return new Baked(rig, baked, tex, eyes, sheenTex, furT, glowT, sheenT);
     }
 
     private static void build(Node n, PartDefinition pd, Map<Node, PartDefinition> defs, Map<Node, String> names, Map<Node.Box, Cell> cellOf, Map<Node.Box, Integer> grow, int[] count, boolean isRoot) {

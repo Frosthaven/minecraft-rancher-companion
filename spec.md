@@ -1001,8 +1001,9 @@ stand in. Traits use vanilla status effects wherever one fits.
 Baseline for every drekki, no trait needed: one-block step like a horse, catch-up teleport when more than 24
 blocks behind (decided 2026-11-20: only to a spot with room and firm ground and no lava or fire in or around it,
 unless fire cannot hurt it, as with Fire Resistance; with no such spot it stays put; it arrives unhurt, with no fall
-carried over and no fire), comes along to another dimension with its owner (on the game's dimension change, and
-within a second for portal mods that skip it, as Immersive Portals in the Haven pack does; 2026-11-20), never tramples crops, and from stage 2 its pack picks up what the player cannot carry.
+carried over and no fire), comes along to another dimension with its owner (on the game's dimension change, and when the
+owner joins another level, which catches portal mods that skip that event, as Immersive Portals in the Haven pack does;
+no timer; 2026-11-20), never tramples crops, and from stage 2 its pack picks up what the player cannot carry.
 
 ## Breed traits (proposal)
 

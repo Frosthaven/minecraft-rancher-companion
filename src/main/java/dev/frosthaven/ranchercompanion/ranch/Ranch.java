@@ -447,11 +447,36 @@ public final class Ranch {
     public static void onRespawn(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerRespawnEvent ev) { if (ev.getEntity() instanceof ServerPlayer p) bringBack(p); }
     public static void onDimension(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerChangedDimensionEvent ev) { if (ev.getEntity() instanceof ServerPlayer p) bringBack(p); }
 
-    /** once a second: a checked-out drekki loaded in another level than its owner comes along. Some portal mods move the
-     *  player without the game's dimension change event (Immersive Portals, inside the Haven pack's Aeronautics, moved
-     *  an owner to the Nether and left the drekki behind, 2026-11-20) */
-    public static void onPlayerTick(net.neoforged.neoforge.event.tick.PlayerTickEvent.Post ev) {
-        if (ev.getEntity() instanceof ServerPlayer p && p.tickCount % 20 == 0) follow(p);
+    /** the owner joins a level: their checked-out drekki comes along when it is loaded in another one. Some portal mods
+     *  move the player without the game's dimension change event (Immersive Portals, inside the Haven pack's Aeronautics,
+     *  moved an owner to the Nether and left the drekki behind, 2026-11-20), but every move into a level goes through
+     *  ServerLevel.addPlayer, which posts this event. After the current work: the player is not in the level yet */
+    public static void onPlayerJoinLevel(net.neoforged.neoforge.event.entity.EntityJoinLevelEvent ev) {
+        if (!(ev.getEntity() instanceof ServerPlayer p) || ev.getLevel().isClientSide()) return;
+        later(p.server, () -> follow(p));
+        /* once more a second later: a portal mod can add the player to the level before it sets their position there
+           (Immersive Portals did), and the drekki then lands at the old coordinates, out of reach */
+        RECHECK.put(p.getUUID(), p.server.getTickCount() + 20);
+    }
+
+    /** owners to look at once more after joining a level: the server tick that is due */
+    private static final Map<UUID, Integer> RECHECK = new HashMap<>();
+
+    public static void onServerTick(net.neoforged.neoforge.event.tick.ServerTickEvent.Post ev) {
+        if (RECHECK.isEmpty()) return;
+        int now = ev.getServer().getTickCount();
+        RECHECK.entrySet().removeIf(en -> {
+            if (en.getValue() > now) return false;
+            ServerPlayer p = ev.getServer().getPlayerList().getPlayer(en.getKey());
+            if (p != null) {
+                bringBack(p);  /* next to them when far, in whatever level they are in */
+                Entry out = roster(p.server).out(p.getUUID());
+                DrekkiEntity d = out == null ? null : live(out.id);
+                if (d != null) dev.frosthaven.ranchercompanion.RancherCompanion.LOG.info("Drekki {} rechecked: at {} in {}, owner at {} in {}", out.id,
+                    d.blockPosition().toShortString(), d.level().dimension().location(), p.blockPosition().toShortString(), p.level().dimension().location());
+            }
+            return true;
+        });
     }
 
     /** the owner's checked-out drekki, when it is loaded in another level, brought to them */
@@ -460,8 +485,10 @@ public final class Ranch {
         if (out == null || out.where != Where.OUT) return;
         DrekkiEntity d = live(out.id);
         if (d == null || d.level() == p.level()) return;
-        dev.frosthaven.ranchercompanion.RancherCompanion.LOG.info("Drekki {} brought to {} in {} (no dimension change event came)", out.id, p.getName().getString(), p.level().dimension().location());
         bringBack(p);
+        DrekkiEntity n = live(out.id);
+        dev.frosthaven.ranchercompanion.RancherCompanion.LOG.info("Drekki {} brought to {} in {} at {} (owner at {})", out.id, p.getName().getString(), p.level().dimension().location(),
+            n == null ? "?" : n.blockPosition().toShortString(), p.blockPosition().toShortString());
     }
     /** fires before the mode changes: look again on the next tick */
     public static void onGameMode(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerChangeGameModeEvent ev) {

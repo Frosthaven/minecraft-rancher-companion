@@ -52,6 +52,8 @@ public final class SelfTest {
     private static BlockPos o, hatch, trough;
     /** the relog step: the world folder to open again once the title screen shows */
     private static String reopen;
+    /** the pup's baked model before the resource reload step */
+    private static dev.frosthaven.ranchercompanion.client.rig.Baked beforeReload;
 
     static Minecraft mc() { return Minecraft.getInstance(); }
 
@@ -249,6 +251,13 @@ public final class SelfTest {
             cmd("fill " + at(gate) + " " + at(gate.offset(3, 4, 0)) + " air"); });
         stepUntil("portal_back_home", 10, 15, () -> {}, () -> mc().level.dimension() == net.minecraft.world.level.Level.OVERWORLD
             && pup() != null && pup().distanceTo(mc().player) < 16);
+        /* a resource reload with JourneyMap's minimap showing the pup (a server's resource pack does one at login):
+           JourneyMap releases the textures it made mob icons from, and the pup must be baked again, not drawn as missing */
+        quiet("reload_near", 100, () -> { near(pup()); look(); });  /* the minimap makes its icon */
+        quiet("reload_resources", 20, () -> { if (pup() != null) beforeReload = dev.frosthaven.ranchercompanion.client.DrekkiModels.get(pup()).baked; mc().reloadResourcePacks(); });
+        stepUntil("reload_done", 20, 30, () -> {}, () -> mc().getOverlay() == null);
+        quiet("reload_report", 5, () -> RancherCompanion.LOG.info("[selftest] the reload released the pup's old textures: {}", beforeReload != null && !beforeReload.alive()));
+        step("pup_drawn_after_reload", 20, () -> { near(pup()); look(); }, () -> pup() != null && dev.frosthaven.ranchercompanion.client.DrekkiModels.get(pup()).baked.alive());
         quiet("back", 80, () -> cmd("tp @s " + (o.getX() + 0.5) + " " + o.getY() + " " + (o.getZ() - 4.5)));
         quiet("near_for_pet", 15, () -> near(pup()));
         quiet("sneak", 5, () -> { select(8); mc().options.keyShift.setDown(true); });
