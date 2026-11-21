@@ -296,6 +296,18 @@ public final class TraitTests {
         });
     }
 
+    @GameTest(template = "floor")
+    public static void newsReachesPlayersNearby(GameTestHelper t) {
+        ServerPlayer p = LifeTests.player(t);
+        DrekkiEntity d = pup(t, p);
+        ServerPlayer near = LifeTests.player(t);
+        ServerPlayer far = LifeTests.player(t);
+        far.moveTo(d.getX() + 40, d.getY(), d.getZ());
+        var heard = Traits.audience(d);
+        t.assertTrue(heard.contains(p) && heard.contains(near) && !heard.contains(far), "the owner and players within 30 blocks hear it, not one 40 away");
+        t.succeed();
+    }
+
     static DrekkiEntity holding(GameTestHelper t, ServerPlayer p, Trait tr) {
         DrekkiEntity d = pup(t, p);
         d.life.traits.add(tr.id);

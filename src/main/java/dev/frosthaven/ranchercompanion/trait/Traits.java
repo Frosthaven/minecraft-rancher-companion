@@ -128,13 +128,21 @@ public final class Traits {
     }
 
     /** its owner and every other player within 30 blocks; others read "<owner>'s drekki" for an unnamed one */
-    private static void tell(DrekkiEntity d, Component msgForOwner) {
-        for (Player p : d.level().players()) {
+    /** to its owner and every player within 30 blocks of it; an unnamed drekki is "<owner>'s drekki" to the others */
+    public static void tell(DrekkiEntity d, Component msgForOwner) {
+        for (Player p : audience(d)) {
             boolean owner = p.getUUID().equals(d.owner());
-            if (!owner && p.distanceToSqr(d) > TELL_RANGE * TELL_RANGE) continue;
             if (owner || d.hasCustomName()) p.sendSystemMessage(msgForOwner);
             else p.sendSystemMessage(rename(msgForOwner, Component.translatable("drekki.rancher_companion.of", Ranch.ownerName(d))));
         }
+    }
+
+    /** who hears its news: its owner (in its level) and every other player within 30 blocks */
+    public static java.util.List<Player> audience(DrekkiEntity d) {
+        java.util.List<Player> l = new java.util.ArrayList<>();
+        for (Player p : d.level().players())
+            if (p.getUUID().equals(d.owner()) || p.distanceToSqr(d) <= TELL_RANGE * TELL_RANGE) l.add(p);
+        return l;
     }
 
     private static Component rename(Component msg, Component who) {

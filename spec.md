@@ -332,6 +332,9 @@ Each affinity changes in real time until it locks in. After lock-in it is perman
 ### Astral affinity
 
 - Starts Dormant: matte brown eyes with no glow. The glow starts at lock-in.
+- At lock-in the chat says "<name>'s eyes kindle: <affinity>" to its owner and every player within 30 blocks, as a
+  learned trait does (2026-11-20; an unnamed drekki is "<owner>'s drekki" to the others). Growing up is shared the same
+  way: "<name> is now a Fledgling!" and "<name> is now a Mature!".
 - Gained in traveling mode only: a tick counts only when it also counts as travel time (see Growth), so time at
   the stable or near a bed shapes nothing. Each travel tick in the first half of stage 1 (revised 2026-11-18) counts toward one of
   six, by where the drekki is. At lock-in the largest count wins, and a tie is settled at random among the tied.

@@ -144,7 +144,7 @@ public final class Vitals {
         Ranch.touch(d);
         Component name = Component.literal(Astral.NAMES[a]).withStyle(Style.EMPTY.withColor(Astral.iris(a))
             .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, dev.frosthaven.ranchercompanion.trait.Tips.hover(dev.frosthaven.ranchercompanion.trait.Tips.astral(a)))));
-        tell(d, Component.translatable("message.rancher_companion.astral_lock", who(d), name));
+        dev.frosthaven.ranchercompanion.trait.Traits.tell(d, Component.translatable("message.rancher_companion.astral_lock", who(d), name));  /* shared, as a learned trait is */
         burst(d, Astral.iris(a));
         d.playSound(DrekkiSounds.CHIME.get(), 1f, 1f);
     }
@@ -162,7 +162,7 @@ public final class Vitals {
         d.outgrowBarding();
         d.onGrown();
         Ranch.touch(d);
-        tell(d, Component.translatable("message.rancher_companion.grew", who(d), Component.translatable("stage.rancher_companion." + stage)));
+        dev.frosthaven.ranchercompanion.trait.Traits.tell(d, Component.translatable("message.rancher_companion.grew", who(d), Component.translatable("stage.rancher_companion." + stage)));  /* shared, as a learned trait is */
         burst(d, 0xF2D27A);
         d.playSound(DrekkiSounds.GROW.get(), 1f, 1f);
     }
