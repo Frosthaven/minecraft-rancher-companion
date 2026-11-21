@@ -276,7 +276,16 @@ public class DrekkiEntity extends PathfinderMob {
     public void goHome() {
         if (home == null) return;
         BlockPos p = new dev.frosthaven.ranchercompanion.ranch.Ground(level()).place(home, stage());
-        if (p != null) { moveTo(p.getX() + 0.5, p.getY(), p.getZ() + 0.5, getYRot(), 0); getNavigation().stop(); }
+        if (p != null) { moveTo(p.getX() + 0.5, p.getY(), p.getZ() + 0.5, getYRot(), 0); sendFresh(); getNavigation().stop(); }
+    }
+
+    /** after a jump (a catch-up, a return to its pen): players get it as new, not as a move update. After a catch-up an
+     *  owner's game showed no drekki while another player's did (after a waystone, and after outrunning it at home,
+     *  2026-11-21). The cause on the owner's side is not known; a new copy does not depend on the old one */
+    private void sendFresh() {
+        if (!isAddedToLevel() || !(level() instanceof net.minecraft.server.level.ServerLevel sl)) return;
+        sl.getChunkSource().removeEntity(this);
+        sl.getChunkSource().addEntity(this);
     }
 
     /** next to a block (its owner's feet): the first clear spot in a 5x5 around it, as tamed mobs teleport */
@@ -298,13 +307,7 @@ public class DrekkiEntity extends PathfinderMob {
             var box = getBoundingBox().move(p.subtract(blockPosition()));
             if (!safeAt(p, box)) continue;
             moveTo(p.getX() + 0.5, p.getY(), p.getZ() + 0.5, getYRot(), getXRot());
-            /* players get it fresh, not as a move update: after a catch-up an owner's game showed no drekki while
-               another player's did (after a waystone, and after outrunning it at home, 2026-11-21). The cause on the
-               owner's side is not known; a new copy does not depend on the old one */
-            if (isAddedToLevel() && level() instanceof net.minecraft.server.level.ServerLevel sl) {
-                sl.getChunkSource().removeEntity(this);
-                sl.getChunkSource().addEntity(this);
-            }
+            sendFresh();
             resetFallDistance();
             clearFire();
             getNavigation().stop();
