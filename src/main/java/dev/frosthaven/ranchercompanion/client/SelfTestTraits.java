@@ -333,6 +333,26 @@ final class SelfTestTraits {
             "ticks frozen after 2 s in powder snow", () -> me() == null ? -1 : me().getTicksFrozen(), () -> me() != null && me().getTicksFrozen() == 0);
         quiet("out_of_snow", 10, () -> tp(o.getX() + 0.5, o.getY(), o.getZ() + 0.5));
 
+        /* Duck & Cover: arrows stopped by a raised shield teach it; then an arrow bounces off with no shield */
+        fresh("arrows");
+        quiet("shield_up", 20, () -> { cmd("item replace entity @s weapon.offhand with shield"); select(8);
+            tp(o.getX() + 0.5, o.getY(), o.getZ() + 0.5); cmd("tp @s ~ ~ ~ 180 0"); pupHere(); mc().options.keyUse.setDown(true); });
+        learn(Trait.DUCK_COVER, 20, 6, () -> cmd("summon arrow " + (o.getX() + 0.5) + " " + (o.getY() + 1.5) + " " + (o.getZ() - 3.5) + " {Motion:[0.0,0.05,1.2d],pickup:0b}"));
+        quiet("shield_down", 10, () -> { mc().options.keyUse.setDown(false); cmd("item replace entity @s weapon.offhand with air"); });
+        ability("duck_cover_bounces_an_arrow", () -> { server(m -> m.setHealth(20)); tp(o.getX() + 0.5, o.getY(), o.getZ() + 0.5); cmd("tp @s ~ ~ ~ 180 0"); },
+            () -> cmd("summon arrow " + (o.getX() + 0.5) + " " + (o.getY() + 1.5) + " " + (o.getZ() - 3.5) + " {Motion:[0.0,0.05,1.2d],pickup:0b}"), 15, 0,
+            "health / arrow moving away", () -> { Entity a = nearest("arrow"); return (me() == null ? -1 : me().getHealth()) + " / " + (a == null ? "none" : a.getDeltaMovement().z); },
+            () -> me() != null && me().getHealth() == 20 && nearest("arrow") != null && nearest("arrow").getDeltaMovement().z < 0);
+        check("duck_cover_recharging_next_hits", 10, 2, () -> cmd("summon arrow " + (o.getX() + 0.5) + " " + (o.getY() + 1.5) + " " + (o.getZ() - 3.5) + " {Motion:[0.0,0.05,1.2d],pickup:0b}"),
+            "health", () -> me() == null ? -1 : me().getHealth(), () -> me() != null && me().getHealth() < 20);
+        quiet("duck_screen_setup", 30, () -> { cmd("kill @e[type=arrow,distance=..16]"); tp(o.getX() + 0.5, o.getY(), o.getZ() + 0.5);
+            life(d -> d.life.cooldowns.put(Trait.DUCK_COVER.id, Vitals.now(d) + 1500)); pupHere(); });
+        quiet("duck_screen_near", 15, () -> { select(8); near(pup()); });
+        step("duck_cover_screen", 25, () -> interact("open its screen"), () -> ds() != null);
+        step("duck_cover_tab", 10, () -> clickSpot("tab_traits"), () -> ds() != null && ds().spot("trait0") != null);
+        step("duck_cover_tooltip", 10, () -> hoverSpot("trait0"), () -> ds() != null);
+        quiet("duck_close", 10, () -> { dev.frosthaven.ranchercompanion.client.screen.DrekkiScreen.testMouse = null; mc().setScreen(null); });
+
         fresh("fall");
         learn(Trait.SOFT_LANDING, 24, 3, () -> { server(m -> m.setHealth(20)); tp(o.getX() + 0.5, o.getY() + 5, o.getZ() + 3.5); pupHere(); });
         ability("soft_landing_no_damage", () -> server(m -> m.setHealth(20)), () -> tp(o.getX() + 0.5, o.getY() + 10, o.getZ() + 3.5), 60, 2,

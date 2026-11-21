@@ -51,6 +51,20 @@ public final class Effects {
         bus.addListener(PlayerTickEvent.Post.class, e -> { if (e.getEntity() instanceof ServerPlayer p) tick(p); });
         bus.addListener(net.neoforged.neoforge.event.entity.living.LivingFallEvent.class, Effects::landing);
         bus.addListener(net.neoforged.neoforge.event.entity.living.LivingDamageEvent.Post.class, Effects::drowned);
+        bus.addListener(net.neoforged.neoforge.event.entity.ProjectileImpactEvent.class, Effects::duck);
+    }
+
+    /** Duck & Cover: an arrow or trident (not the owner's own) about to hit its owner bounces off as from a shield; 6 s
+     *  between uses, so about 1 in 3 of a skeleton's arrows on Normal */
+    private static void duck(net.neoforged.neoforge.event.entity.ProjectileImpactEvent e) {
+        if (!(e.getProjectile() instanceof net.minecraft.world.entity.projectile.AbstractArrow a) || a.level().isClientSide) return;
+        if (!(e.getRayTraceResult() instanceof net.minecraft.world.phys.EntityHitResult hit) || !(hit.getEntity() instanceof ServerPlayer p) || a.getOwner() == p) return;
+        DrekkiEntity d = Traits.ready(p, Trait.DUCK_COVER);
+        if (d == null) return;
+        e.setCanceled(true);
+        a.deflect(net.minecraft.world.entity.projectile.ProjectileDeflection.REVERSE, p, a.getOwner(), false);
+        p.level().playSound(null, p.blockPosition(), net.minecraft.sounds.SoundEvents.SHIELD_BLOCK, net.minecraft.sounds.SoundSource.PLAYERS, 1f, 0.8f + p.getRandom().nextFloat() * 0.4f);
+        Traits.cool(d, Trait.DUCK_COVER);
     }
 
     /** Night Watch: 30 blocks horizontally, at any height */

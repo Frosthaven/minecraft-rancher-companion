@@ -64,6 +64,11 @@ public final class Learning {
         bus.addListener(LivingDamageEvent.Post.class, e -> {
             if (e.getEntity() instanceof ServerPlayer p && e.getSource().is(DamageTypeTags.IS_FALL) && e.getNewDamage() > 0) Traits.activity(p, Trait.SOFT_LANDING);
         });
+        /* Duck & Cover: an arrow or trident stopped by the owner's shield */
+        bus.addListener(net.neoforged.neoforge.event.entity.living.LivingShieldBlockEvent.class, e -> {
+            if (e.getEntity() instanceof ServerPlayer p && e.getBlocked() && e.getDamageSource().getDirectEntity() instanceof net.minecraft.world.entity.projectile.AbstractArrow)
+                Traits.activity(p, Trait.DUCK_COVER);
+        });
         bus.addListener(LivingHealEvent.class, e -> {
             if (e.getEntity() instanceof DrekkiEntity d && !d.level().isClientSide && !d.selfHeal && d.getHealth() < d.getMaxHealth()) heal(d);
         });

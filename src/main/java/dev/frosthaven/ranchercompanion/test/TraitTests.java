@@ -243,6 +243,59 @@ public final class TraitTests {
     // ---- effects ----
 
     /** a drekki holding the trait beside the player (checked out, so traits work) */
+    /** an arrow 4 blocks north of the player, flying at their chest */
+    static net.minecraft.world.entity.projectile.Arrow arrowAt(GameTestHelper t, ServerPlayer p) {
+        var a = new net.minecraft.world.entity.projectile.Arrow(EntityType.ARROW, t.getLevel());
+        a.moveTo(p.getX(), p.getY() + 1.2, p.getZ() - 4);
+        a.shoot(0, 0, 1, 1.5f, 0);
+        t.getLevel().addFreshEntity(a);
+        return a;
+    }
+
+    @GameTest(template = "floor", timeoutTicks = 200)
+    public static void learnsDuckCoverFromShieldBlocks(GameTestHelper t) {
+        ServerPlayer p = LifeTests.player(t);
+        DrekkiEntity d = pup(t, p);
+        t.runAfterDelay(SPAWN_GUARD, () -> {
+            /* raised shield, facing north at the arrow: the game's own block check and shield event */
+            p.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(Items.SHIELD));
+            p.startUsingItem(InteractionHand.OFF_HAND);
+            try {
+                var f = net.minecraft.world.entity.LivingEntity.class.getDeclaredField("useItemRemaining");
+                f.setAccessible(true);
+                f.setInt(p, p.getUseItem().getUseDuration(p) - 10);
+            } catch (ReflectiveOperationException ex) { throw new RuntimeException(ex); }
+            p.setYRot(180); p.setYHeadRot(180);
+            t.assertTrue(p.isBlocking(), "the shield is raised");
+            var a = new net.minecraft.world.entity.projectile.Arrow(EntityType.ARROW, t.getLevel());
+            a.moveTo(p.getX(), p.getY() + 1.2, p.getZ() - 3);
+            for (int i = 0; i < 9; i++) { p.invulnerableTime = 0; p.hurt(p.damageSources().arrow(a, null), 2); }
+            t.assertTrue(!has(d, Trait.DUCK_COVER) && d.life.progress.get(Trait.DUCK_COVER.id) == 9 && p.getHealth() == 20, "9 of 10 blocks counted, no damage");
+            p.invulnerableTime = 0;
+            p.hurt(p.damageSources().arrow(a, null), 2);
+            t.assertTrue(has(d, Trait.DUCK_COVER), "Duck & Cover at 10 shield blocks");
+            t.succeed();
+        });
+    }
+
+    @GameTest(template = "floor", timeoutTicks = 300)
+    public static void duckCoverBouncesOneArrowThenRecharges(GameTestHelper t) {
+        ServerPlayer p = LifeTests.player(t);
+        DrekkiEntity d = holding(t, p, Trait.DUCK_COVER);
+        t.runAfterDelay(SPAWN_GUARD, () -> {
+            var a = arrowAt(t, p);
+            t.runAfterDelay(15, () -> {
+                t.assertTrue(p.getHealth() == 20 && a.getDeltaMovement().z < 0, "the first arrow bounced back: " + p.getHealth() + " " + a.getDeltaMovement());
+                t.assertTrue(d.life.cooldowns.getOrDefault(Trait.DUCK_COVER.id, 0L) > Vitals.now(d), "recharging");
+                arrowAt(t, p);
+            });
+            t.runAfterDelay(30, () -> {
+                t.assertTrue(p.getHealth() < 20, "the next arrow within 6 s hits: " + p.getHealth());
+                t.succeed();
+            });
+        });
+    }
+
     static DrekkiEntity holding(GameTestHelper t, ServerPlayer p, Trait tr) {
         DrekkiEntity d = pup(t, p);
         d.life.traits.add(tr.id);

@@ -20,7 +20,8 @@ public enum Trait {
     NIGHT_WATCH("night_watch", Learn.COUNTED, 5, false, 0),
     SOFT_LANDING("soft_landing", Learn.ONE_OFF, 1, false, 2400),
     UNDERTOW("undertow", Learn.ONE_OFF, 1, false, 6000),
-    HEARTY("hearty", Learn.COUNTED, 5, false, 0);
+    HEARTY("hearty", Learn.COUNTED, 5, false, 0),
+    DUCK_COVER("duck_cover", Learn.COUNTED, 10, false, 120);
 
     /** a biome trait the hunger rules read (learned with the biome lock-in, a later release) */
     public static final String HIBERNATION_PLAN = "hibernation_plan";

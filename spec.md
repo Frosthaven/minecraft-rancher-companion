@@ -469,7 +469,7 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
   comes back on its next count. A pass sets a counted trait's count to 0; a one-off trait can roll again on the next
   activity. An offer stays until it is answered or replaced (saved with the drekki).
 - Learning message: when the owner says yes, its owner and every other player within 30 blocks of the drekki
-  get a chat message, "<name> has learned [<trait>]",
+  get a chat message, "<name> has learned [<trait>]!",
   where the trait name in brackets shows the trait's tooltip on hover (name and effect), the way advancement messages
   do. An unnamed drekki is "Your drekki" to
   its owner and "<owner>'s drekki" to everyone else.
@@ -522,6 +522,10 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
     missing health, at most once per 30 s; home regeneration, Draconic Vampirism and Rejuvenate do not count.
     Effect: +6 max health (3 hearts), and the drekki regenerates 1 health every 10 s everywhere, 1 every 5 s in its home
     terrain. Hunger still stops all regeneration; Blood-thirsty halves it.
+  - Duck & Cover (added by the team, 2026-11-20): learned by blocking 10 arrows or tridents with a shield (counted).
+    An arrow or trident (not the owner's own) about to hit its owner within 10 blocks bounces off as from a shield
+    (the game's reverse deflection, with the shield sound). 6-second cooldown (3 s in its home terrain): about 1 in 3
+    of a skeleton's arrows on Normal. Other projectiles (fireballs, potions, shulker bullets) are not stopped.
   - Hibernation Plan slows both the player's hunger and the drekki's (see Hunger).
   - Phoenix Heart works on every death and the trait is kept. The egg goes to the owner's inventory when they are
     online with room, otherwise it is held and given on their next login or at the hatchery. It is never dropped.
