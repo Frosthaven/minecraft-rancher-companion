@@ -331,7 +331,7 @@ A checked-out drekki follows its owner (the default) or stays. Every stage, pups
   owner's checked-out drekki between staying and following. A drekki that is not with its owner (another dimension, an
   unloaded chunk, or more than 30 blocks away) always comes to them and follows instead, whatever it was doing.
   Told to follow by the whistle it jumps to its owner, near or far; with no safe spot around them (they fly, or stand
-  over lava) it lands on their own position, unless that is over lava. One tone for stay; two short tones, the second
+  over lava) it lands on their own position, unless that is in lava or fire. One tone for stay; two short tones, the second
   higher, for follow.
 - **Message** on the action bar, from the buttons and the whistle alike: "Your drekki is staying" or "Your drekki is
   following you", with its name when it has one.
@@ -995,8 +995,8 @@ a pup too; it wears no barding, starts no fight and gives no kill credit. A harm
 spells kept hitting her own drekki. Monsters and the rest of the world still hurt it.
 
 Safety (decided 2026-11-21): with no rider, lava and falls never hurt a drekki, and lava does not set it on fire. It
-keeps out of lava and fire all the same: with no rider it never walks into either, whatever the detour, and no catch-up
-or whistle lands it in or over lava. The exception is a drekki lava cannot harm anyway (immune by nature, or under Fire
+keeps out of lava and fire all the same: with no rider it never walks into either, whatever the detour. A catch-up or the whistle lands it on any
+spot that is not itself on fire or in lava: lava beside the spot or below it does not rule the spot out. The exception is a drekki lava cannot harm anyway (immune by nature, or under Fire
 Resistance from a trait or a potion): it may walk and land there. One knocked into lava floats, to get out. Because a
 fall cannot hurt it, it takes drops of up to 24 blocks to reach its owner (the game's mobs stop at 3).
 
@@ -1033,7 +1033,7 @@ No trait sets anything on fire: a burning mob lights the player and the ground. 
 stand in. Traits use vanilla status effects wherever one fits.
 
 Baseline for every drekki, no trait needed: one-block step like a horse, catch-up teleport when more than 24
-blocks behind (decided 2026-11-20: only to a spot with room and firm ground and no lava or fire in or around it,
+blocks behind (decided 2026-11-20, eased 2026-11-21: only to a spot with room and firm ground that is not itself in lava or fire,
 unless fire cannot hurt it, as with Fire Resistance; with no such spot it stays put; it arrives unhurt, with no fall
 carried over and no fire; the server then sends it to players as new, not as a move: owners saw no drekki after a
 catch-up while other players did, 2026-11-21), comes along to another dimension with its owner (on the game's dimension change, and when the

@@ -294,8 +294,7 @@ public class DrekkiEntity extends PathfinderMob {
     /** onto an exact spot, with no check of the ground: the whistle's last resort, its owner's own position (in the
      *  air it falls unhurt) */
     public void jumpTo(Vec3 at) {
-        /* not over lava, unless lava is no danger to it: it would drop in */
-        if (!fireproof() && hasLava(getBoundingBox().move(at.subtract(position())).inflate(1, 0, 1).expandTowards(0, -6, 0))) return;
+        if (!fireproof() && hasLava(getBoundingBox().move(at.subtract(position())))) return;  /* not into lava or fire itself */
         moveTo(at.x, at.y, at.z, getYRot(), getXRot());
         sendFresh();
         resetFallDistance(); clearFire(); getNavigation().stop();
@@ -373,7 +372,7 @@ public class DrekkiEntity extends PathfinderMob {
         return p -> (p.get(across) + 0.5 - surface) * at >= 0;
     }
 
-    /** room to stand, firm ground, and no lava or fire in or around it, unless fire cannot hurt it (immune, or Fire
+    /** room to stand, firm ground, and no lava or fire in the spot itself, unless fire cannot hurt it (immune, or Fire
      *  Resistance) */
     private boolean safeAt(BlockPos p, net.minecraft.world.phys.AABB box) {
         if (!level().noCollision(this, box)) return false;
@@ -382,8 +381,10 @@ public class DrekkiEntity extends PathfinderMob {
         boolean fireproof = fireproof();
         if (fireproof && (type == net.minecraft.world.level.pathfinder.PathType.LAVA || type == net.minecraft.world.level.pathfinder.PathType.DANGER_FIRE
             || type == net.minecraft.world.level.pathfinder.PathType.DAMAGE_FIRE)) return true;
-        if (type != net.minecraft.world.level.pathfinder.PathType.WALKABLE) return false;
-        return fireproof || !hasLava(box.inflate(1, 0, 1).expandTowards(0, -1, 0));
+        /* firm ground that is not itself burning or under lava. Lava or fire next to the spot does not rule it out
+           (DANGER_FIRE is the game's name for that): any block not on fire or in lava will do (decided 2026-11-21) */
+        if (type != net.minecraft.world.level.pathfinder.PathType.WALKABLE && type != net.minecraft.world.level.pathfinder.PathType.DANGER_FIRE) return false;
+        return fireproof || !hasLava(box);
     }
 
     /** fire and lava are no danger to it: immune by nature, or under Fire Resistance (a trait's, a potion's) */
@@ -399,7 +400,7 @@ public class DrekkiEntity extends PathfinderMob {
         return super.getPathfindingMalus(type);
     }
 
-    /** lava or fire in the box (the spot, a block around it, and the ground under it) */
+    /** lava or fire in the box */
     private boolean hasLava(net.minecraft.world.phys.AABB box) {
         return BlockPos.betweenClosedStream(box).anyMatch(b -> level().getFluidState(b).is(net.minecraft.tags.FluidTags.LAVA)
             || level().getBlockState(b).is(net.minecraft.tags.BlockTags.FIRE));
