@@ -118,8 +118,10 @@ public final class DrekkiPonder implements PonderPlugin {
         scene.idle(10);
         scene.overlay().showText(60).text("It also needs some light around it").pointAt(util.vector().centerOf(lamp)).placeNearTarget();
         scene.idle(70);
-        /* the roof (and the lantern under it) lifts away so the inside shows from Ponder's camera; it comes back at the end */
+        /* the roof, the lantern under it and the corner posts that hold it (above the fence's height) lift away for
+           the rest of the scene, so the inside shows from Ponder's camera */
         Selection lid = util.select().fromTo(3, 4, 3, 7, 4, 7).add(util.select().position(lamp));
+        for (int x : new int[]{3, 7}) for (int z : new int[]{3, 7}) lid = lid.add(util.select().fromTo(x, 2, z, x, 3, z));
         scene.world().hideSection(lid, Direction.UP);
         scene.idle(20);
 
@@ -144,27 +146,25 @@ public final class DrekkiPonder implements PonderPlugin {
             .pointAt(util.vector().of(5.5, 1.3, 4.6)).placeNearTarget();
         scene.idle(80);
 
-        /* each anchor's own 3-block square, drawn on its own and kept while the next joins: the area is their union,
-           so an existing anchor's square never grows (the plate's edge clips a square) */
-        scene.overlay().chaseBoundingBoxOutline(PonderPalette.GREEN, "pen", new AABB(3, 1, 3, 10, 1.1, 10), 330);
+        /* one outline at a time, around the anchor the text is about and 3 blocks out from it (the plate's edge
+           clips it): the hatchery, then the bedding, then the path */
+        scene.overlay().chaseBoundingBoxOutline(PonderPalette.GREEN, "anchor", new AABB(3, 1, 3, 10, 1.1, 10), 100);
         scene.overlay().showText(90).text("Drekki that live here wander within 3 blocks of an anchor. The hatchery is the first anchor")
             .pointAt(util.vector().of(9.9, 1, 8.5)).placeNearTarget().attachKeyFrame();
         scene.idle(100);
         Selection inside = util.select().fromTo(4, 1, 4, 6, 1, 5).add(util.select().position(5, 1, 6)).add(util.select().position(4, 1, 6));
         scene.world().showSection(inside, Direction.DOWN);
         scene.idle(10);
-        scene.overlay().chaseBoundingBoxOutline(PonderPalette.GREEN, "bed", new AABB(1, 1, 1, 10, 1.1, 10), 220);
+        scene.overlay().chaseBoundingBoxOutline(PonderPalette.GREEN, "anchor", new AABB(1, 1, 1, 10, 1.1, 10), 100);  /* bedding x 4..6, z 4..6 */
         scene.overlay().showText(90).text("Straw Bedding is an anchor too: the area grows 3 blocks around it. Drekki like to rest on it, and sleep there at night")
             .pointAt(util.vector().topOf(5, 0, 4)).placeNearTarget();
         scene.idle(100);
         Selection path = util.select().fromTo(0, 0, 1, 4, 0, 1).add(util.select().fromTo(5, 0, 0, 5, 0, 2));
         scene.world().modifyBlocks(path, st -> net.minecraft.world.level.block.Blocks.DIRT_PATH.defaultBlockState(), false);
-        scene.overlay().chaseBoundingBoxOutline(PonderPalette.GREEN, "path", new AABB(0, 1, 0, 9, 1.1, 5), 110);
+        scene.overlay().chaseBoundingBoxOutline(PonderPalette.GREEN, "anchor", new AABB(0, 1, 0, 9, 1.1, 6), 110);  /* path x 0..5, z 0..2 */
         scene.overlay().showText(100).text("So is a dirt path. Anchors chain: from the bedding a drekki may follow the path, 3 blocks either side, up to 25 blocks from the hatchery")
             .pointAt(util.vector().topOf(2, 0, 1)).placeNearTarget().attachKeyFrame();
         scene.idle(110);
-        scene.world().showSection(util.select().fromTo(3, 4, 3, 7, 4, 7).add(util.select().position(lamp)), Direction.DOWN);
-        scene.idle(15);
         scene.overlay().showText(80).text("Up to 20 drekki live at one hatchery. Use its screen to check one out, check one in, or release one")
             .pointAt(util.vector().topOf(hatch)).placeNearTarget().attachKeyFrame();
         scene.idle(90);
