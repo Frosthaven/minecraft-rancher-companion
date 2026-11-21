@@ -54,6 +54,8 @@ public class DrekkiEntity extends PathfinderMob {
     private static final EntityDataAccessor<Integer> KIN = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> GHOST = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Integer> STANCE = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.INT);
+    /** 0 checked in, 1 checked out and following, 2 checked out and staying (the drekki screen's Stay and Follow) */
+    private static final EntityDataAccessor<Integer> MOVE = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> ACTION = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.INT);
     /** a ghost shaking back to life (spec, Ghost drekki: revive) */
     private static final EntityDataAccessor<Boolean> REVIVING = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.BOOLEAN);
@@ -97,6 +99,7 @@ public class DrekkiEntity extends PathfinderMob {
     protected void defineSynchedData(SynchedEntityData.Builder b) {
         super.defineSynchedData(b);
         b.define(STAGE, 3); b.define(LINE, 0); b.define(DIET, 0); b.define(ASTRAL, 1); b.define(HORN, 0); b.define(HAT, 0); b.define(BARDING, 0); b.define(DYE, -1); b.define(DYE2, -1); b.define(BAG, 0); b.define(BAG_DYE, -1); b.define(BAG_DYE2, -1); b.define(ANIM, 0); b.define(LANE, 0f); b.define(OWNED, false); b.define(PET, 0); b.define(SLEEPING, false); b.define(OWNER, java.util.Optional.empty());
+        b.define(MOVE, 0);
         b.define(FOOD, 10f); b.define(MOOD, 50f); b.define(BAND, 2); b.define(PET_LEFT, 0); b.define(KIN, 0); b.define(GHOST, false); b.define(STANCE, 1); b.define(ACTION, 0); b.define(REVIVING, false); b.define(TRAITS, new CompoundTag());
     }
 
@@ -245,8 +248,14 @@ public class DrekkiEntity extends PathfinderMob {
     /** makes it a live drekki of this owner: checked in at a hatchery (home) or checked out (home null) */
     public void bind(java.util.UUID owner, java.util.UUID id, BlockPos home) {
         this.owner = owner; this.drekkiId = id; this.home = home; this.out = home == null;
+        entityData.set(MOVE, out ? 1 : 0);
         entityData.set(OWNED, true); entityData.set(OWNER, java.util.Optional.of(owner)); setPersistenceRequired();
     }
+
+    /** told to stay (spec, Stay and follow): it does not walk, follow or catch up; Ranch keeps the spot */
+    public boolean isStaying() { return entityData.get(MOVE) == 2; }
+    public int move() { return entityData.get(MOVE); }
+    public void setStaying(boolean on) { entityData.set(MOVE, !out ? 0 : on ? 2 : 1); if (on) getNavigation().stop(); }
 
     public net.minecraft.world.entity.player.Player ownerPlayer() { return owner == null ? null : level().getPlayerByUUID(owner); }
 
@@ -436,7 +445,17 @@ public class DrekkiEntity extends PathfinderMob {
     @Override
     public boolean isInvulnerableTo(net.minecraft.world.damagesource.DamageSource s) {
         if (life.ghost) return !s.is(net.minecraft.world.damagesource.DamageTypes.GENERIC_KILL);  /* a ghost cannot die again; /kill still removes it */
+        /* no player hurts a drekki, its owner or another, by hand, tool, arrow or spell, whatever the server's PvP
+           or a mod's friendly fire says (2026-11-21: an owner's area spells kept hitting her own) */
+        if (s.getEntity() instanceof net.minecraft.world.entity.player.Player || s.getDirectEntity() instanceof net.minecraft.world.entity.player.Player) return true;
         return super.isInvulnerableTo(s) || stage() == 1 && !s.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY);
+    }
+
+    /** nor a harmful effect from a player (a splash of poison) */
+    @Override
+    public boolean addEffect(net.minecraft.world.effect.MobEffectInstance e, net.minecraft.world.entity.Entity source) {
+        if (source instanceof net.minecraft.world.entity.player.Player && e.getEffect().value().getCategory() == net.minecraft.world.effect.MobEffectCategory.HARMFUL) return false;
+        return super.addEffect(e, source);
     }
 
     /** a ghost that falls out of the world comes back (spec, Ghost drekki) instead of falling forever */

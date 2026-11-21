@@ -319,6 +319,25 @@ Inventory by stage. Items stay in their slots when the drekki grows.
   - Netherite: diamond barding, a netherite upgrade template and a netherite ingot in a smithing table.
   - Checked against every vanilla 1.21.1 shaped recipe: no overlap with horse armor, wolf armor or anything else.
 
+### Stay and follow (decided 2026-11-21)
+
+A checked-out drekki follows its owner (the default) or stays. Every stage, pups too.
+
+- **Buttons.** Stay and Follow sit at the right of the stance row in the drekki screen, on every stage of a checked-out
+  drekki. The chosen one has a 1 px green border (`Art.ON`), as the chosen stance has; nothing else marks it.
+- **Stay.** It walks nowhere: no follow, no catch-up teleport, no stroll, no trip to a trough, no chase. It still bites
+  what comes within its reach and shoots from where it stands; its traits work from there.
+- **Drekki Whistle** (shapeless: bone, iron nugget, string; one per stack; a one second cooldown). It changes the
+  owner's checked-out drekki between staying and following. A drekki that is not with its owner (another dimension, an
+  unloaded chunk, or more than 30 blocks away) always comes to them and follows instead, whatever it was doing.
+- **Message** on the action bar, from the buttons and the whistle alike: "Your drekki is staying" or "Your drekki is
+  following you", with its name when it has one.
+- **Where it stays.** The roster keeps the spot (`Entry.stay`). While that chunk is loaded and the owner is online the
+  drekki stands there; when the chunk unloads it goes with the chunk and comes back with it. When the owner logs out it
+  leaves the world as any checked-out drekki does, and at login it is back at the same spot, still staying. A copy a
+  chunk loads while the owner is offline, or away from the stay spot, is refused. Checking it in, carrying it or checking
+  it out again makes it follow.
+
 ## Affinities
 
 Each affinity changes in real time until it locks in. After lock-in it is permanent.
@@ -965,6 +984,11 @@ trait that unlocks a line; a named egg as an easter egg.
 
 Stances (decided 2026-11-17), for stage 2 and 3; stage 1 never fights and is never targeted. Set on the drekki
 screen; a new stage 2 drekki starts Reactive.
+
+No player hurts a drekki (decided 2026-11-21): not its owner, not another player, by hand, tool, arrow, spell (Ars
+Nouveau, Iron's Spells) or a splash of a harmful potion, whatever the server's PvP or a mod's friendly fire setting. Any
+damage whose source or direct entity is a player is refused, as is a harmful effect a player applies. An owner's area
+spells kept hitting her own drekki. Monsters, falls and the world still hurt it.
 
 - Aggressive: fights any hostile mob within 10 blocks, and everything Reactive answers. Hostile means a monster;
   neutral mobs (endermen, zombified piglins, wolves, bees) only while they are angry. It leaves creepers alone, as

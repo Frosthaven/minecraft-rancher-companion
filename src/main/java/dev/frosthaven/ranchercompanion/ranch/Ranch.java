@@ -404,7 +404,18 @@ public final class Ranch {
         boolean ok = e != null && (other == null || other == d)
             && (e.where == Where.OUT && d.isOut() || e.where == Where.HOME && !d.isOut() && e.home != null
                 && e.home.pos().equals(d.home()) && e.home.dimension().equals(ev.getLevel().dimension()));
+        /* a checked-out copy a chunk loads (not one this class just made): never while its owner is offline, it left
+           with them; one told to stay only at its stay spot, an older spot's copy is stale */
+        if (ok && other != d && e.where == Where.OUT) {
+            MinecraftServer s = ev.getLevel().getServer();
+            if (s.getPlayerList().getPlayer(e.owner) == null) ok = false;
+            else if (e.stay != null && !(e.stay.dimension().equals(ev.getLevel().dimension()) && e.stay.pos().distSqr(d.blockPosition()) <= 16 * 16)) {
+                ok = false;
+                later(s, () -> place(s, e));
+            }
+        }
         if (!ok) { ev.setCanceled(true); return; }
+        d.setStaying(e.stay != null);
         LIVE.put(d.drekkiId(), d);
         dev.frosthaven.ranchercompanion.trait.Traits.changed();
     }
@@ -439,6 +450,7 @@ public final class Ranch {
         if (out == null || out.where != Where.OUT) return;
         DrekkiEntity d = live(out.id);
         if (d != null) { r.snapshot(out, save(d)); d.discard(); }
+        STAYS.remove(p.getUUID());
     }
 
     /* a checked-out drekki comes back next to its owner on the events that part them, with no polling: login, respawn,
@@ -484,7 +496,7 @@ public final class Ranch {
         Entry out = roster(p.server).out(p.getUUID());
         if (out == null || out.where != Where.OUT) return;
         DrekkiEntity d = live(out.id);
-        if (d == null || d.level() == p.level()) return;
+        if (d == null || d.level() == p.level() || out.stay != null) return;
         bringBack(p);
         DrekkiEntity n = live(out.id);
         dev.frosthaven.ranchercompanion.RancherCompanion.LOG.info("Drekki {} brought to {} in {} at {} (owner at {})", out.id, p.getName().getString(), p.level().dimension().location(),
@@ -507,6 +519,7 @@ public final class Ranch {
         Roster r = roster(p.server);
         Entry out = r.out(p.getUUID());
         if (out == null || out.where != Where.OUT) return;
+        if (out.stay != null) { STAYS.put(p.getUUID(), out.stay); place(p.server, out); return; }  /* told to stay: at its spot, not with them */
         DrekkiEntity d = live(out.id);
         if (d != null && d.level() == p.level()) {
             if (d.distanceTo(p) > 12) d.teleportNear(p);
@@ -517,6 +530,66 @@ public final class Ranch {
         if (n == null) return;
         n.teleportNear(p);
         add(p.serverLevel(), n);
+    }
+
+    // ---- stay and follow (spec, Stay and follow) ----
+
+    /** the owners online whose checked-out drekki stays, and where: a loading chunk looks here */
+    private static final Map<UUID, GlobalPos> STAYS = new HashMap<>();
+    /** within this of its owner a drekki is with them: the whistle and the screen toggle it; beyond, they call it first */
+    static final double WITH = 30;
+
+    /** a staying drekki stands at its spot while that chunk is loaded and its owner is online; otherwise it is data */
+    private static void place(MinecraftServer s, Entry out) {
+        if (out.stay == null || out.where != Where.OUT || live(out.id) != null || s.getPlayerList().getPlayer(out.owner) == null) return;
+        ServerLevel level = s.getLevel(out.stay.dimension());
+        if (level == null || !level.isLoaded(out.stay.pos())) return;
+        DrekkiEntity n = spawn(level, out, out.stay.pos(), null);
+        if (n == null) return;
+        n.setStaying(true);
+        add(level, n);
+    }
+
+    /** the chunk of a stay spot loads: its drekki is put there next tick, unless the chunk brings its own copy first */
+    public static void onChunkLoad(net.neoforged.neoforge.event.level.ChunkEvent.Load ev) {
+        if (STAYS.isEmpty() || !(ev.getLevel() instanceof ServerLevel level)) return;
+        var cp = ev.getChunk().getPos();
+        for (var en : STAYS.entrySet()) {
+            GlobalPos g = en.getValue();
+            if (!g.dimension().equals(level.dimension()) || g.pos().getX() >> 4 != cp.x || g.pos().getZ() >> 4 != cp.z) continue;
+            UUID owner = en.getKey();
+            MinecraftServer s = level.getServer();
+            later(s, () -> { Entry out = roster(s).out(owner); if (out != null) place(s, out); });
+        }
+    }
+
+    /** the whistle: a drekki with its owner changes between staying and following; one that is not comes to them and follows */
+    public static void whistle(ServerPlayer p) {
+        Entry out = roster(p.server).out(p.getUUID());
+        setStay(p, out != null && out.stay == null);
+    }
+
+    /** the screen's Stay and Follow, and the whistle. Stay holds only for a drekki with its owner (loaded, the same
+     *  level, within 30 blocks); otherwise this calls it to them, following */
+    public static void setStay(ServerPlayer p, boolean stay) {
+        Roster r = roster(p.server);
+        Entry out = r.out(p.getUUID());
+        if (out == null || out.where != Where.OUT) { msg(p, "stay.none"); return; }
+        DrekkiEntity d = live(out.id);
+        if (d != null && d.ghost()) { msg(p, "stay.none"); return; }
+        stay &= d != null && d.level() == p.level() && d.distanceToSqr(p) <= WITH * WITH;
+        if (stay) {
+            r.stay(out, Roster.at(d.level(), d.blockPosition()));
+            STAYS.put(p.getUUID(), out.stay);
+            d.setStaying(true);
+        } else {
+            r.stay(out, null);
+            STAYS.remove(p.getUUID());
+            if (d != null) d.setStaying(false);
+            bringBack(p);
+        }
+        Component who = out.save.contains("CustomName") ? label(out.save) : Component.translatable("drekki.rancher_companion.yours");
+        msg(p, stay ? "stay.on" : "stay.off", who);
     }
 
     /** the world saves: every live drekki's state goes to the roster first, so the roster saved with it is current */

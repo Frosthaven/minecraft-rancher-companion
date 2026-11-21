@@ -29,7 +29,7 @@ final class DrekkiGoals {
         @Override
         public boolean canUse() {
             Player p = d.ownerPlayer();
-            if (p == null || !d.isOut() || p.isSpectator() || d.distanceToSqr(p) < 4 * 4) return false;
+            if (p == null || !d.isOut() || d.isStaying() || p.isSpectator() || d.distanceToSqr(p) < 4 * 4) return false;
             if (d.eating && d.distanceToSqr(p) < 12 * 12) return false;  /* at a trough near its still owner */
             owner = p;
             return true;
@@ -37,7 +37,7 @@ final class DrekkiGoals {
 
         @Override
         public boolean canContinueToUse() {
-            return owner != null && owner.isAlive() && d.isOut() && !d.getNavigation().isDone() && d.distanceToSqr(owner) > 2.5 * 2.5;
+            return owner != null && owner.isAlive() && d.isOut() && !d.isStaying() && !d.getNavigation().isDone() && d.distanceToSqr(owner) > 2.5 * 2.5;
         }
 
         @Override
@@ -166,6 +166,12 @@ final class DrekkiGoals {
     /** ground navigation whose paths never leave a checked-in drekki's pen */
     static final class PenNavigation extends GroundPathNavigation {
         PenNavigation(DrekkiEntity d, Level level) { super(d, level); }
+
+        /** told to stay, it walks nowhere: no chase, no stroll, no trough. It still bites what comes within reach */
+        @Override
+        public boolean moveTo(net.minecraft.world.level.pathfinder.Path path, double speed) {
+            return !(mob instanceof DrekkiEntity d && d.isStaying()) && super.moveTo(path, speed);
+        }
 
         @Override
         protected PathFinder createPathFinder(int maxVisitedNodes) {

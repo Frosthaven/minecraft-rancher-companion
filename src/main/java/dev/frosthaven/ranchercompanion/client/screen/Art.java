@@ -12,7 +12,7 @@ import net.minecraft.resources.ResourceLocation;
 public final class Art {
     private Art() {}
 
-    static final int THREAD = 0xFFD8C79A, DIM = 0xFF9A8C70, GLOW = 0xFF7FF0DC, WARN = 0xFFE07A6A;
+    static final int THREAD = 0xFFD8C79A, DIM = 0xFF9A8C70, GLOW = 0xFF7FF0DC, WARN = 0xFFE07A6A, ON = 0xFF6AA83E;
     static final int BTN_W = 60, BTN_H = 16, BTN_Y = 200;
 
     enum Btn { NORMAL, HOVER, DISABLED, DANGER }

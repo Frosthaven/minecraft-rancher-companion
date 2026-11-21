@@ -49,6 +49,8 @@ public final class DrekkiItems {
     public static final DeferredItem<CarrierItem> SMALL_CARRIER = add(ITEMS.registerItem("small_drekki_carrier", p -> new CarrierItem(p, 1), new Item.Properties().stacksTo(1)));
     public static final DeferredItem<CarrierItem> LARGE_CARRIER = add(ITEMS.registerItem("large_drekki_carrier", p -> new CarrierItem(p, 2), new Item.Properties().stacksTo(1)));
 
+    public static final DeferredItem<WhistleItem> WHISTLE = add(ITEMS.registerItem("drekki_whistle", WhistleItem::new, new Item.Properties().stacksTo(1)));
+
     public static final List<DeferredItem<Item>> CRAFTED_HATS = List.of("straw_hat", "cowboy_hat", "chef_toque", "flower_crown",
         "miner_helmet", "viking_helmet", "party_cone", "bucket_hat", "drinking_hat").stream().map(DrekkiItems::single).toList();
     /** Sold only by the wandering trader, one at random per offer. */

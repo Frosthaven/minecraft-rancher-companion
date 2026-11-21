@@ -105,7 +105,7 @@ public final class DrekkiMenu extends AbstractContainerMenu {
         return copy;
     }
 
-    public static final int LEARN = 3, PASS = 4, BAG = 5;
+    public static final int LEARN = 3, PASS = 4, BAG = 5, STAY = 6, FOLLOW = 7;
 
     /** the stance buttons (stage 2 on; spec, Combat), the offer's yes and no, and the bag */
     @Override
@@ -115,6 +115,11 @@ public final class DrekkiMenu extends AbstractContainerMenu {
         if (id == BAG) {
             if (!(player instanceof net.minecraft.server.level.ServerPlayer sp) || drekki.bagStorage() == null) return false;
             BagMenu.open(sp, drekki);
+            return true;
+        }
+        if (id == STAY || id == FOLLOW) {  /* every stage; only its owner's checked-out one */
+            if (locked() || !drekki.isOut() || !(player instanceof net.minecraft.server.level.ServerPlayer sp) || !sp.getUUID().equals(drekki.owner())) return false;
+            Ranch.setStay(sp, id == STAY);
             return true;
         }
         if (locked() || drekki.stage() < 2 || id < 0 || id >= Life.Stance.values().length) return false;

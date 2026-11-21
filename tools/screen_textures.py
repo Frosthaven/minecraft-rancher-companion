@@ -228,6 +228,12 @@ STANCE_ICONS = {  # the design page's STANCE_ICON grids, 8 x 8
     "passive": (['P.......', 'PWWWW...', 'PWWWWW..', 'PWWWW...', 'P.......', 'P.......', 'P.......', 'P.......'],
                 {'P': '7a4a2a', 'W': 'ece6d8'}),
 }
+MOVE_ICONS = {  # 8 x 8, after the stance icons: Stay (a paw planted), Follow (footsteps going on)
+    "stay": (['.P.PP.P.', '.P.PP.P.', '........', '..PPPP..', '.PPPPPP.', '.PPPPPP.', '..PPPP..', 'KKKKKKKK'],
+             {'P': 'e0d2b0', 'K': '523b2a'}),
+    "follow": (['........', 'W..W....', '.W..W...', '..W..W..', '..W..W..', '.W..W...', 'W..W....', '........'],
+               {'W': 'e0e4ea'}),
+}
 BUFF_ICONS = {  # 9 x 9: Recently pet (a heart with a hand's warmth), Kinship (two drekki heads side by side)
     "pet": (['.RR...RR.', 'RPPR.RPPR', 'RPWPRPPPR', 'RPPPPPPPR', '.RPPPPPR.', '..RPPPR..', '...RPR...', '....R....', '.........'],
             {'R': '6e1e2e', 'P': 'e0607a', 'W': 'ffd0d8'}),
@@ -236,7 +242,7 @@ BUFF_ICONS = {  # 9 x 9: Recently pet (a heart with a hand's warmth), Kinship (t
 }
 # drekki_sprites (64 x 80):
 TAB_W, TAB_H, SX = 40, 12, 0                    # tabs: normal y 0, selected y 12, hover y 24
-STANCE_BTN, STANCE_Y = 14, 40                   # stance buttons at y 40: normal, selected, hover; icons 8x8 at y 56
+STANCE_BTN, STANCE_Y = 14, 40                   # buttons at y 40: normal, (unused: selected is a green border in code), hover; icons 8x8 at y 56: three stances, Stay, Follow
 ICON_Y, BUFF_Y = 56, 66                         # buff icons 9x9 at y 66: Recently pet, Kinship
 
 
@@ -255,6 +261,8 @@ def drekki_sprites(s):
         s.button(SX + i * STANCE_BTN, STANCE_Y, STANCE_BTN, STANCE_BTN, face, top, side)
     for i, (rows, pal) in enumerate(STANCE_ICONS.values()):
         pixels(s, SX + i * 8, ICON_Y, rows, pal)
+    for i, (rows, pal) in enumerate(MOVE_ICONS.values()):
+        pixels(s, SX + (3 + i) * 8, ICON_Y, rows, pal)
     for i, (rows, pal) in enumerate(BUFF_ICONS.values()):
         pixels(s, SX + i * 10, BUFF_Y, rows, pal)
 

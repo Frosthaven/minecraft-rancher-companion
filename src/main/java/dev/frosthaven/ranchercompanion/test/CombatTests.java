@@ -187,12 +187,17 @@ public final class CombatTests {
         BlockPos at = LifeTests.H.offset(2, 0, 2);
         for (int dx = -4; dx <= 4; dx++) for (int dz = -4; dz <= 4; dz++)
             if (dx != 0 || dz != 0) t.setBlock(at.offset(dx, -1, dz), Blocks.LAVA);
-        BlockPos before = d.blockPosition();
-        for (int i = 0; i < 40; i++) d.teleportNear(t.absolutePos(at));
-        t.assertTrue(d.blockPosition().equals(before), "no safe spot: it stays put, not at " + t.relativePos(d.blockPosition()));
+        BlockPos before = d.blockPosition();  /* the lava is under it too: staying put is the other right answer */
+        java.util.function.BooleanSupplier movedOntoLava = () -> !d.blockPosition().equals(before)
+            && (t.getLevel().getFluidState(d.blockPosition()).is(net.minecraft.tags.FluidTags.LAVA) || t.getLevel().getFluidState(d.blockPosition().below()).is(net.minecraft.tags.FluidTags.LAVA));
+        /* the wider search reaches the ground beyond the lava: it lands there or stays put, never on the lava */
+        for (int i = 0; i < 40; i++) {
+            d.teleportNear(t.absolutePos(at));
+            t.assertTrue(!movedOntoLava.getAsBoolean(), "never onto lava: " + t.relativePos(d.blockPosition()));
+        }
         d.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 200));
-        for (int i = 0; i < 40 && d.blockPosition().equals(before); i++) d.teleportNear(t.absolutePos(at));
-        t.assertTrue(!d.blockPosition().equals(before), "with Fire Resistance lava is no danger");
+        for (int i = 0; i < 200 && !movedOntoLava.getAsBoolean(); i++) d.teleportNear(t.absolutePos(at));
+        t.assertTrue(movedOntoLava.getAsBoolean(), "with Fire Resistance lava is no danger");
         t.succeed();
     }
 
@@ -207,5 +212,55 @@ public final class CombatTests {
         t.assertTrue(!d.blockPosition().equals(before), "it teleported");
         float health = d.getHealth();
         t.runAfterDelay(20, () -> { t.assertTrue(d.isAlive() && d.getHealth() == health, "it lands unhurt: " + d.getHealth() + " of " + health); t.succeed(); });
+    }
+
+    @GameTest(template = "floor", timeoutTicks = 200)
+    public static void toldToStayItStaysThenFollowsAgain(GameTestHelper t) {
+        ServerPlayer p = LifeTests.player(t);
+        DrekkiEntity d = out(t, p, 1, Diet.SEED, Life.Stance.REACTIVE);  /* a pup: Stay and Follow are for every stage */
+        Ranch.setStay(p, true);
+        BlockPos spot = d.blockPosition();
+        t.assertTrue(d.isStaying() && Ranch.roster(t.getLevel().getServer()).out(p.getUUID()).stay != null, "it stays, and the roster keeps the spot");
+        p.moveTo(t.absoluteVec(new net.minecraft.world.phys.Vec3(11.5, 1, 11.5)));
+        t.runAfterDelay(80, () -> {
+            t.assertTrue(d.blockPosition().equals(spot), "it did not follow: " + d.blockPosition() + " from " + spot);
+            Ranch.whistle(p);  /* with its owner: the whistle changes it over */
+            t.assertTrue(!d.isStaying() && Ranch.roster(t.getLevel().getServer()).out(p.getUUID()).stay == null, "it follows again");
+            t.succeedWhen(() -> t.assertTrue(d.distanceTo(p) < 5, "it came: " + d.distanceTo(p)));
+        });
+    }
+
+    @GameTest(template = "floor", timeoutTicks = 100)
+    public static void theWhistleCallsAFarDrekkiAndItFollows(GameTestHelper t) {
+        ServerPlayer p = LifeTests.player(t);
+        DrekkiEntity d = out(t, p, 2, Diet.RAW, Life.Stance.PASSIVE);
+        Ranch.setStay(p, true);
+        d.moveTo(d.getX(), d.getY() + 60, d.getZ());  /* far from its owner, staying */
+        d.setNoGravity(true);
+        Ranch.whistle(p);  /* staying: the whistle calls it */
+        t.assertTrue(!d.isStaying() && d.distanceTo(p) < 8, "called from afar it came and follows: " + d.distanceTo(p));
+        d.setNoGravity(false);
+        d.moveTo(d.getX(), d.getY() + 60, d.getZ());
+        d.setNoGravity(true);
+        Ranch.whistle(p);  /* following, but not with its owner: the whistle calls it, it does not tell it to stay there */
+        t.assertTrue(!d.isStaying() && d.distanceTo(p) < 8, "not with its owner, it is called, not told to stay: " + d.distanceTo(p));
+        t.succeed();
+    }
+
+    @GameTest(template = "floor")
+    public static void noPlayerHurtsADrekki(GameTestHelper t) {
+        ServerPlayer p = LifeTests.player(t);
+        DrekkiEntity d = out(t, p, 2, Diet.RAW, Life.Stance.PASSIVE);
+        ServerPlayer other = t.makeMockServerPlayerInLevel();
+        other.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
+        var src = d.damageSources();
+        var arrow = new net.minecraft.world.entity.projectile.Arrow(net.minecraft.world.entity.EntityType.ARROW, t.getLevel());
+        float health = d.getHealth();
+        t.assertTrue(!d.hurt(src.playerAttack(p), 6) && !d.hurt(src.playerAttack(other), 6) && !d.hurt(src.arrow(arrow, other), 6)
+            && !d.hurt(src.indirectMagic(arrow, p), 6) && d.getHealth() == health, "no player's hit, arrow or spell lands: " + d.getHealth() + " of " + health);
+        t.assertTrue(!d.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.POISON, 100), other), "nor a player's poison");
+        Husk z = zombie(t, new BlockPos(3, 1, 3));
+        t.assertTrue(d.hurt(src.mobAttack(z), 2) && d.getHealth() < health, "a monster still hurts it");
+        t.succeed();
     }
 }

@@ -114,6 +114,7 @@ public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
         spot("tab_traits", TAB2, 4, TAB_W, TAB_H);
         if (traitsTab) traits(g, d, rx, ry); else details(g, d, rx, ry);
         if (d.stage() >= 2) stances(g, d, rx, ry);
+        if (d.move() > 0) moves(g, d, rx, ry);
     }
 
     private void tab(GuiGraphics g, int x, boolean traits, int rx, int ry) {
@@ -279,12 +280,32 @@ public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
             int x = INFO_X + s.ordinal() * (STANCE + 2);
             boolean on = d.stance() == s, over = Art.in(rx, ry, x, y, STANCE, STANCE), hover = over && !d.ghost();
             spot("stance" + s.ordinal(), x, y, STANCE, STANCE);
-            g.blit(SPR, x, y, SX + (on ? 1 : hover ? 2 : 0) * STANCE, STANCE_Y, STANCE, STANCE);
+            g.blit(SPR, x, y, SX + (hover && !on ? 2 : 0) * STANCE, STANCE_Y, STANCE, STANCE);
+            if (on) g.renderOutline(x, y, STANCE, STANCE, Art.ON);  /* the chosen one: a green border, nothing else */
             g.blit(SPR, x + 3, y + 3, SX + s.ordinal() * 8, ICON_Y, 8, 8);
             if (over) tip = d.ghost() ? List.of(Component.translatable("stance.rancher_companion." + s.name().toLowerCase()).withStyle(ChatFormatting.WHITE),
                     Component.translatable("screen.rancher_companion.drekki.ghost_stance").withStyle(ChatFormatting.GRAY))
                 : List.of(Component.translatable("stance.rancher_companion." + s.name().toLowerCase()).withStyle(ChatFormatting.WHITE),
                     Component.translatable("stance.rancher_companion." + s.name().toLowerCase() + ".desc").withStyle(ChatFormatting.GRAY));
+        }
+    }
+
+    /** Stay (0) and Follow (1): where each button is, at the right of the stance row */
+    private static int moveX(int i) { return INFO_X + INFO_W - (2 - i) * (STANCE + 2) + 2; }
+
+    /** Stay and Follow at the foot of the info well, right aligned, every stage of a checked-out drekki (spec, Stay and follow) */
+    private void moves(GuiGraphics g, DrekkiEntity d, int rx, int ry) {
+        int y = WELL_BOTTOM - STANCE - 2;
+        for (int i = 0; i < 2; i++) {
+            int x = moveX(i);
+            String key = i == 0 ? "stay" : "follow";
+            boolean on = d.isStaying() == (i == 0), over = Art.in(rx, ry, x, y, STANCE, STANCE), hover = over && !d.ghost();
+            spot(key, x, y, STANCE, STANCE);
+            g.blit(SPR, x, y, SX + (hover && !on ? 2 : 0) * STANCE, STANCE_Y, STANCE, STANCE);
+            if (on) g.renderOutline(x, y, STANCE, STANCE, Art.ON);
+            g.blit(SPR, x + 3, y + 3, SX + (3 + i) * 8, ICON_Y, 8, 8);
+            if (over) tip = List.of(Component.translatable("move.rancher_companion." + key).withStyle(ChatFormatting.WHITE),
+                Component.translatable("move.rancher_companion." + key + ".desc").withStyle(ChatFormatting.GRAY));
         }
     }
 
@@ -334,6 +355,12 @@ public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
                 return true;
             }
         }
+        if (button == 0 && d != null && d.move() > 0 && !d.ghost()) for (int i = 0; i < 2; i++)
+            if (Art.in(rx, ry, moveX(i), WELL_BOTTOM - STANCE - 2, STANCE, STANCE)) {
+                if (minecraft != null && minecraft.gameMode != null) minecraft.gameMode.handleInventoryButtonClick(menu.containerId, i == 0 ? DrekkiMenu.STAY : DrekkiMenu.FOLLOW);
+                click();
+                return true;
+            }
         return super.mouseClicked(mx, my, button);
     }
 

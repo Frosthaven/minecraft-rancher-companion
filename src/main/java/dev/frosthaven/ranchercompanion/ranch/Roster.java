@@ -35,6 +35,8 @@ public final class Roster extends SavedData {
         /** Phoenix Heart: 0 none, EGG_OWED (its egg waits for the owner), EGG_GIVEN (the egg is out; a hatchery brings it back) */
         public int phoenix;
         public static final int EGG_OWED = 1, EGG_GIVEN = 2;
+        /** OUT and told to stay: where it stays; null while it follows (spec, Stay and follow) */
+        public GlobalPos stay;
 
         Entry(UUID id, UUID owner, CompoundTag save, Where where, GlobalPos home) {
             this.id = id; this.owner = owner; this.save = save; this.where = where; this.home = home; this.base = home;
@@ -102,6 +104,7 @@ public final class Roster extends SavedData {
         e.where = where; e.home = home;
         if (home != null) base(e, home);
         if (where != Where.CARRIED) e.carry = null;
+        e.stay = null;  /* checked in, carried or checked out again: it follows */
         index(e); setDirty();
     }
 
@@ -112,6 +115,8 @@ public final class Roster extends SavedData {
     public void setBase(Entry e, GlobalPos to) { base(e, to); setDirty(); }
 
     public void snapshot(Entry e, CompoundTag save) { e.save = save; setDirty(); }
+
+    public void stay(Entry e, GlobalPos at) { e.stay = at; setDirty(); }
 
     /** a broken hatchery: its drekki go to No hatchery, kept as data */
     public void orphan(GlobalPos home) {
@@ -127,6 +132,7 @@ public final class Roster extends SavedData {
             Entry e = new Entry(c.getUUID("id"), c.getUUID("owner"), c.getCompound("save"), where, home);
             if (c.hasUUID("carry")) e.carry = c.getUUID("carry");
             e.phoenix = c.getInt("phoenix");
+            if (c.contains("stay")) e.stay = GlobalPos.CODEC.parse(NbtOps.INSTANCE, c.get("stay")).result().orElse(null);
             GlobalPos base = c.contains("base") ? GlobalPos.CODEC.parse(NbtOps.INSTANCE, c.get("base")).result().orElse(home) : home;
             e.base = null;
             r.base(e, base);
@@ -145,6 +151,7 @@ public final class Roster extends SavedData {
             if (e.carry != null) c.putUUID("carry", e.carry);
             if (e.phoenix != 0) c.putInt("phoenix", e.phoenix);
             if (e.home != null) GlobalPos.CODEC.encodeStart(NbtOps.INSTANCE, e.home).result().ifPresent(h -> c.put("home", h));
+            if (e.stay != null) GlobalPos.CODEC.encodeStart(NbtOps.INSTANCE, e.stay).result().ifPresent(h -> c.put("stay", h));
             if (e.base != null) GlobalPos.CODEC.encodeStart(NbtOps.INSTANCE, e.base).result().ifPresent(h -> c.put("base", h));
             list.add(c);
         }
