@@ -193,6 +193,14 @@ and the jar became `drekki-rancher-0.1.0.jar`. New rows: hats at z 360, barding 
 
 ## Release
 
+**Network compatibility across one release.** The pack moves players to a new release a few minutes before the server
+restarts on it, so a game one release ahead must still join the old server. Anything both sides number or name must
+stay readable: declare a new synced entity value (`EntityDataAccessor`) last in its class, never in the middle, never
+reorder or remove one; version a changed packet. 0.4.6 put a value in the middle of `DrekkiEntity`'s and every updated
+game got "Network Protocol Error" from the 0.4.5 server (2026-11-21). When a release cannot stay compatible, say so
+before shipping, so the restart is not left on its 60 minute countdown.
+
+
 `.github/workflows/release.yml` (from arachnowhat): every push to main publishes the jar as the rolling
 `latest` release and an immutable `v<mod_version>-<sha7>` release; the Haven pack pins one by hash
 (`just bump-mod drekki-rancher` in the pack repo). Bump `mod_version` in `gradle.properties` for each release.

@@ -54,6 +54,11 @@ public class DrekkiEntity extends PathfinderMob {
     private static final EntityDataAccessor<Integer> KIN = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> GHOST = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Integer> STANCE = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.INT);
+    /* Synced values are numbered in the order they are declared, and a game and a server must agree on the numbers.
+       Declare a NEW value LAST, after every other one in this class: then a game one release ahead of its server still
+       reads the server's drekki (players update minutes before the server restarts). MOVE went in the middle in 0.4.6,
+       every later value moved up one, and each game on 0.4.6 lost its connection to the 0.4.5 server at the first
+       drekki it was sent (2026-11-21). Never reorder or remove one for the same reason. */
     /** 0 checked in, 1 checked out and following, 2 checked out and staying (the drekki screen's Stay and Follow) */
     private static final EntityDataAccessor<Integer> MOVE = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> ACTION = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.INT);
