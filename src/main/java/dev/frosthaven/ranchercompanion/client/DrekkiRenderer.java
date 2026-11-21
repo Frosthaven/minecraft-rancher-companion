@@ -25,6 +25,7 @@ public final class DrekkiRenderer extends MobRenderer<DrekkiEntity, DrekkiModel>
     @Override
     public void render(DrekkiEntity e, float yaw, float partial, PoseStack ps, MultiBufferSource buf, int light) {
         model = DrekkiModels.get(e);
+        DrekkiDebug.drawn(e);
         shadowRadius = Dims.of(e.stage()).shadow * Dims.of(e.stage()).scale;
         boolean bob = e.ghost();
         if (bob) { ps.pushPose(); ps.translate(0, 0.12 + Math.sin((e.tickCount + partial) / 20.0 * 1.6) * 0.08, 0); }  /* a ghost floats with a slow bob */

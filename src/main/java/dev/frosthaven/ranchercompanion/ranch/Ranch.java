@@ -414,7 +414,7 @@ public final class Ranch {
                 later(s, () -> place(s, e));
             }
         }
-        if (!ok) { ev.setCanceled(true); return; }
+        if (!ok) { dev.frosthaven.ranchercompanion.Debug.log("server: refused a copy, {} (roster {}, live copy {})", dev.frosthaven.ranchercompanion.Debug.of(d), e == null ? "none" : e.where, other != null); ev.setCanceled(true); return; }
         d.setStaying(e.stay != null);
         LIVE.put(d.drekkiId(), d);
         dev.frosthaven.ranchercompanion.trait.Traits.changed();

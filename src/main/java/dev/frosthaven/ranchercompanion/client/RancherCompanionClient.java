@@ -39,6 +39,7 @@ public final class RancherCompanionClient {
         if (net.neoforged.fml.ModList.get().isLoaded("ponder")) dev.frosthaven.ranchercompanion.compat.ponder.DrekkiPonder.register();
         dev.frosthaven.ranchercompanion.net.DrekkiNet.onView = dev.frosthaven.ranchercompanion.client.screen.HatcheryScreen::show;
         NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, DrekkiAudio::tick);
+        DrekkiDebug.register();
         NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, ShowcaseClient::tick);
         NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, SelfTest::tick);
         NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, BlockShowcaseClient::tick);

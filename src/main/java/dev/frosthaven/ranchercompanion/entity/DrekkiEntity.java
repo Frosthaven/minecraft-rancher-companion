@@ -279,11 +279,24 @@ public class DrekkiEntity extends PathfinderMob {
         if (p != null) { moveTo(p.getX() + 0.5, p.getY(), p.getZ() + 0.5, getYRot(), 0); sendFresh(); getNavigation().stop(); }
     }
 
+    @Override
+    public void startSeenByPlayer(net.minecraft.server.level.ServerPlayer p) {
+        super.startSeenByPlayer(p);
+        dev.frosthaven.ranchercompanion.Debug.log("server: {} sent to {} ({} blocks away)", dev.frosthaven.ranchercompanion.Debug.of(this), p.getName().getString(), Math.round(distanceTo(p)));
+    }
+
+    @Override
+    public void stopSeenByPlayer(net.minecraft.server.level.ServerPlayer p) {
+        super.stopSeenByPlayer(p);
+        dev.frosthaven.ranchercompanion.Debug.log("server: {} taken from {}", dev.frosthaven.ranchercompanion.Debug.of(this), p.getName().getString());
+    }
+
     /** after a jump (a catch-up, a return to its pen): players get it as new, not as a move update. After a catch-up an
      *  owner's game showed no drekki while another player's did (after a waystone, and after outrunning it at home,
      *  2026-11-21). The cause on the owner's side is not known; a new copy does not depend on the old one */
     private void sendFresh() {
         if (!isAddedToLevel() || !(level() instanceof net.minecraft.server.level.ServerLevel sl)) return;
+        dev.frosthaven.ranchercompanion.Debug.log("server: {} jumped, sending it to players as new", dev.frosthaven.ranchercompanion.Debug.of(this));
         sl.getChunkSource().removeEntity(this);
         sl.getChunkSource().addEntity(this);
     }
@@ -303,7 +316,7 @@ public class DrekkiEntity extends PathfinderMob {
             int dx = random.nextInt(-r, r + 1), dz = random.nextInt(-r, r + 1), dy = random.nextInt(-1, 2);
             if (Math.abs(dx) < 2 && Math.abs(dz) < 2) continue;
             BlockPos p = pos.offset(dx, dy, dz);
-            if (side != null && !side.test(p)) continue;
+            if (side != null && !side.test(p)) { dev.frosthaven.ranchercompanion.Debug.log("server: spot {} skipped, the other side of the owner's portal", p.toShortString()); continue; }
             var box = getBoundingBox().move(p.subtract(blockPosition()));
             if (!safeAt(p, box)) continue;
             moveTo(p.getX() + 0.5, p.getY(), p.getZ() + 0.5, getYRot(), getXRot());

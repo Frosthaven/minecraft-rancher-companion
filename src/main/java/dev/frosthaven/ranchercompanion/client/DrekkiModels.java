@@ -25,6 +25,7 @@ public final class DrekkiModels {
             + "_d" + Integer.toHexString(e.dye()) + "_" + Integer.toHexString(e.dye2()) + "_g" + bag + "_" + Integer.toHexString(e.bagDye()) + "_" + Integer.toHexString(e.bagDye2());
         DrekkiModel m = CACHE.get(key);
         if (m == null || !m.baked.alive()) {  /* new, or its textures released by another mod: baked again */
+            dev.frosthaven.ranchercompanion.Debug.log("game: {} model {}", m == null ? "baking" : "baking again (textures were released)", key);
             m = build(e.stage(), e.lineage(), Diet.of(e.diet()), e.astral(), e.horn(), spread, e.hat(), bard, e.dye(), e.dye2(), bag, e.bagDye(), e.bagDye2(), key);
             CACHE.put(key, m);
         }
