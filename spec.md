@@ -498,7 +498,7 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
 - Trait details decided 2026-11-04 (the sheet holds the full wording):
   - Ocean Walker and Lava Walker: the drekki always stays on top and cannot dive.
   - Nether Forest teaches Hoglin Ward: hoglins avoid the drekki as they avoid warped fungus.
-  - Stamp Out puts the fire out and gives 5 s of Fire Resistance; Huddle Up thaws the player and stops freezing for
+  - Stamp Out puts the fire out and keeps it out for 5 s (still in fire or lava, the player would light again), with 5 s of Fire Resistance; Huddle Up thaws the player and stops freezing for
     5 s. Both keep the 2-minute cooldown.
   - Patchwork (was Jerryrigging) covers every item with durability.
   - Hide & Seek: ghasts ignore every player within 10 blocks of the drekki; fireballs already fired still hit.
@@ -532,7 +532,8 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
 
 Effect numbers, written into the sheet's rows (starting points, to tune in testing). `snowy_beach` is in Snow & Ice only:
 
-- Balm & Salve: only harmful effects that milk cures; beneficial effects are kept.
+- Balm & Salve: only harmful effects that milk cures; beneficial effects are kept. Once it acts, every such effect is
+  kept off for 5 s (2026-11-20: a lingering cloud or a wither rose applies its effect again every few ticks).
 - Hook Line & Sinker: a 50% chance per tick of one extra countdown tick, about a third less waiting.
 - The Open Road: +10% movement speed for the player and the ridden drekki.
 - Downstream: +25% swim speed, oxygen bonus 0.25 (air lasts exactly 1.25 times as long).

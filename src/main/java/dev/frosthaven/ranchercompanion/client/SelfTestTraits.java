@@ -94,6 +94,9 @@ final class SelfTestTraits {
         });
     }
 
+    /** hotbar slot 9 emptied and selected: a right-click opens the screen (a fish left there from fishing would feed it) */
+    private static void emptyHand() { cmd("item replace entity @s hotbar.8 with air"); select(8); }
+
     /** the pup's server state, logged beside each ability check: its traits, cooldowns, and distance to the player */
     private static String state() {
         DrekkiEntity d = sd(); var m = me();
@@ -303,7 +306,7 @@ final class SelfTestTraits {
             mc().options.keyUse.setDown(true);
             after(45, () -> mc().options.keyUse.setDown(false));
         });
-        ability("balm_salve_blocks_poison", () -> server(m -> m.removeAllEffects()), () -> cmd("effect give @s poison 30"), 10, 2,
+        ability("balm_salve_blocks_poison", () -> server(m -> m.removeAllEffects()), () -> { cmd("effect give @s poison 30"); after(20, () -> cmd("effect give @s poison 30")); }, 30, 2,  /* applied again 1 s later, as a cloud would */
             "poisoned", () -> me() != null && me().hasEffect(MobEffects.POISON), () -> me() != null && !me().hasEffect(MobEffects.POISON));
 
         fresh("stack");
@@ -323,7 +326,7 @@ final class SelfTestTraits {
         ability("stamp_out_puts_it_out", () -> { tp(fire.getX() - 2.5, fire.getY(), fire.getZ() + 0.5); server(m -> { m.clearFire(); m.removeAllEffects(); m.setHealth(20); }); cmd("setblock " + at(fire) + " fire"); },
             () -> tp(fire.getX() + 0.5, fire.getY(), fire.getZ() + 0.5), 40, 2,
             "on fire / fire resistance", () -> me() == null ? "?" : me().isOnFire() + " / " + me().hasEffect(MobEffects.FIRE_RESISTANCE),
-            () -> me() != null && me().hasEffect(MobEffects.FIRE_RESISTANCE));
+            () -> me() != null && me().hasEffect(MobEffects.FIRE_RESISTANCE) && !me().isOnFire());  /* standing in the fire still: kept put out */
         quiet("fire_out", 10, () -> { fireLog = false; tp(o.getX() + 0.5, o.getY(), o.getZ() + 0.5); cmd("setblock " + at(fire) + " air"); server(m -> m.clearFire()); });
 
         fresh("freeze");
@@ -335,7 +338,7 @@ final class SelfTestTraits {
 
         /* Duck & Cover: arrows stopped by a raised shield teach it; then an arrow bounces off with no shield */
         fresh("arrows");
-        quiet("shield_up", 20, () -> { cmd("item replace entity @s weapon.offhand with shield"); select(8);
+        quiet("shield_up", 20, () -> { cmd("item replace entity @s weapon.offhand with shield"); emptyHand();
             tp(o.getX() + 0.5, o.getY(), o.getZ() + 0.5); cmd("tp @s ~ ~ ~ 180 0"); pupHere(); mc().options.keyUse.setDown(true); });
         learn(Trait.DUCK_COVER, 20, 6, () -> cmd("summon arrow " + (o.getX() + 0.5) + " " + (o.getY() + 1.5) + " " + (o.getZ() - 3.5) + " {Motion:[0.0,0.05,1.2d],pickup:0b}"));
         quiet("shield_down", 10, () -> { mc().options.keyUse.setDown(false); cmd("item replace entity @s weapon.offhand with air"); });
@@ -347,7 +350,7 @@ final class SelfTestTraits {
             "health", () -> me() == null ? -1 : me().getHealth(), () -> me() != null && me().getHealth() < 20);
         quiet("duck_screen_setup", 30, () -> { cmd("kill @e[type=arrow,distance=..16]"); tp(o.getX() + 0.5, o.getY(), o.getZ() + 0.5);
             life(d -> d.life.cooldowns.put(Trait.DUCK_COVER.id, Vitals.now(d) + 1500)); pupHere(); });
-        quiet("duck_screen_near", 15, () -> { select(8); near(pup()); });
+        quiet("duck_screen_near", 15, () -> { emptyHand(); near(pup()); });
         step("duck_cover_screen", 25, () -> interact("open its screen"), () -> ds() != null);
         step("duck_cover_tab", 10, () -> clickSpot("tab_traits"), () -> ds() != null && ds().spot("trait0") != null);
         step("duck_cover_tooltip", 10, () -> hoverSpot("trait0"), () -> ds() != null);
@@ -395,7 +398,7 @@ final class SelfTestTraits {
             () -> has(Trait.TRAINING_DAY) && ds() != null && ds().spot("offer") == null);
         quiet("offer_close", 10, () -> mc().setScreen(null));
         quiet("offer_again", 20, () -> { life(d -> { d.life.traits.clear(); d.life.progress.clear(); }); cmd("xp add @s 3 levels"); });
-        quiet("offer_near", 15, () -> near(pup()));
+        quiet("offer_near", 15, () -> { emptyHand(); near(pup()); });
         step("offer_screen_again", 25, () -> interact("open its screen"), () -> ds() != null);
         step("offer_row", 10, () -> { clickSpot("tab_traits"); hoverSpot("offer"); }, () -> ds() != null && ds().spot("offer_no") != null);
         step("offer_passed", 20, () -> { dev.frosthaven.ranchercompanion.client.screen.DrekkiScreen.testMouse = null; clickSpot("offer_no"); },
@@ -406,7 +409,7 @@ final class SelfTestTraits {
         quiet("three_for_the_screen", 30, () -> { tp(o.getX() + 0.5, o.getY(), o.getZ() + 0.5); life(d -> { d.life.traits.clear(); d.life.traits.add("undertow"); d.life.traits.add("patchwork"); d.life.traits.add("hook_line_sinker");
             d.life.cooldowns.put("undertow", Vitals.now(d) + 1500);  /* recharging: the hourglass and the ready-in line */
             d.setLook(d.stage(), d.line(), d.diet(), dev.frosthaven.ranchercompanion.look.Astral.LUNAR, d.horn()); }); pupHere(); });
-        quiet("near_for_screen", 15, () -> { select(8); near(pup()); });
+        quiet("near_for_screen", 15, () -> { emptyHand(); near(pup()); });
         step("traits_screen", 25, () -> interact("open its screen"), () -> ds() != null);
         step("traits_tab", 10, () -> clickSpot("tab_traits"), () -> ds() != null && ds().spot("trait0") != null);
         for (int i = 0; i < 3; i++) { int k = i; step("trait_tooltip_" + k, 10, () -> hoverSpot("trait" + k), () -> ds() != null); }
@@ -451,7 +454,7 @@ final class SelfTestTraits {
     static void ui() {
         quiet("ui_traits", 20, () -> life(d -> { d.life.traits.clear(); d.life.traits.add("undertow"); d.life.traits.add("patchwork"); d.life.traits.add("hook_line_sinker");
             d.life.cooldowns.put("undertow", Vitals.now(d) + 1500); }));
-        quiet("ui_near", 15, () -> { select(8); near(pup()); });
+        quiet("ui_near", 15, () -> { emptyHand(); near(pup()); });
         step("ui_screen", 25, () -> interact("open its screen"), () -> ds() != null);
         step("ui_traits_recharging", 15, () -> { clickSpot("tab_traits"); dev.frosthaven.ranchercompanion.client.screen.DrekkiScreen.testMouse = new int[]{2, 2}; },
             () -> ds() != null && pup() != null && pup().traitView().getCompound("ready").contains("undertow"));
@@ -530,7 +533,7 @@ final class SelfTestTraits {
         quiet("gear_fledgling", 30, () -> { tp(o.getX() + 0.5, o.getY(), o.getZ() + 0.5);
             life(d -> { d.setLook(2, 32, 0, 2, 0); d.applyStageHealth(true); d.teleportTo(o.getX() + 2.5, o.getY(), o.getZ() + 0.5); });
             hotbar(0, "rancher_companion:fledgling_iron_barding"); hotbar(1, "rancher_companion:satchel"); hotbar(2, "minecraft:apple 5"); hotbar(3, "rancher_companion:iron_barding"); });
-        quiet("gear_near", 15, () -> { select(8); near(pup()); });
+        quiet("gear_near", 15, () -> { emptyHand(); near(pup()); });
         step("gear_screen_empty", 25, () -> interact("open its screen"), () -> ds() != null && ds().getMenu().gear);
         step("gear_wrong_stage_refused", 10, () -> shiftClick(3 + 27 + 3), () -> pup() != null && pup().barding() == 0);
         step("gear_barding_on", 15, () -> shiftClick(3 + 27), () -> pup() != null && pup().barding() == 4);
@@ -623,7 +626,7 @@ final class SelfTestTraits {
             ItemStack bard = new ItemStack(DrekkiItems.BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.DIAMOND).get());
             dev.frosthaven.ranchercompanion.item.Dyeing.set(bard, -1, 0x3c44aa); d.setBardingItem(bard);
             d.setAccessory(new ItemStack(DrekkiItems.BAGS.get(2).get())); d.teleportTo(o.getX() + 2.5, o.getY(), o.getZ() + 0.5); }); });
-        quiet("gear_mature_near", 15, () -> { select(8); near(pup()); });
+        quiet("gear_mature_near", 15, () -> { emptyHand(); near(pup()); });
         step("gear_mature_screen", 25, () -> interact("open its screen"), () -> ds() != null && pup() != null && pup().bag() == 3 && pup().barding() == 6);
         if (dev.frosthaven.ranchercompanion.item.Bags.sophisticated()) {
             /* Sophisticated's rule for packs in packs: refused by default, taken with an Inception upgrade in the outer one */
@@ -743,7 +746,7 @@ final class SelfTestTraits {
             var e = new net.minecraft.world.entity.item.ItemEntity(m.level(), d.getX() + 2, d.getY() + 0.5, d.getZ(), new ItemStack(Items.EMERALD, 3));  /* the basic magnet reaches 3 blocks */
             m.level().addFreshEntity(e); } }));
         stepUntil("upg_magnet", 10, 30, () -> {}, () -> count("minecraft:emerald") >= 3);
-        quiet("upg_near", 15, () -> { select(8); near(pup()); });
+        quiet("upg_near", 15, () -> { emptyHand(); near(pup()); });
         step("upg_screen", 25, () -> interact("open its screen"), () -> ds() != null);
         step("upg_tabs", 25, () -> rightClickSpot("accessory"), () -> mc().screen != null && mc().screen.getClass().getSimpleName().equals("SophBagScreen"));
         quiet("upg_close", 10, () -> mc().setScreen(null));
@@ -840,7 +843,7 @@ final class SelfTestTraits {
             () -> tombAt != null && mc().level.getBlockEntity(tombAt) instanceof dev.frosthaven.ranchercompanion.block.TombstoneBlockEntity b
                 && b.name().equals("Ember") && !b.items().getItem(1).isEmpty());
         /* the ghost's screen: read-only (spec, Ghost drekki) */
-        quiet("ghost_near", 15, () -> { hotbar(7, "rancher_companion:fledgling_iron_barding"); select(8); near(pup()); });
+        quiet("ghost_near", 15, () -> { hotbar(7, "rancher_companion:fledgling_iron_barding"); emptyHand(); near(pup()); });
         step("ghost_screen", 25, () -> interact("open its screen"), () -> ds() != null && ds().getMenu().locked());
         step("ghost_stance_locked", 15, () -> hoverSpot("stance0"), () -> ds() != null && ds().getMenu().locked());
         check("ghost_gear_locked", 10, 0, () -> { click(3 + 27 + 7, 0); click(1, 0); click(3 + 27 + 7, 0); }, "the barding slot after a click with a barding on the cursor",

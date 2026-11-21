@@ -324,7 +324,7 @@ public final class TraitTests {
         t.succeed();
     }
 
-    @GameTest(template = "floor")
+    @GameTest(template = "floor", timeoutTicks = 200)
     public static void effectsOnEffectsTargetsAndSpawns(GameTestHelper t) {
         ServerPlayer p = LifeTests.player(t);
         DrekkiEntity d = holding(t, p, Trait.BALM_SALVE);
@@ -332,8 +332,8 @@ public final class TraitTests {
         t.assertFalse(p.hasEffect(MobEffects.POISON), "Balm & Salve: poison does not land");
         p.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 200));
         t.assertTrue(p.hasEffect(MobEffects.MOVEMENT_SPEED), "Balm & Salve: beneficial effects stay");
-        p.addEffect(new MobEffectInstance(MobEffects.POISON, 200));
-        t.assertTrue(p.hasEffect(MobEffects.POISON), "Balm & Salve: 15 seconds between uses");
+        p.addEffect(new MobEffectInstance(MobEffects.WITHER, 40));
+        t.assertFalse(p.hasEffect(MobEffects.WITHER), "Balm & Salve: kept off for 5 s (a wither rose or a cloud applies again)");
         give(d, Trait.HIDE_SEEK);
         Ghast g = t.spawn(EntityType.GHAST, LifeTests.H.offset(0, 6, 0));
         g.setTarget(p);
@@ -342,7 +342,12 @@ public final class TraitTests {
         give(d, Trait.NIGHT_WATCH);
         var ev = NeoForge.EVENT_BUS.post(new PlayerSpawnPhantomsEvent(p, 3));
         t.assertTrue(ev.getResult() == PlayerSpawnPhantomsEvent.Result.DENY, "Night Watch: no phantoms");
-        t.succeed();
+        d.life.traits.add(Trait.BALM_SALVE.id); d.syncLife();
+        t.runAfterDelay(105, () -> {
+            p.addEffect(new MobEffectInstance(MobEffects.POISON, 200));
+            t.assertTrue(p.hasEffect(MobEffects.POISON), "Balm & Salve: after the 5 s, still 15 s between uses");
+            t.succeed();
+        });
     }
 
     @GameTest(template = "floor", timeoutTicks = 100)
@@ -355,6 +360,10 @@ public final class TraitTests {
         p.setRemainingFireTicks(100);
         t.runAfterDelay(3, () -> {
             t.assertTrue(!p.isOnFire() && p.hasEffect(MobEffects.FIRE_RESISTANCE), "Stamp Out: put out, Fire Resistance");
+            p.setRemainingFireTicks(160);  /* still in the fire: lit again */
+        });
+        t.runAfterDelay(5, () -> {
+            t.assertFalse(p.isOnFire(), "Stamp Out: kept put out while its Fire Resistance lasts");
             t.setBlock(LifeTests.H.offset(2, 1, 2), Blocks.POWDER_SNOW);
             p.moveTo(t.absoluteVec(LifeTests.H.offset(2, 1, 2).getCenter()));
             p.setTicksFrozen(40);

@@ -34,6 +34,10 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 public final class Effects {
     private Effects() {}
 
+    /** Balm & Salve: the game time each warded player stops being kept clear of harmful effects */
+    private static final Map<UUID, Long> WARDED = new HashMap<>();
+    /** Stamp Out: the game time each put-out player stops being kept put out */
+    private static final Map<UUID, Long> DOUSED = new HashMap<>();
     /** Huddle Up: the game time each thawed player stops being kept unfrozen */
     private static final Map<UUID, Long> THAWED = new HashMap<>();
     /** Undertow: players being lifted to the surface */
@@ -74,14 +78,18 @@ public final class Effects {
         return false;
     }
 
-    /** Balm & Salve: a harmful effect milk would cure does not land; 15 s between uses */
+    /** Balm & Salve: a harmful effect milk would cure does not land, nor any other for the next 5 s (a lingering cloud
+     *  or a wither rose applies its effect again every few ticks); 15 s between uses */
     private static void balm(MobEffectEvent.Applicable e) {
         if (!(e.getEntity() instanceof ServerPlayer p)) return;
         MobEffectInstance m = e.getEffectInstance();
         if (m.getEffect().value().isBeneficial() || !m.getCures().contains(EffectCures.MILK)) return;
+        long now = p.level().getGameTime();
+        if (WARDED.getOrDefault(p.getUUID(), Long.MIN_VALUE) > now) { e.setResult(MobEffectEvent.Applicable.Result.DO_NOT_APPLY); return; }
         DrekkiEntity d = Traits.ready(p, Trait.BALM_SALVE);
         if (d == null) return;
         e.setResult(MobEffectEvent.Applicable.Result.DO_NOT_APPLY);
+        WARDED.put(p.getUUID(), now + 100);
         Traits.cool(d, Trait.BALM_SALVE);
     }
 
@@ -95,10 +103,16 @@ public final class Effects {
 
     public static void tick(ServerPlayer p) {
         long now = p.level().getGameTime();
-        /* Stamp Out: the fire out and 5 s of Fire Resistance; 2 minutes */
-        if (p.isOnFire() && !p.hasEffect(MobEffects.FIRE_RESISTANCE)) {
-            DrekkiEntity d = Traits.ready(p, Trait.STAMP_OUT);
-            if (d != null) { p.clearFire(); p.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 100)); Traits.cool(d, Trait.STAMP_OUT); }
+        /* Stamp Out: the fire out and kept out for 5 s, with 5 s of Fire Resistance; 2 minutes. Kept out: still in the fire
+           or lava, the next tick lights the player again, and the Fire Resistance would only hide the damage */
+        Long doused = DOUSED.get(p.getUUID());
+        if (doused != null && doused > now) { if (p.isOnFire()) p.clearFire(); }
+        else {
+            if (doused != null) DOUSED.remove(p.getUUID());
+            if (p.isOnFire() && !p.hasEffect(MobEffects.FIRE_RESISTANCE)) {
+                DrekkiEntity d = Traits.ready(p, Trait.STAMP_OUT);
+                if (d != null) { p.clearFire(); p.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 100)); DOUSED.put(p.getUUID(), now + 100); Traits.cool(d, Trait.STAMP_OUT); }
+            }
         }
         /* Huddle Up: thawed at once and kept from freezing for 5 s; 2 minutes */
         Long thawed = THAWED.get(p.getUUID());
