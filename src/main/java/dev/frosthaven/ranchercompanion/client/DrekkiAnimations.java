@@ -31,7 +31,7 @@ public final class DrekkiAnimations {
             case JUMP -> jump(P, t, k);
             case FALL -> fall(P, t, k);
             case SLEEP -> sleep(P, t, e.sleepTime(t));
-            case FEED -> feed(P, t, k, stage);
+            case FEED -> feed(P, t, k, stage, e.live());
             case BITE -> bite(P, t, k);
             case POUNCE -> pounce(P, t, k);
             case BALL -> ball(P, t);
@@ -136,11 +136,15 @@ public final class DrekkiAnimations {
 
     static final double[][] FEED_A = {{0.1, 0.15, -0.15}, {0.35, 0.5, -0.6}, {0.6, 0.75, -1.0}};
 
-    static void feed(Rig P, double t, double k, int stage) {
+    /** the page's loop: a 2 s walk up to the feeder, then 4.2 s of eating. The showcase plays all of it on a standing
+     *  mob, so the model itself moves forward. A live drekki has walked there already: its loop starts at the eating
+     *  (DrekkiEntity shifts its phase by FEED_W) and the model stays on the entity */
+    static void feed(Rig P, double t, double k, int stage, boolean live) {
         double[] A = FEED_A[stage - 1]; double W = Anim.FEED_W, v = 1.1 * k, T = loop(t, W + 4.2) * (W + 4.2);
         if (T < W) { double d = Math.max(0, T - (W - 0.3)), a = 1 - d / 0.3, w = T * 1.4 * TAU; P.forward(v * (Math.min(T, W - 0.3) + d - d * d / 0.6));
             P.gait(w, 0.55 * a, P.bodyY * 0.04 * a); P.neck2.rx += (float) (sin(w * 2) * 0.04 * a); P.head.rx -= (float) (sin(w * 2) * 0.06 * a); P.mouth(0); P.flare(0); return; }
-        P.forward(Anim.feedWalk(k)); double f = (T - W) / 4.2, e = 0, open = 0, rock = 0, swallow = 0;
+        if (!live) P.forward(Anim.feedWalk(k));
+        double f = (T - W) / 4.2, e = 0, open = 0, rock = 0, swallow = 0;
         if (f < 0.14) e = sin(f / 0.14 * Math.PI / 2);
         else if (f < 0.48) { e = 1; open = 0.25 * Math.abs(sin(t * 14)); P.head.ry = (float) (sin(t * 9) * 0.06); rock = 1; }
         else if (f < 0.6) { double u = (f - 0.48) / 0.12; e = 1 - 0.75 * sin(u * Math.PI / 2); }

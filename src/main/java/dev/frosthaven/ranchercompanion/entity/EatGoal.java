@@ -16,10 +16,12 @@ import net.minecraft.world.item.ItemStack;
  * then waits a short pause, so a waiting drekki gets the spot. A path that keeps failing marks the trough unreachable.
  */
 final class EatGoal extends Goal {
-    private static final int LOOK_EVERY = 40, PAUSE = 200, PATIENCE = 100, CHEW = 30;
+    /** MEAL: the eating part of the page's feed loop, 4.2 s; the food goes at SWALLOW, where the loop swallows; a snack
+     *  from its pack or a hand is the loop's first SNACK ticks. SETTLE: ticks to step onto the spot's middle and turn */
+    private static final int LOOK_EVERY = 40, PAUSE = 200, PATIENCE = 100, MEAL = 84, SWALLOW = 72, SNACK = 30, SETTLE = 30;
     private final DrekkiEntity d;
     private Feeding.Spot spot;
-    private int nextLook, stuck, chew;
+    private int nextLook, stuck, chew, settle;
     private long pauseUntil;
     private Player still;
     private int stillTicks;
@@ -54,7 +56,7 @@ final class EatGoal extends Goal {
         ItemStack food = Feeding.fromPack(d);
         if (food.isEmpty()) return;
         Vitals.eat(d, food, true);
-        d.act(dev.frosthaven.ranchercompanion.look.Anim.FEED, CHEW);
+        d.act(dev.frosthaven.ranchercompanion.look.Anim.FEED, SNACK);
         Ranch.touch(d);
         pauseUntil = d.level().getGameTime() + PAUSE;
     }
@@ -65,7 +67,7 @@ final class EatGoal extends Goal {
     }
 
     @Override
-    public void start() { stuck = 0; chew = 0; d.eating = true; walk(); }
+    public void start() { stuck = 0; chew = 0; settle = 0; d.eating = true; walk(); }
 
     private void walk() {
         BlockPos at = spot.at();
@@ -90,10 +92,25 @@ final class EatGoal extends Goal {
         }
         d.getNavigation().stop();
         d.getLookControl().setLookAt(t.getX() + 0.5, t.getY() + 0.4, t.getZ() + 0.5);
-        if (chew == 0) d.act(Anim.FEED, CHEW + 10);
-        if (++chew < CHEW) return;
-        ItemStack food = Feeding.take(d, t);
-        if (!food.isEmpty()) { Vitals.eat(d, food, true); Ranch.touch(d); }
+        /* onto the middle of the spot and round to face the trough, on its feet, before the first bite: it stopped
+           wherever it came within reach, turned any way, and the eating then looked like a jump into place */
+        BlockPos at = spot.at();
+        double dx = at.getX() + 0.5 - d.getX(), dz = at.getZ() + 0.5 - d.getZ();
+        float face = (float) (net.minecraft.util.Mth.atan2(t.getZ() + 0.5 - d.getZ(), t.getX() + 0.5 - d.getX()) * 180 / Math.PI) - 90;
+        d.setYRot(net.minecraft.util.Mth.approachDegrees(d.getYRot(), face, 12));
+        d.yBodyRot = d.getYRot();
+        boolean placed = dx * dx + dz * dz < 0.15 * 0.15, turned = Math.abs(net.minecraft.util.Mth.wrapDegrees(face - d.getYRot())) < 5;
+        if (chew == 0 && (!placed || !turned) && settle++ < SETTLE) {
+            if (!placed) d.getMoveControl().setWantedPosition(at.getX() + 0.5, d.getY(), at.getZ() + 0.5, 0.6);
+            return;
+        }
+        if (chew == 0) d.act(Anim.FEED, MEAL);
+        chew++;
+        if (chew == SWALLOW) {
+            ItemStack food = Feeding.take(d, t);
+            if (!food.isEmpty()) { Vitals.eat(d, food, true); Ranch.touch(d); }
+        }
+        if (chew < MEAL) return;
         Feeding.release(d, spot);
         spot = null;
         pauseUntil = d.level().getGameTime() + PAUSE;

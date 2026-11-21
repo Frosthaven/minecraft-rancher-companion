@@ -717,6 +717,12 @@ effect (see Mood), so other systems can soften or sharpen it later.
 - A path that fails for a few seconds marks that trough unreachable for about a minute; it tries the next. With no
   usable trough it eats from its bag (with a feeding upgrade); otherwise it stays hungry, and its mood shows it.
 
+How a meal looks (decided 2026-11-21): the drekki walks to its spot, steps onto the middle of it and turns to face the
+trough, then plays the eating part of the page's feed loop in full, 4.2 seconds: head down, chew, lift, chew, swallow.
+The food leaves the trough at the swallow. Then it steps away. The loop's first 2 seconds, a walk up to the feeder, are
+for the showcase only; a live drekki has made that walk itself. Before, the game played those 2 seconds in place of the
+eating, and the food went in an instant.
+
 ## Mood
 
 A value from 0 to 100. A new drekki starts at 50. Rates are a proposal. Revised 2026-11-16: mood carries every

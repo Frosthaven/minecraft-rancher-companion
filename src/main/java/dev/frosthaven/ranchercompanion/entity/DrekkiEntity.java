@@ -435,7 +435,11 @@ public class DrekkiEntity extends PathfinderMob {
     public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
         super.onSyncedDataUpdated(key);
         if (STAGE.equals(key)) refreshDimensions();
-        if (ACTION.equals(key) && level().isClientSide && entityData.get(ACTION) > 0) { phase = -tickCount / 20f; lastF = -1; }
+        if (ACTION.equals(key) && level().isClientSide && entityData.get(ACTION) > 0) {
+            phase = -tickCount / 20f; lastF = -1;
+            /* eating: past the loop's walk up to the feeder, which the drekki has done on its own feet */
+            if (entityData.get(ACTION) - 1 == Anim.FEED.ordinal()) phase += (float) Anim.FEED_W;
+        }
         if (SLEEPING.equals(key) && level().isClientSide) sleptAt = !entityData.get(SLEEPING) ? Double.NaN : tickCount == 0 ? -1e9 : time(0);
     }
 
