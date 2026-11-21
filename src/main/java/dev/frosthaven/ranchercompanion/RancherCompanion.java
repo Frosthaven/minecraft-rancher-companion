@@ -53,6 +53,7 @@ public final class RancherCompanion {
         NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerLoggedInEvent.class, Ranch::onLogin);
         NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerRespawnEvent.class, Ranch::onRespawn);
         NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerChangedDimensionEvent.class, Ranch::onDimension);
+        NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.tick.PlayerTickEvent.Post.class, Ranch::onPlayerTick);
         NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerChangeGameModeEvent.class, Ranch::onGameMode);
         NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.level.LevelEvent.Save.class, Ranch::onSave);
         NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.EntityInteract.class, dev.frosthaven.ranchercompanion.entity.DrekkiInteract::onEntityInteract);

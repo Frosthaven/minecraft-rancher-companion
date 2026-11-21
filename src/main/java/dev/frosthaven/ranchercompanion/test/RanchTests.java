@@ -321,6 +321,23 @@ public final class RanchTests {
         });
     }
 
+    /** a portal mod that moves the player without the dimension change event: the once-a-second check brings it */
+    @GameTest(template = "floor")
+    public static void otherLevelWithoutTheEventBringsItBack(GameTestHelper t) {
+        BlockPos h = stable(t);
+        ServerPlayer p = player(t);
+        Roster.Entry e = hatch(t, p, h);
+        DrekkiEntity d = checkedOut(t, p, h, e);
+        var nether = t.getLevel().getServer().getLevel(net.minecraft.world.level.Level.NETHER);
+        d.changeDimension(new net.minecraft.world.level.portal.DimensionTransition(nether, new net.minecraft.world.phys.Vec3(0.5, 64, 0.5),
+            net.minecraft.world.phys.Vec3.ZERO, 0, 0, net.minecraft.world.level.portal.DimensionTransition.DO_NOTHING));
+        t.runAfterDelay(1, () -> {
+            t.assertTrue(drekki(t, p).isEmpty(), "the drekki is in the other level, and no event came");
+            Ranch.follow(p);
+            besideOwner(t, p, h, e, "back by the once-a-second check");
+        });
+    }
+
     @GameTest(template = "field")
     public static void chunkUnloadBringsItBack(GameTestHelper t) {
         BlockPos h = field(t);

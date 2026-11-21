@@ -446,6 +446,23 @@ public final class Ranch {
     public static void onLogin(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent ev) { if (ev.getEntity() instanceof ServerPlayer p) { bringBack(p); Death.giveEggs(p); Tombs.onLogin(p); } }
     public static void onRespawn(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerRespawnEvent ev) { if (ev.getEntity() instanceof ServerPlayer p) bringBack(p); }
     public static void onDimension(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerChangedDimensionEvent ev) { if (ev.getEntity() instanceof ServerPlayer p) bringBack(p); }
+
+    /** once a second: a checked-out drekki loaded in another level than its owner comes along. Some portal mods move the
+     *  player without the game's dimension change event (Immersive Portals, inside the Haven pack's Aeronautics, moved
+     *  an owner to the Nether and left the drekki behind, 2026-11-20) */
+    public static void onPlayerTick(net.neoforged.neoforge.event.tick.PlayerTickEvent.Post ev) {
+        if (ev.getEntity() instanceof ServerPlayer p && p.tickCount % 20 == 0) follow(p);
+    }
+
+    /** the owner's checked-out drekki, when it is loaded in another level, brought to them */
+    public static void follow(ServerPlayer p) {
+        Entry out = roster(p.server).out(p.getUUID());
+        if (out == null || out.where != Where.OUT) return;
+        DrekkiEntity d = live(out.id);
+        if (d == null || d.level() == p.level()) return;
+        dev.frosthaven.ranchercompanion.RancherCompanion.LOG.info("Drekki {} brought to {} in {} (no dimension change event came)", out.id, p.getName().getString(), p.level().dimension().location());
+        bringBack(p);
+    }
     /** fires before the mode changes: look again on the next tick */
     public static void onGameMode(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerChangeGameModeEvent ev) {
         if (ev.getEntity() instanceof ServerPlayer p) later(p.server, () -> bringBack(p));

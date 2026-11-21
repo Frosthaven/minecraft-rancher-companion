@@ -228,6 +228,27 @@ public final class SelfTest {
         if (GEAR) { SelfTestTraits.gear(o); return; }
         quiet("far_away", 80, () -> cmd("tp @s " + (o.getX() + 40.5) + " " + o.getY() + " " + (o.getZ() + 0.5)));
         stepUntil("teleports_to_owner", 10, 15, () -> {}, () -> pup() != null && pup().distanceTo(mc().player) < 6);
+        /* a real nether portal (in the Haven pack, Immersive Portals carries the player through without the game's
+           dimension change event): the checked-out pup must come along */
+        BlockPos gate = o.offset(0, 0, -14);
+        quiet("portal_build", 40, () -> {
+            cmd("fill " + at(gate.offset(-3, 1, -4)) + " " + at(gate.offset(6, 6, 4)) + " air");
+            cmd("fill " + at(gate.offset(-3, 0, -4)) + " " + at(gate.offset(6, 0, 4)) + " stone");  /* flush with the frame's bottom: walked through, no step up */
+            cmd("fill " + at(gate) + " " + at(gate.offset(3, 4, 0)) + " obsidian");
+            cmd("fill " + at(gate.offset(1, 1, 0)) + " " + at(gate.offset(2, 3, 0)) + " air");
+            cmd("setblock " + at(gate.offset(1, 1, 0)) + " fire");
+        });
+        quiet("portal_approach", 60, () -> { cmd("tp @s " + (gate.getX() + 2.0) + " " + (gate.getY() + 1) + " " + (gate.getZ() - 2.5) + " 0 0"); });
+        stepUntil("portal_into_nether", 20, 40, () -> mc().options.keyUp.setDown(true),
+            () -> mc().level != null && mc().level.dimension() == net.minecraft.world.level.Level.NETHER);
+        quiet("portal_stop", 10, () -> mc().options.keyUp.setDown(false));
+        stepUntil("portal_pup_came_along", 20, 15, () -> {}, () -> mc().level.dimension() == net.minecraft.world.level.Level.NETHER
+            && pup() != null && pup().distanceTo(mc().player) < 16);
+        quiet("portal_home", 80, () -> { mc().options.keyUp.setDown(false);
+            cmd("execute in minecraft:overworld run tp @s " + (o.getX() + 0.5) + " " + o.getY() + " " + (o.getZ() - 4.5));
+            cmd("fill " + at(gate) + " " + at(gate.offset(3, 4, 0)) + " air"); });
+        stepUntil("portal_back_home", 10, 15, () -> {}, () -> mc().level.dimension() == net.minecraft.world.level.Level.OVERWORLD
+            && pup() != null && pup().distanceTo(mc().player) < 16);
         quiet("back", 80, () -> cmd("tp @s " + (o.getX() + 0.5) + " " + o.getY() + " " + (o.getZ() - 4.5)));
         quiet("near_for_pet", 15, () -> near(pup()));
         quiet("sneak", 5, () -> { select(8); mc().options.keyShift.setDown(true); });
