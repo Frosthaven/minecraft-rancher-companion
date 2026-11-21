@@ -649,7 +649,7 @@ public final class Ranch {
             DrekkiEntity n = call ? live(out.id) : null;
             if (n != null && n.level() == p.level()) {
                 n.teleportNear(p);  /* bringBack moves only a far one */
-                if (n.distanceToSqr(p) > 8 * 8) n.jumpTo(p.position());  /* no safe spot around them (flying, over lava): onto their own */
+                if (n.distanceToSqr(p) > 8 * 8) n.jumpTo(p.position());  /* no safe spot around them (they fly): onto their own, unless that is over lava */
             }
         }
         Component who = out.save.contains("CustomName") ? label(out.save) : Component.translatable("drekki.rancher_companion.yours");

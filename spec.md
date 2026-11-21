@@ -331,7 +331,7 @@ A checked-out drekki follows its owner (the default) or stays. Every stage, pups
   owner's checked-out drekki between staying and following. A drekki that is not with its owner (another dimension, an
   unloaded chunk, or more than 30 blocks away) always comes to them and follows instead, whatever it was doing.
   Told to follow by the whistle it jumps to its owner, near or far; with no safe spot around them (they fly, or stand
-  over lava) it lands on their own position. One tone for stay; two short tones, the second
+  over lava) it lands on their own position, unless that is over lava. One tone for stay; two short tones, the second
   higher, for follow.
 - **Message** on the action bar, from the buttons and the whistle alike: "Your drekki is staying" or "Your drekki is
   following you", with its name when it has one.
@@ -995,8 +995,10 @@ a pup too; it wears no barding, starts no fight and gives no kill credit. A harm
 spells kept hitting her own drekki. Monsters and the rest of the world still hurt it.
 
 Safety (decided 2026-11-21): with no rider, lava and falls never hurt a drekki, and lava does not set it on fire. It
-never swims in lava: it walks out along the bottom or its catch-up takes it out. Because a fall cannot hurt it, it takes
-drops of up to 24 blocks to reach its owner (the game's mobs stop at 3).
+keeps out of lava and fire all the same: with no rider it never walks into either, whatever the detour, and no catch-up
+or whistle lands it in or over lava. The exception is a drekki lava cannot harm anyway (immune by nature, or under Fire
+Resistance from a trait or a potion): it may walk and land there. One knocked into lava floats, to get out. Because a
+fall cannot hurt it, it takes drops of up to 24 blocks to reach its owner (the game's mobs stop at 3).
 
 - Aggressive: fights any hostile mob within 10 blocks, and everything Reactive answers. Hostile means a monster;
   neutral mobs (endermen, zombified piglins, wolves, bees) only while they are angry. It leaves creepers alone, as

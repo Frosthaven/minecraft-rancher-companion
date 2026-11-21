@@ -292,8 +292,10 @@ public class DrekkiEntity extends PathfinderMob {
     }
 
     /** onto an exact spot, with no check of the ground: the whistle's last resort, its owner's own position (in the
-     *  air or over lava it falls or sinks unhurt) */
+     *  air it falls unhurt) */
     public void jumpTo(Vec3 at) {
+        /* not over lava, unless lava is no danger to it: it would drop in */
+        if (!fireproof() && hasLava(getBoundingBox().move(at.subtract(position())).inflate(1, 0, 1).expandTowards(0, -6, 0))) return;
         moveTo(at.x, at.y, at.z, getYRot(), getXRot());
         sendFresh();
         resetFallDistance(); clearFire(); getNavigation().stop();
@@ -377,11 +379,24 @@ public class DrekkiEntity extends PathfinderMob {
         if (!level().noCollision(this, box)) return false;
         if (level().getBlockStates(box).anyMatch(DrekkiEntity::portal)) return false;  /* never in a portal */
         var type = net.minecraft.world.level.pathfinder.WalkNodeEvaluator.getPathTypeStatic(this, p);
-        boolean fireproof = fireImmune() || hasEffect(net.minecraft.world.effect.MobEffects.FIRE_RESISTANCE);
+        boolean fireproof = fireproof();
         if (fireproof && (type == net.minecraft.world.level.pathfinder.PathType.LAVA || type == net.minecraft.world.level.pathfinder.PathType.DANGER_FIRE
             || type == net.minecraft.world.level.pathfinder.PathType.DAMAGE_FIRE)) return true;
         if (type != net.minecraft.world.level.pathfinder.PathType.WALKABLE) return false;
         return fireproof || !hasLava(box.inflate(1, 0, 1).expandTowards(0, -1, 0));
+    }
+
+    /** fire and lava are no danger to it: immune by nature, or under Fire Resistance (a trait's, a potion's) */
+    public boolean fireproof() { return fireImmune() || hasEffect(net.minecraft.world.effect.MobEffects.FIRE_RESISTANCE); }
+
+    /** it never walks into lava or fire, whatever the detour, unless they are no danger to it. Lava cannot hurt it
+     *  (the safety rule), but it keeps out all the same (decided 2026-11-21) */
+    @Override
+    public float getPathfindingMalus(net.minecraft.world.level.pathfinder.PathType type) {
+        boolean hot = type == net.minecraft.world.level.pathfinder.PathType.LAVA || type == net.minecraft.world.level.pathfinder.PathType.DAMAGE_FIRE
+            || type == net.minecraft.world.level.pathfinder.PathType.DANGER_FIRE;
+        if (hot && !isVehicle()) return fireproof() ? 0 : -1;
+        return super.getPathfindingMalus(type);
     }
 
     /** lava or fire in the box (the spot, a block around it, and the ground under it) */
@@ -431,10 +446,7 @@ public class DrekkiEntity extends PathfinderMob {
 
     @Override
     protected void registerGoals() {
-        /* it swims in water, never in lava: it walks out along the bottom, unhurt, or its catch-up takes it out */
-        goalSelector.addGoal(0, new net.minecraft.world.entity.ai.goal.FloatGoal(this) {
-            @Override public boolean canUse() { return (isVehicle() || !isInLava()) && super.canUse(); }
-        });
+        goalSelector.addGoal(0, new net.minecraft.world.entity.ai.goal.FloatGoal(this));  /* knocked into lava it floats, to get out */
         goalSelector.addGoal(1, new dev.frosthaven.ranchercompanion.combat.CombatGoals.Attack(this));
         goalSelector.addGoal(2, new DrekkiGoals.Follow(this));
         goalSelector.addGoal(3, new EatGoal(this));
