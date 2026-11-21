@@ -48,6 +48,8 @@ public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
     private final java.util.Map<String, int[]> spots = new java.util.HashMap<>();
 
     public int[] spot(String key) { return spots.get(key); }
+    /** the tooltip drawn last frame, null for none (the self test reads it) */
+    public List<Component> shownTip() { return tip; }
 
     /** the self test's mouse (a cursor moved by the program does not reach a headless window): screen coordinates, or null */
     public static int[] testMouse;
@@ -151,8 +153,8 @@ public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
         int a = d.astral();
         Component astral = Component.translatable("screen.rancher_companion.drekki.astral",
             Component.literal(Astral.NAMES[a]).withColor(a == Astral.DORMANT ? Art.DIM : 0xFF000000 | Astral.iris(a)));
-        spot("astral", x, ty - 1, INFO_W, 10);
-        if (Art.in(rx, ry, x, ty - 1, INFO_W, 10)) tip = dev.frosthaven.ranchercompanion.trait.Tips.astral(a);
+        spot("astral", x, ty - 1, font.width(astral), 10);  /* the text only, as the mood line */
+        if (Art.in(rx, ry, x, ty - 1, font.width(astral), 10)) tip = dev.frosthaven.ranchercompanion.trait.Tips.astral(a);
         ty = text(g, astral, ty, Art.THREAD) + 2;
         ty = text(g, diet, ty, Art.THREAD) + 2;
         Life.Band band = d.band();

@@ -256,6 +256,10 @@ public final class SelfTest {
         step("drekki_details", 10, () -> {}, () -> ds() != null && pup().food() < 7 && pup().petLeft() > 0);
         step("drekki_mood_tooltip", 10, () -> hoverSpot("mood"), () -> ds() != null && ds().spot("mood") != null);
         step("drekki_pet_tooltip", 10, () -> hoverSpot("pet"), () -> ds() != null && ds().spot("pet") != null);
+        step("drekki_astral_tooltip", 10, () -> hoverSpot("astral"), () -> ds() != null && ds().shownTip() != null);
+        /* past the end of "Astral: Dormant" on the same row: no tooltip (the hover covers the text only) */
+        step("drekki_astral_past_text", 10, () -> { int[] a = ds().spot("astral"); dev.frosthaven.ranchercompanion.client.screen.DrekkiScreen.testMouse = new int[]{a[0] + 70, a[1]}; },
+            () -> ds() != null && ds().shownTip() == null);
         step("drekki_traits_tab", 10, () -> clickSpot("tab_traits"), () -> ds() != null && ds().spot("trait1") != null);
         step("drekki_trait_tooltip", 10, () -> hoverSpot("trait1"), () -> ds() != null);
         quiet("details_again", 5, () -> { dev.frosthaven.ranchercompanion.client.screen.DrekkiScreen.testMouse = null; clickSpot("tab_details"); });
