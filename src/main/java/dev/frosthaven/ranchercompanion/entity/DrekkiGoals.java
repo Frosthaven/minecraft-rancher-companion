@@ -23,6 +23,8 @@ final class DrekkiGoals {
         private final DrekkiEntity d;
         private Player owner;
         private int recalc;
+        /** the tick it first found no way to walk to its owner, -1 while it has one */
+        private int lost = -1;
 
         Follow(DrekkiEntity d) { this.d = d; setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK)); }
 
@@ -52,8 +54,15 @@ final class DrekkiGoals {
             if (!far) d.getLookControl().setLookAt(owner, 10f, d.getMaxHeadXRot());
             if (--recalc > 0) return;
             recalc = adjustedTickDelay(10);
-            if (far) d.teleportNear(owner);
-            else d.getNavigation().moveTo(owner, d.distanceToSqr(owner) > 8 * 8 ? 1.6 : 1.1);
+            if (far) { d.teleportNear(owner); lost = -1; return; }
+            d.getNavigation().moveTo(owner, d.distanceToSqr(owner) > 8 * 8 ? 1.6 : 1.1);
+            /* no way to walk to them and 3 blocks or more above or below (a ledge, a pit, a cave under the floor): after
+               2 seconds of that it jumps to them, near as they are. One sat 5 blocks under its owner, 8 away, and never
+               came (2026-11-21). On their level it waits: a closed door or a fence keeps it out, as its owner means */
+            var path = d.getNavigation().getPath();
+            /* by the clock, not by tries: with no path the goal stops and starts again every tick or two */
+            lost = path != null && path.canReach() || Math.abs(owner.getY() - d.getY()) < 3 ? -1 : lost < 0 ? d.tickCount : lost;
+            if (lost >= 0 && d.tickCount - lost >= 40) { dev.frosthaven.ranchercompanion.Debug.log("server: {} has no way to walk to its owner, it jumps", dev.frosthaven.ranchercompanion.Debug.of(d)); d.teleportNear(owner); lost = -1; }
         }
     }
 
