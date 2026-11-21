@@ -56,12 +56,16 @@ final class DrekkiGoals {
             recalc = adjustedTickDelay(10);
             if (far) { d.teleportNear(owner); lost = -1; return; }
             d.getNavigation().moveTo(owner, d.distanceToSqr(owner) > 8 * 8 ? 1.6 : 1.1);
-            /* no way to walk to them and 3 blocks or more above or below (a ledge, a pit, a cave under the floor): after
-               2 seconds of that it jumps to them, near as they are. One sat 5 blocks under its owner, 8 away, and never
-               came (2026-11-21). On their level it waits: a closed door or a fence keeps it out, as its owner means */
+            /* no way to walk to them: after 2 seconds of that it jumps to them, near as they are, when a catch-up put
+               it where it is (always: the landing must be one it can reach them from), or when it is 3 blocks or more
+               above or below them (a ledge, a pit, a cave under the floor). One sat 5 blocks under its owner, 8 away,
+               and never came (2026-11-21). One that walked up to a closed door or a fence on their level waits: that
+               keeps it out, as its owner means */
             var path = d.getNavigation().getPath();
             /* by the clock, not by tries: with no path the goal stops and starts again every tick or two */
-            lost = path != null && path.canReach() || Math.abs(owner.getY() - d.getY()) < 3 ? -1 : lost < 0 ? d.tickCount : lost;
+            boolean way = path != null && path.canReach();
+            if (way) d.landed = false;
+            lost = way || !d.landed && Math.abs(owner.getY() - d.getY()) < 3 ? -1 : lost < 0 ? d.tickCount : lost;
             if (lost >= 0 && d.tickCount - lost >= 40) { dev.frosthaven.ranchercompanion.Debug.log("server: {} has no way to walk to its owner, it jumps", dev.frosthaven.ranchercompanion.Debug.of(d)); d.teleportNear(owner); lost = -1; }
         }
     }

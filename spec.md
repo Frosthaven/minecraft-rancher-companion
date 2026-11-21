@@ -1056,8 +1056,9 @@ owner who does not walk within 3 seconds gets it by the catch-up rule. The serve
 waits. An owned drekki never goes through a portal itself and is never placed in a portal block: it
 looks 2 to 3 blocks from its owner, then up to 6, first for a spot the owner can see (a clear line from their eyes), and while the owner still stands in the portal, only on the
 owner's side of it: one landed behind the frame, walled off, 2026-11-21. One left on its owner's block, on the portal's surface, was carried
-back through by Immersive Portals and stuck in the frame, 2026-11-21), jumps to its owner from any distance after 2 seconds with no way to walk to them while 3 blocks or more above or below
-them (a ledge, a pit, a cave under the floor; on their level it waits, so a closed door keeps it out; 2026-11-21), never tramples crops, and from stage 2 its pack picks up what the player cannot carry.
+back through by Immersive Portals and stuck in the frame, 2026-11-21), jumps to its owner from any distance after 2 seconds with no way to walk to them, always when a catch-up put it there,
+and otherwise when it is 3 blocks or more above or below them (a ledge, a pit, a cave under the floor; one that walked
+up to a closed door on their level waits, so the door keeps it out; 2026-11-21), never tramples crops, and from stage 2 its pack picks up what the player cannot carry.
 
 ## Breed traits (proposal)
 

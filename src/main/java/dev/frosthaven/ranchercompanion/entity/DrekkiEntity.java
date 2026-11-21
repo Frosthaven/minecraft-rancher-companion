@@ -293,6 +293,10 @@ public class DrekkiEntity extends PathfinderMob {
 
     /** onto an exact spot, with no check of the ground: the whistle's last resort, its owner's own position (in the
      *  air it falls unhurt) */
+    /** set by a catch-up's landing, cleared once it has a way to walk to its owner: until then, with no way, it
+     *  jumps again (DrekkiGoals.Follow) */
+    public boolean landed;
+
     public void jumpTo(Vec3 at) {
         if (!fireproof() && hasLava(getBoundingBox().move(at.subtract(position())))) return;  /* not into lava or fire itself */
         moveTo(at.x, at.y, at.z, getYRot(), getXRot());
@@ -336,6 +340,7 @@ public class DrekkiEntity extends PathfinderMob {
                 continue;
             }
             dev.frosthaven.ranchercompanion.Debug.log("server: {} lands at {}", dev.frosthaven.ranchercompanion.Debug.of(this), p.toShortString());
+            landed = true;
             moveTo(p.getX() + 0.5, p.getY(), p.getZ() + 0.5, getYRot(), getXRot());
             sendFresh();
             resetFallDistance();
