@@ -69,7 +69,7 @@ final class Hats {
                 for (double[] p : tails) { Node g = q.g(h, 0, 2, 0); g.rot(p[0], 0, p[1]); q.c(g, 2, 6, 2, 0, 3, 0, (int) p[2]); q.c(g, 1.4, 1.4, 1.4, 0, 6.5, 0, BONE); } }
             case 16, 17 -> { /* conductor's cap, stock keeper's cap: Create's own models (compat/create CreateHats), no cubes */ }
             case 18 -> { q.c(h, 9, 4, 9, 0, 2, 0, LEATHER); q.c(h, 1, 1, 8, 0, 4.5, 0, LEATHER2);  /* aviator cap: leather, ear flaps, a short visor, goggles on the brow */
-                for (int s : new int[]{-1, 1}) { q.c(h, 1, 5, 4, s * 4.9, -0.5, 0.5, LEATHER); q.c(h, 1, 1, 4, s * 4.9, -3.5, 0.5, FLEECE); }
+                for (int s : new int[]{-1, 1}) { q.c(h, 1, 5, 4, s * 4.9, -0.5, -2.8, LEATHER); q.c(h, 1, 1, 4, s * 4.9, -3.5, -2.8, FLEECE);  /* behind the eyes */ }
                 Node f = q.g(h, 0, 0.5, 4.6); f.rx = (float) rad(15); q.c(f, 8, 1, 2, 0, 0, 1, LEATHER2);
                 q.c(h, 10, 1, 10, 0, 2.6, 0, STRAP);
                 for (int s : new int[]{-1, 1}) { q.c(h, 3, 3, 1, s * 2, 2.6, 5, BRASS); q.c(h, 2, 2, 1, s * 2, 2.6, 5.3, GLASS); } }
