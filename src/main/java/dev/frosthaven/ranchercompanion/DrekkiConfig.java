@@ -57,8 +57,8 @@ public final class DrekkiConfig {
         b.comment("Hunger (spec, Hunger): shanks lost per game day, out of ten, while the drekki is live (its chunk ticking).",
             "Saturation is spent first. Travelling (checked out) drains at its own rate. A food gives its own nutrition",
             "(2 points to a shank) and saturation.").push("hunger");
-        HUNGER_PER_DAY = b.defineInRange("shanks_per_day", 2.0, 0.0, 100.0);
-        TRAVEL_HUNGER_PER_DAY = b.defineInRange("travel_shanks_per_day", 4.0, 0.0, 100.0);
+        HUNGER_PER_DAY = b.defineInRange("shanks_per_day", 0.5, 0.0, 100.0);
+        TRAVEL_HUNGER_PER_DAY = b.defineInRange("travel_shanks_per_day", 1.0, 0.0, 100.0);
         b.pop();
         SPEC = b.build();
     }
