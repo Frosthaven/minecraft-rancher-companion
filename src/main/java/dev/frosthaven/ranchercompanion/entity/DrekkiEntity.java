@@ -66,6 +66,9 @@ public class DrekkiEntity extends PathfinderMob {
     private static final EntityDataAccessor<Boolean> REVIVING = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.BOOLEAN);
     /** the traits tab: learned trait ids and counted progress */
     private static final EntityDataAccessor<CompoundTag> TRAITS = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.COMPOUND_TAG);
+    /** 0.4.13: employed (spec, Go here: Employed) for the drekki screen's Recall from job: 0 not, 1 employed, 2 employed
+     *  while its owner has another drekki out (the button is off). Kept up by Ranch; not saved */
+    private static final EntityDataAccessor<Integer> JOB = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.INT);
 
     /** its life (server: the truth, saved under "Life"; client: unused, the synched values above stand in) */
     public final dev.frosthaven.ranchercompanion.life.Life life = new dev.frosthaven.ranchercompanion.life.Life();
@@ -105,7 +108,7 @@ public class DrekkiEntity extends PathfinderMob {
         super.defineSynchedData(b);
         b.define(STAGE, 3); b.define(LINE, 0); b.define(DIET, 0); b.define(ASTRAL, 1); b.define(HORN, 0); b.define(HAT, 0); b.define(BARDING, 0); b.define(DYE, -1); b.define(DYE2, -1); b.define(BAG, 0); b.define(BAG_DYE, -1); b.define(BAG_DYE2, -1); b.define(ANIM, 0); b.define(LANE, 0f); b.define(OWNED, false); b.define(PET, 0); b.define(SLEEPING, false); b.define(OWNER, java.util.Optional.empty());
         b.define(MOVE, 0);
-        b.define(FOOD, 10f); b.define(MOOD, 50f); b.define(BAND, 2); b.define(PET_LEFT, 0); b.define(KIN, 0); b.define(GHOST, false); b.define(STANCE, 1); b.define(ACTION, 0); b.define(REVIVING, false); b.define(TRAITS, new CompoundTag());
+        b.define(FOOD, 10f); b.define(MOOD, 50f); b.define(BAND, 2); b.define(PET_LEFT, 0); b.define(KIN, 0); b.define(GHOST, false); b.define(STANCE, 1); b.define(ACTION, 0); b.define(REVIVING, false); b.define(TRAITS, new CompoundTag()); b.define(JOB, 0);
     }
 
     public int stage() { return entityData.get(STAGE); }
@@ -260,6 +263,9 @@ public class DrekkiEntity extends PathfinderMob {
     /** told to stay (spec, Stay and follow): it does not walk, follow or catch up; Ranch keeps the spot */
     public boolean isStaying() { return entityData.get(MOVE) == 2; }
     public int move() { return entityData.get(MOVE); }
+    /** 0 not employed, 1 employed, 2 employed while its owner has another drekki out */
+    public int job() { return entityData.get(JOB); }
+    public void setJob(int j) { entityData.set(JOB, j); }
     public void setStaying(boolean on) { entityData.set(MOVE, !out ? 0 : on ? 2 : 1); if (on) getNavigation().stop(); }
 
     public net.minecraft.world.entity.player.Player ownerPlayer() { return owner == null ? null : level().getPlayerByUUID(owner); }

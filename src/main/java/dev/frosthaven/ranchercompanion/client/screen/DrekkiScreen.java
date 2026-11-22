@@ -115,6 +115,7 @@ public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
         if (traitsTab) traits(g, d, rx, ry); else details(g, d, rx, ry);
         if (d.stage() >= 2) stances(g, d, rx, ry);
         if (d.move() > 0) moves(g, d, rx, ry);
+        if (d.job() > 0) recall(g, d, rx, ry);
     }
 
     private void tab(GuiGraphics g, int x, boolean traits, int rx, int ry) {
@@ -309,6 +310,20 @@ public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
         }
     }
 
+    /** Recall from job, just left of Stay in the same group, while it is employed (spec, Go here: Employed); off while its
+     *  owner has another drekki out */
+    private void recall(GuiGraphics g, DrekkiEntity d, int rx, int ry) {
+        int x = moveX(-1), y = WELL_BOTTOM - STANCE - 2;
+        boolean off = d.job() == 2, over = Art.in(rx, ry, x, y, STANCE, STANCE);
+        spot("recall", x, y, STANCE, STANCE);
+        g.blit(SPR, x, y, SX + (over && !off ? 2 : 0) * STANCE, STANCE_Y, STANCE, STANCE);
+        if (off) { com.mojang.blaze3d.systems.RenderSystem.enableBlend(); g.setColor(1, 1, 1, 0.35f); }
+        g.blit(SPR, x + 3, y + 3, SX + 5 * 8, ICON_Y, 8, 8);
+        if (off) { g.setColor(1, 1, 1, 1); com.mojang.blaze3d.systems.RenderSystem.disableBlend(); }
+        if (over) tip = List.of(Component.translatable("move.rancher_companion.recall").withStyle(ChatFormatting.WHITE),
+            Component.translatable(off ? "move.rancher_companion.recall.busy" : "move.rancher_companion.recall.desc").withStyle(off ? ChatFormatting.RED : ChatFormatting.GRAY));
+    }
+
     /** a line wrapped inside the info well, as vanilla wraps text: 10 px a row; returns the next y */
     private int text(GuiGraphics g, Component line, int y, int color) {
         for (FormattedCharSequence row : font.split(line, INFO_W)) { g.drawString(font, row, INFO_X, y, color, false); y += 10; }
@@ -354,6 +369,11 @@ public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
                 click();
                 return true;
             }
+        }
+        if (button == 0 && d != null && d.job() == 1 && !d.ghost() && Art.in(rx, ry, moveX(-1), WELL_BOTTOM - STANCE - 2, STANCE, STANCE)) {
+            if (minecraft != null && minecraft.gameMode != null) minecraft.gameMode.handleInventoryButtonClick(menu.containerId, DrekkiMenu.RECALL);
+            click();
+            return true;
         }
         if (button == 0 && d != null && d.move() > 0 && !d.ghost()) for (int i = 0; i < 2; i++)
             if (Art.in(rx, ry, moveX(i), WELL_BOTTOM - STANCE - 2, STANCE, STANCE)) {

@@ -226,11 +226,13 @@ STANCE_ICONS = {  # the design page's STANCE_ICON grids, 8 x 8
     "passive": (['P.......', 'PWWWW...', 'PWWWWW..', 'PWWWW...', 'P.......', 'P.......', 'P.......', 'P.......'],
                 {'P': '7a4a2a', 'W': 'ece6d8'}),
 }
-MOVE_ICONS = {  # 8 x 8, after the stance icons: Stay (a paw planted), Follow (footsteps going on)
+MOVE_ICONS = {  # 8 x 8, after the stance icons: Stay (a paw planted), Follow (footsteps going on), Recall from job
     "stay": (['.P.PP.P.', '.P.PP.P.', '........', '..PPPP..', '.PPPPPP.', '.PPPPPP.', '..PPPP..', 'KKKKKKKK'],
              {'P': 'e0d2b0', 'K': '523b2a'}),
     "follow": (['........', 'W..W....', '.W..W...', '..W..W..', '..W..W..', '.W..W...', 'W..W....', '........'],
                {'W': 'e0e4ea'}),
+    "recall": (['..W.....', '.WW.....', 'WWWWWW..', '.WW...W.', '..W...W.', '......W.', '..WWWW..', '........'],
+               {'W': 'e0e4ea'}),  # Recall from job: an arrow turning back (0.4.13)
 }
 BUFF_ICONS = {  # 9 x 9: Recently pet (a heart with a hand's warmth), Kinship (two drekki heads side by side)
     "pet": (['.RR...RR.', 'RPPR.RPPR', 'RPWPRPPPR', 'RPPPPPPPR', '.RPPPPPR.', '..RPPPR..', '...RPR...', '....R....', '.........'],
@@ -240,7 +242,7 @@ BUFF_ICONS = {  # 9 x 9: Recently pet (a heart with a hand's warmth), Kinship (t
 }
 # drekki_sprites (64 x 80):
 TAB_W, TAB_H, SX = 40, 12, 0                    # tabs: normal y 0, selected y 12, hover y 24
-STANCE_BTN, STANCE_Y = 14, 40                   # buttons at y 40: normal, (unused: selected is a green border in code), hover; icons 8x8 at y 56: three stances, Stay, Follow
+STANCE_BTN, STANCE_Y = 14, 40                   # buttons at y 40: normal, (unused: selected is a green border in code), hover; icons 8x8 at y 56: three stances, Stay, Follow, Recall from job
 ICON_Y, BUFF_Y = 56, 66                         # buff icons 9x9 at y 66: Recently pet, Kinship
 
 

@@ -361,6 +361,12 @@ Sneak and use the Drekki Whistle while looking at a block (up to 64 blocks away)
   hatchery screen lists it as "Employed"; Check in with it selected recalls it to that hatchery, and Check out brings
   it to its owner. Off its seat for 2 seconds (the train taken apart, the seat broken) it goes home to its hatchery
   ("... lost its seat and went home"), or to No hatchery without one.
+- **Recall from job** (decided 2026-11-22): the drekki screen of an employed drekki has a Recall from job button just
+  left of Stay, in the same group. It takes the drekki off its seat and it follows its owner again, checked out. Off
+  (dimmed, "Check in the drekki you have out first.") while the owner has another drekki out.
+- **A seat a drekki sits on is taken** (decided 2026-11-22): a player's click on it does nothing, on a seat block and
+  on a train's seat alike (Create would throw the drekki off and sit the player there). Sneaking, the click works as
+  usual (blocks placed against the seat).
 - **Job hats.** Create's train hat and stock keeper hat are drawn on the drekki's crown at every stage, in place of its
   own hat, and over its head crest.
 - **No hunger at work** (decided 2026-11-22): an employed drekki's food bar holds while it is employed, since it never

@@ -20,10 +20,12 @@ final class CreateSeats implements Seats {
     private static final double STEP = 0.2;
 
     @Override
-    public Seat looked(ServerPlayer p, double range, double blockDist) {
+    public Seat looked(ServerPlayer p, double range, double blockDist) { return onContraption(p, Math.min(range, blockDist)); }
+
+    /** the contraption seat the player looks at within reach (blocks), or null; on either side */
+    static OnContraption onContraption(net.minecraft.world.entity.player.Player p, double reach) {
         Vec3 eye = p.getEyePosition(), dir = p.getViewVector(1);
-        double reach = Math.min(range, blockDist);
-        Seat best = null;
+        OnContraption best = null;
         double bestD = reach;
         AABB area = p.getBoundingBox().expandTowards(dir.scale(reach)).inflate(2);
         for (AbstractContraptionEntity ce : p.level().getEntitiesOfClass(AbstractContraptionEntity.class, area)) {
@@ -40,8 +42,7 @@ final class CreateSeats implements Seats {
                 break;  /* the first block of it the ray meets: a seat, or a wall in front of one */
             }
         }
-        if (best != null) return best;
-        return null;
+        return best;
     }
 
     @Override
@@ -76,6 +77,14 @@ final class CreateSeats implements Seats {
             mob.stopRiding();
             ce.addSittingPassenger(mob, index);
             return mob.getVehicle() == ce;
+        }
+        /** who sits there now, or null */
+        net.minecraft.world.entity.Entity sitter() {
+            var c = ce.getContraption();
+            if (c == null) return null;
+            for (var en : c.getSeatMapping().entrySet())
+                if (en.getValue() == index) for (var e : ce.getPassengers()) if (e.getUUID().equals(en.getKey())) return e;
+            return null;
         }
         /** a seat of a train's carriage: Create makes a mob there its conductor once the train has a schedule */
         @Override public boolean job() { return ce instanceof com.simibubi.create.content.trains.entity.CarriageContraptionEntity; }

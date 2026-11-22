@@ -7,5 +7,8 @@ public final class CreateCompat {
     private CreateCompat() {}
 
     /** both sides; touches no client class (a dedicated server has none) */
-    public static void init() { Seats.Holder.seats = new CreateSeats(); }
+    public static void init() {
+        Seats.Holder.seats = new CreateSeats();
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, SeatGuard::onRightClickBlock);
+    }
 }

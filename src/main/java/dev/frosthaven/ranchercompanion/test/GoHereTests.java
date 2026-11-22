@@ -102,4 +102,35 @@ public final class GoHereTests {
             });
         });
     }
+
+    @GameTest(template = "floor", timeoutTicks = 200)
+    public static void recallFromJobTakesItOffItsSeatToFollow(GameTestHelper t) {
+        ServerPlayer p = LifeTests.player(t);
+        DrekkiEntity d = CombatTests.out(t, p, 2, Diet.RAW, Life.Stance.PASSIVE);
+        ServerLevel level = t.getLevel();
+        var cart = EntityType.MINECART.create(level);
+        cart.moveTo(Vec3.atBottomCenterOf(t.absolutePos(new BlockPos(9, 1, 9))));
+        level.addFreshEntity(cart);
+        Seats.Seat seat = new Seats.Seat() {
+            @Override public Vec3 at() { return cart.position(); }
+            @Override public boolean free() { return !cart.isVehicle(); }
+            @Override public boolean sit(Mob mob) { return mob.startRiding(cart, true); }
+            @Override public boolean job() { return true; }
+        };
+        Seats before = Seats.Holder.seats;
+        Seats.Holder.seats = new Seats() {
+            @Override public Seat looked(ServerPlayer pl, double range, double blockDist) { return seat; }
+            @Override public Seat at(ServerLevel l, BlockPos pos) { return null; }
+        };
+        try { lookAt(t, p, new BlockPos(9, 0, 9)); GoHere.command(p); } finally { Seats.Holder.seats = before; }
+        Roster r = Ranch.roster(level.getServer());
+        t.runAtTickTime(t.getTick() + 120, () -> {
+            Roster.Entry e = r.get(d.drekkiId());
+            t.assertTrue(e.where == Roster.Where.WORK && d.job() == 1, "employed, the button on: " + e.where + " job " + d.job());
+            Ranch.recallFromJob(p, d);
+            t.assertTrue(e.where == Roster.Where.OUT && r.out(p.getUUID()) == e, "checked out with its owner again: " + e.where);
+            t.assertTrue(!d.isPassenger() && !d.isStaying() && d.job() == 0, "off its seat, following");
+            t.succeed();
+        });
+    }
 }
