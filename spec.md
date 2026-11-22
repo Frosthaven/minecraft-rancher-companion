@@ -715,7 +715,8 @@ effect (see Mood), so other systems can soften or sharpen it later.
   empty slot. Breaking a trough drops only its own stack.
 - A line is one inventory to pipes, funnels, chutes and hoppers, from any side of any of its troughs. It takes only
   food a drekki eats, of the line's diet (the first food sets it), where a slot has room. Anything else is refused,
-  so it waits in the pipe and is never dropped. Nothing can be pulled out: a chute under a trough would empty it.
+  so it waits in the pipe and is never dropped. Pipes, chutes, funnels and hoppers can pull food out of any slot,
+  as from a chest; the diet clears when the last food leaves the line.
 - The screen shows the line's slots, up to five in a row, a longer line in two rows; the diet is beside the title.
 - A trough saved before 0.4.9 held up to four stacks. On its first tick it keeps one; the rest go into the line's
   slots, and what does not fit drops on the trough. Nothing is lost.

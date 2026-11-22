@@ -180,7 +180,12 @@ public final class LifeTests {
         t.assertTrue(net.neoforged.neoforge.items.ItemHandlerHelper.insertItemStacked(first, new ItemStack(Items.COOKED_BEEF, 3), false).getCount() == 3, "food of another diet is refused");
         t.assertTrue(net.neoforged.neoforge.items.ItemHandlerHelper.insertItemStacked(first, new ItemStack(Items.STICK, 3), false).getCount() == 3, "a stick is refused");
         t.assertTrue(net.neoforged.neoforge.items.ItemHandlerHelper.insertItemStacked(second, new ItemStack(Items.CARROT, 64), false).getCount() == 36, "only 28 more carrots fit");
-        t.assertTrue(first.extractItem(0, 64, false).isEmpty(), "nothing is pulled out");
+        t.assertTrue(first.extractItem(0, 10, true).getCount() == 10 && slot(t, line[0]).getCount() + slot(t, line[1]).getCount() == 128, "a simulated pull takes nothing");
+        ItemStack pulled = second.extractItem(0, 64, false);
+        pulled.grow(first.extractItem(1, 64, false).getCount());
+        t.assertTrue(pulled.is(Items.CARROT) && pulled.getCount() == 128 && slot(t, line[0]).isEmpty() && slot(t, line[1]).isEmpty(), "a pipe pulls the food out of both slots: " + pulled);
+        t.assertTrue(t.getLevel().getBlockState(line[0]).getValue(TroughBlock.DIET) == 0, "the empty line has no diet again");
+        t.assertTrue(net.neoforged.neoforge.items.ItemHandlerHelper.insertItemStacked(first, new ItemStack(Items.COOKED_BEEF, 3), false).isEmpty(), "and now takes beef");
         t.succeed();
     }
 

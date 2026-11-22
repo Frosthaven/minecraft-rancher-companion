@@ -63,6 +63,16 @@ public class TroughBlockEntity extends BlockEntity {
         return Math.max(0, add);
     }
 
+    /** up to this many of its food, for a pipe that pulls; taken out unless simulated */
+    public ItemStack take(int amount, boolean simulate) {
+        ItemStack s = items.get(0);
+        if (s.isEmpty() || amount <= 0) return ItemStack.EMPTY;
+        if (simulate) return s.copyWithCount(Math.min(amount, s.getCount()));
+        ItemStack out = ContainerHelper.removeItem(items, 0, amount);
+        if (!out.isEmpty()) changed();
+        return out;
+    }
+
     /** everything it holds, for the drop when it is broken */
     public List<ItemStack> drops() {
         List<ItemStack> out = new ArrayList<>(overflow);

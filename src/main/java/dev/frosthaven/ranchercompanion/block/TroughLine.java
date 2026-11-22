@@ -8,8 +8,8 @@ import net.neoforged.neoforge.items.IItemHandler;
 /**
  * A trough line as one inventory for pipes, funnels, chutes and hoppers (spec, Drekki Trough): one slot per trough of the
  * line, the same from any trough of it, as a Create vault. It takes only food a drekki eats, of the line's diet, where a
- * slot has room; anything else is refused, so it waits in the pipe. Nothing can be pulled out: a trough is where food is
- * eaten, and a chute under one would empty it. The line is read on every call, so joins and splits need no bookkeeping.
+ * slot has room; anything else is refused, so it waits in the pipe. Food can be pulled out of any slot, as from a chest.
+ * The line is read on every call, so joins and splits need no bookkeeping.
  */
 public final class TroughLine implements IItemHandler {
     private final TroughBlockEntity from;
@@ -27,7 +27,16 @@ public final class TroughLine implements IItemHandler {
     @Override public int getSlots() { return line().size(); }
     @Override public ItemStack getStackInSlot(int slot) { var l = line(); return slot < 0 || slot >= l.size() ? ItemStack.EMPTY : l.get(slot).items().get(0); }
     @Override public int getSlotLimit(int slot) { return 64; }
-    @Override public ItemStack extractItem(int slot, int amount, boolean simulate) { return ItemStack.EMPTY; }
+
+    @Override
+    public ItemStack extractItem(int slot, int amount, boolean simulate) {
+        var l = line();
+        var level = from.getLevel();
+        if (slot < 0 || slot >= l.size() || level == null || level.isClientSide) return ItemStack.EMPTY;
+        ItemStack out = l.get(slot).take(amount, simulate);
+        if (!simulate && !out.isEmpty()) TroughBlock.contentsChangedAt(level, from.getBlockPos());   /* an empty line has no diet */
+        return out;
+    }
 
     @Override
     public boolean isItemValid(int slot, ItemStack stack) {
