@@ -66,4 +66,32 @@ class LifeTest {
         }
         assertEquals(9.5f, Life.shownFood(9.18));
     }
+
+    @Test
+    void aFedDrekkiHealsAsAPlayerDoesAndPaysInFood() {
+        Life l = new Life();
+        assertEquals(0, l.fedHeal(79, 20));
+        assertEquals(1, l.fedHeal(1, 20));           /* 4 s: one health */
+        assertEquals(9.25, l.food, 1e-9);
+        assertEquals(1, l.fedHeal(200, 20));         /* 9.25 pays for one more, then it is below 9 shanks */
+        assertEquals(8.5, l.food, 1e-9);
+        assertEquals(0, l.fedHeal(400, 20));
+        l.food = 10;
+        assertEquals(0, l.fedHeal(400, 0));          /* unhurt: nothing spent */
+        assertEquals(10, l.food, 1e-9);
+    }
+
+    @Test
+    void aFedDrekkiHealsFromItsOwnFoodAndPaysInFood() {
+        Life l = new Life();
+        assertEquals(0, l.fedHeal(79, 20));
+        assertEquals(1, l.fedHeal(1, 20));           /* 4 s: one health */
+        assertEquals(9.25, l.food, 1e-9);
+        assertEquals(1, l.fedHeal(200, 20));         /* 9.25 pays for one more, then it is below 9 shanks */
+        assertEquals(8.5, l.food, 1e-9);
+        assertEquals(0, l.fedHeal(400, 20));
+        l.food = 10;
+        assertEquals(0, l.fedHeal(400, 0));          /* unhurt: nothing spent */
+        assertEquals(10, l.food, 1e-9);
+    }
 }

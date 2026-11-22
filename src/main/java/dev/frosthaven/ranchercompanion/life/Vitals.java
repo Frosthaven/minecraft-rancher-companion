@@ -70,7 +70,8 @@ public final class Vitals {
     private static final net.minecraft.resources.ResourceLocation SLOW = net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(dev.frosthaven.ranchercompanion.RancherCompanion.ID, "miserable");
 
     /** the band's effects (spec, Mood): Miserable is 25% slower and has no home bonus; Uneasy and worse, and hunger, stop
-     *  regeneration. Regeneration: 1 health every 10 s in its home terrain; Hearty 1 every 10 s anywhere, every 5 s at home */
+     *  the home and Hearty regeneration: 1 health every 10 s in its home terrain; Hearty 1 every 10 s anywhere, every 5 s at
+     *  home. Fed healing (spec, Hunger) is apart from mood, as a player's is */
     private static void effects(DrekkiEntity d, long dt) {
         Life l = d.life;
         Life.Band band = d.band();
@@ -81,12 +82,17 @@ public final class Vitals {
                 net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
             else if (!slow && speed.hasModifier(SLOW)) speed.removeModifier(SLOW);
         }
+        int fed = l.fedHeal(dt, (int) Math.ceil(d.getMaxHealth() - d.getHealth()));
+        if (fed > 0) { ownHeal(d, fed); d.syncLife(); }
         if (l.hungry() || band == Life.Band.UNEASY || band == Life.Band.MISERABLE || d.getHealth() >= d.getMaxHealth()) { l.regen = 0; return; }
         boolean home = atHome(d), hearty = l.traits.contains(Trait.HEARTY.id);
         double perTenSeconds = hearty ? (home ? 2 : 1) : home ? 1 : 0;
         l.regen += perTenSeconds * dt / 200.0;
-        if (l.regen >= 1) { d.selfHeal = true; d.heal((float) Math.floor(l.regen)); d.selfHeal = false; l.regen -= Math.floor(l.regen); }
+        if (l.regen >= 1) { ownHeal(d, (float) Math.floor(l.regen)); l.regen -= Math.floor(l.regen); }
     }
+
+    /** a heal of its own, which Hearty does not learn from */
+    private static void ownHeal(DrekkiEntity d, float amount) { d.selfHeal = true; d.heal(amount); d.selfHeal = false; }
 
     /** in its astral home terrain, which Miserable takes away (spec, Mood) */
     public static boolean atHome(DrekkiEntity d) {

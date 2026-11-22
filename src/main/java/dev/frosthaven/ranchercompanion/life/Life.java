@@ -88,6 +88,22 @@ public final class Life {
      *  is missing, when it eats at a trough ({@link #wantsFood}) */
     public static float shownFood(double food) { return (float) Math.min(FOOD_MAX, Math.ceil(food * 2 - 1e-9) / 2.0); }
 
+    /** fed healing, as a player's on a 20 point bar (a shank is 2 points): at 9 shanks or more a hurt drekki heals
+     *  1 health every 4 s, and each health costs 0.75 of a shank (a player's 6 exhaustion) */
+    public static final double FED = 9, HEAL_COST = 0.75;
+    public static final int HEAL_TICKS = 80;
+    /** ticks toward the next fed heal (not saved) */
+    public long fed;
+
+    /** the health these ticks of being fed give a drekki missing this much; takes the food it costs */
+    public int fedHeal(long ticks, int missing) {
+        if (ghost || food < FED || missing <= 0) { fed = 0; return 0; }
+        fed += ticks;
+        int n = 0;
+        while (fed >= HEAL_TICKS && food >= FED && n < missing) { fed -= HEAL_TICKS; food -= HEAL_COST; n++; }
+        return n;
+    }
+
     /** room for a whole shank: it eats */
     public boolean wantsFood() { return food <= FOOD_MAX - 1; }
 

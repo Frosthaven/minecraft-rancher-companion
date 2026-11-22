@@ -545,7 +545,7 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
     with no open water above, they get 10 s of Water Breathing instead. 5-minute cooldown.
   - Hearty (added by the team): learned by healing the drekki 5 times with potions or spells (any heal from
     outside the mod: `LivingHealEvent`, so spell mods need no compat code). A heal counts only while the drekki is
-    missing health, at most once per 30 s; home regeneration, Draconic Vampirism and Rejuvenate do not count.
+    missing health, at most once per 30 s; home regeneration, fed healing, Draconic Vampirism and Rejuvenate do not count.
     Effect: +6 max health (3 hearts), and the drekki regenerates 1 health every 10 s everywhere, 1 every 5 s in its home
     terrain. Hunger still stops all regeneration; Blood-thirsty halves it.
   - Duck & Cover (added by the team, 2026-11-20): learned by blocking 10 arrows or tridents with a shield (counted).
@@ -692,6 +692,10 @@ effect (see Mood), so other systems can soften or sharpen it later.
   whenever it has room for a shank.
 - While hungry, mood falls 2 a minute. Eating gives +5 mood and ends the drain. It never starves to death.
   Hibernation Plan makes the meter drain 33% slower.
+- Fed healing (decided 2026-11-21), as a player's on its 20 point bar (a shank is 2 points): at 9 shanks or more a
+  hurt drekki heals 1 health every 4 s, and each health costs 0.75 of a shank (a player's 6 exhaustion), so it stops
+  below 9 shanks until it eats again. No saturation, so no fast healing. Mood does not stop it, and it is apart from
+  the home terrain and Hearty regeneration. It does not count toward Hearty. A ghost does not heal this way.
 - Food: the player's hand at any time. A checked-out drekki eats at a trough while its owner stands still, else
   from its bag. A drekki at home (checked in) goes to the troughs first, then its bag. Its bag feeds it only with a
   Sophisticated feeding upgrade (see Accessory: bags).
@@ -734,8 +738,8 @@ effect, in bands.
 | 85-100, Recently pet and above half food | Thriving | One-off activities teach at 75%; each counted activity counts double |
 | 75-100 | Happy | One-off activities teach at 50% (double) |
 | 50-74 | Content | Normal (one-off activities teach at 25%) |
-| 25-49 | Uneasy | No regeneration; one-off activities teach at 12.5% |
-| 0-24 | Miserable | No regeneration, no one-off learning, 25% slower, no home terrain bonus |
+| 25-49 | Uneasy | No home or Hearty regeneration; one-off activities teach at 12.5% |
+| 0-24 | Miserable | No home or Hearty regeneration, no one-off learning, 25% slower, no home terrain bonus |
 
 - Rises: +1 a minute in its home terrain, +5 each time it eats, +3 for each hostile mob killed within 10 blocks
   of it (by it or by a player).
