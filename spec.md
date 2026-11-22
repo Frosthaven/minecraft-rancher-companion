@@ -844,8 +844,8 @@ effect, in bands.
   base that runs along the body, so little bare back shows between them.
 - Hats: equippable cosmetics, not from the egg. Ideas so far: top hat, drinking hat, viking helmet, wizard hat,
   straw hat, crown, party cone, bucket, cowboy hat, chef toque, miner helmet, pirate tricorne, propeller beanie,
-  flower crown, jester cap; since 0.4.13 (decided 2026-11-22) the conductor's cap and stock keeper's cap (Create's train
-  and stock keeper hats as hats of their own, in Create's colors), an aviator cap (leather, ear flaps, a short visor,
+  flower crown, jester cap; since 0.4.13 (decided 2026-11-22) the conductor's cap and stock keeper's cap (Create's own
+  train hat and stock keeper hat models, drawn from Create; offered only with Create installed), an aviator cap (leather, ear flaps, a short visor,
   goggles on the brow) and a satellite hat (a metal dome, an antenna with a dish on one side, a circuit board taped to
   the other with a lit LED). A hat hides the head crest; horns poke through it. A drekki in a Create job keeps the hat it
   wears; Create's job hat shows only on a bare head (spec, Go here: Job hats).

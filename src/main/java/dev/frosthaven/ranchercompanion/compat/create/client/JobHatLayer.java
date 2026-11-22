@@ -23,7 +23,8 @@ import net.minecraft.world.entity.LivingEntity;
  * Create's job hats on a drekki (spec, Go here): the train hat of a conductor and the stock keeper's hat of a seat next
  * to a Stock Ticker. Create puts its hat layer only on renderers with a vanilla head part, which the drekki's rig has
  * not, so the drekki draws Create's hat itself, on its own crown (the spot its own hats sit on), at every stage, and
- * shows it only on a bare head: a drekki wearing a hat of its own keeps it. Create decides when a hat shows ({@code EntityHats.getHatFor}); that method returns a
+ * shows it only on a bare head: a drekki wearing a hat of its own keeps it. The drekki's own conductor's cap and stock
+ * keeper's cap (Gear.HATS 16, 17) are Create's same two models, drawn here the same way. Create decides when a hat shows ({@code EntityHats.getHatFor}); that method returns a
  * Flywheel type, so it and the model are reached by method handles (no Flywheel at compile time). The flip and the tilt
  * are Create's own ({@code CreateHatArmorLayer}); Create's 2.25 px sink into a vanilla head is left out: the crown is
  * already a pixel under the top of the drekki's shorter head, and with the sink the 3.3 px cap sat at its eyes.
@@ -54,13 +55,31 @@ public final class JobHatLayer extends RenderLayer<DrekkiEntity, DrekkiModel> {
         }
     }
 
-    /** registers the hide hook: its own hat goes while Create's shows */
+    /** Gear.HATS indexes of the conductor's cap and the stock keeper's cap: drawn with Create's own models */
+    public static final int CONDUCTOR_CAP = 16, STOCK_KEEPER_CAP = 17;
+
+    /** Create's train hat or stock keeper hat model by its standalone name (Create registers its partial models so), or
+     *  null when it is missing */
+    private static BakedModel createModel(String path) {
+        var mm = net.minecraft.client.Minecraft.getInstance().getModelManager();
+        BakedModel m = mm.getModel(net.minecraft.client.resources.model.ModelResourceLocation.standalone(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("create", path)));
+        return m == mm.getMissingModel() ? null : m;
+    }
+
+    /** what it shows on its crown: its own conductor's or stock keeper's cap, else Create's job hat on a bare head */
+    private static BakedModel shown(DrekkiEntity e) {
+        if (e.hat() == CONDUCTOR_CAP) return createModel("entity/train_hat");
+        if (e.hat() == STOCK_KEEPER_CAP) return createModel("entity/logistics_hat");
+        return e.hat() == 0 ? hat(e) : null;  /* a hat of its own stays on: Create's job hat only on a bare head */
+    }
+
+    /** registers the hide hook: its crest goes while Create's job hat shows */
     static void install() { DrekkiAnimations.JOB_HAT = e -> e.hat() == 0 && hat(e) != null; }
 
     @Override
     public void render(PoseStack ps, MultiBufferSource buf, int light, DrekkiEntity e, float limb, float limbAmount, float partial, float age, float yaw, float pitch) {
-        if (e.isInvisible() || e.hat() > 0) return;  /* a hat of its own stays on: Create's only on a bare head */
-        BakedModel hat = hat(e);
+        if (e.isInvisible()) return;
+        BakedModel hat = shown(e);
         if (hat == null) return;
         var baked = getParentModel().baked;
         Node crown = baked.rig.crown;

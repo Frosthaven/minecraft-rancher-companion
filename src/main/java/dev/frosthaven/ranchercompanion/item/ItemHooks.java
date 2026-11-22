@@ -31,6 +31,8 @@ public final class ItemHooks {
         var offers = trader.getOffers();
         for (MerchantOffer o : offers) if (DrekkiItems.hatIndex(o.getResult()) > 0) return;
         var hats = new java.util.ArrayList<>(DrekkiItems.allHats());
+        /* the conductor's and stock keeper's caps are Create's models: offered only with Create */
+        if (!net.neoforged.fml.ModList.get().isLoaded("create")) hats.removeIf(h -> DrekkiItems.hatIndex(new ItemStack(h.get())) >= 16 && DrekkiItems.hatIndex(new ItemStack(h.get())) <= 17);
         java.util.Collections.shuffle(hats, new java.util.Random(trader.getRandom().nextLong()));
         for (int i = 0; i < HAT_OFFERS && i < hats.size(); i++)
             offers.add(new MerchantOffer(new ItemCost(Items.EMERALD, HAT_PRICE), new ItemStack(hats.get(i).get()), HAT_STOCK, 1, 0.05f));
