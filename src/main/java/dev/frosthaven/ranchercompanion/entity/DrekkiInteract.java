@@ -64,6 +64,7 @@ public final class DrekkiInteract {
         if (mine && hand == InteractionHand.MAIN_HAND && !d.ghost() && handFeeds(d, stack)) {
             if (!d.level().isClientSide) {
                 dev.frosthaven.ranchercompanion.life.Vitals.eat(d, stack.copyWithCount(1), true);
+                dev.frosthaven.ranchercompanion.life.Vitals.ownHeal(d, dev.frosthaven.ranchercompanion.life.Life.HAND_HEAL);
                 d.act(dev.frosthaven.ranchercompanion.look.Anim.FEED, 30);
                 stack.consume(1, player);
                 Ranch.touch(d);
@@ -104,7 +105,8 @@ public final class DrekkiInteract {
 
     /** food it eats now: its diet's (any diet while open), while its shank bar is not full; the client predicts from the default lists */
     public static boolean handFeeds(DrekkiEntity d, ItemStack stack) {
-        if (d.food() > dev.frosthaven.ranchercompanion.life.Life.FOOD_MAX - 0.5) return false;  /* the bar is not full: half a shank or more missing */
+        /* the bar is not full (half a shank or more missing), or it is hurt: a food from the hand also heals */
+        if (d.food() > dev.frosthaven.ranchercompanion.life.Life.FOOD_MAX - 0.5 && d.getHealth() >= d.getMaxHealth()) return false;
         var diet = foodDiet(d, stack);
         return diet != null && (d.stage() == 1 || diet.ordinal() == d.diet());
     }

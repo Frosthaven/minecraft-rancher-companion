@@ -137,6 +137,21 @@ public final class LifeTests {
             "the carrots stayed in the satchel: " + d.bagStorage().getStackInSlot(0).getCount()); t.succeed(); });
     }
 
+    /** a food from the hand heals 8, on a full bar too, and a full unhurt drekki takes none (spec, Hunger) */
+    @GameTest(template = "floor")
+    public static void aFoodFromTheHandHealsEvenOnAFullBar(GameTestHelper t) {
+        ServerPlayer p = player(t);
+        DrekkiEntity d = CombatTests.out(t, p, 2, Diet.ROOT, Life.Stance.PASSIVE);
+        d.setHealth(10);
+        p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new ItemStack(Items.CARROT, 2));
+        d.interact(p, net.minecraft.world.InteractionHand.MAIN_HAND);
+        t.assertTrue(d.getHealth() == 18 && p.getMainHandItem().getCount() == 1, "hurt and full: health " + d.getHealth() + ", carrots " + p.getMainHandItem().getCount());
+        d.setHealth(d.getMaxHealth());
+        d.interact(p, net.minecraft.world.InteractionHand.MAIN_HAND);
+        t.assertTrue(p.getMainHandItem().getCount() == 1, "full and unhurt: it took a carrot");
+        t.succeed();
+    }
+
     @GameTest(template = "floor", timeoutTicks = 600)
     public static void eatsAtATroughWhenHungry(GameTestHelper t) {
         BlockPos h = stable(t);

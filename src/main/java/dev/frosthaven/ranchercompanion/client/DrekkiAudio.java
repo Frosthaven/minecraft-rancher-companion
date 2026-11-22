@@ -45,6 +45,7 @@ public final class DrekkiAudio {
         if (mc.isPaused()) return;
         for (Iterator<Pending> it = QUEUE.iterator(); it.hasNext(); ) { Pending q = it.next(); if (q.ticks <= 0) { emit(mc.level, q.d, q.ev, q.vol, q.pitch); it.remove(); } }
         for (int i = 0; i < QUEUE.size(); i++) { Pending q = QUEUE.get(i); QUEUE.set(i, new Pending(q.d, q.ev, q.vol, q.pitch, q.ticks - 1)); }
+        for (Entity en : mc.level.entitiesForRendering()) if (en instanceof DrekkiEntity d) d.trackSpeed();
         for (Entity en : mc.level.entitiesForRendering())
             if (en instanceof DrekkiEntity d && d.anim() != Anim.IDLE && d.distanceToSqr(mc.gameRenderer.getMainCamera().getPosition()) < 32 * 32) score(mc.level, d);
         BEDS.values().removeIf(b -> b.isStopped());

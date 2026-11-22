@@ -92,7 +92,7 @@ public final class Vitals {
     }
 
     /** a heal of its own, which Hearty does not learn from */
-    private static void ownHeal(DrekkiEntity d, float amount) { d.selfHeal = true; d.heal(amount); d.selfHeal = false; }
+    public static void ownHeal(DrekkiEntity d, float amount) { d.selfHeal = true; d.heal(amount); d.selfHeal = false; }
 
     /** in its astral home terrain, which Miserable takes away (spec, Mood) */
     public static boolean atHome(DrekkiEntity d) {

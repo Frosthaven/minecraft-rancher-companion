@@ -603,10 +603,24 @@ public class DrekkiEntity extends PathfinderMob {
         if (!level().isClientSide && owned()) dev.frosthaven.ranchercompanion.ranch.Death.died(this);
     }
 
+    private double seenX = Double.NaN, seenZ;
+    private long seenAt;
+
+    /** client: its smoothed ground speed, from where it was at the last call. Called from its own tick and from the
+     *  sound tick, once a game tick at most: Entity Culling gives a drekki the player cannot see a reduced tick that
+     *  moves it but never runs {@link #tick}, so a speed kept only there froze at "walking" and its steps played on
+     *  while it stood behind a player in a menu (2026-11-22) */
+    public void trackSpeed() {
+        long now = level().getGameTime(), dt = now - seenAt;
+        if (dt <= 0) return;
+        if (!Double.isNaN(seenX)) speedAvg += (Math.hypot(getX() - seenX, getZ() - seenZ) * 20 / dt - speedAvg) * 0.3;
+        seenX = getX(); seenZ = getZ(); seenAt = now;
+    }
+
     @Override
     public void tick() {
         super.tick();
-        if (level().isClientSide) speedAvg += (Math.hypot(getX() - xo, getZ() - zo) * 20 - speedAvg) * 0.3;
+        if (level().isClientSide) trackSpeed();
         else {
             if (petTicks() > 0) entityData.set(PET, petTicks() - 1);
             if (stage() == 1 && isAlive() && getHealth() < getMaxHealth()) setHealth(getMaxHealth());  /* a pup hurt before 0.3.2 */

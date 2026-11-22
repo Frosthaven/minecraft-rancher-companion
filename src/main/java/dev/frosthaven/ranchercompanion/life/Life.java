@@ -129,6 +129,9 @@ public final class Life {
         return Math.min(n, missing);
     }
 
+    /** the health a food from its owner's hand gives at once, and why a hurt drekki takes one on a full bar */
+    public static final float HAND_HEAL = 8;
+
     /** room for a whole shank: it eats */
     public boolean wantsFood() { return food <= FOOD_MAX - 1; }
 

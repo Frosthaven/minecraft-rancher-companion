@@ -701,6 +701,9 @@ effect (see Mood), so other systems can soften or sharpen it later.
   more a hurt drekki heals 1 health every 4 s; with a full bar and saturation, 1 every half second, paid from
   saturation only. Each health costs 0.75 of a shank (a player's 6 exhaustion). Mood does not stop it, and it is
   apart from the home terrain and Hearty regeneration. It does not count toward Hearty. A ghost does not heal this way.
+- A food from its owner's hand also heals 8 health at once (decided 2026-11-22), and a hurt drekki takes one even on
+  a full bar (the food then adds saturation only). Its diet only, as ever. Trough and bag meals do not heal at once.
+  It does not count toward Hearty.
 - Food: the player's hand at any time. A checked-out drekki eats at a trough while its owner stands still, else
   from its bag. A drekki at home (checked in) goes to the troughs first, then its bag. Its bag feeds it only with a
   Sophisticated feeding upgrade (see Accessory: bags).
@@ -1299,7 +1302,7 @@ Pups grow, eat, feel and learn; growth stops at stage 2 (Fledgling) until a late
   at the foot of the info well (icons from the design page, tooltip each). The
   top is 220 wide so trait names fit Minecraft's font on one line; the pack and the inventory keep vanilla's 176, centered, and the pack row (9) over the inventory.
   A ghost's stage reads "Fledgling, ghost".
-- Hand feeding: its owner right-clicks it with food it eats while it has room for a shank; otherwise the screen opens.
+- Hand feeding: its owner right-clicks it with food it eats while it has room for it or is hurt; otherwise the screen opens.
   Petting with sneak + empty hand also starts Recently pet. A ghost under Weakness takes a golden apple.
 - Undertow reaches 10 blocks across at any depth (fixed 2026-11-18): a drekki stays at the surface while its owner
   dives, so a 10-block reach in all directions missed a dive deeper than about 10 blocks below it. It starts at the
@@ -1317,7 +1320,7 @@ Pups grow, eat, feel and learn; growth stops at stage 2 (Fledgling) until a late
   screen does (title, then wrapped to at most 4 rows). The details tab shows the astral name in its eye color with the
   same tooltip as the chat message when it settles.
 - Food (fixed 2026-11-18): the shank bar rounds up to half a shank, so an empty shank shows exactly when it eats at a
-  trough (a whole shank missing). Hand feeding works whenever the bar is not full (half a shank or more missing). Food it will not take says why on the
+  trough (a whole shank missing). Hand feeding works whenever the bar is not full (half a shank or more missing) or the drekki is hurt. Food it will not take says why on the
   action bar ("Not hungry", "Eats Seed food only") instead of opening the screen.
 - Patchwork is learned when an item wears through (its durability runs out), not when the last item of a stack is
   used up (fixed 2026-11-18: the game's item-destroyed event fires for both).
