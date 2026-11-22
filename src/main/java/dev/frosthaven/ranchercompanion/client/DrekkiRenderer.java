@@ -78,12 +78,12 @@ public final class DrekkiRenderer extends MobRenderer<DrekkiEntity, DrekkiModel>
 
     /** the eyes again, unlit, like spider eyes */
     private static final class Glow extends RenderLayer<DrekkiEntity, DrekkiModel> {
-        private static final int MINER_HELMET = 11;
+        private static final int MINER_HELMET = 11, SATELLITE_HAT = 19;
         Glow(DrekkiRenderer parent) { super(parent); }
 
         @Override
         public void render(PoseStack ps, MultiBufferSource buf, int light, DrekkiEntity e, float limbSwing, float limbSwingAmount, float partial, float age, float yaw, float pitch) {
-            if (!Astral.glows(e.astral()) && e.hat() != MINER_HELMET) return;  /* the layer also carries the miner helmet's lamp */
+            if (!Astral.glows(e.astral()) && e.hat() != MINER_HELMET && e.hat() != SATELLITE_HAT) return;  /* the layer also carries the miner helmet's lamp and the satellite hat's LED */
             DrekkiModel m = getParentModel();
             VertexConsumer vc = buf.getBuffer(RenderType.entityTranslucentEmissive(m.baked.eyes));
             m.renderToBuffer(ps, vc, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, -1);

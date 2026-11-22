@@ -23,7 +23,7 @@ import net.minecraft.world.entity.LivingEntity;
  * Create's job hats on a drekki (spec, Go here): the train hat of a conductor and the stock keeper's hat of a seat next
  * to a Stock Ticker. Create puts its hat layer only on renderers with a vanilla head part, which the drekki's rig has
  * not, so the drekki draws Create's hat itself, on its own crown (the spot its own hats sit on), at every stage, and
- * hides its own hat meanwhile. Create decides when a hat shows ({@code EntityHats.getHatFor}); that method returns a
+ * shows it only on a bare head: a drekki wearing a hat of its own keeps it. Create decides when a hat shows ({@code EntityHats.getHatFor}); that method returns a
  * Flywheel type, so it and the model are reached by method handles (no Flywheel at compile time). The flip and the tilt
  * are Create's own ({@code CreateHatArmorLayer}); Create's 2.25 px sink into a vanilla head is left out: the crown is
  * already a pixel under the top of the drekki's shorter head, and with the sink the 3.3 px cap sat at its eyes.
@@ -55,11 +55,11 @@ public final class JobHatLayer extends RenderLayer<DrekkiEntity, DrekkiModel> {
     }
 
     /** registers the hide hook: its own hat goes while Create's shows */
-    static void install() { DrekkiAnimations.JOB_HAT = e -> hat(e) != null; }
+    static void install() { DrekkiAnimations.JOB_HAT = e -> e.hat() == 0 && hat(e) != null; }
 
     @Override
     public void render(PoseStack ps, MultiBufferSource buf, int light, DrekkiEntity e, float limb, float limbAmount, float partial, float age, float yaw, float pitch) {
-        if (e.isInvisible()) return;
+        if (e.isInvisible() || e.hat() > 0) return;  /* a hat of its own stays on: Create's only on a bare head */
         BakedModel hat = hat(e);
         if (hat == null) return;
         var baked = getParentModel().baked;

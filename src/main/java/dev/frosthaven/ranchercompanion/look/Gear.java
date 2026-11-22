@@ -9,7 +9,8 @@ public final class Gear {
 
     /** The page's HATS order; index 0 is no hat. */
     public static final String[] HATS = {"None", "Top hat", "Drinking hat", "Viking helmet", "Wizard hat", "Straw hat", "Crown",
-        "Party cone", "Bucket", "Cowboy hat", "Chef toque", "Miner helmet", "Pirate tricorne", "Propeller beanie", "Flower crown", "Jester cap"};
+        "Party cone", "Bucket", "Cowboy hat", "Chef toque", "Miner helmet", "Pirate tricorne", "Propeller beanie", "Flower crown", "Jester cap",
+        "Conductor's cap", "Stock keeper's cap", "Aviator cap", "Satellite hat"};
 
     /** The page's BARDING order by armor; index 0 is none. Material names pick the texture pattern. */
     public static final String[] BARDING = {"none", "wood", "leather", "stone", "iron", "gold", "diamond", "netherite"};

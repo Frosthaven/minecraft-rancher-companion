@@ -367,8 +367,8 @@ Sneak and use the Drekki Whistle while looking at a block (up to 64 blocks away)
 - **A seat a drekki sits on is taken** (decided 2026-11-22): a player's click on it does nothing, on a seat block and
   on a train's seat alike (Create would throw the drekki off and sit the player there). Sneaking, the click works as
   usual (blocks placed against the seat).
-- **Job hats.** Create's train hat and stock keeper hat are drawn on the drekki's crown at every stage, in place of its
-  own hat, and over its head crest.
+- **Job hats.** Create's train hat and stock keeper hat are drawn on the drekki's crown at every stage, over its head
+  crest, only when it wears no hat of its own (decided 2026-11-22: a hat it wears stays on).
 - **No hunger at work** (decided 2026-11-22): an employed drekki's food bar holds while it is employed, since it never
   leaves its seat to eat. It drains again once it is recalled or loses its seat.
 
@@ -844,7 +844,11 @@ effect, in bands.
   base that runs along the body, so little bare back shows between them.
 - Hats: equippable cosmetics, not from the egg. Ideas so far: top hat, drinking hat, viking helmet, wizard hat,
   straw hat, crown, party cone, bucket, cowboy hat, chef toque, miner helmet, pirate tricorne, propeller beanie,
-  flower crown, jester cap. A hat hides the head crest; horns poke through it.
+  flower crown, jester cap; since 0.4.13 (decided 2026-11-22) the conductor's cap and stock keeper's cap (Create's train
+  and stock keeper hats as hats of their own, in Create's colors), an aviator cap (leather, ear flaps, a short visor,
+  goggles on the brow) and a satellite hat (a metal dome, an antenna with a dish on one side, a circuit board taped to
+  the other with a lit LED). A hat hides the head crest; horns poke through it. A drekki in a Create job keeps the hat it
+  wears; Create's job hat shows only on a bare head (spec, Go here: Job hats).
   - Every stage wears one: a hat slot on the drekki screen from stage 1, the hat scaled to the head. At stage 1 it
     is the only slot.
   - Crafted, shaped (rows split by `/`, `_` empty; checked against every vanilla 1.21.1 shaped recipe and each
@@ -856,7 +860,8 @@ effect, in bands.
     - Party cone: `_ P _ / P D P` (paper, any dye).
     - Bucket: `S / B` (string over a bucket).
     - Drinking hat: `G H G` (glass bottles either side of a leather helmet).
-  - Wandering trader only: crown, top hat, wizard hat, pirate tricorne, jester cap, propeller beanie. Each trader
+  - Wandering trader only: crown, top hat, wizard hat, pirate tricorne, jester cap, propeller beanie, conductor's cap,
+    stock keeper's cap, aviator cap, satellite hat. Each trader
     sells one of these at random, one use, for emeralds (price a proposal: 12).
 - Previews: see artifacts.md in the repo root.
 

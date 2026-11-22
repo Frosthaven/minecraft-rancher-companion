@@ -10,7 +10,10 @@ final class Hats {
 
     private static final int BLACK = 0x1b1b1f, RED = 0xb8352b, GOLD = 0xe2b63a, STRAW = 0xd9c372, WHITE = 0xf2f2ee, IRON = 0x8e9297,
         IRON2 = 0xb9bec3, BLUE = 0x3d4f9e, GREEN = 0x4e8a3c, PINK = 0xe39cc0, PURPLE = 0x6d3f9c, YELLOW = 0xe8d84a,
-        BROWN = 0x6b4a2b, BROWN2 = 0x4a3119, CAN = 0xc8ccd0, LAMP = 0xfff2a8, BONE = Rig.BONE;
+        BROWN = 0x6b4a2b, BROWN2 = 0x4a3119, CAN = 0xc8ccd0, LAMP = 0xfff2a8, BONE = Rig.BONE,
+        /* Create's train and stock keeper hats (its entity/train_hat and logistics_hat textures), the aviator's leather and goggles, the satellite's board and tape */
+        TRAIN_RED = 0x97333b, TRAIN_WHITE = 0xc8cbc7, TRAIN_PEAK = 0x2d3539, BRASS = 0xd9ad4e, KEEPER = 0x278957, KEEPER2 = 0x1d6935, KEEPER_BAND = 0xdcdcd9,
+        LEATHER = 0x7a4a2a, LEATHER2 = 0x5e3a1a, FLEECE = 0xe8dcc0, STRAP = 0x2b2e35, GLASS = 0x9ad0e0, BOARD = 0x2f7a3a, CHIP = 0x1b1b1f, TAPE = 0xd8d2c0, LED = 0x7dff7a;
 
     private static double rad(double d) { return Math.toRadians(d); }
     private static float sn(double v) { return v < 0.35 ? 0 : Math.max(1, Math.round((float) v)); }
@@ -64,6 +67,23 @@ final class Hats {
             case 15 -> { q.c(h, 8, 2.5, 7, 0, 1.25, 0, PURPLE);
                 double[][] tails = {{0, rad(45), RED}, {0, -rad(45), YELLOW}, {-rad(55), 0, PURPLE}};
                 for (double[] p : tails) { Node g = q.g(h, 0, 2, 0); g.rot(p[0], 0, p[1]); q.c(g, 2, 6, 2, 0, 3, 0, (int) p[2]); q.c(g, 1.4, 1.4, 1.4, 0, 6.5, 0, BONE); } }
+            case 16 -> { q.c(h, 9, 3, 9, 0, 1.5, 0, TRAIN_WHITE);  /* conductor's cap: Create's train hat, red and white stripes, a dark peak, a brass badge */
+                for (int x = -4; x <= 4; x += 2) q.c(h, 1, 4, 10, x, 1.5, 0, TRAIN_RED);
+                Node f = q.g(h, 0, 0.6, 4.8); f.rx = (float) rad(20); q.c(f, 9, 1, 3, 0, 0, 1.5, TRAIN_PEAK);
+                q.c(h, 2, 2, 1, 0, 1.6, 5.2, BRASS); }
+            case 17 -> { q.c(h, 9, 3, 9, 0, 1.5, 0, KEEPER); q.c(h, 10, 1, 10, 0, 1.5, 0, KEEPER_BAND);  /* stock keeper's cap: Create's logistics hat */
+                Node f = q.g(h, 0, 0.6, 4.8); f.rx = (float) rad(20); q.c(f, 9, 1, 3, 0, 0, 1.5, KEEPER2); }
+            case 18 -> { q.c(h, 9, 4, 9, 0, 2, 0, LEATHER); q.c(h, 1, 5, 9, 0, 2.2, 0, LEATHER2);  /* aviator cap: leather, ear flaps, a short visor, goggles on the brow */
+                for (int s : new int[]{-1, 1}) { q.c(h, 1, 5, 4, s * 4.9, -0.5, 0.5, LEATHER); q.c(h, 1, 1, 4, s * 4.9, -3.2, 0.5, FLEECE); }
+                Node f = q.g(h, 0, 0.5, 4.6); f.rx = (float) rad(15); q.c(f, 8, 1, 2, 0, 0, 1, LEATHER2);
+                q.c(h, 10, 1, 10, 0, 2.6, 0, STRAP);
+                for (int s : new int[]{-1, 1}) { q.c(h, 3, 3, 1, s * 2, 2.6, 5, BRASS); q.c(h, 2, 2, 1, s * 2, 2.6, 5.3, GLASS); } }
+            case 19 -> { q.c(h, 9, 3, 9, 0, 1.5, 0, IRON); q.c(h, 7, 2, 7, 0, 4, 0, IRON); q.c(h, 4, 1, 4, 0, 5.5, 0, IRON2);  /* satellite hat: a metal dome */
+                q.c(h, 1, 9, 1, 3.5, 7.5, -1, IRON2);  /* the antenna on one side, a dish and its feed on top */
+                Node d = q.g(h, 3.5, 12, -1); d.rz = (float) -rad(30); q.c(d, 4, 1, 4, 0, 0, 0, WHITE); q.c(d, 1, 2, 1, 0, 1.2, 0, RED);
+                q.c(h, 1, 3, 4, -5, 2, 0.5, BOARD);  /* a circuit board taped to the other side, its chip, a lit LED and a wire */
+                q.c(h, 1, 1, 1, -5.6, 2.6, 1.2, CHIP); q.c(h, 1, 1, 1, -5.6, 1.2, -0.6, LED, 3);
+                q.c(h, 2, 1, 5, -5, 3.6, 0.5, TAPE); q.c(h, 2, 1, 5, -5, 0.4, 0.5, TAPE); q.c(h, 1, 1, 3, -4.6, 3.8, -2.5, RED); }
             default -> {}
         }
         return null;

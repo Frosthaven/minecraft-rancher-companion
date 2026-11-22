@@ -55,7 +55,7 @@ public final class DrekkiItems {
         "miner_helmet", "viking_helmet", "party_cone", "bucket_hat", "drinking_hat").stream().map(DrekkiItems::single).toList();
     /** Sold only by the wandering trader, one at random per offer. */
     public static final List<DeferredItem<Item>> TRADER_HATS = List.of("crown", "top_hat", "wizard_hat", "pirate_tricorne",
-        "jester_cap", "propeller_beanie").stream().map(DrekkiItems::single).toList();
+        "jester_cap", "propeller_beanie", "conductor_cap", "stock_keeper_cap", "aviator_cap", "satellite_hat").stream().map(DrekkiItems::single).toList();
 
     public static final List<DeferredItem<Item>> TONICS = List.of("bloodline_tonic", "heirloom_tonic", "clean_slate_tonic",
         "starlight_tonic", "purity_tonic", "rarity_tonic").stream()
@@ -83,7 +83,8 @@ public final class DrekkiItems {
 
     /** the hat items by Gear.HATS index (index 0 is no hat) */
     private static final String[] HAT_IDS = {"", "top_hat", "drinking_hat", "viking_helmet", "wizard_hat", "straw_hat", "crown", "party_cone",
-        "bucket_hat", "cowboy_hat", "chef_toque", "miner_helmet", "pirate_tricorne", "propeller_beanie", "flower_crown", "jester_cap"};
+        "bucket_hat", "cowboy_hat", "chef_toque", "miner_helmet", "pirate_tricorne", "propeller_beanie", "flower_crown", "jester_cap",
+        "conductor_cap", "stock_keeper_cap", "aviator_cap", "satellite_hat"};
 
     /** the Gear.HATS index of a hat item, 0 for anything else */
     public static int hatIndex(net.minecraft.world.item.ItemStack stack) {
