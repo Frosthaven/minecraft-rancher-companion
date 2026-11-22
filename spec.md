@@ -363,7 +363,8 @@ Sneak and use the Drekki Whistle while looking at a block (up to 64 blocks away)
   ("... lost its seat and went home"), or to No hatchery without one.
 - **Job hats.** Create's train hat and stock keeper hat are drawn on the drekki's crown at every stage, in place of its
   own hat, and over its head crest.
-- Open: an employed drekki still gets hungry and does not leave its seat to eat.
+- **No hunger at work** (decided 2026-11-22): an employed drekki's food bar holds while it is employed, since it never
+  leaves its seat to eat. It drains again once it is recalled or loses its seat.
 
 ## Affinities
 

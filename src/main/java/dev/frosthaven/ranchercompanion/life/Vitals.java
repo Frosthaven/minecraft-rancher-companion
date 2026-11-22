@@ -59,7 +59,8 @@ public final class Vitals {
         l.stamp = now;
         reviveTick(d, now);
         boolean travelling = d.isOut();
-        if (!l.ghost) l.spend(Life.drain(dt, hungerRate(d, travelling)));  /* a ghost does not get hungry */
+        /* a ghost does not get hungry, nor does an employed drekki: it stays on its seat (spec, Go here: Employed) */
+        if (!l.ghost && !dev.frosthaven.ranchercompanion.ranch.Ranch.employed(d)) l.spend(Life.drain(dt, hungerRate(d, travelling)));
         if (travelling) grow(d, dt);
         mood(d, dt);
         d.syncLife();
