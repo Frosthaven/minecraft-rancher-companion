@@ -9,7 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
-/** The trough's screen: its four food slots in the trough's well, the diet it holds, and the player's inventory below. */
+/** The trough's screen: its line's food slots in the trough's well, the diet it holds beside the title, and the player's inventory below. */
 public final class TroughScreen extends AbstractContainerScreen<TroughMenu> {
     private static final ResourceLocation TEX = ResourceLocation.fromNamespaceAndPath(RancherCompanion.ID, "textures/gui/trough.png");
 
@@ -23,6 +23,8 @@ public final class TroughScreen extends AbstractContainerScreen<TroughMenu> {
     @Override
     protected void renderBg(GuiGraphics g, float pt, int mx, int my) {
         g.blit(TEX, leftPos, topPos, 0, 0, imageWidth, imageHeight);
+        int n = menu.foodSlots();  /* a slot frame per trough of the line: the inventory's own frame, copied */
+        for (int i = 0; i < n; i++) g.blit(TEX, leftPos + TroughMenu.slotX(i, n) - 1, topPos + TroughMenu.slotY(i, n) - 1, 7, 83, 18, 18);
     }
 
     @Override
@@ -31,7 +33,7 @@ public final class TroughScreen extends AbstractContainerScreen<TroughMenu> {
         Diet d = menu.lineDiet();
         Component holds = d == null ? Component.translatable("screen.rancher_companion.trough.any")
             : Component.translatable("screen.rancher_companion.trough.holds", d.label);
-        g.drawString(font, holds, (imageWidth - font.width(holds)) / 2, 61, d == null ? Art.DIM : Art.THREAD, false);
+        g.drawString(font, holds, imageWidth - 8 - font.width(holds), 6, d == null ? Art.DIM : Art.THREAD, false);
     }
 
     @Override

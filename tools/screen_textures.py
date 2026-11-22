@@ -176,9 +176,7 @@ def trough():
     s.frame(0, 0, W, H)
     for x in range(3, W - 3):
         s.put(x, 17, STEEL[0]); s.put(x, 18, STEEL[2])
-    s.well(46, 27, 4 * 18 + 14, 32)      # the food slots' trough
-    for i in range(4):
-        s.slot(52 + i * 18, 33)
+    s.well(36, 22, 5 * 18 + 14, 46)      # the food slots' trough: the screen draws a slot per trough of the line
     # the player's inventory: a steel panel with slot wells (vanilla layout, 3 rows + hotbar)
     s.rect(3, 73, W - 6, 90, STEEL[1])
     for x in range(3, W - 3):

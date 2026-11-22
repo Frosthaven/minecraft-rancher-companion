@@ -43,7 +43,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * padded leather roll, open low on one side. FACING is the open side (toward the player on placement, away when sneaking).
  * Troughs facing the same way side by side join into a straight line of up to 10 (LEFT and RIGHT: joined toward the
  * neighbor on that side); a line holds one diet (DIET: 0 none, then Raw, Cooked, Seed, Root), set by the first food put in
- * and cleared when the line is empty. COLOR is the leather's dye (0 undyed), set per trough with a dye.
+ * and cleared when the line is empty. Each trough holds one stack, and a line shares its slots (TroughLine). COLOR is the leather's dye (0 undyed), set per trough with a dye.
  */
 public class TroughBlock extends BaseEntityBlock {
     public static final MapCodec<TroughBlock> CODEC = simpleCodec(TroughBlock::new);
@@ -132,9 +132,9 @@ public class TroughBlock extends BaseEntityBlock {
 
     // ---- the line ----
 
-    /** every trough joined to this one, this one included */
+    /** every trough joined to this one, this one included, from the line's left end to its right */
     public static List<BlockPos> line(BlockGetter level, BlockPos pos) {
-        List<BlockPos> out = new ArrayList<>();
+        java.util.ArrayDeque<BlockPos> out = new java.util.ArrayDeque<>();
         out.add(pos);
         BlockState s = level.getBlockState(pos);
         for (boolean toLeft : new boolean[]{true, false}) {
@@ -144,10 +144,40 @@ public class TroughBlock extends BaseEntityBlock {
                 p = p.relative(toLeft ? left(cur) : right(cur));
                 cur = level.getBlockState(p);
                 if (!(cur.getBlock() instanceof TroughBlock)) break;
-                out.add(p);
+                if (toLeft) out.addFirst(p); else out.addLast(p);
             }
         }
-        return out;
+        return new ArrayList<>(out);
+    }
+
+    /** a food a drekki eats, of the line's diet (any diet while the line holds none) */
+    public static boolean accepts(Level level, BlockPos pos, ItemStack stack) {
+        Diet d = FoodDiets.of(stack);
+        BlockState st = level.getBlockState(pos);
+        if (d == null || !(st.getBlock() instanceof TroughBlock)) return false;
+        return st.getValue(DIET) == 0 || st.getValue(DIET) == d.ordinal() + 1;
+    }
+
+    /** how much of the stack the line's slots take: the same food with room first, then empty slots. The stack is
+     *  left as it is */
+    public static int lineInsert(Level level, BlockPos pos, ItemStack stack, boolean simulate) {
+        ItemStack left = stack.copy();
+        List<BlockPos> line = line(level, pos);
+        java.util.Set<BlockPos> used = new java.util.HashSet<>();  /* a simulated fill must not count one empty slot twice */
+        for (int pass = 0; pass < 2 && !left.isEmpty(); pass++)
+            for (BlockPos p : line) {
+                if (left.isEmpty() || used.contains(p) || !(level.getBlockEntity(p) instanceof TroughBlockEntity be)) continue;
+                if ((pass == 0) == be.isEmpty()) continue;
+                int in = be.put(left, simulate);
+                if (in > 0) { left.shrink(in); used.add(p); }
+            }
+        return stack.getCount() - left.getCount();
+    }
+
+    @Override
+    public <T extends BlockEntity> net.minecraft.world.level.block.entity.BlockEntityTicker<T> getTicker(Level level, BlockState state,
+            net.minecraft.world.level.block.entity.BlockEntityType<T> type) {
+        return level.isClientSide ? null : createTickerHelper(type, DrekkiBlocks.TROUGH_ENTITY.get(), TroughBlockEntity::settle);
     }
 
     static boolean lineEmpty(BlockGetter level, List<BlockPos> line) {
@@ -186,7 +216,8 @@ public class TroughBlock extends BaseEntityBlock {
         }
         if (!(level.getBlockEntity(pos) instanceof TroughBlockEntity be)) return ItemInteractionResult.FAIL;
         be.claim(player.getUUID());  /* a trough from before 0.4.0: the first player to use it owns it, like a hatchery */
-        int put = be.insert(stack, player.hasInfiniteMaterials());
+        int put = lineInsert(level, pos, stack, false);
+        if (put > 0 && !player.hasInfiniteMaterials()) stack.shrink(put);
         if (put == 0) {
             player.displayClientMessage(Component.translatable("block.rancher_companion.trough.full"), true);
             return ItemInteractionResult.CONSUME;
@@ -196,14 +227,14 @@ public class TroughBlock extends BaseEntityBlock {
         return ItemInteractionResult.CONSUME;
     }
 
-    /** an empty hand opens the trough's screen: its four slots and the player's inventory (spec, Pup release) */
+    /** an empty hand opens the trough's screen: its line's slots and the player's inventory (spec, Pup release) */
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!(level.getBlockEntity(pos) instanceof TroughBlockEntity be)) return InteractionResult.PASS;
         if (!level.isClientSide) be.claim(player.getUUID());
         if (player instanceof net.minecraft.server.level.ServerPlayer sp)
             sp.openMenu(new net.minecraft.world.SimpleMenuProvider((id, inv, pl) -> new TroughMenu(id, inv, pos),
-                Component.translatable("block.rancher_companion.trough")), buf -> buf.writeBlockPos(pos));
+                Component.translatable("block.rancher_companion.trough")), buf -> { buf.writeBlockPos(pos); buf.writeVarInt(line(level, pos).size()); });
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
@@ -221,7 +252,7 @@ public class TroughBlock extends BaseEntityBlock {
 
     @Override
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean moved) {
-        if (!state.is(newState.getBlock()) && level.getBlockEntity(pos) instanceof TroughBlockEntity be) Containers.dropContents(level, pos, be.items());
+        if (!state.is(newState.getBlock()) && level.getBlockEntity(pos) instanceof TroughBlockEntity be) for (ItemStack drop : be.drops()) Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), drop);
         super.onRemove(state, level, pos, newState, moved);
     }
 

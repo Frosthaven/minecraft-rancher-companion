@@ -14,10 +14,13 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
-/** A trough's food: up to four stacks, sent to clients so the renderer can lay them on the straw; and its owner, whose
- *  drekki alone eat from it (spec, Feeding at troughs). */
+/** A trough's food: one stack, sent to clients so the renderer can lay it on the straw; and its owner, whose drekki
+ *  alone eat from it (spec, Feeding at troughs). The troughs of a line share their slots: {@link TroughLine}. A trough
+ *  saved with the four stacks it held before 0.4.9 keeps the first and moves the rest into the line (see settle). */
 public class TroughBlockEntity extends BlockEntity {
-    public static final int SLOTS = 4;
+    public static final int SLOTS = 1;
+    /** stacks from the four slots it had before 0.4.9, until the next server tick puts them in the line */
+    private final List<ItemStack> overflow = new ArrayList<>();
     private final NonNullList<ItemStack> items = NonNullList.withSize(SLOTS, ItemStack.EMPTY);
     private java.util.UUID owner;
 
@@ -46,34 +49,36 @@ public class TroughBlockEntity extends BlockEntity {
 
     public boolean isEmpty() { return items.stream().allMatch(ItemStack::isEmpty); }
 
-    /** puts as much of the stack in as fits (merging first), shrinking it unless the player builds freely; returns how many went in */
-    public int insert(ItemStack stack, boolean keep) {
-        int left = stack.getCount();
-        for (int pass = 0; pass < 2 && left > 0; pass++) {
-            for (int i = 0; i < SLOTS && left > 0; i++) {
-                ItemStack s = items.get(i);
-                if (pass == 0 && !s.isEmpty() && ItemStack.isSameItemSameComponents(s, stack)) {
-                    int add = Math.min(left, s.getMaxStackSize() - s.getCount());
-                    s.grow(add); left -= add;
-                } else if (pass == 1 && s.isEmpty()) {
-                    int add = Math.min(left, stack.getMaxStackSize());
-                    items.set(i, stack.copyWithCount(add)); left -= add;
-                }
-            }
-        }
-        int put = stack.getCount() - left;
-        if (put > 0) {
-            if (!keep) stack.shrink(put);
+    /** how much of the stack its slot takes (the same food with room, or an empty slot); puts it in unless simulated */
+    public int put(ItemStack stack, boolean simulate) {
+        ItemStack s = items.get(0);
+        int add;
+        if (s.isEmpty()) add = Math.min(stack.getCount(), stack.getMaxStackSize());
+        else if (ItemStack.isSameItemSameComponents(s, stack)) add = Math.min(stack.getCount(), s.getMaxStackSize() - s.getCount());
+        else return 0;
+        if (add > 0 && !simulate) {
+            if (s.isEmpty()) items.set(0, stack.copyWithCount(add)); else s.grow(add);
             changed();
         }
-        return put;
+        return Math.max(0, add);
     }
 
-    public List<ItemStack> takeAll() {
-        List<ItemStack> out = new ArrayList<>();
-        for (int i = 0; i < SLOTS; i++) if (!items.get(i).isEmpty()) { out.add(items.get(i)); items.set(i, ItemStack.EMPTY); }
-        if (!out.isEmpty()) changed();
+    /** everything it holds, for the drop when it is broken */
+    public List<ItemStack> drops() {
+        List<ItemStack> out = new ArrayList<>(overflow);
+        if (!items.get(0).isEmpty()) out.add(items.get(0));
         return out;
+    }
+
+    /** server tick: the stacks beyond its one slot go into free slots of its line; what does not fit drops on it */
+    public static void settle(net.minecraft.world.level.Level level, BlockPos pos, BlockState state, TroughBlockEntity be) {
+        if (be.overflow.isEmpty()) return;
+        for (ItemStack s : be.overflow) {
+            int in = TroughBlock.lineInsert(level, pos, s, false);
+            if (in < s.getCount()) net.minecraft.world.Containers.dropItemStack(level, pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, s.copyWithCount(s.getCount() - in));
+        }
+        be.overflow.clear();
+        be.setChanged();
     }
 
     private void changed() {
@@ -85,14 +90,23 @@ public class TroughBlockEntity extends BlockEntity {
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider reg) {
         super.saveAdditional(tag, reg);
         ContainerHelper.saveAllItems(tag, items, reg);
+        if (!overflow.isEmpty()) {
+            net.minecraft.nbt.ListTag more = new net.minecraft.nbt.ListTag();
+            for (ItemStack s : overflow) more.add(s.save(reg));
+            tag.put("Overflow", more);
+        }
         if (owner != null) tag.putUUID("Owner", owner);
     }
 
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider reg) {
         super.loadAdditional(tag, reg);
-        items.clear();
-        ContainerHelper.loadAllItems(tag, items, reg);
+        NonNullList<ItemStack> saved = NonNullList.withSize(4, ItemStack.EMPTY);  /* four slots before 0.4.9 */
+        ContainerHelper.loadAllItems(tag, saved, reg);
+        items.set(0, ItemStack.EMPTY);
+        overflow.clear();
+        for (ItemStack s : saved) if (!s.isEmpty()) { if (items.get(0).isEmpty()) items.set(0, s); else overflow.add(s); }
+        for (net.minecraft.nbt.Tag t : tag.getList("Overflow", net.minecraft.nbt.Tag.TAG_COMPOUND)) ItemStack.parse(reg, t).ifPresent(overflow::add);
         owner = tag.hasUUID("Owner") ? tag.getUUID("Owner") : null;
     }
 

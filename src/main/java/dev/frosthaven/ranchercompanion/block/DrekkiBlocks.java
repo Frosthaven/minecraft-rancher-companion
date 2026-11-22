@@ -111,5 +111,8 @@ public final class DrekkiBlocks {
     public static void register(IEventBus modBus) {
         BLOCKS.register(modBus);
         BLOCK_ENTITIES.register(modBus);
+        /* a trough line is one inventory to pipes, funnels, chutes and hoppers, from any side of any of its troughs */
+        modBus.addListener(net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent.class, e -> e.registerBlockEntity(
+            net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK, TROUGH_ENTITY.get(), (be, side) -> new TroughLine(be)));
     }
 }

@@ -15,7 +15,7 @@ public final class DrekkiMenus {
     public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, RancherCompanion.ID);
 
     public static final DeferredHolder<MenuType<?>, MenuType<TroughMenu>> TROUGH = MENUS.register("trough",
-        () -> IMenuTypeExtension.create((id, inv, buf) -> new TroughMenu(id, inv, buf.readBlockPos())));
+        () -> IMenuTypeExtension.create((id, inv, buf) -> new TroughMenu(id, inv, buf.readBlockPos(), buf.isReadable() ? buf.readVarInt() : -1)));
 
     public static final DeferredHolder<MenuType<?>, MenuType<dev.frosthaven.ranchercompanion.entity.DrekkiMenu>> DREKKI = MENUS.register("drekki",
         () -> IMenuTypeExtension.create((id, inv, buf) -> new dev.frosthaven.ranchercompanion.entity.DrekkiMenu(id, inv,

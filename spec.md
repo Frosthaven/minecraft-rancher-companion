@@ -708,6 +708,19 @@ effect (see Mood), so other systems can soften or sharpen it later.
   from its bag. A drekki at home (checked in) goes to the troughs first, then its bag. Its bag feeds it only with a
   Sophisticated feeding upgrade (see Accessory: bags).
 
+### Trough storage and pipes (decided 2026-11-22)
+
+- Each trough holds one stack. The troughs of a line share their slots, one per trough, as a Create vault: food put
+  into any trough of the line (by hand, in the screen, by a pipe) goes to the same food with room first, then to an
+  empty slot. Breaking a trough drops only its own stack.
+- A line is one inventory to pipes, funnels, chutes and hoppers, from any side of any of its troughs. It takes only
+  food a drekki eats, of the line's diet (the first food sets it), where a slot has room. Anything else is refused,
+  so it waits in the pipe and is never dropped. Nothing can be pulled out: a chute under a trough would empty it.
+- The screen shows the line's slots, up to five in a row, a longer line in two rows; the diet is beside the title.
+- A trough saved before 0.4.9 held up to four stacks. On its first tick it keeps one; the rest go into the line's
+  slots, and what does not fit drops on the trough. Nothing is lost.
+- A drekki with a set diet uses only troughs of that diet, in a line or alone; a pup (open diet) uses any.
+
 ### Feeding at troughs (proposal 2026-11-16)
 
 - A hungry drekki looks for a trough when it is not fighting, ridden or following its owner on the move.

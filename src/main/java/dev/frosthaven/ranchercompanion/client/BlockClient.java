@@ -88,32 +88,29 @@ public final class BlockClient {
     }
 
     /**
-     * The trough's food, lying flat on the straw (the straw's top is 7 px up): one spot per stack, in the four quarters
-     * of the bed, turned a little each so they read as a heap; a fuller stack shows a second item on top.
+     * The trough's food, lying flat on the straw (the straw's top is 7 px up): its one stack as a heap, an item in the
+     * middle and one more in a quarter of the bed for each 16 it holds, turned a little each.
      */
     static final class TroughRenderer implements BlockEntityRenderer<TroughBlockEntity> {
-        private static final float[][] SPOTS = {{-3.2f, -3.2f, 20}, {3.2f, 3f, -35}, {3.4f, -3.1f, 65}, {-3f, 3.3f, -10}};
+        private static final float[][] SPOTS = {{0, 0, 20}, {3.2f, 3f, -35}, {3.4f, -3.1f, 65}, {-3f, 3.3f, -10}};
 
         TroughRenderer(BlockEntityRendererProvider.Context ctx) {}
 
         @Override
         public void render(TroughBlockEntity be, float partial, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
-            var items = be.items();
+            ItemStack s = be.items().get(0);
+            if (s.isEmpty()) return;
             var renderer = Minecraft.getInstance().getItemRenderer();
-            for (int i = 0; i < items.size(); i++) {
-                ItemStack s = items.get(i);
-                if (s.isEmpty()) continue;
+            int heap = Math.min(SPOTS.length, 1 + s.getCount() / 16);
+            for (int i = 0; i < heap; i++) {
                 float[] p = SPOTS[i];
-                int copies = s.getCount() >= 16 ? 2 : 1;
-                for (int c = 0; c < copies; c++) {
-                    pose.pushPose();
-                    pose.translate(0.5 + p[0] / 16, (7.6 + c * 0.9) / 16, 0.5 + p[1] / 16);
-                    pose.mulPose(Axis.YP.rotationDegrees(p[2] + c * 40));
-                    pose.mulPose(Axis.XP.rotationDegrees(90));
-                    pose.scale(0.42f, 0.42f, 0.42f);
-                    renderer.renderStatic(s, ItemDisplayContext.FIXED, light, overlay, pose, buffers, be.getLevel(), (int) be.getBlockPos().asLong() + i);
-                    pose.popPose();
-                }
+                pose.pushPose();
+                pose.translate(0.5 + p[0] / 16, (7.6 + (i == 0 ? 0.9 : 0)) / 16, 0.5 + p[1] / 16);
+                pose.mulPose(Axis.YP.rotationDegrees(p[2]));
+                pose.mulPose(Axis.XP.rotationDegrees(90));
+                pose.scale(0.42f, 0.42f, 0.42f);
+                renderer.renderStatic(s, ItemDisplayContext.FIXED, light, overlay, pose, buffers, be.getLevel(), (int) be.getBlockPos().asLong() + i);
+                pose.popPose();
             }
         }
     }

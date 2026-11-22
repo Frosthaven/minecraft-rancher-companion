@@ -69,7 +69,7 @@ public final class LifeTests {
         t.setBlock(rel, DrekkiBlocks.TROUGH.get().defaultBlockState().setValue(TroughBlock.FACING, Direction.WEST).setValue(TroughBlock.DIET, diet.ordinal() + 1));
         TroughBlockEntity be = (TroughBlockEntity) t.getBlockEntity(rel);
         be.claim(owner.getUUID());
-        be.insert(food, false);
+        TroughBlock.lineInsert(t.getLevel(), t.absolutePos(rel), food, false);
         return t.absolutePos(rel);
     }
 
@@ -150,6 +150,68 @@ public final class LifeTests {
         d.interact(p, net.minecraft.world.InteractionHand.MAIN_HAND);
         t.assertTrue(p.getMainHandItem().getCount() == 1, "full and unhurt: it took a carrot");
         t.succeed();
+    }
+
+    /** two joined troughs of the owner's, empty; returns the first (the second is the next one along the line) */
+    private static BlockPos[] troughLine(GameTestHelper t, ServerPlayer owner) {
+        BlockPos a = H.offset(2, 0, 0), b = a.relative(Direction.WEST.getClockWise());
+        var st = DrekkiBlocks.TROUGH.get().defaultBlockState().setValue(TroughBlock.FACING, Direction.WEST);
+        t.setBlock(a, st.setValue(TroughBlock.LEFT, true));
+        t.setBlock(b, st.setValue(TroughBlock.RIGHT, true));
+        for (BlockPos p : new BlockPos[]{a, b}) ((TroughBlockEntity) t.getBlockEntity(p)).claim(owner.getUUID());
+        return new BlockPos[]{t.absolutePos(a), t.absolutePos(b)};
+    }
+
+    private static ItemStack slot(GameTestHelper t, BlockPos trough) { return ((TroughBlockEntity) t.getLevel().getBlockEntity(trough)).items().get(0); }
+
+    /** a pipe sees a line as one inventory, a slot per trough: it fills from any trough, and food of another diet, a
+     *  thing that is no food and food beyond the room are refused, so they wait in the pipe (spec, Drekki Trough) */
+    @GameTest(template = "floor")
+    public static void aPipeFillsATroughLineAndIsRefusedTheRest(GameTestHelper t) {
+        BlockPos[] line = troughLine(t, player(t));
+        var cap = net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK;
+        var first = t.getLevel().getCapability(cap, line[0], Direction.DOWN);
+        var second = t.getLevel().getCapability(cap, line[1], Direction.UP);
+        t.assertTrue(first != null && second != null && first.getSlots() == 2 && second.getSlots() == 2, "both troughs give the line's two slots");
+        var put = net.neoforged.neoforge.items.ItemHandlerHelper.insertItemStacked(first, new ItemStack(Items.CARROT, 64), false);
+        put = net.neoforged.neoforge.items.ItemHandlerHelper.insertItemStacked(second, new ItemStack(Items.CARROT, 36), false).getCount() == 0 ? put : new ItemStack(Items.STICK);
+        t.assertTrue(put.isEmpty() && slot(t, line[0]).getCount() + slot(t, line[1]).getCount() == 100, "100 carrots went in: " + slot(t, line[0]) + " " + slot(t, line[1]));
+        t.assertTrue(t.getLevel().getBlockState(line[1]).getValue(TroughBlock.DIET) == Diet.ROOT.ordinal() + 1, "the line took the carrots' diet");
+        t.assertTrue(net.neoforged.neoforge.items.ItemHandlerHelper.insertItemStacked(first, new ItemStack(Items.COOKED_BEEF, 3), false).getCount() == 3, "food of another diet is refused");
+        t.assertTrue(net.neoforged.neoforge.items.ItemHandlerHelper.insertItemStacked(first, new ItemStack(Items.STICK, 3), false).getCount() == 3, "a stick is refused");
+        t.assertTrue(net.neoforged.neoforge.items.ItemHandlerHelper.insertItemStacked(second, new ItemStack(Items.CARROT, 64), false).getCount() == 36, "only 28 more carrots fit");
+        t.assertTrue(first.extractItem(0, 64, false).isEmpty(), "nothing is pulled out");
+        t.succeed();
+    }
+
+    /** a trough saved with four stacks (before 0.4.9) loses nothing: one stays, the rest go into the line, and what
+     *  does not fit drops on it */
+    @GameTest(template = "floor")
+    public static void anOldTroughKeepsItsFourStacks(GameTestHelper t) {
+        BlockPos[] line = troughLine(t, player(t));
+        var old = net.minecraft.core.NonNullList.withSize(4, ItemStack.EMPTY);
+        old.set(0, new ItemStack(Items.CARROT, 10)); old.set(1, new ItemStack(Items.POTATO, 5)); old.set(2, new ItemStack(Items.BEETROOT, 3)); old.set(3, new ItemStack(Items.CARROT, 7));
+        var tag = net.minecraft.world.ContainerHelper.saveAllItems(new net.minecraft.nbt.CompoundTag(), old, t.getLevel().registryAccess());
+        t.getLevel().getBlockEntity(line[0]).loadWithComponents(tag, t.getLevel().registryAccess());
+        t.runAfterDelay(5, () -> {
+            t.assertTrue(slot(t, line[0]).is(Items.CARROT) && slot(t, line[0]).getCount() == 17, "the carrots are one stack: " + slot(t, line[0]));
+            t.assertTrue(slot(t, line[1]).is(Items.POTATO) && slot(t, line[1]).getCount() == 5, "the potatoes moved along the line: " + slot(t, line[1]));
+            var dropped = t.getLevel().getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, new AABB(line[0]).inflate(3), e -> e.getItem().is(Items.BEETROOT));
+            t.assertTrue(dropped.size() == 1 && dropped.get(0).getItem().getCount() == 3, "the beetroot dropped: " + dropped.size());
+            t.succeed();
+        });
+    }
+
+    /** a drekki whose diet is set never eats from a trough of another diet (spec, Feeding at troughs) */
+    @GameTest(template = "floor", timeoutTicks = 500)
+    public static void aDrekkiLeavesATroughOfAnotherDiet(GameTestHelper t) {
+        BlockPos h = stable(t);
+        ServerPlayer p = player(t);
+        DrekkiEntity d = hatchOne(t, p, h);
+        d.setLook(2, d.line(), Diet.ROOT.ordinal(), d.astral(), d.horn());
+        BlockPos tr = trough(t, p, new ItemStack(Items.COOKED_BEEF, 2));
+        d.life.food = 3;
+        t.runAfterDelay(450, () -> { t.assertTrue(food(t, tr) == 2 && d.life.food < 3.5, "the beef is untouched: " + food(t, tr) + ", its food " + d.life.food); t.succeed(); });
     }
 
     @GameTest(template = "floor", timeoutTicks = 600)
