@@ -54,10 +54,11 @@ public final class DrekkiConfig {
             "Travel counts while it is checked out and out of its carrier.").push("growth");
         STAGE_DAYS = b.defineInRange("days_per_stage", 6.0, 0.01, 1000.0);
         b.pop();
-        b.comment("Hunger (spec, Hunger): shanks lost per game day, out of ten. It drains everywhere (at a hatchery, in a carrier,",
-            "while its owner is offline), on the world's game time; travelling drains at its own rate.").push("hunger");
-        HUNGER_PER_DAY = b.defineInRange("per_day", 1.0, 0.0, 100.0);
-        TRAVEL_HUNGER_PER_DAY = b.defineInRange("travel_per_day", 2.0, 0.0, 100.0);
+        b.comment("Hunger (spec, Hunger): shanks lost per game day, out of ten, while the drekki is live (its chunk ticking).",
+            "Saturation is spent first. Travelling (checked out) drains at its own rate. A food gives its own nutrition",
+            "(2 points to a shank) and saturation.").push("hunger");
+        HUNGER_PER_DAY = b.defineInRange("shanks_per_day", 2.0, 0.0, 100.0);
+        TRAVEL_HUNGER_PER_DAY = b.defineInRange("travel_shanks_per_day", 4.0, 0.0, 100.0);
         b.pop();
         SPEC = b.build();
     }

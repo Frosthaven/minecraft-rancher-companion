@@ -88,20 +88,45 @@ public final class Life {
      *  is missing, when it eats at a trough ({@link #wantsFood}) */
     public static float shownFood(double food) { return (float) Math.min(FOOD_MAX, Math.ceil(food * 2 - 1e-9) / 2.0); }
 
+    /** saturation in shanks, never above {@link #food}: hidden, spent before the shanks, as a player's */
+    public double sat;
+
+    /** a meal of this many shanks and this much saturation; what does not fit is lost */
+    public void eat(double shanks, double saturation) {
+        food = Math.min(FOOD_MAX, food + shanks);
+        sat = Math.min(food, sat + saturation);
+    }
+
+    /** hunger spent: saturation first, then the shanks */
+    public void spend(double shanks) {
+        double s = Math.min(sat, shanks);
+        sat -= s;
+        food = Math.max(0, food - (shanks - s));
+    }
+
     /** fed healing, as a player's on a 20 point bar (a shank is 2 points): at 9 shanks or more a hurt drekki heals
-     *  1 health every 4 s, and each health costs 0.75 of a shank (a player's 6 exhaustion) */
+     *  1 health every 4 s; with a full bar and saturation, 1 every half second. Each health costs 0.75 of a shank
+     *  (a player's 6 exhaustion), and the fast heal pays only from saturation */
     public static final double FED = 9, HEAL_COST = 0.75;
-    public static final int HEAL_TICKS = 80;
+    public static final int HEAL_TICKS = 80, FAST_TICKS = 10;
     /** ticks toward the next fed heal (not saved) */
     public long fed;
 
     /** the health these ticks of being fed give a drekki missing this much; takes the food it costs */
-    public int fedHeal(long ticks, int missing) {
+    public float fedHeal(long ticks, float missing) {
         if (ghost || food < FED || missing <= 0) { fed = 0; return 0; }
         fed += ticks;
-        int n = 0;
-        while (fed >= HEAL_TICKS && food >= FED && n < missing) { fed -= HEAL_TICKS; food -= HEAL_COST; n++; }
-        return n;
+        float n = 0;
+        while (n < missing && food >= FED) {
+            boolean fast = food >= FOOD_MAX && sat > 0;
+            int every = fast ? FAST_TICKS : HEAL_TICKS;
+            if (fed < every) break;
+            fed -= every;
+            double cost = fast ? Math.min(sat, HEAL_COST) : HEAL_COST;
+            spend(cost);
+            n += (float) (cost / HEAL_COST);
+        }
+        return Math.min(n, missing);
     }
 
     /** room for a whole shank: it eats */

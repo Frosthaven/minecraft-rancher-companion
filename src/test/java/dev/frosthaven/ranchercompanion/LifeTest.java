@@ -94,4 +94,22 @@ class LifeTest {
         assertEquals(0, l.fedHeal(400, 0));          /* unhurt: nothing spent */
         assertEquals(10, l.food, 1e-9);
     }
+
+    @Test
+    void saturationIsSpentFirstAndHealsFast() {
+        Life l = new Life();
+        l.food = 8;
+        l.eat(4, 6.4);                               /* a steak: the bar fills, the rest of the nutrition is lost */
+        assertEquals(10, l.food, 1e-9);
+        assertEquals(6.4, l.sat, 1e-9);
+        l.spend(1);                                  /* hunger takes saturation, not shanks */
+        assertEquals(10, l.food, 1e-9);
+        assertEquals(5.4, l.sat, 1e-9);
+        assertEquals(2, l.fedHeal(20, 20), 1e-6);    /* full with saturation: 1 health each half second */
+        assertEquals(10, l.food, 1e-9);
+        assertEquals(3.9, l.sat, 1e-9);
+        l.food = 3;
+        l.eat(1, 9);                                 /* saturation never passes the shanks */
+        assertEquals(4, l.sat, 1e-9);
+    }
 }

@@ -684,18 +684,23 @@ through a trade at a hatchery, so nobody loses one by accident or to a trick.
 Decided 2026-11-04, revised 2026-11-16: hunger has no penalties of its own. It lowers mood, and mood carries every
 effect (see Mood), so other systems can soften or sharpen it later.
 
-- Revised 2026-11-18: ten shanks; one diet food fills one. The meter drains one shank per in-game day wherever the
-  drekki is live (at a hatchery, out with its owner) and two a day while it travels (server config
-  for both). Revised again 2026-11-18: hunger runs only while the drekki is live (its chunk loaded and ticking).
+- Revised 2026-11-18: ten shanks. The meter drains wherever the drekki is live (at a hatchery, out with its owner),
+  faster while it travels (the rates and the food values are below). Revised again 2026-11-18: hunger runs only while the drekki is live (its chunk loaded and ticking).
   Time it was not ticking (unloaded, in a carrier, its owner offline) costs nothing, so a player back after a week
   does not find every drekki starving; there is no catch-up and no simulated meals. Hungry is 0 shanks; it eats
   whenever it has room for a shank.
 - While hungry, mood falls 2 a minute. Eating gives +5 mood and ends the drain. It never starves to death.
   Hibernation Plan makes the meter drain 33% slower.
-- Fed healing (decided 2026-11-21), as a player's on its 20 point bar (a shank is 2 points): at 9 shanks or more a
-  hurt drekki heals 1 health every 4 s, and each health costs 0.75 of a shank (a player's 6 exhaustion), so it stops
-  below 9 shanks until it eats again. No saturation, so no fast healing. Mood does not stop it, and it is apart from
-  the home terrain and Hearty regeneration. It does not count toward Hearty. A ghost does not heal this way.
+- Food values and saturation (decided 2026-11-21, replaces "one diet food fills one shank"): a food gives its own
+  nutrition (2 points to a shank) and its own saturation, as it gives a player; a diet food with no food values
+  (wheat, seeds) gives one shank and 0.6 of a shank of saturation. Saturation is hidden, never above the shanks, and
+  is spent before them. What does not fit in the bar is lost. It still eats only with room for a whole shank.
+- Drain (revised 2026-11-21 for the larger meals): two shanks a game day, four while it travels (server config
+  `shanks_per_day`, `travel_shanks_per_day`; the old keys and their 1 and 2 are gone).
+- Fed healing (decided 2026-11-21), as a player's on its 20 point bar, from the drekki's own bar only: at 9 shanks or
+  more a hurt drekki heals 1 health every 4 s; with a full bar and saturation, 1 every half second, paid from
+  saturation only. Each health costs 0.75 of a shank (a player's 6 exhaustion). Mood does not stop it, and it is
+  apart from the home terrain and Hearty regeneration. It does not count toward Hearty. A ghost does not heal this way.
 - Food: the player's hand at any time. A checked-out drekki eats at a trough while its owner stands still, else
   from its bag. A drekki at home (checked in) goes to the troughs first, then its bag. Its bag feeds it only with a
   Sophisticated feeding upgrade (see Accessory: bags).

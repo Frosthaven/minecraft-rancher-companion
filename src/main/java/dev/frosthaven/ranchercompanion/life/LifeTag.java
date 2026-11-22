@@ -18,6 +18,7 @@ public final class LifeTag {
         l.biome.forEach(b::putLong);
         t.put("biome", b);
         t.putDouble("food", l.food);
+        t.putDouble("sat", l.sat);
         t.putDouble("mood", l.mood);
         t.putLong("stamp", l.stamp);
         t.putLong("petUntil", l.petUntil);
@@ -46,6 +47,7 @@ public final class LifeTag {
         CompoundTag b = t.getCompound("biome");
         for (String k : b.getAllKeys()) l.biome.put(k, b.getLong(k));
         l.food = t.contains("food") ? t.getDouble("food") : Life.FOOD_MAX;
+        l.sat = Math.min(l.food, t.getDouble("sat"));
         l.mood = t.contains("mood") ? t.getDouble("mood") : Life.MOOD_START;
         l.stamp = t.contains("stamp") ? t.getLong("stamp") : Life.NEVER;
         l.petUntil = t.getLong("petUntil");

@@ -59,7 +59,7 @@ public final class Vitals {
         l.stamp = now;
         reviveTick(d, now);
         boolean travelling = d.isOut();
-        if (!l.ghost) l.food = Math.max(0, l.food - Life.drain(dt, hungerRate(d, travelling)));  /* a ghost does not get hungry */
+        if (!l.ghost) l.spend(Life.drain(dt, hungerRate(d, travelling)));  /* a ghost does not get hungry */
         if (travelling) grow(d, dt);
         mood(d, dt);
         d.syncLife();
@@ -82,7 +82,7 @@ public final class Vitals {
                 net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
             else if (!slow && speed.hasModifier(SLOW)) speed.removeModifier(SLOW);
         }
-        int fed = l.fedHeal(dt, (int) Math.ceil(d.getMaxHealth() - d.getHealth()));
+        float fed = l.fedHeal(dt, d.getMaxHealth() - d.getHealth());
         if (fed > 0) { ownHeal(d, fed); d.syncLife(); }
         if (l.hungry() || band == Life.Band.UNEASY || band == Life.Band.MISERABLE || d.getHealth() >= d.getMaxHealth()) { l.regen = 0; return; }
         boolean home = atHome(d), hearty = l.traits.contains(Trait.HEARTY.id);
@@ -200,11 +200,13 @@ public final class Vitals {
         return diet != null && (d.stage() == 1 || diet.ordinal() == d.diet());
     }
 
-    /** one meal: a shank, mood, and in stage 1 a vote for its diet */
+    /** one meal: the food's own nutrition and saturation (a food without them, as wheat or seeds: one shank and a
+     *  little saturation), mood, and in stage 1 a vote for its diet */
     public static void eat(DrekkiEntity d, ItemStack food, boolean show) {
         Life l = d.life;
         Diet diet = FoodDiets.of(food);
-        l.food = Math.min(Life.FOOD_MAX, l.food + 1);
+        var props = food.getFoodProperties(d);
+        l.eat(props != null ? props.nutrition() / 2.0 : 1, props != null ? props.saturation() / 2.0 : 0.6);
         if (show) l.addMood(5);
         if (d.stage() == 1 && diet != null) l.meals[diet.ordinal()]++;
         if (show && d.level() instanceof ServerLevel sl) {
