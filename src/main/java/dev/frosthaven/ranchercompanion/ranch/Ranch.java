@@ -235,7 +235,7 @@ public final class Ranch {
         if (be == null) return;
         switch (a) {
             case CHECK_OUT -> checkOut(p, pos, id);
-            case CHECK_IN -> checkIn(p, pos);
+            case CHECK_IN -> { if (id != null && recall(p, pos, id)) break; checkIn(p, pos); }
             case RELEASE -> release(p, id);
             case HATCH -> { hatch(p, pos); return; }
         }
@@ -277,6 +277,7 @@ public final class Ranch {
             if (back != null) add(level, back);
         }
         DrekkiEntity d = live(e.id);
+        if (e.where == Where.WORK && d != null) { r.snapshot(e, save(d)); d.discard(); d = null; }  /* off its job, to its owner */
         r.move(e, Where.OUT, null);
         if (d != null && d.level() == level) d.bind(p.getUUID(), e.id, null);
         else {
@@ -402,7 +403,7 @@ public final class Ranch {
         Entry e = roster(ev.getLevel().getServer()).get(d.drekkiId());
         DrekkiEntity other = live(d.drekkiId());
         boolean ok = e != null && (other == null || other == d)
-            && (e.where == Where.OUT && d.isOut() || e.where == Where.HOME && !d.isOut() && e.home != null
+            && ((e.where == Where.OUT || e.where == Where.WORK) && d.isOut() || e.where == Where.HOME && !d.isOut() && e.home != null
                 && e.home.pos().equals(d.home()) && e.home.dimension().equals(ev.getLevel().dimension()));
         /* a checked-out copy a chunk loads (not one this class just made): never while its owner is offline, it left
            with them; one told to stay only at its stay spot, an older spot's copy is stale */
@@ -601,6 +602,8 @@ public final class Ranch {
         if (n == null) return;
         n.setStaying(true);
         add(level, n);
+        Seats.Seat seat = Seats.get().at(level, out.stay.pos());  /* sent to a seat (Go here): it sits there again */
+        if (seat != null && seat.free()) seat.sit(n);
     }
 
     /** the chunk of a stay spot loads: its drekki is put there next tick, unless the chunk brings its own copy first */
@@ -646,7 +649,7 @@ public final class Ranch {
             r.stay(out, null);
             STAYS.remove(p.getUUID());
             ARRIVALS.remove(p.getUUID());  /* called: it comes now */
-            if (d != null) d.setStaying(false);
+            if (d != null) { d.setStaying(false); d.goHere = null; if (d.isPassenger()) d.stopRiding(); }  /* off its seat or train, to follow */
             if (call && d != null && d.level() == p.level()) {
                 /* the whistle: it walks over when it can. It jumps to them only from more than 20 blocks or with no
                    way to walk there */
@@ -660,6 +663,105 @@ public final class Ranch {
         Component who = out.save.contains("CustomName") ? label(out.save) : Component.translatable("drekki.rancher_companion.yours");
         msg(p, stay ? "stay.on" : "stay.off", who);
         return stay;
+    }
+
+    // ---- go here (spec, Go here): entity/GoHere sends it, these keep the roster in step ----
+
+    /** the owner's checked-out drekki when it is live with them (the same level, no ghost), else null */
+    public static DrekkiEntity withOwner(ServerPlayer p) {
+        Entry out = roster(p.server).out(p.getUUID());
+        DrekkiEntity d = out == null || out.where != Where.OUT ? null : live(out.id);
+        return d != null && !d.ghost() && d.level() == p.level() ? d : null;
+    }
+
+    /** the whistle's call: it comes to its owner and follows (from another level or an unloaded chunk too) */
+    public static void call(ServerPlayer p) { setStay(p, false, true); }
+
+    /** on its way somewhere: it stays nowhere and follows nobody until it gets there */
+    public static void leaveStay(DrekkiEntity d) {
+        Entry out = d.owner() == null ? null : roster(d.getServer()).out(d.owner());
+        if (out != null && out.stay != null) roster(d.getServer()).stay(out, null);
+        if (d.owner() != null) { STAYS.remove(d.owner()); ARRIVALS.remove(d.owner()); }
+        d.setStaying(false);
+    }
+
+    /** it got where it was sent (or rides a seat that moves): it stays here, the roster keeps the spot */
+    public static void stayHere(DrekkiEntity d) {
+        Entry out = d.owner() == null ? null : roster(d.getServer()).out(d.owner());
+        if (out == null || out.where != Where.OUT) return;
+        roster(d.getServer()).stay(out, Roster.at(d.level(), d.blockPosition()));
+        STAYS.put(d.owner(), out.stay);
+        d.setStaying(true);
+    }
+
+    /** sat on a Create job seat (spec, Go here: Employed): no longer with its owner, who may take out another; it
+     *  stays in the world while they are offline, and the hatchery screen recalls it */
+    public static void employ(DrekkiEntity d) {
+        Roster r = roster(d.getServer());
+        Entry out = d.owner() == null ? null : r.out(d.owner());
+        if (out == null || !out.id.equals(d.drekkiId()) || out.where != Where.OUT) { stayHere(d); return; }
+        r.move(out, Where.WORK, null);
+        r.stay(out, Roster.at(d.level(), d.blockPosition()));
+        STAYS.remove(d.owner());
+        d.setStaying(true);
+        /* at work it fights nothing: Passive, and its stance stays so until it is recalled (DrekkiMenu) */
+        d.life.stance = dev.frosthaven.ranchercompanion.life.Life.Stance.PASSIVE;
+        d.setTarget(null);
+        d.syncLife();
+        touch(d);
+    }
+
+    /** once a second for a staying drekki. On a seat that moves (a train) its spot moves with it, so a chunk loading it
+     *  on the way keeps it. Employed and off its seat for 2 seconds (the train taken apart, the seat broken): it goes
+     *  home to its hatchery, or to No hatchery without one */
+    public static void workTick(DrekkiEntity d) {
+        if (d.tickCount % 20 != 0 || d.drekkiId() == null) return;
+        Roster r = roster(d.getServer());
+        Entry e = r.get(d.drekkiId());
+        if (e == null || e.stay == null) return;
+        if (e.where == Where.WORK && !d.isPassenger()) {
+            if ((d.offJob += 20) < 40) return;
+            r.snapshot(e, save(d));
+            d.discard();
+            r.move(e, e.base != null ? Where.HOME : Where.NONE, e.base);  /* its hatchery puts it back (syncHatchery) */
+            ServerPlayer p = d.getServer().getPlayerList().getPlayer(e.owner);
+            if (p != null) msg(p, "gohere.job_ended", label(e.save));
+            return;
+        }
+        d.offJob = 0;
+        if (d.isPassenger() && (!e.stay.dimension().equals(d.level().dimension()) || e.stay.pos().distSqr(d.blockPosition()) > 4 * 4))
+            r.stay(e, Roster.at(d.level(), d.blockPosition()));
+    }
+
+    /** employed in a Create role (Where.WORK) */
+    public static boolean employed(DrekkiEntity d) {
+        Entry e = d.drekkiId() == null || d.getServer() == null ? null : roster(d.getServer()).get(d.drekkiId());
+        return e != null && e.where == Where.WORK;
+    }
+
+    /** the hatchery screen's Check in on an employed drekki: off its job, home here */
+    private static boolean recall(ServerPlayer p, BlockPos pos, UUID id) {
+        Roster r = roster(p.server);
+        Entry e = r.get(id);
+        if (e == null || !e.owner.equals(p.getUUID()) || e.where != Where.WORK) return false;
+        ServerLevel level = p.serverLevel();
+        GlobalPos home = Roster.at(level, pos);
+        if (r.at(home).size() >= HatcheryBlockEntity.CAP) { msg(p, "hatchery.full"); return true; }
+        BlockPos at = new Ground(level).place(pos, Math.max(1, e.save.getInt("Stage")));
+        if (at == null) { msg(p, "no_room"); return true; }
+        DrekkiEntity d = live(e.id);
+        if (d != null) { r.snapshot(e, save(d)); d.discard(); }
+        r.move(e, Where.HOME, home);
+        DrekkiEntity n = spawn(level, e, at, pos);
+        if (n != null) add(level, n);
+        msg(p, "checkin.done", label(e.save));
+        return true;
+    }
+
+    public static void tell(ServerPlayer p, String key, DrekkiEntity d) {
+        Entry out = d != null && d.drekkiId() != null ? roster(p.server).get(d.drekkiId()) : roster(p.server).out(p.getUUID());
+        Component who = out != null && out.save.contains("CustomName") ? label(out.save) : Component.translatable("drekki.rancher_companion.yours");
+        msg(p, key, who);
     }
 
     /** the world saves: every live drekki's state goes to the roster first, so the roster saved with it is current */

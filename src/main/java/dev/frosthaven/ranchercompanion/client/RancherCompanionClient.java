@@ -37,6 +37,8 @@ public final class RancherCompanionClient {
             });
         /* Ponder's build guides, only with Ponder loaded (it comes with Create); compat/ponder is never touched otherwise */
         if (net.neoforged.fml.ModList.get().isLoaded("ponder")) dev.frosthaven.ranchercompanion.compat.ponder.DrekkiPonder.register();
+        /* Create's job hats (a conductor, a stock keeper) on the drekki's crown, only with Create loaded */
+        if (net.neoforged.fml.ModList.get().isLoaded("create")) dev.frosthaven.ranchercompanion.compat.create.client.CreateClient.init(modBus);
         dev.frosthaven.ranchercompanion.net.DrekkiNet.onView = dev.frosthaven.ranchercompanion.client.screen.HatcheryScreen::show;
         NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, DrekkiAudio::tick);
         DrekkiDebug.register();

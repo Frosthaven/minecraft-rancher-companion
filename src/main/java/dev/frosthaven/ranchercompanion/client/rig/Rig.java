@@ -45,6 +45,12 @@ public final class Rig {
     public final Vector3f mouthLocal;
     /** the propeller beanie's propeller, spun by the idle loop; null for every other hat */
     public Node hatSpin;
+    /** the head's crown, where a hat sits (the drekki's own, or a Create job hat), and the hat space's scale: hats are
+     *  built 8 pixels wide, as Create's are */
+    public Node crown;
+    /** the head crest (none under a hat of its own) */
+    public Node crest;
+    public double crownK;
     /** the fur shades the sheen lights, as the page's SHEEN_COLORS: fur, trim and the two dark shades; empty without a sheen */
     public final java.util.Set<Integer> sheenColors = new java.util.HashSet<>();
     public final float bodyY, hipY, tailBase, neck1Base, neckBase, headBase, crouchPx, th, sh, fh;
@@ -148,14 +154,16 @@ public final class Rig {
             Node e2 = grp(head, s * (hw / 2 + 0.1), hh * 0.28 - 1, -1.4); e2.rot(-rad(5), s * rad(-55), 0); cube(e2, rw, rh * 0.7, rd * 0.7, 0, 0, -rd * 0.35, furD);
             Node e3 = grp(head, s * (hw / 2 - 0.6), hh - 1.2, -1.6); e3.rot(-rad(40), s * rad(-20), 0); cube(e3, rw, rh * 0.55, rd * 0.55, 0, 0, -rd * 0.28, furD);
         }
+        crest = grp(head, 0, 0, 0);  /* the crest's own group: a Create job hat hides it, as the drekki's own hats leave it out */
         if (o.hat > 0) { /* a hat covers the crest; horns poke through */ }
         else if (D.rump && !carn) { /* herbivore head crest: light plumes rising from the skull and arching back, dark tips */
-            for (int i = 0; i < D.crest; i++) { Node r = grp(head, 0, hh - 1.3, hd / 2 - 2 - i * 2.2 + 0.4); r.rot(rad(58 - i * 8), 0, 0);
+            for (int i = 0; i < D.crest; i++) { Node r = grp(crest, 0, hh - 1.3, hd / 2 - 2 - i * 2.2 + 0.4); r.rot(rad(58 - i * 8), 0, 0);
                 float L1 = D.crestH * 1.1f * (1 - i * 0.12f), L2 = D.crestH * 0.9f * (1 - i * 0.12f), bh2 = D.crestH * 0.55f;
                 cube(r, 1, bh2, L1, 0, 0, -L1 / 2, furL); Node tip = grp(r, 0, 0, -L1, -rad(42)); cube(tip, 1, bh2 * 0.8, L2, 0, 0, -L2 / 2, furD); } }
-        else for (int i = 0; i < D.crest; i++) { float ch = D.crestH * (1 - i * 0.18f); cube(head, 0.8, ch, 2.2, 0, hh - 1 + ch / 2 - 0.6, hd / 2 - 2 - i * 2.2 + 0.4, furD2, -rad(38), 0, 0); }
+        else for (int i = 0; i < D.crest; i++) { float ch = D.crestH * (1 - i * 0.18f); cube(crest, 0.8, ch, 2.2, 0, hh - 1 + ch / 2 - 0.6, hd / 2 - 2 - i * 2.2 + 0.4, furD2, -rad(38), 0, 0); }
 
-        if (o.hat > 0) hatSpin = Hats.build(this, grp(head, 0, hh - 1, hd / 2 - 2), o.hat, hwS / 8.0);
+        crown = grp(head, 0, hh - 1, hd / 2 - 2); crownK = hwS / 8.0;
+        if (o.hat > 0) hatSpin = Hats.build(this, crown, o.hat, crownK);
 
         /* dorsal line: dark fins on carnivores, feather tufts on herbivores from stage 2 */
         float sf = D.spineLen, kk = bh / 11;

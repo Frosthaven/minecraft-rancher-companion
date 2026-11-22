@@ -66,6 +66,10 @@ hatching, the roster, check in and out, the small carrier, petting, names, the t
   drekki screen (shift-clicks, the stage checks, the bag screen), a hit into the barding, both dye recipes, and close
   shots of the gear on a Fledgling and a Mature. Run it in the pack too: with Sophisticated Backpacks the bags are its
   backpacks (compat/sophisticated).
+- `entity/GoHere` (the whistle's sneak use: walk or summon to the looked-at block or seat, then stay; spec, Go here),
+  `ranch/Seats` (seats it can be sent to; none without Create) and `compat/create/` (Create's seats, the Employed job
+  seats, and `client/JobHatLayer`: Create's job hats on the drekki's crown, reached by method handles since they return a
+  Flywheel type). Employed drekki are `Roster.Where.WORK`: not the owner's checked-out one, kept while the owner is offline.
 - `compat/journeymap/DrekkiMap` (the magenta death marker; JourneyMap finds it by its annotation),
   `compat/jei/DrekkiJei` (barding dye recipes for JEI) and `compat/ponder/DrekkiPonder` (build guides; schematics and
   lang from `uv run --with nbtlib python -I tools/ponder_scenes.py`): optional, compile only against JEI's and

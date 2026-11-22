@@ -10,6 +10,9 @@ import org.joml.Vector3f;
 
 /** The design page's loops, one method each, driving the rig by loop time in seconds. */
 public final class DrekkiAnimations {
+    /** true while Create draws a job hat on it (a conductor, a stock keeper): its own hat is hidden. Set by compat/create */
+    public static java.util.function.Predicate<DrekkiEntity> JOB_HAT = e -> false;
+
     private DrekkiAnimations() {}
 
     private static final double TAU = 6.283;
@@ -41,6 +44,7 @@ public final class DrekkiAnimations {
             default -> {}
         }
         if (e.petTicks() > 0) pet(P, t, e.petTicks());
+        if (JOB_HAT.test(e)) { b.rig.crown.visible = false; b.rig.crest.visible = false; }  /* a Create job hat in place of its own and over the crest (compat/create) */
         b.apply();
     }
 

@@ -398,6 +398,17 @@ public class DrekkiEntity extends PathfinderMob {
     }
 
     /** fire and lava are no danger to it: immune by nature, or under Fire Resistance (a trait's, a potion's) */
+    /** where the whistle sent it (GoHere), server only and not saved: a restart leaves it where it got to */
+    public GoHere.Target goHere;
+    /** employed and off its seat this long (ticks); at 40 its job is over (Ranch.workTick) */
+    public int offJob;
+
+    /** room for it to stand on the block above the one under pos, out of lava and fire (Go here's exact spot) */
+    public boolean fitsAt(BlockPos p) {
+        var box = getDimensions(getPose()).makeBoundingBox(Vec3.atBottomCenterOf(p));
+        return level().noCollision(this, box) && (fireproof() || !hasLava(box));
+    }
+
     public boolean fireproof() { return fireImmune() || hasEffect(net.minecraft.world.effect.MobEffects.FIRE_RESISTANCE); }
 
     /** it never walks into lava or fire, whatever the detour, unless they are no danger to it. Lava cannot hurt it
@@ -462,6 +473,7 @@ public class DrekkiEntity extends PathfinderMob {
     @Override
     protected void registerGoals() {
         goalSelector.addGoal(0, new net.minecraft.world.entity.ai.goal.FloatGoal(this));  /* knocked into lava it floats, to get out */
+        goalSelector.addGoal(0, new GoHere.Walk(this));  /* the whistle's Go here: before following, eating and fights */
         goalSelector.addGoal(1, new dev.frosthaven.ranchercompanion.combat.CombatGoals.Attack(this));
         goalSelector.addGoal(2, new DrekkiGoals.Follow(this));
         goalSelector.addGoal(3, new EatGoal(this));
@@ -626,6 +638,7 @@ public class DrekkiEntity extends PathfinderMob {
             if (stage() == 1 && isAlive() && getHealth() < getMaxHealth()) setHealth(getMaxHealth());  /* a pup hurt before 0.3.2 */
             if (actionLeft > 0 && --actionLeft == 0) entityData.set(ACTION, 0);
             if (owned() && isAlive()) {
+                if (isStaying()) dev.frosthaven.ranchercompanion.ranch.Ranch.workTick(this);  /* on a seat that moves, or employed */
                 if (!caughtUp) { caughtUp = true; dev.frosthaven.ranchercompanion.life.Vitals.resume(this); }
                 else if (tickCount % 20 == 0) dev.frosthaven.ranchercompanion.life.Vitals.update(this);
                 if (!accessory.isEmpty() && dev.frosthaven.ranchercompanion.item.Bags.sophisticated() && accessory.getItem() instanceof dev.frosthaven.ranchercompanion.item.DrekkiBag)

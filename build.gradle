@@ -100,6 +100,9 @@ dependencies {
     // compile only, used only when Sophisticated Backpacks is loaded (compat/sophisticated)
     compileOnly 'curse.maven:sophisticated-backpacks-422301:9083940'
     compileOnly 'curse.maven:sophisticated-core-618298:9083874'
+    // Create 6.0.10 (the Haven pack's; CurseForge file id 7963363): compile only, used only when Create is loaded
+    // (compat/create: seats for the whistle's Go here, its job hats). Its Flywheel types are reached by method handles
+    compileOnly('curse.maven:create-328085:7963363') { transitive = false }
     testImplementation platform('org.junit:junit-bom:5.10.2')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'

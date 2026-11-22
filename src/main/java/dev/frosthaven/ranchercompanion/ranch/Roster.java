@@ -20,8 +20,10 @@ import net.minecraft.world.level.saveddata.SavedData;
  * is and its hatchery. Kept in the overworld's saved data, so it outlives chunks, logouts and broken hatcheries.
  */
 public final class Roster extends SavedData {
-    /** HOME: lives at its hatchery; OUT: checked out, with its owner; CARRIED: checked out, in a carrier; NONE: no hatchery, data only */
-    public enum Where { HOME, OUT, CARRIED, NONE }
+    /** HOME: lives at its hatchery; OUT: checked out, with its owner; CARRIED: checked out, in a carrier; NONE: no hatchery,
+     *  data only; WORK: employed in a Create role (a conductor, a stock keeper), on its seat and no longer with its owner
+     *  (spec, Go here: Employed) */
+    public enum Where { HOME, OUT, CARRIED, NONE, WORK }
 
     public static final class Entry {
         public final UUID id, owner;
@@ -35,7 +37,7 @@ public final class Roster extends SavedData {
         /** Phoenix Heart: 0 none, EGG_OWED (its egg waits for the owner), EGG_GIVEN (the egg is out; a hatchery brings it back) */
         public int phoenix;
         public static final int EGG_OWED = 1, EGG_GIVEN = 2;
-        /** OUT and told to stay: where it stays; null while it follows (spec, Stay and follow) */
+        /** OUT and told to stay: where it stays; null while it follows (spec, Stay and follow). WORK: where it last was */
         public GlobalPos stay;
 
         Entry(UUID id, UUID owner, CompoundTag save, Where where, GlobalPos home) {

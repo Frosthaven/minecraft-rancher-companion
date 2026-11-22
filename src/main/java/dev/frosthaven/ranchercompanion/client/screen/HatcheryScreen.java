@@ -85,8 +85,14 @@ public final class HatcheryScreen extends Screen {
         return null;
     }
 
+    /** the selected row when it is employed: Check in recalls that one (spec, Go here: Employed) */
+    private Row employed() {
+        Row sel = selected == null ? null : row(selected);
+        return sel != null && sel.where() == HatcheryView.EMPLOYED ? sel : null;
+    }
+
     private Component checkInWhy() {
-        if (out() == null) return Component.translatable("screen.rancher_companion.none_out");
+        if (out() == null && employed() == null) return Component.translatable("screen.rancher_companion.none_out");
         if (view.here() >= 20) return Component.translatable("screen.rancher_companion.full");
         return null;
     }
@@ -193,6 +199,7 @@ public final class HatcheryScreen extends Screen {
             case HatcheryView.HERE -> Component.translatable("screen.rancher_companion.where.here");
             case HatcheryView.WITH_YOU -> Component.translatable("screen.rancher_companion.where.with_you");
             case HatcheryView.CARRIED -> Component.translatable("screen.rancher_companion.where.carried");
+            case HatcheryView.EMPLOYED -> Component.translatable("screen.rancher_companion.where.employed");
             case HatcheryView.ELSEWHERE -> Component.translatable("screen.rancher_companion.where.at", r.place());
             default -> Component.translatable("screen.rancher_companion.where.none");
         };
@@ -266,7 +273,7 @@ public final class HatcheryScreen extends Screen {
             if (Art.in(mx, my, left + LIST_X, top + LIST_Y + i * ROW_H, LIST_W, ROW_H - 1)) { selected = view.rows().get(i + scroll).id(); return true; }
         int by = top + BAR_Y;
         if (Art.in(mx, my, left + OUT_X, by, BW, Art.BTN_H) && checkOutWhy(sel) == null) { send(Ranch.Action.CHECK_OUT, sel.id()); return true; }
-        if (Art.in(mx, my, left + IN_X, by, BW, Art.BTN_H) && checkInWhy() == null) { send(Ranch.Action.CHECK_IN, null); return true; }
+        if (Art.in(mx, my, left + IN_X, by, BW, Art.BTN_H) && checkInWhy() == null) { Row job = employed(); send(Ranch.Action.CHECK_IN, job == null ? null : job.id()); return true; }
         if (Art.in(mx, my, left + REL_X, by, BW, Art.BTN_H) && releaseWhy(sel) == null) { confirming = true; return true; }
         if (view.ready() && view.problems().isEmpty() && Art.in(mx, my, left + HATCH_X, top + HATCH_Y, HATCH_W, Art.BTN_H)) { send(Ranch.Action.HATCH, null); return true; }
         return super.mouseClicked(mx, my, button);

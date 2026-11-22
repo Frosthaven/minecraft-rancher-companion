@@ -25,7 +25,8 @@ import net.minecraft.world.item.ItemStack;
  */
 public record HatcheryView(BlockPos pos, Component title, boolean named, ItemStack egg, boolean ready, List<String> problems, int here, List<Row> rows) implements CustomPacketPayload {
     /** where a drekki is, as the roster column says it */
-    public static final int HERE = 0, WITH_YOU = 1, CARRIED = 2, ELSEWHERE = 3, NO_HATCHERY = 4;
+    /** EMPLOYED (0.4.11): a game before it shows such a row as No hatchery */
+    public static final int HERE = 0, WITH_YOU = 1, CARRIED = 2, ELSEWHERE = 3, NO_HATCHERY = 4, EMPLOYED = 5;
 
     public record Row(UUID id, Component name, int line, int horn, int hat, int stage, int where, Component place) {
         static final StreamCodec<RegistryFriendlyByteBuf, Row> CODEC = StreamCodec.of((b, r) -> {
@@ -68,6 +69,7 @@ public record HatcheryView(BlockPos pos, Component title, boolean named, ItemSta
                 case OUT -> WITH_YOU;
                 case CARRIED -> CARRIED;
                 case NONE -> NO_HATCHERY;
+                case WORK -> EMPLOYED;
                 case HOME -> e.livesAt(home) ? HERE : ELSEWHERE;
             };
             rows.add(new Row(e.id, Ranch.label(e.save), e.save.getInt("Line"), e.save.getInt("Horn"), e.save.getInt("Hat"),

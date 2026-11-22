@@ -74,6 +74,8 @@ public final class RancherCompanion {
         modBus.addListener(net.neoforged.fml.event.config.ModConfigEvent.Loading.class, e -> FoodDiets.invalidate());
         modBus.addListener(net.neoforged.fml.event.config.ModConfigEvent.Reloading.class, e -> FoodDiets.invalidate());
         NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.TagsUpdatedEvent.class, e -> { FoodDiets.invalidate(); dev.frosthaven.ranchercompanion.life.Places.invalidate(); });
+        /* Create's seats for the whistle's Go here, only with Create loaded */
+        if (net.neoforged.fml.ModList.get().isLoaded("create")) dev.frosthaven.ranchercompanion.compat.create.CreateCompat.init();
         if (FMLEnvironment.dist.isClient()) RancherCompanionClient.init(modBus);
     }
 }

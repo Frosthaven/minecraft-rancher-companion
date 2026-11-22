@@ -342,6 +342,29 @@ A checked-out drekki follows its owner (the default) or stays. Every stage, pups
   chunk loads while the owner is offline, or away from the stay spot, is refused. Checking it in, carrying it or checking
   it out again makes it follow.
 
+### Go here (decided 2026-11-22)
+
+Sneak and use the Drekki Whistle while looking at a block (up to 64 blocks away) to send the checked-out drekki there.
+
+- **Where.** It stands on that very block (the middle of the block above the one looked at). With no room for it
+  there, nothing happens and a message says so. Looked at a seat (Create's), it sits on it.
+- **How.** It walks when a path reaches the spot. With no path, a spot more than 64 blocks away, or no progress for 3
+  seconds on the way (30 seconds at most), it is summoned there. Not with its owner (another level, an unloaded chunk),
+  it is called to them first and then sent.
+- **Then it stays**, as told to stay (spec, Stay and follow): the roster keeps the spot. The whistle (not sneaking) or
+  the Follow button makes it follow again and takes it off a seat.
+- **Seats.** Create's seat blocks and the seats of a contraption (an assembled train). A drekki on a seat sits as any
+  mob does, so Create gives it its role: a train's conductor, a stock keeper.
+- **Employed.** On a job seat (a train's seat, or a seat beside a Stock Ticker) the drekki is employed: no longer with
+  its owner, who may check out another. It stays in the world while its owner is offline (the train runs on), is set
+  to Passive, and its stance and Stay/Follow buttons are locked ("... is employed. Recall it at a hatchery"). The
+  hatchery screen lists it as "Employed"; Check in with it selected recalls it to that hatchery, and Check out brings
+  it to its owner. Off its seat for 2 seconds (the train taken apart, the seat broken) it goes home to its hatchery
+  ("... lost its seat and went home"), or to No hatchery without one.
+- **Job hats.** Create's train hat and stock keeper hat are drawn on the drekki's crown at every stage, in place of its
+  own hat, and over its head crest.
+- Open: an employed drekki still gets hungry and does not leave its seat to eat.
+
 ## Affinities
 
 Each affinity changes in real time until it locks in. After lock-in it is permanent.

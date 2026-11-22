@@ -17,15 +17,27 @@ import net.minecraft.world.level.Level;
 
 /**
  * The Drekki Whistle (spec, Stay and follow): the owner's checked-out drekki changes between staying and following.
- * One that is not with them (far, another dimension, an unloaded chunk) comes to them and follows.
+ * One that is not with them (far, another dimension, an unloaded chunk) comes to them and follows. Sneaking: Go here
+ * (entity/GoHere), to the block or seat looked at.
  */
 public final class WhistleItem extends Item {
     public WhistleItem(Properties props) { super(props); }
 
+    /** on a block too: Go here points at it (use, below, looks along the player's view up to 64 blocks) */
+    @Override
+    public net.minecraft.world.InteractionResult useOn(net.minecraft.world.item.context.UseOnContext ctx) { return net.minecraft.world.InteractionResult.PASS; }
+
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        if (player instanceof ServerPlayer sp) {
+        if (player instanceof ServerPlayer sp && player.isShiftKeyDown()) {
+            /* Go here: a long low tone, then up */
+            if (dev.frosthaven.ranchercompanion.entity.GoHere.command(sp)) {
+                level.playSound(null, player.blockPosition(), SoundEvents.NOTE_BLOCK_FLUTE.value(), SoundSource.PLAYERS, 1f, 1.2f);
+                Ranch.after(sp.server, 4, () -> { if (sp.isAlive()) sp.level().playSound(null, sp.blockPosition(), SoundEvents.NOTE_BLOCK_FLUTE.value(), SoundSource.PLAYERS, 1f, 1.8f); });
+            }
+            player.getCooldowns().addCooldown(this, 20);
+        } else if (player instanceof ServerPlayer sp) {
             /* one tone for stay; two short ones, the second higher, for follow */
             boolean stays = Ranch.whistle(sp);
             level.playSound(null, player.blockPosition(), SoundEvents.NOTE_BLOCK_FLUTE.value(), SoundSource.PLAYERS, 1f, stays ? 1.5f : 1.6f);

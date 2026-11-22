@@ -42,6 +42,12 @@ config="${mod_id}.mixins.json"
     ordering="NONE"
     side="CLIENT"
 [[dependencies.${mod_id}]]
+    modId="create"
+    type="optional"
+    versionRange="[6.0.10,)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.${mod_id}]]
     modId="jade"
     type="optional"
     versionRange="[15,)"
