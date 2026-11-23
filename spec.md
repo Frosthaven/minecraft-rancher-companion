@@ -593,6 +593,18 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
 - No stacking: a player in range of several drekki with the same trait gets it once, the strongest copy. Training
   Day still drops XP from each drekki.
 - Biome traits work everywhere once learned, not only in their biome.
+- Rarity (Shane, 2026-11-23, not built): every trait has a color tier by how much it changes play. Claude ranked
+  them; Shane set every capstone to epic. The sheet's Rarity column holds the list.
+  - Epic, purple (11): Phoenix Heart, Wings of Hope, Rewind, Lava Walker, Creature Comforts, Draconic Vampirism,
+    and the other capstones Provoke, Fade, Live Wire, Point Break, Hide & Seek.
+  - Rare, blue (10): Leap of Faith, Ocean Walker, Training Day, Hearty, Patchwork, Balm & Salve, Four Winds, Cloud
+    Stompers, Soft Landing, Undertow.
+  - Uncommon, green (19): Duck & Cover, Marked, Barbed Coat, The Fallen Emperor, Stamp Out, Huddle Up, Night Watch,
+    Staring Contest, Web Cutter, Natural Repellant, Hoglin Ward, Predator's Eye, Inverse Luminance, Hibernation
+    Plan, The Open Road, Homes & Gardens, Downstream, Frost Strider, Hook Line & Sinker.
+  - To settle when built: where the color shows (the trait's name on the traits tab, in the offer, in the learned
+    chat line; today a learned trait is green and an offer gold, so an offer needs another mark), and the tier of
+    the breeding combos and poly traits (epic, or a color of their own).
 - 0.5.0 as built (2026-11-23), where the code settles what the text above left open:
   - The update from 3/6/9 runs when a drekki's record is next loaded (its save has no "caps" mark), not as one walk
     over the roster; the result is the same, and a drekki hatched later is never marked.
