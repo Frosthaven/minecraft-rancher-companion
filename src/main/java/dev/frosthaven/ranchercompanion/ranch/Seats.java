@@ -45,6 +45,13 @@ public interface Seats {
      *  does not look around, so the two do not fight */
     default boolean steers(net.minecraft.world.entity.Entity vehicle) { return false; }
 
+    /** an employed drekki on its seat: remember the seat (a train's: its train, carriage and seat) for reseat */
+    default void seated(Mob mob) {}
+
+    /** an employed drekki off its seat: back on the seat it had, in whichever level that seat's carriage is now; false
+     *  when it cannot (the train taken apart, the seat taken) */
+    default boolean reseat(Mob mob) { return false; }
+
     Seats NONE = new Seats() {
         @Override public Seat looked(ServerPlayer p, double range, double blockDist) { return null; }
         @Override public Seat at(ServerLevel level, BlockPos pos) { return null; }

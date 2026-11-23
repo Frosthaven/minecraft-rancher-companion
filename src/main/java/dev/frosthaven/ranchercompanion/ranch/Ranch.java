@@ -723,6 +723,7 @@ public final class Ranch {
         Entry e = r.get(d.drekkiId());
         if (e == null || e.stay == null) return;
         if (e.where == Where.WORK && !d.isPassenger()) {
+            if (Seats.get().reseat(d)) { d.offJob = 0; return; }  /* dropped at a portal: back on its train seat */
             if ((d.offJob += 20) < 40) return;
             r.snapshot(e, save(d));
             d.discard();
@@ -732,6 +733,7 @@ public final class Ranch {
             return;
         }
         d.offJob = 0;
+        if (e.where == Where.WORK) Seats.get().seated(d);
         if (d.isPassenger() && (!e.stay.dimension().equals(d.level().dimension()) || e.stay.pos().distSqr(d.blockPosition()) > 4 * 4))
             r.stay(e, Roster.at(d.level(), d.blockPosition()));
     }

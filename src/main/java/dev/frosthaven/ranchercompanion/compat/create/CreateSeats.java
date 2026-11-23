@@ -21,6 +21,50 @@ final class CreateSeats implements Seats {
     /** steps along the look ray through a contraption's blocks */
     private static final double STEP = 0.2;
 
+    /** a drekki's seat on a train: Create keeps trains in its global list in every level, so the seat can be found again */
+    private record TrainSeat(java.util.UUID train, int carriage, int seat) {}
+    /** employed drekki on train seats, by entity UUID (a reloaded copy keeps it); refreshed while seated (seated) */
+    private static final java.util.Map<java.util.UUID, TrainSeat> TRAIN_SEATS = new java.util.concurrent.ConcurrentHashMap<>();
+
+    @Override
+    public void seated(Mob mob) {
+        if (!(mob.getVehicle() instanceof com.simibubi.create.content.trains.entity.CarriageContraptionEntity cce) || cce.getContraption() == null) return;
+        Integer seat = cce.getContraption().getSeatMapping().get(mob.getUUID());
+        if (seat != null && cce.trainId != null) TRAIN_SEATS.put(mob.getUUID(), new TrainSeat(cce.trainId, cce.carriageIndex, seat));
+    }
+
+    /**
+     * Back on its train seat. A train through an Immersive Portals portal: IP moves the riding player across itself and
+     * the carriage's old entity is retired before the drekki's seat reaches the plane, so Create never carries the drekki
+     * over and it is dropped beside the portal (2026-11-22, the live world's rail). Moved to the carriage's level first.
+     */
+    @Override
+    public boolean reseat(Mob mob) {
+        TrainSeat ts = TRAIN_SEATS.get(mob.getUUID());
+        if (ts == null || mob.getServer() == null) return false;
+        var train = com.simibubi.create.Create.RAILWAYS.trains.get(ts.train);
+        if (train == null || train.derailed || ts.carriage >= train.carriages.size()) { TRAIN_SEATS.remove(mob.getUUID()); return false; }
+        var carriage = train.carriages.get(ts.carriage);
+        var here = carriage.getDimensionalIfPresent(mob.level().dimension());
+        AbstractContraptionEntity ce = here != null ? here.entity.get() : null;
+        if (ce == null) ce = carriage.anyAvailableEntity();
+        if (ce == null || ce.getContraption() == null || ts.seat >= ce.getContraption().getSeats().size()) return false;
+        OnContraption seat = new OnContraption(ce, ce.getContraption().getSeats().get(ts.seat), ts.seat);
+        var mapping = ce.getContraption().getSeatMapping();
+        mapping.remove(mob.getUUID());  /* its own stale entry from the drop */
+        if (!seat.free()) return false;
+        Mob rider = mob;
+        if (ce.level() != mob.level() && ce.level() instanceof ServerLevel to) {
+            Vec3 at = seat.at();
+            var moved = mob.changeDimension(new net.minecraft.world.level.portal.DimensionTransition(to, at, Vec3.ZERO, mob.getYRot(), mob.getXRot(),
+                net.minecraft.world.level.portal.DimensionTransition.DO_NOTHING));
+            if (!(moved instanceof Mob m)) return false;
+            rider = m;
+            TRAIN_SEATS.put(rider.getUUID(), ts);
+        }
+        return seat.sit(rider);
+    }
+
     @Override
     public Seat looked(ServerPlayer p, double range, double blockDist) { return onContraption(p, Math.min(range, blockDist)); }
 
@@ -81,7 +125,10 @@ final class CreateSeats implements Seats {
             if (!free()) return false;
             mob.stopRiding();
             ce.addSittingPassenger(mob, index);
-            return mob.getVehicle() == ce;
+            if (mob.getVehicle() != ce) return false;
+            if (ce instanceof com.simibubi.create.content.trains.entity.CarriageContraptionEntity cce && cce.trainId != null)
+                TRAIN_SEATS.put(mob.getUUID(), new TrainSeat(cce.trainId, cce.carriageIndex, index));
+            return true;
         }
         /** who sits there now, or null */
         net.minecraft.world.entity.Entity sitter() {

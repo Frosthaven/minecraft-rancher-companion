@@ -43,6 +43,7 @@ public final class DrekkiAnimations {
             case REJUV -> rejuv(P, t);
             default -> {}
         }
+        sit(P, e.sitBlend(t));
         if (e.petTicks() > 0) pet(P, t, e.petTicks());
         if (JOB_HAT.test(e)) { b.rig.crown.visible = false; b.rig.crest.visible = false; }  /* a Create job hat in place of its own and over the crest (compat/create) */
         b.apply();
@@ -120,6 +121,36 @@ public final class DrekkiAnimations {
         else if (f < 0.52) { double u = (f - 0.36) / 0.16, c = sin(u * Math.PI); P.legMix(u < 0.5 ? F_REACH : STAND, F_CROUCH, c); crouch = c * 2.0; P.head.rx += (float) (0.2 * c); }
         P.head.rx += (float) (0.35 * a); P.neck2.rx -= (float) (0.1 * a);
         P.lift(y); P.body.y -= (float) (crouch * P.crouchPx); P.body.rx = (float) (0.12 * a); P.mouth(0.25 * a); P.flare((0.35 + sin(t * 22) * 0.15) * a); P.tail.rx = (float) (P.tailBase + 0.5 * a);
+    }
+
+    /** the sit fold, added to the standing leg angles: the thigh swings back, the knee folds and the foot lies flat under
+     *  the belly (worked out on the rig's joints for all three stages, 2026-11-22: the sleep pose's fold had the feet
+     *  inside the belly) */
+    static final double SIT_T = -0.95, SIT_K = 1.65, SIT_A = -0.7;
+
+    /** sitting (told to stay, or on a seat), s from 0 to 1: the legs fold under the body and the body settles until the
+     *  soles touch the ground; neck and head stay up and awake, the tail curls round. Standing up runs it back */
+    static void sit(Rig P, double s) {
+        if (s <= 0) return;
+        P.legPose(SIT_T * s, SIT_K * s, SIT_A * s);
+        double rest = -soleInBody(P);  /* the body's height when the folded feet stand on the ground */
+        P.body.y = (float) (P.body.y + (rest - P.bodyY) * s);
+        P.neck2.rx -= (float) (0.12 * s);  /* the head held up as the body sinks */
+        P.tail.rx = (float) (P.tail.rx + (-0.1 - P.tailBase) * s); P.tail.ry += (float) (0.9 * s);
+        for (Node sg : P.tailSegs) sg.ry += (float) (0.35 * s);
+    }
+
+    /** the lowest point of a foot's boxes in the body's frame, through the leg's joints as now posed */
+    private static double soleInBody(Rig P) {
+        Rig.Leg L = P.legs.get(0);
+        Node[] chain = {L.ankle, L.knee, L.thigh, L.thigh.parent};
+        double low = Double.MAX_VALUE;
+        for (Node.Box b : L.ankle.boxes) for (int dz = -1; dz <= 1; dz += 2) {
+            Vector3f v = new Vector3f(b.x(), b.y() - b.h() / 2, b.z() + dz * b.d() / 2);
+            for (Node n : chain) { Baked.quat(n, new Quaternionf()).transform(v); v.add(n.x, n.y, n.z); }
+            low = Math.min(low, v.y);
+        }
+        return low == Double.MAX_VALUE ? -P.bodyY : low;
     }
 
     static void sleep(Rig P, double t, double T) {

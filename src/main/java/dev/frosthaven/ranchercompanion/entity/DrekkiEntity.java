@@ -158,6 +158,7 @@ public class DrekkiEntity extends PathfinderMob {
         if (!entityData.get(OWNED)) return Anim.of(entityData.get(ANIM));
         if (entityData.get(ACTION) > 0) return Anim.of(entityData.get(ACTION) - 1);
         if (entityData.get(SLEEPING)) return Anim.SLEEP;
+        if (isPassenger()) return Anim.IDLE;  /* a train's speed is not its own: no walk or run (bobbing) on a moving seat */
         return speedAvg < 0.15 ? Anim.IDLE : speedAvg < 2.6 ? Anim.WALK : Anim.RUN;
     }
 
@@ -452,6 +453,24 @@ public class DrekkiEntity extends PathfinderMob {
     private double sleptAt = Double.NaN;
 
     /** Seconds into the sleep loop: a showcase drekki repeats the page's 8 s loop; a live one lies down once, then stays down. */
+    /** client: the sit pose (DrekkiAnimations.sit), 0 standing to 1 sitting: told to stay, or on a seat, and awake. It
+     *  eases in over SIT_S seconds and back out over STAND_S when it is told to follow or leaves the seat */
+    private boolean sitting;
+    private double sitFrom, sitAt = Double.NaN;
+    private static final double SIT_S = 0.8, STAND_S = 0.5;
+
+    public double sitBlend(double t) {
+        boolean now = live() && (isStaying() || isPassenger()) && !entityData.get(SLEEPING);
+        if (Double.isNaN(sitAt)) { sitting = now; sitFrom = now ? 1 : 0; sitAt = t; }  /* first seen: already in its pose */
+        if (now != sitting) { sitFrom = sitAt(t); sitting = now; sitAt = t; }
+        return sitAt(t);
+    }
+
+    private double sitAt(double t) {
+        double u = Math.max(0, Math.min(1, (t - sitAt) / (sitting ? SIT_S : STAND_S))), e = 0.5 - 0.5 * Math.cos(u * Math.PI);
+        return sitFrom + ((sitting ? 1 : 0) - sitFrom) * e;
+    }
+
     public double sleepTime(double t) {
         if (!live()) return Anim.loop(t, 8) * 8;
         if (Double.isNaN(sleptAt)) sleptAt = t;
@@ -542,6 +561,8 @@ public class DrekkiEntity extends PathfinderMob {
            moving train), a drill, a saw, crushing wheels, a roller, a fan's fire. By the damage type's namespace, Create's
            and its addons' ("create..."): Create is not a dependency */
         if (s.typeHolder().unwrapKey().map(k -> k.location().getNamespace().startsWith("create")).orElse(false)) return true;
+        /* on a seat it cannot step out of a wall: an adult's head reaches past a carriage's roof into a tunnel's rock */
+        if (isPassenger() && s.is(net.minecraft.world.damagesource.DamageTypes.IN_WALL)) return true;
         return super.isInvulnerableTo(s) || stage() == 1 && !byPlayer(s) && !s.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY);
     }
 
