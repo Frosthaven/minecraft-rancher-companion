@@ -511,7 +511,8 @@ Rules behind the lists:
 ### Biome affinity
 
 - Time spent in each biome category is counted until lock-in. At lock-in the category with the most time wins, and
-  the drekki gets that category's traits: one positive and one negative. Travel gives exactly one biome category.
+  the drekki gets that category's trait (its negative too in the first design; negatives are removed for now, see
+  Negative biome traits). Travel gives exactly one biome category.
 - Cover every vanilla biome, including the Nether and other dimensions. Overworld time below y 0 counts as the Cave
   category, whatever the biome there (in 1.21.1 the surface biome reaches down to bedrock outside the three cave
   biomes).
@@ -777,7 +778,7 @@ Effect numbers, written into the sheet's rows (starting points, to tune in testi
 - Training Day: 18 XP every 6,000 ticks (3.5 skeletons at 5 XP, rounded up).
 - Patchwork (was Jerryrigging): the 7 days are elapsed game time, 168,000 ticks, so sleeping does not shorten them.
 - Inverse Luminance: light 14 minus the light where it stands, at most 14 (a torch).
-- Draconic Vampirism: 15% rounded to the nearest point, at most 4 health (2 hearts) a second.
+- Draconic Vampirism: 25% (Shane, 2026-11-23; was 15%) rounded to the nearest point, at most 4 health (2 hearts) a second.
 - Predator's Eye: 24 blocks, mobs in the monster category.
 - Homes & Gardens: a 25% chance of one extra growth step after each natural one, 20 blocks as a sphere.
 
@@ -1372,6 +1373,13 @@ each in a pattern:
   Nausea and a stun when killed.
 
 ## Negative biome traits
+
+**Removed for now (Shane, 2026-11-23): "lets remove all negatives for now".** No drekki gets a negative trait: not its
+biome's at lock-in, not a passed one, not the breeding-only roll. The list and rules below are kept as written for a
+later decision, and are not to be built. Until then these have nothing to do, and need a decision when negatives come
+back or are dropped for good: Naturally Gifted (the free trait that blocks a biome's negative), the Clean Slate Tonic
+(it only halves negative odds), "a negative is an extra beside the slots", and what Live Wire's text says about
+Storm-skittish. The sheet's Negative Trait column is emptied; this section is the record.
 
 Decided 2026-11-04; each biome category's drawback, in the sheet's Negative Trait column. A drekki holds at most
 one negative trait; see the inheritance rule under Traits. Breeding clears negatives by chance: a bred child with no
