@@ -636,8 +636,8 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
     particles and sound) that damages no blocks and does not hurt the drekki. 1-hour cooldown. Proposed, to confirm:
     it hurts hostile mobs only (not players, pets or villagers), and any break of the barding sets it off.
     Tooltip (Shane): "Barding explodes when broken, damaging enemies in an area."
-  - Fade (Shane, 2026-11-23, not built): the inverse of Provoke. Learned when the owner hits a mob that is targeting
-    the drekki, 5 different mobs (counted). Effect: the moment a mob targets the drekki while another target
+  - Fade (Shane, 2026-11-23, not built): the inverse of Provoke. Learned when the drekki is attacked while at
+    or under half health: the one-off chance, 25% each time, scaled by mood (the drekki teaches itself). Effect: the moment a mob targets the drekki while another target
     exists, mobs cannot target the drekki for 8 s; 16 s cooldown from the start. Another target exists when the mob
     was hit by someone else in the last few seconds, or a player or another fighting pet is in the mob's range, so
     it is not spent while only the drekki is fighting. With Provoke on the same drekki, the provoked mob stays on
