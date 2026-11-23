@@ -549,14 +549,15 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
 - Biome traits work everywhere once learned, not only in their biome.
 - Affinity limits on learning (Shane, 2026-11-23, not built), to make breeding matter. An activity trait can be
   learned only by a drekki of a listed astral affinity; the sheet's "Learned by" column holds the list:
-  - All six: Hearty, Patchwork, Training Day, Soft Landing, Balm & Salve, Hook Line & Sinker, Duck & Cover.
-  - One: Creature Comforts (Solar), Night Watch (Lunar), Live Wire (Aero), Point Break (Deep), The Fallen Emperor
-    (Underworld), Staring Contest (End).
-  - Two: Stamp Out and Provoke (Solar, Underworld); Marked (Solar, Aero); Phoenix Heart (Solar, End); Huddle Up
-    (Lunar, Aero); Web Cutter and Undertow (Lunar, Deep); Fade (Lunar, End); Hide & Seek (Aero, Underworld); Cloud
-    Stompers (Aero, End); Barbed Coat (Deep, Underworld).
-  - So each affinity learns 11 or 12 of the 24 by itself. Thermostat (Stamp Out + Huddle Up) and a drekki with both
-    Provoke and Fade come only from a cross-affinity pair.
+  - All six: Hearty, Patchwork, Training Day, Soft Landing, Balm & Salve, Hook Line & Sinker, Duck & Cover, Night
+    Watch (phantoms rarely matter, so not a capstone).
+  - One (the capstones): Provoke (Solar), Fade (Lunar), Live Wire (Aero), Point Break (Deep), Hide & Seek
+    (Underworld; stronger than The Fallen Emperor), Staring Contest (End).
+  - Two: Stamp Out (Solar, Underworld); Marked (Solar, Aero); Phoenix Heart (Solar, End); Creature Comforts (Solar,
+    Lunar); Huddle Up (Lunar, Aero); Web Cutter and Undertow (Lunar, Deep); Cloud Stompers (Aero, End); Barbed Coat
+    (Deep, Underworld); The Fallen Emperor (Underworld, End).
+  - So each affinity learns 12 or 13 of the 24 by itself. Thermostat (Stamp Out + Huddle Up) and a drekki with both
+    Provoke and Fade (day and night) come only from a cross-affinity pair.
   - Inherited traits ignore the limit: a child keeps what passes, whatever its affinity. A poly trait widens
     learning as it widens the home terrain (Polyphasic Solaris learns as Solar and as Lunar, and so on). A Dormant
     pup learns only the all-six traits. A drekki keeps the traits it had before this rule.
