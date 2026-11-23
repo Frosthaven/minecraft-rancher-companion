@@ -580,6 +580,8 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
   the rider: water, lava and modded fluids alike, as a horse does in water. The drekki keeps its own protections (an
   unridden drekki floats and is lavaproof); the rider is on their own in the liquid. A drekki that walks on a liquid
   (Ocean Walker, Lava Walker, Surface Tension, the Teal line's Skimmer) is not in it, so its rider stays on. The
+  walking holds only when it steps onto the liquid or lands on it from no higher than a fall that would not hurt (3
+  blocks or less); from higher it plunges in, and the rider is dismounted like any other (Shane, 2026-11-23). The
   Bosun line's Deep diver (ridden underwater) is the exception to write when that line is built. To settle when
   built: how deep counts (a horse's rule is the rider's eyes under the surface; a puddle should not dismount).
 - The void never kills a drekki (Shane, 2026-11-23; built in 0.5.0): any stage, any trait or none, checked out or not.
