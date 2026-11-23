@@ -627,7 +627,7 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
     hurt by spikes, 25% each time: by damage type, so modded blocks count without compat code (cactus, sweet berry
     bush, thorns: a guardian's spikes, a pufferfish and a mob in Thorns armor, stalagmite and falling stalactite;
     Biomes O' Plenty's Bramble counts if it deals one of these, to check when building). Effect: a mob that hits
-    the drekki in melee takes 25% of that damage back, at least 4 (2 hearts; Shane, 2026-11-23), as thorns damage, in every
+    the drekki in melee takes 25% of that damage back, at least 1 (half a heart), as thorns damage, in every
     stance. Projectiles and explosions return nothing. On a Clay drekki it adds to the line's own Thorns.
   - Hibernation Plan slows both the player's hunger and the drekki's (see Hunger).
   - Phoenix Heart works on every death and the trait is kept. The egg goes to the owner's inventory when they are
@@ -639,7 +639,7 @@ Effect numbers, written into the sheet's rows (starting points, to tune in testi
   stay. No "within 10 blocks". Treatments read "... inflicted on its owner is treated"; walking traits read "When
   ridden, the drekki can walk on ...".
   - Provoke: "Using the whistle to attack an enemy will provoke them, making them target only the drekki for 8 seconds."
-  - Barbed Coat: "25% of enemy melee damage is returned to the attacker. Will always do at least 4 damage."
+  - Barbed Coat: "25% of enemy melee damage is returned to the attacker. Will always do at least half a heart of damage."
   - Surface Tension: "When ridden, the drekki can walk on any liquid." Lava Walker: "... can walk on lava." Ocean
     Walker: "... can walk on water."
   - Thermostat: "Fire and freezing inflicted on its owner are treated."
