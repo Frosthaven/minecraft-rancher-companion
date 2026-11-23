@@ -310,4 +310,18 @@ public final class NewTraitTests {
         t.assertTrue(!d.life.horizons && d.life.traits.size() == 4, "a Fledgling with 4 is left to take the potion later");
         t.succeed();
     }
+
+    /** riding is not in the game yet; the rule is ready for it */
+    @GameTest(template = "floor")
+    public static void aFallHurtsTheRiderAndNeverTheDrekki(GameTestHelper t) {
+        ServerPlayer p = LifeTests.player(t);
+        DrekkiEntity d = fledgling(t, p, Astral.SOLAR);
+        t.assertFalse(d.causeFallDamage(20, 1, d.damageSources().fall()) || d.getHealth() < d.getMaxHealth(), "alone, a fall does nothing to it");
+        Husk rider = husk(t, -3, 3);
+        rider.startRiding(d, true);
+        float full = rider.getHealth();
+        d.causeFallDamage(13, 1, d.damageSources().fall());
+        t.assertTrue(d.isVehicle() && d.getHealth() == d.getMaxHealth() && rider.getHealth() < full - 5, "ridden, a 13 block fall hurts its rider (" + full + " to " + rider.getHealth() + ") and not the drekki");
+        t.succeed();
+    }
 }

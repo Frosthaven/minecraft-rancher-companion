@@ -568,7 +568,7 @@ public class DrekkiEntity extends PathfinderMob {
     public boolean isInvulnerableTo(net.minecraft.world.damagesource.DamageSource s) {
         if (life.ghost) return !s.is(net.minecraft.world.damagesource.DamageTypes.GENERIC_KILL);  /* a ghost cannot die again; /kill still removes it */
         /* a safety rule (2026-11-21): with no rider, lava and falls never hurt it, so following its owner cannot kill it */
-        if (!isVehicle() && (s.is(net.minecraft.world.damagesource.DamageTypes.FALL) || s.is(net.minecraft.world.damagesource.DamageTypes.LAVA))) return true;
+        if (s.is(net.minecraft.world.damagesource.DamageTypes.FALL) || !isVehicle() && s.is(net.minecraft.world.damagesource.DamageTypes.LAVA)) return true;  /* a fall never, ridden or not */
         /* nor any Create machine: a train running it over (it cannot ride, so its catch-up lands it beside its owner's
            moving train), a drill, a saw, crushing wheels, a roller, a fan's fire. By the damage type's namespace, Create's
            and its addons' ("create..."): Create is not a dependency */
@@ -610,7 +610,11 @@ public class DrekkiEntity extends PathfinderMob {
     public void knockback(double strength, double x, double z) { if (braced != tickCount) super.knockback(strength, x, z); }
 
     @Override
-    public boolean causeFallDamage(float distance, float multiplier, net.minecraft.world.damagesource.DamageSource s) { return isVehicle() && super.causeFallDamage(distance, multiplier, s); }
+    /** a fall never hurts a drekki, ridden or not; a rider takes the fall as their own (decided 2026-11-23: only the rider is hurt) */
+    public boolean causeFallDamage(float distance, float multiplier, net.minecraft.world.damagesource.DamageSource s) {
+        for (net.minecraft.world.entity.Entity rider : getPassengers()) rider.causeFallDamage(distance, multiplier, s);
+        return false;
+    }
 
     /** lava neither burns it nor sets it on fire */
     @Override

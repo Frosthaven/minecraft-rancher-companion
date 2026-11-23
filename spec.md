@@ -572,6 +572,14 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
     at all under the falling player, so in practice the End's void.
   - The void: a drekki goes back to the last solid ground it stood on in that dimension, else to its owner or home.
   - Spikes are the damage type tag `rancher_companion:spikes` plus a pufferfish's sting.
+- Falls (Shane, 2026-11-23; built in 0.5.0, for when riding exists): a fall never hurts a drekki, ridden or not. A rider
+  takes the fall as their own, the full distance. (Before, a ridden drekki took the fall too.) Leap of Faith, Soft
+  Landing and the extra jumps are how a rider avoids it. Lava is unchanged: a ridden drekki is not lavaproof without
+  Lava Walker.
+- Open, for the riding release: a ridden drekki in water. Nothing is decided. As the game stands without a rule of the
+  mod's: a fall into water hurts neither; a mount steered by a player does not float by itself, its rider is not
+  thrown off under water (the drekki is not in the game's `dismounts_underwater` tag), and both lose air. Ocean
+  Walker, Downstream, Surface Tension, the Teal line's Skimmer and the Bosun line's Deep diver all touch this.
 - The void never kills a drekki (Shane, 2026-11-23; built in 0.5.0): any stage, any trait or none, checked out or not.
   Void damage to a drekki is cancelled. Proposed, to confirm: it is put back on the last safe ground it stood on,
   or brought to its owner when it is checked out.
