@@ -524,13 +524,14 @@ Rules behind the lists:
   tint, and on stage 3 the base segment of each horn does too.
 - Biome traits in their own biome (Shane, 2026-11-23, not built):
   - On the drekki screen's traits tab a biome trait has a globe icon where other traits have a bullet.
-  - While the drekki is in a biome of the trait's category, the drekki and its owner take 20% less damage from all
+  - While the drekki and its owner are both in a biome of the trait's category, they take 20% less damage from all
     sources: a hostile mob's hit, a fall, fire, anything. Its barding too: a hit the barding soaks up costs 20% less
     durability there. The 20% comes off the hit first, then the barding's protection enchantments take their share
     of what is left (Claude's judgement: the two multiply and do not add).
   - Only while the drekki is travelling with its owner: checked out, not at a hatchery, at work or in a carrier.
-    Claude's reading, as for Rewind: no block limit, and a drekki told to Stay still counts; the biome is read where
-    the drekki is. For a trait a parent passed on, the category is the trait's own.
+    The drekki and its owner must both be in a biome of the trait's category (Shane): with either one outside it,
+    neither gets the bonus, nor does the barding. No other distance rule; a drekki told to Stay counts while both
+    are in the category. For a trait a parent passed on, the category is the trait's own.
   - The globe is lit while the bonus is on and dim while it is off. That marks the 20% only (Shane: "A"): the
     trait's own effect works everywhere, as decided before.
 - Biome capstone traits: a spread of capstone traits that lock in at the start of stage 3.
