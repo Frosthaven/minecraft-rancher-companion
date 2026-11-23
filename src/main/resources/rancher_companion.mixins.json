@@ -11,6 +11,7 @@
     "PiglinAiMixin",
     "PlayerExhaustionMixin",
     "PowderSnowBlockMixin",
+    "VehicleFloatAccess",
     "VillagerMixin",
     "WebBlockMixin"
   ],

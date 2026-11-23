@@ -30,8 +30,8 @@ import org.joml.Vector3f;
 public final class Vitals {
     private Vitals() {}
 
-    /** the stage growth stops at in this release (spec: stage 2 until a later one) */
-    public static final int STAGE_CAP = 2;
+    /** the last stage: Mature (0.5.0; growth stopped at Fledgling before) */
+    public static final int STAGE_CAP = 3;
     /** a gap longer than this between two updates of a live drekki was not live time (its chunk stopped ticking) */
     private static final long LIVE_GAP = 200;
     private static final int[] HEALTH = {10, 30, 50};

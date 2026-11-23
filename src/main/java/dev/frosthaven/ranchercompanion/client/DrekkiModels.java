@@ -22,11 +22,11 @@ public final class DrekkiModels {
         boolean spread = e.anim() == Anim.GLIDE;
         int bard = e.stage() >= 2 ? e.barding() : 0, bag = e.stage() >= 2 ? e.bag() : 0;
         String key = e.stage() + "_" + e.line() + "_" + e.diet() + "_" + e.astral() + "_" + e.horn() + (spread ? "_s" : "") + "_h" + e.hat() + "_b" + bard
-            + "_d" + Integer.toHexString(e.dye()) + "_" + Integer.toHexString(e.dye2()) + "_g" + bag + "_" + Integer.toHexString(e.bagDye()) + "_" + Integer.toHexString(e.bagDye2());
+            + "_d" + Integer.toHexString(e.dye()) + "_" + Integer.toHexString(e.dye2()) + "_g" + bag + "_" + Integer.toHexString(e.bagDye()) + "_" + Integer.toHexString(e.bagDye2()) + (e.saddled() ? "" : "_ns");
         DrekkiModel m = CACHE.get(key);
         if (m == null || !m.baked.alive()) {  /* new, or its textures released by another mod: baked again */
             dev.frosthaven.ranchercompanion.Debug.log("game: {} model {}", m == null ? "baking" : "baking again (textures were released)", key);
-            m = build(e.stage(), e.lineage(), Diet.of(e.diet()), e.astral(), e.horn(), spread, e.hat(), bard, e.dye(), e.dye2(), bag, e.bagDye(), e.bagDye2(), key);
+            m = build(e.stage(), e.lineage(), Diet.of(e.diet()), e.astral(), e.horn(), spread, e.hat(), bard, e.dye(), e.dye2(), bag, e.bagDye(), e.bagDye2(), e.saddled(), key);
             CACHE.put(key, m);
         }
         return m;
@@ -34,13 +34,13 @@ public final class DrekkiModels {
 
     public static DrekkiModel fallback() {
         DrekkiModel m = CACHE.get("fallback");
-        if (m == null || !m.baked.alive()) { m = build(3, Lineage.of(0), Diet.RAW, 1, 0, false, 0, 0, -1, -1, 0, -1, -1, "fallback"); CACHE.put("fallback", m); }
+        if (m == null || !m.baked.alive()) { m = build(3, Lineage.of(0), Diet.RAW, 1, 0, false, 0, 0, -1, -1, 0, -1, -1, true, "fallback"); CACHE.put("fallback", m); }
         return m;
     }
 
-    private static DrekkiModel build(int stage, Lineage line, Diet diet, int astral, int horn, boolean spread, int hat, int barding, int dye, int dye2, int bag, int bagDye, int bagDye2, String key) {
+    private static DrekkiModel build(int stage, Lineage line, Diet diet, int astral, int horn, boolean spread, int hat, int barding, int dye, int dye2, int bag, int bagDye, int bagDye2, boolean saddle, String key) {
         Rig rig = new Rig(new Rig.Look(stage, line.fur(), line.trim(), Palette.legTint(PLAINS, line.fur()), astral, diet, horn, spread, hat, barding, dye, line.sheenHex(), line.sheen(), line.seeThrough(),
-            dye2, bag, bagDye, bagDye2));
+            dye2, bag, bagDye, bagDye2, saddle));
         return new DrekkiModel(RigBake.bake(rig, key));
     }
 }

@@ -22,7 +22,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * one a player placed stays.
  */
 public final class TombstoneBlockEntity extends BlockEntity {
-    public static final int SLOTS = 3;
+    public static final int SLOTS = 4;  /* hat, barding, bag, saddle (3 before 0.5.0) */
     /** the Corpse mod's default despawn time of an empty corpse (corpse-server.toml, corpse.despawn.time) */
     public static final int VANISH = 600;
 

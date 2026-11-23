@@ -14,7 +14,7 @@ import net.minecraft.world.level.Level;
 /** A tombstone's screen (spec, Tombstone): the gear it holds (take only) over the player's inventory. */
 public final class TombstoneMenu extends AbstractContainerMenu {
     /** where the slots sit on the screen's texture (tools/screen_textures.py tombstone; TombstoneScreen draws the same) */
-    public static final int SLOT_X = 62, SLOT_Y = 34, INV_Y = 84;
+    public static final int SLOT_X = 53, SLOT_Y = 34, INV_Y = 84;
 
     public final Level level;
     public final BlockPos pos;

@@ -23,16 +23,18 @@ import net.minecraft.world.item.ItemStack;
  */
 public final class DrekkiMenu extends AbstractContainerMenu {
     /** where the slots sit on the screen's texture (tools/screen_textures.py drekki; DrekkiScreen draws the same layout) */
-    public static final int HAT_X = 8, HAT_Y = 27, BARDING_Y = 47, ACCESSORY_Y = 67;
+    public static final int HAT_X = 8, HAT_Y = 27, BARDING_Y = 47, ACCESSORY_Y = 67, SADDLE_Y = 87;
     /** the inventory: vanilla's 176 wide, centered under the 220-wide top */
     public static final int INV_X = 22 + 8, INV_Y = 137;
 
     public final DrekkiEntity drekki;
     /** the layout this menu was opened with: the barding and accessory slots from stage 2 */
     public final boolean gear;
+    /** a Mature's saddle slot, under the accessory */
+    public final boolean saddled;
     /** opened from the chat offer: the screen starts on its Traits tab */
     public final boolean traitsTab;
-    private final SimpleContainer hat = new SimpleContainer(1), barding = new SimpleContainer(1), accessory = new SimpleContainer(1);
+    private final SimpleContainer hat = new SimpleContainer(1), barding = new SimpleContainer(1), accessory = new SimpleContainer(1), saddle = new SimpleContainer(1);
 
     public DrekkiMenu(int id, Inventory inv, DrekkiEntity d) { this(id, inv, d, false); }
 
@@ -41,10 +43,12 @@ public final class DrekkiMenu extends AbstractContainerMenu {
         this.drekki = d;
         this.traitsTab = traitsTab;
         this.gear = d != null && d.stage() >= 2;
+        this.saddled = d != null && d.stage() >= 3;
         if (d != null) {
             hat.setItem(0, d.hat() > 0 ? DrekkiItems.hatStack(d.hat()) : ItemStack.EMPTY);
             barding.setItem(0, d.bardingItem());
             accessory.setItem(0, d.accessory());
+            saddle.setItem(0, d.saddle());
         }
         if (d != null && !d.level().isClientSide) {
             hat.addListener(c -> {
@@ -53,6 +57,7 @@ public final class DrekkiMenu extends AbstractContainerMenu {
             });
             barding.addListener(c -> { if (c.getItem(0) != d.bardingItem()) { d.setBardingItem(c.getItem(0)); Ranch.touch(d); } });
             accessory.addListener(c -> { if (c.getItem(0) != d.accessory()) { d.setAccessory(c.getItem(0)); Ranch.touch(d); } });
+            saddle.addListener(c -> { if (c.getItem(0) != d.saddle()) { d.setSaddle(c.getItem(0)); Ranch.touch(d); } });
         }
         addSlot(new Slot(hat, 0, HAT_X, HAT_Y) {
             @Override public boolean mayPlace(ItemStack s) { return !locked() && DrekkiItems.hatIndex(s) > 0; }
@@ -71,6 +76,11 @@ public final class DrekkiMenu extends AbstractContainerMenu {
                 @Override public int getMaxStackSize() { return 1; }
             });
         }
+        if (saddled) addSlot(new Slot(saddle, 0, HAT_X, SADDLE_Y) {
+            @Override public boolean mayPlace(ItemStack s) { return !locked() && s.is(net.minecraft.world.item.Items.SADDLE); }
+            @Override public boolean mayPickup(Player p) { return !locked(); }
+            @Override public int getMaxStackSize() { return 1; }
+        });
         for (int r = 0; r < 3; r++) for (int c = 0; c < 9; c++) addSlot(new Slot(inv, c + r * 9 + 9, INV_X + c * 18, INV_Y + r * 18));
         for (int c = 0; c < 9; c++) addSlot(new Slot(inv, c, INV_X + c * 18, INV_Y + 58));
     }
@@ -84,7 +94,7 @@ public final class DrekkiMenu extends AbstractContainerMenu {
         return d != null && kind > 0 && Gear.BAG_STAGE[kind] <= d.stage();
     }
 
-    private int invStart() { return gear ? 3 : 1; }
+    private int invStart() { return saddled ? 4 : gear ? 3 : 1; }
 
     /** a ghost's screen is read-only (spec, Ghost drekki): no gear on or off, no stance */
     public boolean locked() { return drekki != null && drekki.ghost(); }
@@ -100,6 +110,7 @@ public final class DrekkiMenu extends AbstractContainerMenu {
         else if (DrekkiItems.hatIndex(s) > 0 && !slots.get(0).hasItem()) { if (!moveItemStackTo(s, 0, 1, false)) return ItemStack.EMPTY; }
         else if (gear && fitsBarding(drekki, s) && !slots.get(1).hasItem()) { if (!moveItemStackTo(s, 1, 2, false)) return ItemStack.EMPTY; }
         else if (gear && fitsAccessory(drekki, s) && !slots.get(2).hasItem()) { if (!moveItemStackTo(s, 2, 3, false)) return ItemStack.EMPTY; }
+        else if (saddled && s.is(net.minecraft.world.item.Items.SADDLE) && !slots.get(3).hasItem()) { if (!moveItemStackTo(s, 3, 4, false)) return ItemStack.EMPTY; }
         else return ItemStack.EMPTY;
         if (s.isEmpty()) slot.setByPlayer(ItemStack.EMPTY); else slot.setChanged();
         return copy;

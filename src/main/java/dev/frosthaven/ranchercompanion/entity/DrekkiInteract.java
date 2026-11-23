@@ -79,6 +79,12 @@ public final class DrekkiInteract {
             }
             return InteractionResult.sidedSuccess(d.level().isClientSide);
         }
+        /* a Mature takes its owner on its back at an empty-handed click (spec, Stage 3). Its screen: the inventory key
+           while riding, or a click with any other item in hand */
+        if (mine && hand == InteractionHand.MAIN_HAND && stack.isEmpty() && d.rideable() && !d.isVehicle() && !player.isPassenger()) {
+            if (!d.level().isClientSide) { d.setSleepingLoop(false); d.getNavigation().stop(); d.setTarget(null); player.startRiding(d); }
+            return InteractionResult.sidedSuccess(d.level().isClientSide);
+        }
         /* the drekki screen (its hat slot and your inventory): with an empty hand or any item that does nothing else to a drekki */
         if (mine && hand == InteractionHand.MAIN_HAND && opensScreen(stack)) {
             if (player instanceof net.minecraft.server.level.ServerPlayer sp) openScreen(sp, d, false);

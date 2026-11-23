@@ -21,7 +21,7 @@ import net.minecraft.world.phys.Vec3;
  * The drekki. Its look (stage, lineage, diet, astral, horns) and the loop it plays are synched to clients; the
  * showcase pins an animation and, for the travelling loops, walks it up and down a lane.
  */
-public class DrekkiEntity extends PathfinderMob {
+public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.entity.HasCustomInventoryScreen {
     private static final EntityDataAccessor<Integer> STAGE = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> LINE = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> DIET = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.INT);
@@ -72,11 +72,14 @@ public class DrekkiEntity extends PathfinderMob {
     /** its barding is enchanted: the glint on the plates. Declared last: a synched value is never put in the middle
      *  (see CLAUDE.md, Release: network compatibility) */
     private static final EntityDataAccessor<Boolean> BARDING_GLINT = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.BOOLEAN);
+    /** 0.5.0: a Mature wears a saddle (its saddle slot): drawn, and it can be ridden. Declared last, as above */
+    private static final EntityDataAccessor<Boolean> SADDLED = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.BOOLEAN);
 
     /** its life (server: the truth, saved under "Life"; client: unused, the synched values above stand in) */
     public final dev.frosthaven.ranchercompanion.life.Life life = new dev.frosthaven.ranchercompanion.life.Life();
     /** its equipment from stage 2 (spec, Drekki screen): barding of its stage, and its accessory (a bag) */
-    private net.minecraft.world.item.ItemStack bardingItem = net.minecraft.world.item.ItemStack.EMPTY, accessory = net.minecraft.world.item.ItemStack.EMPTY;
+    private net.minecraft.world.item.ItemStack bardingItem = net.minecraft.world.item.ItemStack.EMPTY, accessory = net.minecraft.world.item.ItemStack.EMPTY,
+        saddle = net.minecraft.world.item.ItemStack.EMPTY;
     private boolean caughtUp;
     /** on its way to a trough or eating: following waits while its owner is near (EatGoal) */
     boolean eating;
@@ -113,6 +116,7 @@ public class DrekkiEntity extends PathfinderMob {
         b.define(MOVE, 0);
         b.define(FOOD, 10f); b.define(MOOD, 50f); b.define(BAND, 2); b.define(PET_LEFT, 0); b.define(KIN, 0); b.define(GHOST, false); b.define(STANCE, 1); b.define(ACTION, 0); b.define(REVIVING, false); b.define(TRAITS, new CompoundTag()); b.define(JOB, 0);
         b.define(BARDING_GLINT, false);
+        b.define(SADDLED, false);
     }
 
     public int stage() { return entityData.get(STAGE); }
@@ -148,6 +152,17 @@ public class DrekkiEntity extends PathfinderMob {
         entityData.set(DYE2, dev.frosthaven.ranchercompanion.item.Dyeing.trim(s));
     }
 
+    public net.minecraft.world.item.ItemStack saddle() { return saddle; }
+    /** a saddle is drawn: the one a Mature wears; a showcase drekki (no owner) shows the page's */
+    public boolean saddled() { return stage() >= 3 && (entityData.get(SADDLED) || !live()); }
+
+    /** wears this saddle (EMPTY for none; a Mature only): drawn, and its owner can ride it. Taken off under a rider, the rider gets down */
+    public void setSaddle(net.minecraft.world.item.ItemStack s) {
+        saddle = s;
+        entityData.set(SADDLED, !s.isEmpty());
+        if (s.isEmpty() && !level().isClientSide) ejectPassengers();
+    }
+
     /** wears this accessory (EMPTY for none); the look follows */
     public void setAccessory(net.minecraft.world.item.ItemStack s) {
         accessory = s;
@@ -164,6 +179,7 @@ public class DrekkiEntity extends PathfinderMob {
         if (!entityData.get(OWNED)) return Anim.of(entityData.get(ANIM));
         if (entityData.get(ACTION) > 0) return Anim.of(entityData.get(ACTION) - 1);
         if (entityData.get(SLEEPING)) return Anim.SLEEP;
+        if (isVehicle() && rideable()) return Riding.loop(this, speedAvg, getY() - yo);
         if (isPassenger()) return Anim.IDLE;  /* a train's speed is not its own: no walk or run (bobbing) on a moving seat */
         return speedAvg < 0.15 ? Anim.IDLE : speedAvg < 2.6 ? Anim.WALK : Anim.RUN;
     }
@@ -317,6 +333,7 @@ public class DrekkiEntity extends PathfinderMob {
     public boolean landed;
 
     public void jumpTo(Vec3 at) {
+        ejectPassengers();
         if (!fireproof() && hasLava(getBoundingBox().move(at.subtract(position())))) return;  /* not into lava or fire itself */
         moveTo(at.x, at.y, at.z, getYRot(), getXRot());
         sendFresh();
@@ -575,6 +592,8 @@ public class DrekkiEntity extends PathfinderMob {
         if (s.typeHolder().unwrapKey().map(k -> k.location().getNamespace().startsWith("create")).orElse(false)) return true;
         /* nor any mob that is not hostile (the red health bar's rule, Enemy): a village's guard or iron golem, a wolf */
         if (s.getEntity() instanceof net.minecraft.world.entity.LivingEntity a && !(a instanceof net.minecraft.world.entity.player.Player) && !(a instanceof net.minecraft.world.entity.monster.Enemy)) return true;
+        /* it never suffocates, under water or with its head in a block (Shane, 2026-11-23) */
+        if (s.is(net.minecraft.world.damagesource.DamageTypes.DROWN) || s.is(net.minecraft.world.damagesource.DamageTypes.IN_WALL)) return true;
         /* on a seat it cannot step out of a wall: an adult's head reaches past a carriage's roof into a tunnel's rock */
         if (isPassenger() && s.is(net.minecraft.world.damagesource.DamageTypes.IN_WALL)) return true;
         return super.isInvulnerableTo(s) || stage() == 1 && !byPlayer(s) && !s.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY);
@@ -612,6 +631,7 @@ public class DrekkiEntity extends PathfinderMob {
     @Override
     /** a fall never hurts a drekki, ridden or not; a rider takes the fall as their own (decided 2026-11-23: only the rider is hurt) */
     public boolean causeFallDamage(float distance, float multiplier, net.minecraft.world.damagesource.DamageSource s) {
+        if (Riding.holds(this, dev.frosthaven.ranchercompanion.trait.Trait.LEAP_OF_FAITH)) return false;  /* safe from any height */
         for (net.minecraft.world.entity.Entity rider : getPassengers()) rider.causeFallDamage(distance, multiplier, s);
         return false;
     }
@@ -742,6 +762,65 @@ public class DrekkiEntity extends PathfinderMob {
     private double seenX = Double.NaN, seenZ;
     private long seenAt;
 
+    // ---- riding (spec, Stage 3) ----
+
+    /** a Mature's ability (combat.Abilities): the game time it is ready again, and ticks to the breath's hit */
+    public long abilityAt;
+    public int breathIn;
+
+    final Riding.State ride = new Riding.State();
+    /** server: its height a tick ago while ridden; every side: ticks it has been off the ground */
+    double rideY;
+    int airSeen;
+
+    /** a Mature with a saddle in its saddle slot carries its owner (Shane, 2026-11-23). Not a ghost, not at work */
+    public boolean rideable() { return stage() >= 3 && live() && entityData.get(SADDLED) && !ghost() && job() == 0; }
+
+    @Override
+    public net.minecraft.world.entity.LivingEntity getControllingPassenger() {
+        return rideable() && getFirstPassenger() instanceof net.minecraft.world.entity.player.Player p ? p : super.getControllingPassenger();
+    }
+
+    /** under a rider it does nothing of its own: no goals, no fights, no catch-up */
+    @Override
+    protected boolean isImmobile() { return super.isImmobile() || !level().isClientSide && getControllingPassenger() instanceof net.minecraft.world.entity.player.Player; }
+
+    @Override
+    protected void tickRidden(net.minecraft.world.entity.player.Player rider, Vec3 input) {
+        super.tickRidden(rider, input);
+        setRot(rider.getYRot(), rider.getXRot() * 0.5f);
+        yRotO = yBodyRot = yHeadRot = getYRot();
+        Riding.steer(this, rider);
+    }
+
+    @Override
+    protected Vec3 getRiddenInput(net.minecraft.world.entity.player.Player rider, Vec3 input) {
+        float side = rider.xxa * 0.5f, ahead = rider.zza;
+        return new Vec3(side, 0, ahead <= 0 ? ahead * 0.25f : ahead);
+    }
+
+    @Override
+    protected float getRiddenSpeed(net.minecraft.world.entity.player.Player rider) {
+        return (float) (dev.frosthaven.ranchercompanion.look.RideMath.SPEED * (Riding.holds(this, dev.frosthaven.ranchercompanion.trait.Trait.OPEN_ROAD) ? 1.1 : 1));
+    }
+
+    @Override
+    protected Vec3 getPassengerAttachmentPoint(net.minecraft.world.entity.Entity rider, EntityDimensions dims, float scale) {
+        return new Vec3(0, dims.height() * 0.74, -0.1 * scale);
+    }
+
+    @Override
+    public boolean canStandOnFluid(net.minecraft.world.level.material.FluidState fluid) { return Riding.walksOn(this, fluid); }
+
+    @Override
+    protected int decreaseAirSupply(int air) { return air; }  /* it never runs out of air (Shane, 2026-11-23) */
+
+    /** the inventory key while riding opens its screen, as a horse's */
+    @Override
+    public void openCustomInventoryScreen(net.minecraft.world.entity.player.Player p) {
+        if (p instanceof net.minecraft.server.level.ServerPlayer sp && sp.getUUID().equals(owner())) DrekkiInteract.openScreen(sp, this, false);
+    }
+
     /** client: its smoothed ground speed, from where it was at the last call. Called from its own tick and from the
      *  sound tick, once a game tick at most: Entity Culling gives a drekki the player cannot see a reduced tick that
      *  moves it but never runs {@link #tick}, so a speed kept only there froze at "walking" and its steps played on
@@ -756,13 +835,16 @@ public class DrekkiEntity extends PathfinderMob {
     @Override
     public void tick() {
         super.tick();
+        airSeen = onGround() ? 0 : airSeen + 1;
         if (level().isClientSide) trackSpeed();
         else {
+            if (getControllingPassenger() instanceof net.minecraft.server.level.ServerPlayer rider) Riding.serverTick(this, rider); else rideY = getY();
             if (petTicks() > 0) entityData.set(PET, petTicks() - 1);
             if (owned()) dev.frosthaven.ranchercompanion.trait.WorldTraits.standing(this);
             if (stage() == 1 && isAlive() && getHealth() < getMaxHealth()) setHealth(getMaxHealth());  /* a pup hurt before 0.3.2 */
             if (actionLeft > 0 && --actionLeft == 0) entityData.set(ACTION, 0);
             if (owned() && isAlive()) {
+                if (stage() >= 3) dev.frosthaven.ranchercompanion.combat.Abilities.tick(this);
                 if (isStaying()) dev.frosthaven.ranchercompanion.ranch.Ranch.workTick(this);  /* on a seat that moves, or employed */
                 if (heldUntil >= 0 && !held()) {  /* Go here's hold is over: not told to stay, it gets up from a plain seat and follows */
                     heldUntil = -1;
@@ -797,6 +879,7 @@ public class DrekkiEntity extends PathfinderMob {
         tag.put("Life", dev.frosthaven.ranchercompanion.life.LifeTag.save(life));
         if (!bardingItem.isEmpty()) tag.put("BardingItem", bardingItem.save(registryAccess()));
         if (!accessory.isEmpty()) tag.put("Accessory", accessory.save(registryAccess()));
+        if (!saddle.isEmpty()) tag.put("Saddle", saddle.save(registryAccess()));
         if (owner != null) { tag.putUUID("Owner", owner); tag.putUUID("DrekkiId", drekkiId); tag.putBoolean("Out", out); if (home != null) tag.putLong("Home", home.asLong()); }
     }
 
@@ -813,6 +896,7 @@ public class DrekkiEntity extends PathfinderMob {
         if (tag.contains("Bag")) { entityData.set(BAG, tag.getInt("Bag")); entityData.set(BAG_DYE, tag.contains("BagDye") ? tag.getInt("BagDye") : -1); entityData.set(BAG_DYE2, tag.contains("BagDye2") ? tag.getInt("BagDye2") : -1); }
         if (tag.contains("BardingItem")) setBardingItem(net.minecraft.world.item.ItemStack.parseOptional(registryAccess(), tag.getCompound("BardingItem")));
         if (tag.contains("Accessory")) setAccessory(net.minecraft.world.item.ItemStack.parseOptional(registryAccess(), tag.getCompound("Accessory")));
+        if (tag.contains("Saddle")) setSaddle(net.minecraft.world.item.ItemStack.parseOptional(registryAccess(), tag.getCompound("Saddle")));
         if (tag.contains("Anim")) setAnim(Anim.of(tag.getInt("Anim")), tag.getFloat("Lane"));
         life.settleSlots(dev.frosthaven.ranchercompanion.trait.Trait.cap(stage(), false));
         applyStageHealth(false);

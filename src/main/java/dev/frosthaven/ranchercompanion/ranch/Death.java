@@ -144,14 +144,16 @@ public final class Death {
         if (d.owner() == null) return;
         java.util.List<ItemStack> gear = new java.util.ArrayList<>(java.util.List.of(
             d.hat() > 0 ? DrekkiItems.hatStack(d.hat()) : ItemStack.EMPTY,
-            dev.frosthaven.ranchercompanion.item.BardingEnchants.vanishes(d.bardingItem()) ? ItemStack.EMPTY : d.bardingItem(), d.accessory()));  /* Curse of Vanishing */
+            dev.frosthaven.ranchercompanion.item.BardingEnchants.vanishes(d.bardingItem()) ? ItemStack.EMPTY : d.bardingItem(), d.accessory(), d.saddle()));  /* Curse of Vanishing */
         /* its record as it fell, look and all (kept for later; spec, Tombstone): the worn items are in the tombstone, not in it */
         net.minecraft.nbt.CompoundTag record = Ranch.save(d);
         record.remove("BardingItem");
         record.remove("Accessory");
+        record.remove("Saddle");
         if (d.hat() > 0) d.setGear(0, d.barding(), d.dye());
         d.setBardingItem(ItemStack.EMPTY);
         d.setAccessory(ItemStack.EMPTY);
+        d.setSaddle(ItemStack.EMPTY);
         String name = Ranch.label(Ranch.save(d)).getString();
         ServerLevel level = (ServerLevel) d.level();
         BlockPos at = d.blockPosition();

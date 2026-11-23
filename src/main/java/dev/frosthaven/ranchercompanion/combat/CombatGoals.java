@@ -27,7 +27,7 @@ public final class CombatGoals {
     static final double AGGRO = 10, LEASH = 16, ORDER = 32;
 
     public static boolean fights(DrekkiEntity d) {
-        return d.owned() && d.stage() >= 2 && !d.life.ghost && (d.life.stance != Life.Stance.PASSIVE || order(d) != null) && !d.isSleepingLoop();
+        return d.owned() && d.stage() >= 2 && !d.life.ghost && !d.isVehicle() && (d.life.stance != Life.Stance.PASSIVE || order(d) != null) && !d.isSleepingLoop();
     }
 
     /** an attack order still on (GoHere.attack): the mob alive, fair and within ORDER; else it is dropped */
@@ -103,6 +103,7 @@ public final class CombatGoals {
     public static final class Attack extends Goal {
         private final DrekkiEntity d;
         private int cooldown, strikeIn, repath;
+        private boolean pouncing;
 
         public Attack(DrekkiEntity d) { this.d = d; setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK)); }
 
@@ -135,17 +136,21 @@ public final class CombatGoals {
             if (ranged()) {
                 if ((dist > 8 * 8 || !sees) && --repath <= 0) { d.getNavigation().moveTo(t, 1.1); repath = 10; }
                 else if (dist <= 8 * 8 && sees) d.getNavigation().stop();
-                if (cooldown == 0 && sees && dist <= 10 * 10) { d.act(Anim.BALL, 56); strikeIn = 8; cooldown = d.surged() ? 20 : 40; }
+                if (cooldown == 0 && sees && dist <= Abilities.BREATH_RANGE * Abilities.BREATH_RANGE && Abilities.ready(d)) { Abilities.breath(d); cooldown = 50; }
+                else if (cooldown == 0 && sees && dist <= 10 * 10) { d.act(Anim.BALL, 56); strikeIn = 8; cooldown = d.surged() ? 20 : 40; }
             } else {
                 /* it reaches as far as the game's melee mobs do (a zombie's rule: its box grown 0.83 a side meets the
                    target's), and never less than before. A zombie hit it from further off than it could bite */
                 double reach = d.getBbWidth() / 2 + t.getBbWidth() / 2 + 1.0;
                 if (--repath <= 0) { d.getNavigation().moveTo(t, 1.2); repath = 8; }
-                if (cooldown == 0 && (dist <= reach * reach || d.isWithinMeleeAttackRange(t))) { d.act(Anim.BITE, 32); strikeIn = 6; cooldown = d.surged() ? 12 : 24; }
+                if (cooldown == 0 && sees && dist <= Abilities.POUNCE_RANGE * Abilities.POUNCE_RANGE && Abilities.ready(d)) { Abilities.pounce(d, t); pouncing = true; strikeIn = Abilities.POUNCE_LANDS; cooldown = 40; }
+                else if (cooldown == 0 && (dist <= reach * reach || d.isWithinMeleeAttackRange(t))) { d.act(Anim.BITE, 32); strikeIn = 6; cooldown = d.surged() ? 12 : 24; }
             }
         }
 
         private void strike(LivingEntity t) {
+            boolean pounce = pouncing;
+            pouncing = false;
             if (!t.isAlive()) return;
             if (ranged()) {
                 ElementalBall b = RancherCompanion.ELEMENTAL_BALL.get().create(d.level());
@@ -163,7 +168,7 @@ public final class CombatGoals {
                 /* a bite begun in reach lands: a hit that knocks the drekki back in its 6 ticks no longer spoils it
                    (2026-11-21: in water a zombie kept it from ever biting). Not on a target that has gone far */
                 if (d.level() != t.level() || d.distanceToSqr(t) > 6 * 6) return;
-                if (dev.frosthaven.ranchercompanion.item.BardingEnchants.strike(d, t, d.damageSources().mobAttack(d), BITE, true)) d.playSound(dev.frosthaven.ranchercompanion.DrekkiSounds.BITE2.get(), 0.8f, 1.1f);
+                if (dev.frosthaven.ranchercompanion.item.BardingEnchants.strike(d, t, d.damageSources().mobAttack(d), pounce ? Abilities.POUNCE : BITE, true)) d.playSound(dev.frosthaven.ranchercompanion.DrekkiSounds.BITE2.get(), 0.8f, 1.1f);
             }
         }
     }

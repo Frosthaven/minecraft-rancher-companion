@@ -29,7 +29,7 @@ public final class GearTests {
     static ItemStack fledglingBarding(Barding tier) { return new ItemStack(DrekkiItems.FLEDGLING_BARDING.get(tier).get()); }
     static ItemStack bag(int kind) { return new ItemStack(DrekkiItems.BAGS.get(kind - 1).get()); }
 
-    /** as wolf armor: hits go into the barding's durability until it breaks; drowning goes through */
+    /** as wolf armor: hits go into the barding's durability until it breaks; starving goes through (a damage that passes armor) */
     @GameTest(template = "floor", timeoutTicks = 40)
     public static void bardingSoaksUpDamageUntilItBreaks(GameTestHelper t) {
         ServerPlayer p = LifeTests.player(t);
@@ -39,8 +39,8 @@ public final class GearTests {
         d.hurt(d.damageSources().generic(), 10);
         t.assertTrue(d.getHealth() == full && d.bardingItem().getDamageValue() == 10, "the barding took the hit: health " + d.getHealth() + ", wear " + d.bardingItem().getDamageValue());
         d.invulnerableTime = 0;
-        d.hurt(d.damageSources().drown(), 4);
-        t.assertTrue(d.getHealth() == full - 4 && d.bardingItem().getDamageValue() == 10, "drowning goes through: health " + d.getHealth());
+        d.hurt(d.damageSources().starve(), 4);
+        t.assertTrue(d.getHealth() == full - 4 && d.bardingItem().getDamageValue() == 10, "starving goes through: health " + d.getHealth());
         d.invulnerableTime = 0;
         d.hurt(d.damageSources().generic(), 70);  /* 74 durability: 10 + 70 breaks it */
         t.assertTrue(d.bardingItem().isEmpty() && d.barding() == 0, "it broke and comes off");

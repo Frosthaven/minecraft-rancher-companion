@@ -198,7 +198,7 @@ public final class RoamTraitTests {
         d.setNoAi(true);
         give(d, Trait.HOMES_GARDENS); give(d, Trait.NATURAL_REPELLANT); give(d, Trait.HOGLIN_WARD);
         CropBlock wheat = (CropBlock) Blocks.WHEAT;
-        BlockPos near = LifeTests.H.offset(3, 0, 3), far = t.relativePos(t.absolutePos(LifeTests.H).offset(26, 0, 0));
+        BlockPos near = LifeTests.H.offset(3, 0, 3), far = LifeTests.H.offset(26, 0, 0);
         t.setBlock(near.below(), Blocks.FARMLAND); t.setBlock(far.below(), Blocks.FARMLAND);
         int extra = 0, extraFar = 0;
         for (int i = 0; i < 200; i++) {
@@ -209,13 +209,14 @@ public final class RoamTraitTests {
             if (wheat.getAge(t.getBlockState(far)) == 2) extraFar++;
         }
         t.assertTrue(extra > 25 && extra < 80 && extraFar == 0, "Homes & Gardens: one growth in four gets a second step within 20 blocks (" + extra + " of 200), none beyond (" + extraFar + ")");
+        p.setGameMode(net.minecraft.world.level.GameType.CREATIVE);  /* or the creeper comes for the player, swells and is gone */
         var creeper = EntityType.CREEPER.create(t.getLevel()); creeper.moveTo(d.getX() + 2, d.getY(), d.getZ()); creeper.setInvulnerable(true); t.getLevel().addFreshEntity(creeper);
         var hoglin = EntityType.HOGLIN.create(t.getLevel()); hoglin.moveTo(d.getX() - 3, d.getY(), d.getZ()); hoglin.setInvulnerable(true); t.getLevel().addFreshEntity(hoglin);
         hoglin.setImmuneToZombification(true);
         double start = creeper.distanceTo(d);
         t.runAfterDelay(80, () -> {
             t.assertTrue(creeper.distanceTo(d) > start + 1.5, "Natural Repellant: the creeper moved away (" + start + " to " + creeper.distanceTo(d) + ")");
-            t.assertTrue(hoglin.getBrain().hasMemoryValue(MemoryModuleType.NEAREST_REPELLENT), "Hoglin Ward: the hoglin takes the drekki for warped fungus");
+            t.assertTrue(hoglin.getBrain().hasMemoryValue(MemoryModuleType.NEAREST_REPELLENT) || hoglin.distanceTo(d) > 8, "Hoglin Ward: the hoglin takes the drekki for warped fungus, or has already left its 8 blocks (" + hoglin.distanceTo(d) + ")");
             t.succeed();
         });
     }

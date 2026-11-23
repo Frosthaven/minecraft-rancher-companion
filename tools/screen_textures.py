@@ -199,9 +199,9 @@ def tombstone():
     s.frame(0, 0, W, H)
     for x in range(3, W - 3):
         s.put(x, 17, STEEL[0]); s.put(x, 18, STEEL[2])
-    s.well(55, 27, 3 * 18 + 14, 32)      # the gear's well (TombstoneMenu SLOT_X 62 = 61 + 1)
-    for i in range(3):
-        s.slot(61 + i * 18, 33)
+    s.well(46, 27, 4 * 18 + 14, 32)      # the gear's well (TombstoneMenu SLOT_X 53 = 52 + 1): hat, barding, bag, saddle
+    for i in range(4):
+        s.slot(52 + i * 18, 33)
     s.rect(3, 73, W - 6, 90, STEEL[1])
     for x in range(3, W - 3):
         s.put(x, 73, STEEL[0]); s.put(x, 74, STEEL[2])
@@ -267,7 +267,7 @@ def drekki_sprites(s):
         pixels(s, SX + i * 10, BUFF_Y, rows, pal)
 
 
-def drekki(gear):
+def drekki(gear, saddle=False):
     """two parts, as Sophisticated Backpacks steps its screen: the drekki's part on top, 220 wide (hat, from stage 2 the
     barding and accessory slots under it, model, info), and the player's inventory below it, vanilla's 176 wide,
     centered; clear beside it. A drekki carries no pack: its storage is the bag in its accessory slot (spec, Accessory)"""
@@ -286,6 +286,8 @@ def drekki(gear):
     if gear:
         s.slot(7, 46)                     # the barding
         s.slot(7, 66)                     # the accessory
+    if saddle:
+        s.slot(7, 86)                     # a Mature's saddle
     # the inventory part: its own steel frame, joined to the top part's bottom edge (the frames overlap there)
     py = top - 3
     s.rect(IX, py, 176, H - py, STEEL[1])
@@ -299,7 +301,7 @@ def drekki(gear):
             s.slot(IX + 7 + c * 18, top + 8 + r * 18)
     for c in range(9):
         s.slot(IX + 7 + c * 18, top + 66)
-    s.save("drekki_gear" if gear else "drekki")
+    s.save("drekki_saddle" if saddle else "drekki_gear" if gear else "drekki")
 
 
 def drekki_sheet_sprites():
@@ -314,4 +316,5 @@ if __name__ == "__main__":
     tombstone()
     drekki(False)
     drekki(True)
+    drekki(True, True)
     drekki_sheet_sprites()

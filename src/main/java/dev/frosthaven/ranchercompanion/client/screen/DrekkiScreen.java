@@ -29,12 +29,14 @@ import net.minecraft.world.entity.player.Inventory;
 public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
     private static final ResourceLocation TEX = ResourceLocation.fromNamespaceAndPath(RancherCompanion.ID, "textures/gui/drekki.png"),
         TEX_GEAR = ResourceLocation.fromNamespaceAndPath(RancherCompanion.ID, "textures/gui/drekki_gear.png"),
+        TEX_SADDLE = ResourceLocation.fromNamespaceAndPath(RancherCompanion.ID, "textures/gui/drekki_saddle.png"),
         SPR = ResourceLocation.fromNamespaceAndPath(RancherCompanion.ID, "textures/gui/drekki_sprites.png");
     private static final ResourceLocation HEART = ResourceLocation.withDefaultNamespace("hud/heart/full"),
         HALF = ResourceLocation.withDefaultNamespace("hud/heart/half"), EMPTY = ResourceLocation.withDefaultNamespace("hud/heart/container"),
         FOOD = ResourceLocation.withDefaultNamespace("hud/food_full"), FOOD_HALF = ResourceLocation.withDefaultNamespace("hud/food_half"),
         FOOD_EMPTY = ResourceLocation.withDefaultNamespace("hud/food_empty");
     private static final net.minecraft.world.item.ItemStack GHOST_HAT = dev.frosthaven.ranchercompanion.item.DrekkiItems.hatStack(5);
+    private static final net.minecraft.world.item.ItemStack GHOST_SADDLE = new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.SADDLE);
     /** the faint items in the empty barding and accessory slots: what goes there */
     private net.minecraft.world.item.ItemStack ghostBarding, ghostBag;
     /** drekki_sprites (tools/screen_textures.py: SX, TAB_*, STANCE_*, ICON_Y, BUFF_Y) */
@@ -66,7 +68,7 @@ public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
         inventoryLabelY = 10000;  /* the steel panel needs no label */
     }
 
-    private ResourceLocation tex() { return menu.gear ? TEX_GEAR : TEX; }
+    private ResourceLocation tex() { return menu.saddled ? TEX_SADDLE : menu.gear ? TEX_GEAR : TEX; }
 
     @Override
     protected void renderBg(GuiGraphics g, float pt, int mx, int my) {
@@ -82,6 +84,7 @@ public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
             }
             ghost(g, 1, ghostBarding, DrekkiMenu.BARDING_Y);
             ghost(g, 2, ghostBag, DrekkiMenu.ACCESSORY_Y);
+            if (menu.saddled) ghost(g, 3, GHOST_SADDLE, DrekkiMenu.SADDLE_Y);
         }
         if (d == null) return;
         int k = d.stage() == 1 ? 42 : d.stage() == 2 ? 35 : 21;  /* the frame as before: the model is at 75% from stage 2 (Dims.scale) */

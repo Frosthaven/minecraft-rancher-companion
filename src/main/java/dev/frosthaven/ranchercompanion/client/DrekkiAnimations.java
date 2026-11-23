@@ -26,13 +26,14 @@ public final class DrekkiAnimations {
         Rig P = b.rig; P.reset();
         int stage = e.stage(); double k = Anim.stageK(stage);
         idle(P, t);
+        boolean ridden = e.isVehicle() && e.rideable();  /* really in the air: the loops' own lift and timing do not apply */
         switch (e.anim()) {
             case WALK -> walk(P, t);
             case RUN -> run(P, t);
             case DASH -> dash(P, t);
-            case GLIDE -> glide(P, t, k);
-            case JUMP -> jump(P, t, k);
-            case FALL -> fall(P, t, k);
+            case GLIDE -> { glide(P, t, k); if (ridden) { P.lift(0); if (e.getY() > e.yo) P.flare(0.1 + sin(t * Math.PI * 2 / (dev.frosthaven.ranchercompanion.look.RideMath.BEAT / 20.0)) * 0.45); } }  /* climbing on Wings of Hope: a wingbeat a push */
+            case JUMP -> { if (ridden) rideAir(P, t, true); else jump(P, t, k); }
+            case FALL -> { if (ridden) rideAir(P, t, false); else fall(P, t, k); }
             case SLEEP -> sleep(P, t, e.sleepTime(t));
             case FEED -> feed(P, t, k, stage, e.live());
             case BITE -> bite(P, t, k);
@@ -113,6 +114,12 @@ public final class DrekkiAnimations {
         else if (f >= 0.42 && f < 0.56) { double u = (f - 0.42) / 0.14, c = sin(u * Math.PI);
             P.legMix(u < 0.5 ? J_REACH : STAND, J_CROUCH, c); crouch = c * 1.4; pitch = 0.05 * (1 - Math.min(1, u / 0.3)); fl = 0.2 * (1 - Math.min(1, u / 0.3)); }
         P.lift(y); P.body.y -= (float) (crouch * P.crouchPx); P.body.rx = (float) pitch; P.mouth(0); P.flare(fl); P.tail.rx = (float) (P.tailBase - (y / H) * 0.3);
+    }
+
+    /** a ridden drekki in the air: the jump's reach on the way up, the fall's pose on the way down, held (no lift: it is there) */
+    static void rideAir(Rig P, double t, boolean rising) {
+        if (rising) { P.legPose(J_REACH[0], J_REACH[1], J_REACH[2]); P.body.rx = -0.08f; P.flare(0.2); }
+        else { P.legPose(F_REACH[0], F_REACH[1], F_REACH[2]); P.head.rx += 0.35f; P.neck2.rx -= 0.1f; P.body.rx = 0.12f; P.mouth(0.25); P.flare(0.35 + sin(t * 22) * 0.15); P.tail.rx = (float) (P.tailBase + 0.5); }
     }
 
     static void fall(Rig P, double t, double k) {

@@ -224,7 +224,6 @@ public final class RoamTraits {
             private net.minecraft.world.level.pathfinder.Path path;
             { setFlags(java.util.EnumSet.of(Flag.MOVE)); }
             @Override public boolean canUse() {
-                if (c.tickCount % 5 != 0) return false;
                 DrekkiEntity from = null;
                 for (DrekkiEntity d : Traits.holders(Trait.NATURAL_REPELLANT))
                     if (d.level() == c.level() && d.isAlive() && d.distanceToSqr(c) <= 6 * 6 && (from == null || d.distanceToSqr(c) < from.distanceToSqr(c))) from = d;

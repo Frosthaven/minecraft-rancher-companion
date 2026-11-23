@@ -13,6 +13,11 @@ public final class RancherCompanionClient {
     private RancherCompanionClient() {}
 
     public static void init(IEventBus modBus) {
+        /* a ridden Mature reads its rider's jump and sprint keys (entity.Riding) */
+        dev.frosthaven.ranchercompanion.entity.Riding.keys = new dev.frosthaven.ranchercompanion.entity.Riding.Keys() {
+            @Override public boolean jump() { return net.minecraft.client.Minecraft.getInstance().options.keyJump.isDown(); }
+            @Override public boolean sprint() { return net.minecraft.client.Minecraft.getInstance().options.keySprint.isDown(); }
+        };
         modBus.addListener(EntityRenderersEvent.RegisterRenderers.class, e -> e.registerEntityRenderer(RancherCompanion.DREKKI.get(), DrekkiRenderer::new));
         /* the ball is its particles (ElementalBall.tick) */
         modBus.addListener(EntityRenderersEvent.RegisterRenderers.class, e -> e.registerEntityRenderer(RancherCompanion.ELEMENTAL_BALL.get(), net.minecraft.client.renderer.entity.NoopRenderer::new));
