@@ -377,6 +377,13 @@ Sneak and use the Drekki Whistle while looking at a block (up to 64 blocks away)
   usual (blocks placed against the seat).
 - **Job hats.** Create's train hat and stock keeper hat are drawn on the drekki's crown at every stage, over its head
   crest, only when it wears no hat of its own (decided 2026-11-22: a hat it wears stays on).
+- **Sit and stand** (decided 2026-11-22): told to stay, or on any seat, it sits: the legs fold under the body with the
+  feet just under the belly, the body settles onto them, head up and awake. Told to follow, or off the seat, it stands
+  back up. On a moving seat it plays no walk or run of its own (the train's speed is not its own).
+- **Trains through portals** (2026-11-22): a crossing can drop it beside the portal (Immersive Portals moves the riding
+  player across and the carriage's old entity is retired first). It is put back on its own seat of its train, in
+  whichever level that carriage is now, before the lost-seat rule sends it home. Seated, a wall does not hurt it (an
+  adult's head reaches past a carriage's roof into a tunnel).
 - **No hunger at work** (decided 2026-11-22): an employed drekki's food bar holds while it is employed, since it never
   leaves its seat to eat. It drains again once it is recalled or loses its seat.
 
