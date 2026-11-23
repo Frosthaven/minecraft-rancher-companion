@@ -174,7 +174,7 @@ public final class FightTraits {
 
     /** who else this mob could fight: whoever hit it in the last 5 s, else the drekki's owner or another of the owner's
      *  fighting animals within the mob's sight range; null when only the drekki is there */
-    private static LivingEntity other(DrekkiEntity d, Mob mob) {
+    public static LivingEntity other(DrekkiEntity d, Mob mob) {
         LivingEntity by = mob.getLastHurtByMob();
         if (by != null && by != d && by.isAlive() && mob.tickCount - mob.getLastHurtByMobTimestamp() < 100 && !(by instanceof Player p && (p.isCreative() || p.isSpectator()))) return by;
         var range = mob.getAttribute(Attributes.FOLLOW_RANGE);

@@ -135,7 +135,7 @@ public final class WorldTraits {
 
     // ---- Rewind ----
 
-    private static void tick(ServerPlayer p) {
+    public static void tick(ServerPlayer p) {
         long now = p.level().getGameTime();
         if (p.tickCount % 5 == 0 && p.onGround() && !p.isSpectator()) {
             BlockPos below = p.blockPosition().below();

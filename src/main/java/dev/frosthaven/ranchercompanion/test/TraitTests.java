@@ -64,6 +64,12 @@ public final class TraitTests {
         return d.life.traits.contains(tr.id);
     }
 
+    /** sets its astral affinity: most traits are for some affinities only (spec, Traits: affinity limits) */
+    static void as(DrekkiEntity d, int astral) { d.setLook(d.stage(), d.line(), d.diet(), astral, d.horn()); }
+
+    /** forgets its traits, to make room under the cap of 2, 4 or 5 */
+    static void room(DrekkiEntity d) { d.life.traits.clear(); d.syncLife(); }
+
     /** gives it a trait outright (syncLife: the trait index sees it) */
     static void give(DrekkiEntity d, Trait tr) { d.life.traits.add(tr.id); d.syncLife(); }
 
@@ -113,14 +119,27 @@ public final class TraitTests {
             MerchantOffer o = new MerchantOffer(new ItemCost(Items.EMERALD, 2), new ItemStack(Items.BREAD), 12, 1, 0.05f);
             NeoForge.EVENT_BUS.post(new TradeWithVillagerEvent(p, o, v));
         }
-        /* the cap: three traits at stage 1, so the third counted trait needs a free slot first */
-        t.assertTrue(has(d, Trait.CREATURE_COMFORTS) && d.life.traits.size() == 3, "Creature Comforts at 5 trades without a discount");
-        d.life.traits.clear(); d.syncLife();
+        /* the cap: two traits at stage 1, so at it the trades count nothing */
+        as(d, dev.frosthaven.ranchercompanion.look.Astral.SOLAR);
+        t.assertTrue(!has(d, Trait.CREATURE_COMFORTS) && d.life.traits.size() == 2 && !d.life.progress.containsKey(Trait.CREATURE_COMFORTS.id), "a pup's cap is two");
+        room(d);
+        for (int i = 0; i < 5; i++) { Ghast g = t.spawn(EntityType.GHAST, LifeTests.H.offset(0, 6, 0)); g.hurt(g.damageSources().playerAttack(p), 1000); }
+        /* (the kills' XP may offer Training Day again; that is not what is asked here) */
+        t.assertTrue(!has(d, Trait.HIDE_SEEK) && !d.life.progress.containsKey(Trait.HIDE_SEEK.id) && !Trait.HIDE_SEEK.id.equals(d.life.offer), "a Solar drekki's ghast kills count nothing: Hide & Seek is the Underworld's");
+        if (d.life.offer != null) Traits.answer(d, false);
+        for (int i = 0; i < 5; i++) {
+            MerchantOffer o = new MerchantOffer(new ItemCost(Items.EMERALD, 2), new ItemStack(Items.BREAD), 12, 1, 0.05f);
+            NeoForge.EVENT_BUS.post(new TradeWithVillagerEvent(p, o, v));
+        }
+        t.assertTrue(has(d, Trait.CREATURE_COMFORTS), "Creature Comforts at 5 trades without a discount");
+        room(d);
+        as(d, dev.frosthaven.ranchercompanion.look.Astral.UNDERWORLD);
         for (int i = 0; i < 5; i++) { Ghast g = t.spawn(EntityType.GHAST, LifeTests.H.offset(0, 6, 0)); g.hurt(g.damageSources().playerAttack(p), 1000); }
         t.assertTrue(has(d, Trait.HIDE_SEEK), "Hide & Seek at 5 ghasts");
         for (int i = 0; i < 5; i++) { Phantom ph = t.spawn(EntityType.PHANTOM, LifeTests.H.offset(0, 6, 0)); ph.hurt(ph.damageSources().playerAttack(p), 1000); }
         t.assertTrue(has(d, Trait.NIGHT_WATCH), "Night Watch at 5 phantoms");
-        d.life.traits.clear(); d.syncLife();
+        room(d);
+        as(d, dev.frosthaven.ranchercompanion.look.Astral.AERO);
         t.setBlock(LifeTests.H.offset(2, 0, 2), Blocks.SLIME_BLOCK);
         p.moveTo(t.absoluteVec(LifeTests.H.offset(2, 1, 2).getCenter()).add(0, -0.5, 0));
         NeoForge.EVENT_BUS.post(new LivingFallEvent(p, 3, 0));
@@ -130,24 +149,34 @@ public final class TraitTests {
         t.runAfterDelay(100, () -> { t.assertTrue(has(d, Trait.CLOUD_STOMPERS), "Cloud Stompers at 10 slime bounces"); t.succeed(); });
     }
 
-    /** a Fledgling learns on past a pup's three, to its own cap of six, and learns Hearty from heals while hurt */
+    /** a Fledgling learns on past a pup's two, to its own cap of four, and learns Hearty from heals while hurt; a Potion
+     *  of Horizons gives it a fifth slot */
     @GameTest(template = "floor", timeoutTicks = 120)
     public static void fledglingLearnsOnAndHearty(GameTestHelper t) {
         ServerPlayer p = LifeTests.player(t);
         DrekkiEntity d = CombatTests.out(t, p, 2, Diet.SEED, Life.Stance.PASSIVE);
-        give(d, Trait.PATCHWORK); give(d, Trait.STAMP_OUT); give(d, Trait.HUDDLE_UP);
+        give(d, Trait.PATCHWORK); give(d, Trait.STAMP_OUT);
         p.giveExperienceLevels(3);
-        t.assertTrue(has(d, Trait.TRAINING_DAY), "a Fledgling learns a fourth trait");
+        t.assertTrue(has(d, Trait.TRAINING_DAY), "a Fledgling learns a third trait");
         for (int i = 0; i < 5; i++) {
             d.setHealth(d.getMaxHealth() - 4);
             d.life.cooldowns.remove("hearty_heal");  /* one heal counts per 30 s */
             d.heal(2);
         }
         t.assertTrue(has(d, Trait.HEARTY), "Hearty at 5 heals while hurt");
-        give(d, Trait.UNDERTOW);
         int before = d.life.traits.size();
         for (int i = 0; i < 5; i++) { Phantom ph = t.spawn(EntityType.PHANTOM, LifeTests.H.offset(0, 6, 0)); ph.hurt(ph.damageSources().playerAttack(p), 1000); }
-        t.assertTrue(before == 6 && d.life.traits.size() == 6 && d.life.offer == null && !has(d, Trait.NIGHT_WATCH), "a Fledgling's cap is six, and at it nothing is offered");
+        t.assertTrue(before == 4 && d.life.traits.size() == 4 && d.life.offer == null && !has(d, Trait.NIGHT_WATCH), "a Fledgling's cap is four, and at it nothing is offered");
+        /* the potion from its owner's hand: one more slot, once, and the bottle comes back */
+        ItemStack potion = dev.frosthaven.ranchercompanion.item.DrekkiPotions.stack(dev.frosthaven.ranchercompanion.item.DrekkiPotions.HORIZONS);
+        p.setItemInHand(InteractionHand.MAIN_HAND, potion);
+        t.assertTrue(d.interact(p, InteractionHand.MAIN_HAND).consumesAction() && d.life.horizons && p.getMainHandItem().is(Items.GLASS_BOTTLE), "fed a Potion of Horizons: the bottle comes back empty");
+        for (int i = 0; i < 5; i++) { Phantom ph = t.spawn(EntityType.PHANTOM, LifeTests.H.offset(0, 6, 0)); ph.hurt(ph.damageSources().playerAttack(p), 1000); }
+        t.assertTrue(has(d, Trait.NIGHT_WATCH) && d.life.traits.size() == 5, "the potion's slot takes a fifth trait");
+        ItemStack second = dev.frosthaven.ranchercompanion.item.DrekkiPotions.stack(dev.frosthaven.ranchercompanion.item.DrekkiPotions.HORIZONS);
+        p.setItemInHand(InteractionHand.MAIN_HAND, second);
+        d.interact(p, InteractionHand.MAIN_HAND);
+        t.assertTrue(p.getMainHandItem().getCount() == 1, "a second potion is not taken");
         t.succeed();
     }
 
@@ -175,6 +204,7 @@ public final class TraitTests {
     public static void learnsDeathActivitiesAndTheCapHolds(GameTestHelper t) {
         ServerPlayer p = LifeTests.player(t);
         DrekkiEntity d = pup(t, p);
+        as(d, dev.frosthaven.ranchercompanion.look.Astral.END);  /* The Fallen Emperor and Phoenix Heart are both the End's to learn */
         Piglin piglin = t.spawn(EntityType.PIGLIN, LifeTests.H.offset(-3, 0, -3));
         NeoForge.EVENT_BUS.post(new LivingDeathEvent(p, p.damageSources().mobAttack(piglin)));
         t.assertFalse(has(d, Trait.FALLEN_EMPEROR), "dying to a piglin teaches nothing");
@@ -212,6 +242,7 @@ public final class TraitTests {
             pick.hurtAndBreak(1, t.getLevel(), p, item -> {});
         });
         t.runAfterDelay(SPAWN_GUARD, () -> {
+            room(d);
             until(t, d, Trait.SOFT_LANDING, 80, () -> { p.invulnerableTime = 0; p.setHealth(20); p.hurt(p.damageSources().fall(), 1); });
             t.succeed();
         });
@@ -221,6 +252,7 @@ public final class TraitTests {
     public static void learnsStampOutFromCatchingFire(GameTestHelper t) {
         ServerPlayer p = LifeTests.player(t);
         DrekkiEntity d = pup(t, p);
+        as(d, dev.frosthaven.ranchercompanion.look.Astral.SOLAR);
         cycle(t, p, d, Trait.STAMP_OUT, () -> p.setRemainingFireTicks(40), () -> p.clearFire());
     }
 
@@ -228,6 +260,7 @@ public final class TraitTests {
     public static void learnsHuddleUpFromFreezing(GameTestHelper t) {
         ServerPlayer p = LifeTests.player(t);
         DrekkiEntity d = pup(t, p);
+        as(d, dev.frosthaven.ranchercompanion.look.Astral.LUNAR);
         cycle(t, p, d, Trait.HUDDLE_UP, () -> p.setTicksFrozen(p.getTicksRequiredToFreeze() + 20), () -> p.setTicksFrozen(0));
     }
 
@@ -237,6 +270,7 @@ public final class TraitTests {
         DrekkiEntity d = pup(t, p);
         BlockPos w = LifeTests.H.offset(3, 0, 3);
         for (int y = 0; y < 3; y++) t.setBlock(w.above(y), Blocks.WATER);
+        as(d, dev.frosthaven.ranchercompanion.look.Astral.LUNAR);
         cycle(t, p, d, Trait.UNDERTOW, () -> { p.moveTo(t.absoluteVec(w.getCenter()).add(0, -0.4, 0)); p.setAirSupply(10); }, () -> p.setAirSupply(300));
     }
 
