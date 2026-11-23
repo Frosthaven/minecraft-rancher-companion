@@ -988,7 +988,7 @@ final class SelfTestTraits {
 
     /** close shots of the drekki's back with its gear, the HUD hidden: from behind and above, then from the side; k scales
      *  the distance to its size. It stands still, facing south, away from the test hatchery */
-    private static void lookAt(String name, double k) {
+    static void lookAt(String name, double k) {
         quiet(name + "_place", 20, () -> { cmd("gamerule sendCommandFeedback false");
             life(d -> { d.setNoAi(true); d.teleportTo(o.getX() - 3.5, o.getY(), o.getZ() - 2.5); d.setYRot(0); d.yBodyRot = 0; d.setYHeadRot(0); });
             cmd("gamemode spectator"); mc().options.hideGui = true;

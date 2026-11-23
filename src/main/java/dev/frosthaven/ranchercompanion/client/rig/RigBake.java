@@ -80,7 +80,8 @@ public final class RigBake {
         Map<Node, PartDefinition> defs = new HashMap<>();
         Map<Node, String> names = new HashMap<>();
         int[] count = {0};
-        build(rig.root, vroot, defs, names, cellOf, Coplanar.grow(rig), count, true, false);
+        Map<Node.Box, Integer> grow = Coplanar.grow(rig);  /* one set of growths for both models: the glint draws only where depths are equal */
+        build(rig.root, vroot, defs, names, cellOf, grow, count, true, false);
         ModelPart baked = LayerDefinition.create(mesh, texW, texH).bakeRoot();
         ModelPart root = baked.getChild("root");
         link(rig.root, root, names, false);
@@ -90,8 +91,10 @@ public final class RigBake {
             MeshDefinition plates = new MeshDefinition();
             PartDefinition proot = plates.getRoot().addOrReplaceChild("root", CubeListBuilder.create(), PartPose.offset(0, 24, 0));
             Map<Node, String> pnames = new HashMap<>();
-            build(rig.root, proot, new HashMap<>(), pnames, cellOf, Coplanar.grow(rig), new int[]{0}, true, true);
-            glint = LayerDefinition.create(plates, texW, texH).bakeRoot();
+            build(rig.root, proot, new HashMap<>(), pnames, cellOf, grow, new int[]{0}, true, true);
+            /* a 64 by 64 sheet for its texture coordinates, as the game's armor has: on the model's own large sheet each
+               plate would cover a speck of the glint pattern and show one flat color that comes and goes */
+            glint = LayerDefinition.create(plates, 64, 64).bakeRoot();
             link(rig.root, glint.getChild("root"), pnames, true);
         }
 

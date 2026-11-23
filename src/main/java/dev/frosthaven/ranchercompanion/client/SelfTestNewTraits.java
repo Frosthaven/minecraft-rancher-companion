@@ -83,8 +83,61 @@ final class SelfTestNewTraits {
         return b;
     }
 
+    /** only the enchanted barding part (-Drancher_companion.selftest.enchants=true with selftest.new) */
+    private static final boolean ENCHANTS_ONLY = Boolean.getBoolean("rancher_companion.selftest.enchants");
+
+    /** diamond barding for the stage, dyed black, with a chestplate's and a sword's enchantments */
+    private static ItemStack enchanted(DrekkiEntity d, int stage, boolean bound) {
+        ItemStack b = new ItemStack((stage == 2 ? DrekkiItems.FLEDGLING_BARDING : DrekkiItems.BARDING).get(Barding.DIAMOND).get());
+        b.set(net.minecraft.core.component.DataComponents.DYED_COLOR, new net.minecraft.world.item.component.DyedItemColor(0x1D1D21, false));
+        var reg = d.level().registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT);
+        b.enchant(reg.getOrThrow(net.minecraft.world.item.enchantment.Enchantments.PROTECTION), 4);
+        b.enchant(reg.getOrThrow(net.minecraft.world.item.enchantment.Enchantments.THORNS), 3);
+        b.enchant(reg.getOrThrow(net.minecraft.world.item.enchantment.Enchantments.SHARPNESS), 5);
+        b.enchant(reg.getOrThrow(net.minecraft.world.item.enchantment.Enchantments.FIRE_ASPECT), 2);
+        b.enchant(reg.getOrThrow(net.minecraft.world.item.enchantment.Enchantments.UNBREAKING), 3);
+        if (bound) b.enchant(reg.getOrThrow(net.minecraft.world.item.enchantment.Enchantments.BINDING_CURSE), 1);
+        return b;
+    }
+
+    /** enchanted barding in the real game: its tooltip, the curse that keeps it on, Thorns and Fire Aspect in a fight,
+     *  and close shots of black-dyed, enchanted diamond barding on a Fledgling and a Mature */
+    private static void enchants() {
+        fresh("enchants");
+        fledgling();
+        quiet("enchanted_item", 20, () -> server(m -> { DrekkiEntity d = sd(); if (d != null) m.getInventory().setItem(0, enchanted(d, 2, false)); }));
+        quiet("enchanted_inventory", 20, () -> mc().setScreen(new InventoryScreen(mc().player)));
+        step("enchanted_barding_tooltip", 10, () -> hoverHotbar(0), () -> mc().player.getInventory().getItem(0).isEnchanted());
+        quiet("enchanted_inventory_close", 10, () -> mc().setScreen(null));
+        /* Curse of Binding: on in survival, it does not come off; in creative it does */
+        quiet("bound_on", 20, () -> { cmd("gamemode survival"); life(d -> d.setBardingItem(enchanted(d, 2, true))); emptyHand(); near(pup()); });
+        step("bound_screen", 25, () -> interact("open its screen"), () -> ds() != null && pup() != null && pup().barding() == Barding.DIAMOND.gearIndex());
+        step("binding_keeps_it_on", 15, () -> shiftClick(1), () -> pup() != null && pup().barding() == Barding.DIAMOND.gearIndex());
+        quiet("bound_creative", 15, () -> cmd("gamemode creative"));
+        step("binding_off_in_creative", 15, () -> shiftClick(1), () -> pup() != null && pup().barding() == 0);
+        quiet("bound_close", 10, () -> { mc().setScreen(null); cmd("clear @s #minecraft:enchantable/chest_armor"); });
+        /* Thorns on a drekki that does not fight back, then Sharpness and Fire Aspect on its bite */
+        quiet("thorns_setup", 20, () -> { stance(Life.Stance.PASSIVE); life(d -> { d.setBardingItem(enchanted(d, 2, false)); d.setHealth(d.getMaxHealth()); }); pupHere(); });
+        quiet("thorns_foe", 20, () -> foe("thorned"));
+        check("thorns_hits_back", 60, 30, () -> life(d -> d.setHealth(d.getMaxHealth())),  /* 45% a hit: given time for a dozen hits */ "the husk's health after hitting barding with Thorns III", () -> { Mob z = tagged("thorned"); return z == null ? "gone" : z.getHealth(); },
+            () -> { Mob z = tagged("thorned"); return z == null || z.getHealth() < z.getMaxHealth(); });
+        quiet("thorns_done", 10, () -> { clearMobs(); stance(Life.Stance.REACTIVE); });
+        quiet("fire_foe", 30, () -> cmd("summon husk ^ ^ ^4 {NoAI:1b,PersistenceRequired:1b,Tags:[\"st\",\"lit\"]}"));
+        check("fire_aspect_on_its_bite", 20, 10, () -> server(m -> { Mob z = tagged("lit"); DrekkiEntity d = sd(); if (z != null && d != null) GoHere.attack(d, z); }),
+            "the bitten husk burns", () -> { Mob z = tagged("lit"); return z == null ? "dead" : z.isOnFire() + " health " + z.getHealth(); }, () -> { Mob z = tagged("lit"); return z == null || z.isOnFire(); });
+        quiet("fire_done", 10, () -> { life(DrekkiEntity::disengage); clearMobs(); });
+        /* the look: black-dyed diamond barding with the enchantment glint */
+        quiet("enchanted_fledgling_on", 20, () -> life(d -> d.setBardingItem(enchanted(d, 2, false))));
+        lookAt("enchanted_black_diamond_fledgling", 1.0);
+        quiet("enchanted_mature_on", 30, () -> life(d -> { d.setLook(3, d.line(), d.diet(), d.astral(), d.horn()); d.applyStageHealth(true); d.setBardingItem(enchanted(d, 3, false)); }));
+        lookAt("enchanted_black_diamond_mature", 1.7);
+        quiet("enchants_done", 30, () -> { cmd("gamemode creative"); cmd("gamerule sendCommandFeedback true");
+            life(d -> { d.setNoAi(false); d.setBardingItem(ItemStack.EMPTY); d.setLook(2, d.line(), d.diet(), d.astral(), d.horn()); d.applyStageHealth(true); }); });
+    }
+
     static void steps() {
         BlockPos o = SelfTestTraits.o;
+        if (ENCHANTS_ONLY) { enchants(); return; }
         quiet("new_rules", 20, () -> { cmd("gamerule doMobSpawning false"); cmd("gamerule mobGriefing false"); cmd("time set 6000"); cmd("gamerule doDaylightCycle false"); });
 
         /* ---- the three potions and the whistle: icons and tooltips ---- */
@@ -261,6 +314,7 @@ final class SelfTestNewTraits {
             () -> { DrekkiEntity d = sd(); return d != null && d.isAlive() && d.getY() >= EY && d.getHealth() == d.getMaxHealth(); });
         quiet("home", 60, () -> cmd("execute in minecraft:overworld run tp @s " + (o.getX() + 0.5) + " " + o.getY() + " " + (o.getZ() + 0.5)));
         stepUntil("pup_comes_home", 20, 20, () -> {}, () -> pup() != null && pup().distanceTo(mc().player) < 8);
+        enchants();
         quiet("new_rules_back", 10, () -> { cmd("gamerule doMobSpawning true"); cmd("gamerule mobGriefing true"); cmd("gamerule doDaylightCycle true"); RancherCompanion.LOG.info("[selftest] 0.5.0 section done"); });
     }
 }

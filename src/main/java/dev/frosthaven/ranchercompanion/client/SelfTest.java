@@ -71,7 +71,7 @@ public final class SelfTest {
     }
 
     static void step(String name, int delay, Runnable act, BooleanSupplier check) { STEPS.add(new Step(name, delay, act, check, true, 0)); }
-    private static void shiftClick(int slot) {
+    static void shiftClick(int slot) {
         var sc = (net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?>) mc().screen;
         mc().gameMode.handleInventoryMouseClick(sc.getMenu().containerId, slot, 0, net.minecraft.world.inventory.ClickType.QUICK_MOVE, mc().player);
     }

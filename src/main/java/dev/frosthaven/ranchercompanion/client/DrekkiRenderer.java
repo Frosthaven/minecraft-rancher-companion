@@ -112,7 +112,7 @@ public final class DrekkiRenderer extends MobRenderer<DrekkiEntity, DrekkiModel>
         public void render(PoseStack ps, MultiBufferSource buf, int light, DrekkiEntity e, float limbSwing, float limbSwingAmount, float partial, float age, float yaw, float pitch) {
             DrekkiModel m = getParentModel();
             if (m.baked.glint == null || !e.bardingGlint() || e.isInvisible() || e.ghost()) return;
-            m.baked.glint.render(ps, buf.getBuffer(RenderType.armorEntityGlint()), light, OverlayTexture.NO_OVERLAY);
+            m.baked.glint.render(ps, buf.getBuffer(RenderType.entityGlintDirect()), light, OverlayTexture.NO_OVERLAY);
         }
     }
 }

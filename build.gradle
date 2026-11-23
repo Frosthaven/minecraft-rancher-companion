@@ -35,6 +35,14 @@ neoForge {
             jvmArgument '-Drancher_companion.selftest=true'
             jvmArgument '-Drancher_companion.selftest.traits=true'
         }
+        // only the enchanted barding part of it
+        selfTestEnchants {
+            client()
+            programArguments.addAll '--quickPlaySingleplayer', 'selftest'
+            jvmArgument '-Drancher_companion.selftest=true'
+            jvmArgument '-Drancher_companion.selftest.new=true'
+            jvmArgument '-Drancher_companion.selftest.enchants=true'
+        }
         // the real-game test of 0.5.0 (client/SelfTestNewTraits) in the world run/saves/selftest
         selfTestNew {
             client()
