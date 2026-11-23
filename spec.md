@@ -354,7 +354,7 @@ Sneak and use the Drekki Whistle while looking at a block (up to 64 blocks away)
   at most), and the hold below starts where it stopped. Within 4 blocks of the spot a stop becomes a summon onto it (the
   step onto a train seat, a ledge). Not with its owner (another level, an unloaded chunk), it is called to them first
   and then sent.
-- **Whistle tooltip** (decided 2026-11-23, not built). Holding Shift expands the tooltip, in the way the pack's other
+- **Whistle tooltip** (decided 2026-11-23; built in 0.5.0). Holding Shift expands the tooltip, in the way the pack's other
   mods do ("Hold [Shift]"), to two lines: "Use: stay or follow" and "Sneak use: go to location or attack".
 - **Attack** (decided 2026-11-23). Looked at a hostile mob (the red health bar's rule), Go here is an order to attack
   it, in every stance, Passive too, for a fledgling or older; a pup is too young to fight (a message says so). The
@@ -547,10 +547,34 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
 - No stacking: a player in range of several drekki with the same trait gets it once, the strongest copy. Training
   Day still drops XP from each drekki.
 - Biome traits work everywhere once learned, not only in their biome.
-- The void never kills a drekki (Shane, 2026-11-23, not built): any stage, any trait or none, checked out or not.
+- 0.5.0 as built (2026-11-23), where the code settles what the text above left open:
+  - The update from 3/6/9 runs when a drekki's record is next loaded (its save has no "caps" mark), not as one walk
+    over the roster; the result is the same, and a drekki hatched later is never marked.
+  - A negative trait as an extra: no negative trait is in the game yet, so nothing counts them today.
+  - The potion's slot is the last slot row on the traits tab, filled or free; the emerald is the game's own item icon.
+    The two potions on the way to it read "A step toward the Potion of Horizons"; none of the three shows "No Effects".
+    The bottle comes back empty into the owner's hand. The icons are a wrap of the game's potion model
+    (`client/PotionModels`), not a replaced model file, so a resource pack's potion art still shows for other potions.
+  - Provoke counts a hit that deals damage on the ordered mob, a different mob each time; the hold is checked twice a
+    second and ends with the order. A Warden is angered at the drekki; a mob that keeps its target in a brain has that
+    memory set.
+  - Fade: "another target" is whoever hit the mob in the last 5 s, else the owner (not in creative or spectator)
+    within the mob's follow range, else another of the owner's animals that is fighting it.
+  - Barbed Coat also returns damage when the barding takes the hit. A player's hit returns nothing (no friendly fire).
+  - Point Break's blast hurts and throws hostile mobs only (creepers too), power 3, no block damage.
+  - Marked's 15% is on every damage source while the order holds; the glow is refreshed twice a second.
+  - Live Wire: the nearest holder within 64 blocks across, under open sky, takes the bolt; its owner gets Night Vision
+    when within 64 blocks in the same dimension. A Channeling trident's bolt goes the same way (not tried with a real
+    trident). Storm-skittish is not in the game yet.
+  - Rewind: the safe ground is remembered for every player (solid block under their feet). A drekki told to stay in
+    chunks that are not loaded still saves its owner, from its saved record. Its learning needs a column with no block
+    at all under the falling player, so in practice the End's void.
+  - The void: a drekki goes back to the last solid ground it stood on in that dimension, else to its owner or home.
+  - Spikes are the damage type tag `rancher_companion:spikes` plus a pufferfish's sting.
+- The void never kills a drekki (Shane, 2026-11-23; built in 0.5.0): any stage, any trait or none, checked out or not.
   Void damage to a drekki is cancelled. Proposed, to confirm: it is put back on the last safe ground it stood on,
   or brought to its owner when it is checked out.
-- Affinity limits on learning (Shane, 2026-11-23, not built), to make breeding matter. An activity trait can be
+- Affinity limits on learning (Shane, 2026-11-23; built in 0.5.0), to make breeding matter. An activity trait can be
   learned only by a drekki of a listed astral affinity; the sheet's "Learned by" column holds the list:
   - All six: Hearty, Patchwork, Training Day, Soft Landing, Balm & Salve, Hook Line & Sinker, Duck & Cover, Night
     Watch (phantoms rarely matter, so not a capstone).
@@ -568,7 +592,7 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
   - For a drekki of another affinity the activity is not a learning event at all: nothing counts, no roll, no
     message.
   - Biome traits have no affinity limit; the biome is their gate.
-- Caps (Shane, 2026-11-23, not built; was 3/6/9): 2 traits at stage 1, 4 at stage 2, 5 at stage 3. A negative trait
+- Caps (Shane, 2026-11-23; built in 0.5.0; was 3/6/9): 2 traits at stage 1, 4 at stage 2, 5 at stage 3. A negative trait
   never takes a slot (Shane, 2026-11-23; it took one before): it is held as an extra, beside the slots.
   - Potion of Horizons: "Permanently unlocks an extra trait slot when fed to a drekki." Fed by hand, once per
     drekki, so 3/5/6. Brewed, not crafted (Shane, 2026-11-23; the 3x3 crafting recipe is dropped): Awkward
@@ -665,46 +689,46 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
     An arrow or trident (not the owner's own) about to hit its owner within 10 blocks bounces off as from a shield
     (the game's reverse deflection, with the shield sound). 6-second cooldown (3 s in its home terrain): about 1 in 3
     of a skeleton's arrows on Normal. Other projectiles (fireballs, potions, shulker bullets) are not stopped.
-  - Provoke (added by the team as Come Get Me; decided 2026-11-23, not built). Learned by whistle attack orders (see
+  - Provoke (added by the team as Come Get Me; decided 2026-11-23, built in 0.5.0). Learned by whistle attack orders (see
     Go here, Attack): the drekki lands a hit on 5 different mobs it was ordered to attack. Counted; a second hit on
     the same mob does not count, nor does a fight it picked itself. Effect: the mob it was ordered to attack, from
     the drekki's first hit on it, can only target the drekki. One mob at a time, for 8 s, then no new taunt until
     16 s after the taunt started. Every mob, bosses too (the Warden and mobs that pick targets by a brain need their
     own handling; the Ender Dragon has no target to change). It ends early when the mob or the drekki dies or is
     gone, the whistle sends the drekki elsewhere, or it is set to Passive.
-  - Barbed Coat (added by the team as Reflecting Pain; decided 2026-11-23, not built). Learned when the owner is
+  - Barbed Coat (added by the team as Reflecting Pain; decided 2026-11-23, built in 0.5.0). Learned when the owner is
     hurt by spikes, 25% each time: by damage type, so modded blocks count without compat code (cactus, sweet berry
     bush, thorns: a guardian's spikes, a pufferfish and a mob in Thorns armor, stalagmite and falling stalactite;
     checked 2026-11-23: Biomes O' Plenty's Bramble has its own type, `biomesoplenty:bramble`, so the list is the damage type tag
     `rancher_companion:spikes`, which names it as optional; Creeper Overhaul's creepers extend the game's Creeper). Effect: a mob that hits
     the drekki in melee takes 25% of that damage back, at least 1 (half a heart), as thorns damage, in every
     stance. Projectiles and explosions return nothing. On a Clay drekki it adds to the line's own Thorns.
-  - Point Break (Shane, 2026-11-23, not built). Learned when a creeper's blast breaks the drekki's barding (creepers
+  - Point Break (Shane, 2026-11-23; built in 0.5.0). Learned when a creeper's blast breaks the drekki's barding (creepers
     only: not TNT, beds, end crystals or fireballs; the pack's Creeper Overhaul creepers by a tag, to check when
     building). Always teaches; the barding is the cost, and a pup wears none. Effect: when its barding breaks, the
     drekki sets off a creeper's blast around itself (power 3, up to 43 damage at the center, knockback, the blast's
     particles and sound) that damages no blocks and does not hurt the drekki. 1-hour cooldown. Proposed, to confirm:
     it hurts hostile mobs only (not players, pets or villagers), and any break of the barding sets it off.
     Tooltip (Shane): "Barding explodes when broken, damaging enemies in an area."
-  - Fade (Shane, 2026-11-23, not built): the inverse of Provoke. Learned when the drekki is attacked while at
+  - Fade (Shane, 2026-11-23; built in 0.5.0): the inverse of Provoke. Learned when the drekki is attacked while at
     or under half health: the one-off chance, 25% each time, scaled by mood (the drekki teaches itself). Effect: the moment a mob targets the drekki while another target
     exists, mobs cannot target the drekki for 8 s; 16 s cooldown from the start. Another target exists when the mob
     was hit by someone else in the last few seconds, or a player or another fighting pet is in the mob's range, so
     it is not spent while only the drekki is fighting. With Provoke on the same drekki, the provoked mob stays on
     the drekki for its 8 s and every other mob is turned away. Tooltip (proposed): "Enemies that target the drekki
     turn to another target for 8 seconds."
-  - Staring Contest (Shane, 2026-11-23, not built). Learned when the owner kills 5 endermen (counted). Endermen do
+  - Staring Contest (Shane, 2026-11-23; built in 0.5.0). Learned when the owner kills 5 endermen (counted). Endermen do
     not anger when the owner looks at them within 10 blocks, as with a carved pumpkin. The Lavender line's Ender
     calm does the same; on a Lavender drekki the trait adds nothing. Tooltip (proposed): "Endermen will not anger
     when its owner looks at them."
-  - Web Cutter (Shane, 2026-11-23, not built). Learned when the owner kills 10 spiders (spiders and cave spiders,
+  - Web Cutter (Shane, 2026-11-23; built in 0.5.0). Learned when the owner kills 10 spiders (spiders and cave spiders,
     counted). Cobwebs do not slow the owner within 10 blocks or the drekki. Tooltip (proposed): "Cobwebs do not
     slow the drekki or its owner."
-  - Marked (Shane, 2026-11-23, not built). Learned when the owner lands 10 arrow hits from 30 blocks or more
+  - Marked (Shane, 2026-11-23; built in 0.5.0). Learned when the owner lands 10 arrow hits from 30 blocks or more
     (counted). The mob the drekki is ordered to attack with the whistle glows and takes 15% more damage from every
     source while the order holds. Pairs with Provoke. Tooltip (proposed): "Enemies attacked with the whistle glow
     and take 15% more damage."
-  - Live Wire (Shane, 2026-11-23, not built). Learned when lightning strikes within 8 blocks of the owner, 25% each
+  - Live Wire (Shane, 2026-11-23; built in 0.5.0). Learned when lightning strikes within 8 blocks of the owner, 25% each
     time (a lightning rod block in a storm, or a Channeling trident). Effect: in a thunderstorm the drekki acts as
     a lightning rod: it pulls strikes within 64 blocks and needs open sky above it (about one strike every 1.5
     minutes in a storm). The bolt drawn to it is visual only: no damage to it or anyone near, no fire, no villager
@@ -712,7 +736,7 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
     (20 s steady, then the game's 10 s of blinking; Shane first gave 4 s and 8 s).
     Storm-skittish works as always: the strike still throws the rider. Proposed, to confirm: a Channeling trident
     thrown at it triggers the trait.
-  - Rewind (Shane, 2026-11-23, not built): the End capstone, modelled on Ars Additions' Charm of Void's
+  - Rewind (Shane, 2026-11-23; built in 0.5.0): the End capstone, modelled on Ars Additions' Charm of Void's
     Salvation. Learned when the owner throws an ender pearl while falling with no ground under them and lands
     safely, 25% each time. Effect: when the owner takes void damage, the damage is cancelled and the owner is
     returned to the last safe ground they stood on (solid block, same rule as the charm), with the fall distance

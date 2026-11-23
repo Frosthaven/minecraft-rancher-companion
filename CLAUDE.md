@@ -6,7 +6,7 @@ dependencies; the Haven pack (`../minecraft-haven-pack`) may ship it later, but 
 
 **State:** public on GitHub (`Frosthaven/minecraft-rancher-companion`), in the Haven pack since 0.2.0 (the teaser:
 blocks, trough, trader egg; see `spec.md` "Teaser release"). 0.3.0 is the pup release (`spec.md` "Pup release"):
-hatching, the roster, check in and out, the small carrier, petting, names, the trader's hats, the trough screen. 0.4.0 is the growth release: Fledglings, hunger, mood, traits, combat, barding and bags, tombstones and ghosts. Push to `main` only when the user asks. The design is in `spec.md` (every decision, open questions at the end) and on the design page listed in
+hatching, the roster, check in and out, the small carrier, petting, names, the trader's hats, the trough screen. 0.4.0 is the growth release: Fledglings, hunger, mood, traits, combat, barding and bags, tombstones and ghosts. 0.5.0 is the traits update: caps 2/4/5, the Potion of Horizons, affinity limits, nine new traits. Push to `main` only when the user asks. The design is in `spec.md` (every decision, open questions at the end) and on the design page listed in
 `artifacts.md`; keep both in step with any change. Ask the user before inventing a feature.
 
 ## Layout (`src/main/java/dev/frosthaven/ranchercompanion`)
@@ -70,6 +70,14 @@ hatching, the roster, check in and out, the small carrier, petting, names, the t
   `ranch/Seats` (seats it can be sent to; none without Create) and `compat/create/` (Create's seats, the Employed job
   seats, and `client/JobHatLayer`: Create's job hats on the drekki's crown, reached by method handles since they return a
   Flywheel type). Employed drekki are `Roster.Where.WORK`: not the owner's checked-out one, kept while the owner is offline.
+- `trait/`: `Trait` (every activity trait: how it is learned, its cooldown, the astral affinities that can learn it,
+  the caps 2/4/5 and the potion's extra slot), `Traits` (who learns, the offer, who benefits), `Learning` and `Effects`
+  (the 16 traits of 0.4.0), `FightTraits` (Provoke, Fade, Barbed Coat, Point Break, Marked) and `WorldTraits` (Staring
+  Contest, Web Cutter, Live Wire, Rewind, the void), `Tips`. `item/DrekkiPotions` (the Potion of Horizons and the two
+  potions brewed on the way: potion types, the brewing mixes, feeding it) with `client/PotionModels` (their icons, a
+  wrap of the game's potion model). `life/Life.settleSlots` is the one-time update of a drekki saved under the 3/6/9 caps.
+  `-Drancher_companion.selftest.new=true` runs `client/SelfTestNewTraits` (0.5.0 in the real game; `./gradlew
+  runSelfTestNew` in `run/saves/selftest`, a copy of the showcase world); `runSelfTestTraits` runs every trait.
 - `compat/journeymap/DrekkiMap` (the magenta death marker; JourneyMap finds it by its annotation),
   `compat/jei/DrekkiJei` (barding dye recipes for JEI) and `compat/ponder/DrekkiPonder` (build guides; schematics and
   lang from `uv run --with nbtlib python -I tools/ponder_scenes.py`): optional, compile only against JEI's and

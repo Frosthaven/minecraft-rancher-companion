@@ -28,6 +28,13 @@ neoForge {
 
     runs {
         client { client() }
+        // every activity trait in the real game (client/SelfTestTraits, then SelfTestNewTraits), same world
+        selfTestTraits {
+            client()
+            programArguments.addAll '--quickPlaySingleplayer', 'selftest'
+            jvmArgument '-Drancher_companion.selftest=true'
+            jvmArgument '-Drancher_companion.selftest.traits=true'
+        }
         // the real-game test of 0.5.0 (client/SelfTestNewTraits) in the world run/saves/selftest
         selfTestNew {
             client()
