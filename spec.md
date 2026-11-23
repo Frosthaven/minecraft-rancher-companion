@@ -687,8 +687,9 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
     Salvation. Learned when the owner throws an ender pearl while falling with no ground under them and lands
     safely, 25% each time. Effect: when the owner takes void damage, the damage is cancelled and the owner is
     returned to the last safe ground they stood on (solid block, same rule as the charm), with the fall distance
-    reset; the drekki comes with them. 5-minute cooldown. Proposed, to confirm: it works when the owner was within
-    10 blocks of the drekki on leaving that safe ground, or is riding it (a falling owner is soon out of range).
+    reset; the drekki comes with them. 5-minute cooldown. No block limit (Shane): it works whenever the drekki is
+    travelling with its owner, that is checked out, at any distance and in any dimension (not at the hatchery,
+    not employed). Proposed, to confirm: a drekki told to Stay counts, one inside a carrier does not.
     Tooltip (proposed): "Saves its owner from the void, returning them to safe ground."
   - Hibernation Plan slows both the player's hunger and the drekki's (see Hunger).
   - Phoenix Heart works on every death and the trait is kept. The egg goes to the owner's inventory when they are
