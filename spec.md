@@ -654,6 +654,14 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
     (counted). The mob the drekki is ordered to attack with the whistle glows and takes 15% more damage from every
     source while the order holds. Pairs with Provoke. Tooltip (proposed): "Enemies attacked with the whistle glow
     and take 15% more damage."
+  - Surge (Shane, 2026-11-23, not built). Learned when lightning strikes within 8 blocks of the owner, 25% each
+    time (a lightning rod block in a storm, or a Channeling trident). Effect: in a thunderstorm the drekki acts as
+    a lightning rod. A strike on it does no damage; its attack speed doubles for 4 s and its owner gets Night
+    Vision for 8 s. Proposed, to confirm: the bolt drawn to it is visual only (no damage to anyone near, no fire,
+    no villager or pig transformations); it pulls strikes within 64 blocks and needs open sky above it (about one
+    strike every 1.5 minutes in a storm; 128 blocks, a rod block's range, gives about one every 25 s); a
+    Channeling trident thrown at it triggers the trait; a strike it absorbs does not throw the rider of a
+    Storm-skittish drekki. Open: 4 s and 8 s are short against that rate, and Night Vision blinks in its last 10 s.
   - Hibernation Plan slows both the player's hunger and the drekki's (see Hunger).
   - Phoenix Heart works on every death and the trait is kept. The egg goes to the owner's inventory when they are
     online with room, otherwise it is held and given on their next login or at the hatchery. It is never dropped.
