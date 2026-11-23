@@ -96,6 +96,7 @@ final class SelfTestTraits {
             if (has(t)) return true;
             if (pup() != null && t.id.equals(pup().traitView().getString("offer"))) { life(d -> dev.frosthaven.ranchercompanion.trait.Traits.answer(d, true)); return false; }
             if (++polls[0] % every == 0) act.run();
+            if (polls[0] == tries * every) RancherCompanion.LOG.info("[selftest] {} not learned: {} | owner on ground {} flying {} at {} mode {}", t.id, state(), mc().player.onGround(), mc().player.getAbilities().flying, mc().player.position(), mc().gameMode.getPlayerMode());
             return false;
         });
     }

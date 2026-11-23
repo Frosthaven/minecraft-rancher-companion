@@ -177,6 +177,36 @@ Two craftable items:
   0.6 wide since 2026-11-20 so it fits an open door, whose panel leaves 0.625 at the block's middle; was 1.125 by scale, 1.5 at full size; 1.725 tall). The page's pixel table and loops stay as they are; one scale per stage
   (1, 0.75, 0.75) sets the model, hitbox, shadow, particles, travel speeds and the room it needs in the world.
 - Can be mounted and ridden like a horse.
+- **Growth to Mature is on since 0.5.0** (Shane, 2026-11-23; breeding is not). A Fledgling grows up after its 6 days of
+  travel. Travel kept counting while growth stopped at Fledgling, so a Fledgling with 12 days or more is a Mature the
+  first time it is loaded on 0.5.0. Its Fledgling barding goes back to its owner; its stance stays.
+- **A new Fledgling starts Passive** (Shane, 2026-11-23): it does not fight until its owner picks a stance. Fledglings from
+  before keep their stance.
+- **Riding as built (0.5.0; Shane, 2026-11-23 where named; the rest Claude's starting numbers, to tune):**
+  - The saddle slot (Shane): a Mature has a fourth equipment slot, under the accessory, that takes the game's saddle. A
+    drekki shows a saddle only when it wears one, and only a saddled Mature is ridden. A tombstone holds it in a fourth
+    slot. Taking the saddle off under a rider puts the rider down.
+  - Mounting: its owner's empty-handed click on a saddled Mature mounts it (an unsaddled one opens its screen as
+    before). The screen of a saddled one: the inventory key while riding, as a horse, or a click with any plain item in
+    hand. Sneak dismounts. Only the owner rides. A ghost and an employed drekki are not ridden.
+  - Under a rider it does nothing of its own: no goals, no fights, no catch-up. Its rider's game moves it, as a horse.
+  - Speed 0.2 as the game's movement attribute (about 8.8 blocks a second; an average horse is 0.225). The Open Road
+    adds 10%. The jump key jumps about 2 blocks at once (no charge).
+  - Cloud Stompers: one more jump in the air. Four Winds: the sprint key dashes (a camel's dash at twice the push:
+    about 20 blocks), 55 ticks between dashes.
+  - Wings of Hope: the jump key held in the air flies. A wingbeat every 12 ticks pushes for 5 of them along the
+    rider's up direction; the climb eases out at 0.45 a tick. Level it climbs, looking down it flies forward (about 26
+    blocks a second at 55 degrees). No hover, no glide, no fuel. The server does not count it as a floating vehicle.
+  - Leap of Faith: past 3 blocks of fall it sinks at 0.18 a tick, and the landing hurts no one.
+  - Falls: the server forgets a fall while the drekki sinks slower than 0.3 a tick over 5 ticks, so a landing under
+    wings is no fall. A real fall is the rider's.
+  - Liquids: a liquid 0.9 deep or more at its feet puts the rider down. Ocean Walker and Lava Walker stand on the
+    liquid as a strider does (half a block into it) when it steps on or lands from 3 blocks or less. A ridden Lava
+    Walker is lavaproof; without the trait lava burns a ridden drekki as before.
+  - Predator's Eye: hostile mobs within 24 blocks of a ridden holder get Glowing (every player sees it).
+  - Not built: riding through a portal (the rider gets down; the drekki follows by its catch-up).
+- **A drekki never suffocates** (Shane, 2026-11-23; 0.5.0): no drowning (its air never runs out) and no damage from a
+  block around its head, at any stage.
 - Every ability. No built-in glide or slow fall: flight comes only from the Wings of Hope trait (while
   ridden; jetpack Vector style since 2026-11-23, see Biome affinity), so only a ridden stage 3 flies.
 
@@ -414,7 +444,7 @@ Each affinity changes in real time until it locks in. After lock-in it is perman
 |----------|------------------------------|----------------------|---------------------|--------------------------------------------|
 | Astral   | Where stage 1 travel happens | Dormant, then Solar, Lunar, Aero, Underworld, Deep, End | 50% through stage 1 | Eye color |
 | Diet     | What the drekki eats         | Carnivore raw or cooked, Herbivore seed or root | Start of stage 2 | Talons, wings, tail plumage |
-| Biome    | Time spent in each biome     | Traits per biome     | 50% through stage 2 | Foot tint                                  |
+| Biome    | Where the egg hatches (since 0.5.0; was time spent in each biome) | 15 biome categories | At the hatch | Foot tint |
 
 ### Astral affinity
 
@@ -531,7 +561,7 @@ Rules behind the lists:
     changes as the drekki moves, at every stage, a pup's too.
   - Dropped the same day, before anything was built: a 20% damage cut for the drekki, its owner and its barding
     while in the trait's biome, with the globe lit or dim. There is no such bonus; the globe has one look.
-- Wings of Hope (Shane, 2026-11-23, not built): flight like Mekanism's jetpack in Vector mode, in place of the
+- Wings of Hope (Shane, 2026-11-23; built in 0.5.0, see Stage 3): flight like Mekanism's jetpack in Vector mode, in place of the
   elytra-style flight of the first design. While ridden, holding jump pushes the drekki along its own up direction,
   which tilts with where the rider looks: level, it climbs; looking down, the push leans forward and it flies
   forward (read from Mekanism 10.7's `IJetpackItem`: `getUpVector` times the thrust, the vertical part eased as speed
@@ -543,7 +573,16 @@ Rules behind the lists:
   - No glide: when the rider lets go, it falls. The fall never hurts the drekki and the rider takes it as their
     own, so Leap of Faith keeps its worth (Shane).
   - No dive for speed of its own: Vector steering already gives that (Shane).
-- **Biome traits become activity traits (Shane, 2026-11-23, not built).** The 15 traits of the biome categories are
+- **Built in 0.5.0** (2026-11-23): all fifteen are learned from their activities; the nine that need no rider act
+  (The Open Road, Homes & Gardens, Downstream, Frost Strider, Hibernation Plan, Natural Repellant, Hoglin Ward, Inverse
+  Luminance, Draconic Vampirism), and the six ridden ones act on a ridden Mature (see Stage 3). As built: travel counts
+  from the game's own statistics once a second, while the drekki follows within 48 blocks (Claude: a runner, a boat or a
+  horse leaves it more than 10 behind between catch-ups); Homes & Gardens gives a crop that grew within 20 blocks one
+  more step one time in four; Inverse Luminance is one of the game's light blocks at the drekki's head, 14 less the
+  daylight that reaches it; Draconic Vampirism heals 10% of damage dealt, 2 health a second at most; Hoglin Ward
+  reaches 8 blocks, Natural Repellant 6 (a creeper already after a player still swells, as with a cat).
+- Training Day is learned from 6 levels gained (Shane, 2026-11-23; was 3).
+- **Biome traits become activity traits (Shane, 2026-11-23).** The 15 traits of the biome categories are
   learned like any other trait, from an activity of the owner's, by the astral affinities listed, and take a trait
   slot like any other. This replaces learning by travel: there is no biome lock-in, no "one trait from the biome it
   grew up in", no biome row with a globe, and the text above about those is history. Claude spread them and chose
@@ -559,7 +598,9 @@ Rules behind the lists:
     End: Leap of Faith (land unhurt from a fall of 30 blocks or more, 25% each time), Wings of Hope (be hit by a
     shulker's bullet 10 times: the Levitation it gives is the lesson; counted at the hit, so Balm & Salve stopping
     the effect does not stop the count).
-  - The foot tint is set at birth (Shane, 2026-11-23, not built): the biome the egg hatches in gives the tint,
+  - The foot tint is set at birth (Shane, 2026-11-23; built in 0.5.0: the design page's twelve tints over the 15
+    categories, taiga as forest, coast as ocean, both Nether and both End categories alike; a drekki from before takes
+    the biome of its hatchery at its first tick): the biome the egg hatches in gives the tint,
     by its biome category, for life. It is a look only and gives no trait. It covers what the biome tint covered
     before: the feet, from stage 2 the light chest patch and the ring near the tail tip, on stage 3 the base of
     each horn. It is not inherited: a child gets the tint of where it hatches. Until built, every drekki keeps
@@ -1371,6 +1412,12 @@ Diet picks the position (where it fights from) and the two abilities. Damage is 
   - Elemental ball: ranged, slightly less damage than Bite.
   - Rejuvenate: heals itself and every player within 10 blocks, and gives very slow regeneration for 5 s. 15 s
     cooldown.
+- Abilities as built (0.5.0; numbers are starting values): one 15 s cooldown per drekki, half in its astral home.
+  Pounce: a leap at a target within 5 blocks, 8 damage (twice a bite), with the barding's sword enchantments. Elemental
+  breath: when its target is within 4 blocks, 4 magic damage to every hostile mob in a cone of about 45 degrees a side.
+  Steel edge: when a player within 10 blocks hit or was hit in the last 5 s, +2 attack damage for every player within
+  10 blocks, 5 s. Rejuvenate: when it or a player within 10 blocks is missing 4 health or more, heals 4 and gives
+  Regeneration I for 5 s to itself and those players. Steel edge and Rejuvenate work in every stance; a ghost has none.
 - Stage 1 has no attacks. Bite and Elemental ball start in stage 2. The cooldown abilities (Pounce, Elemental
   breath, Steel edge, Rejuvenate) only activate in stage 3.
 - In its astral home terrain every cooldown is halved.

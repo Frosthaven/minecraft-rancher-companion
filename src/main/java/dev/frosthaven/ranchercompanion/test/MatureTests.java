@@ -251,6 +251,32 @@ public final class MatureTests {
         });
     }
 
+    /** the foot tint: the biome category of the hatch, kept for life; a drekki from before 0.5.0 takes its hatchery's */
+    @GameTest(template = "floor", timeoutTicks = 60)
+    public static void theBirthBiomeIsKeptForLife(GameTestHelper t) {
+        ServerPlayer p = LifeTests.player(t);
+        DrekkiEntity d = CombatTests.out(t, p, 1, Diet.RAW, Life.Stance.PASSIVE);
+        int here = dev.frosthaven.ranchercompanion.life.Places.CATEGORIES.indexOf(dev.frosthaven.ranchercompanion.life.Places.category(t.getLevel(), d.blockPosition()));
+        t.assertTrue(d.birth() == here, "hatched with the biome of its hatchery: " + d.birth() + " against " + here);
+        d.setBirth(5);  /* as if hatched in a jungle */
+        var tag = new net.minecraft.nbt.CompoundTag();
+        d.addAdditionalSaveData(tag);
+        d.setBirth(0);
+        d.readAdditionalSaveData(tag);
+        t.assertTrue(d.birth() == 5, "saved and loaded with it");
+        t.assertTrue(dev.frosthaven.ranchercompanion.look.FootTint.of(5) != dev.frosthaven.ranchercompanion.look.FootTint.of(here), "and a jungle's tint is not this biome's");
+        /* a save from before 0.5.0 has none: it takes its hatchery's at its next tick, and its record keeps it */
+        tag.remove("Birth");
+        d.setBirth(7);
+        d.readAdditionalSaveData(tag);
+        t.runAfterDelay(5, () -> {
+            var rec = dev.frosthaven.ranchercompanion.ranch.Ranch.roster(t.getLevel().getServer()).get(d.drekkiId());
+            t.assertTrue(d.birth() == here, "it took its hatchery's biome: " + d.birth());
+            t.assertTrue(rec != null && rec.save.getInt("Birth") == here, "and its roster record has it");
+            t.succeed();
+        });
+    }
+
     /** places a husk beside a drekki, whatever way the test area lies */
     static final class EntityAt {
         static Husk husk(GameTestHelper t, DrekkiEntity d, double dx, double dz) {

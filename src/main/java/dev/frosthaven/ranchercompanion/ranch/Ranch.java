@@ -179,6 +179,7 @@ public final class Ranch {
         if (d == null) return;
         int fam = level.random.nextInt(Lineage.FAMILIES);
         d.setLook(1, fam * Lineage.TIERS, 0, Astral.DORMANT, level.random.nextInt(5));
+        d.setBirth(dev.frosthaven.ranchercompanion.life.Places.CATEGORIES.indexOf(dev.frosthaven.ranchercompanion.life.Places.category(level, pos)));  /* where the egg hatched: its foot tint for life */
         d.applyStageHealth(true);
         UUID id = UUID.randomUUID();
         d.bind(p.getUUID(), id, pos);

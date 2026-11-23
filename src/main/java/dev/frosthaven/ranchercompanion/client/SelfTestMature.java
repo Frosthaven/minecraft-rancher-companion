@@ -139,7 +139,8 @@ final class SelfTestMature {
 
     private static void roam() {
         BlockPos o = ground;
-        quiet("roam_rules", 20, () -> { cmd("gamerule doMobSpawning false"); cmd("time set 6000"); cmd("gamerule doDaylightCycle false"); cmd("gamemode creative"); cmd("kill @e[type=!player,type=!rancher_companion:drekki,distance=..200]"); });
+        quiet("roam_rules", 20, () -> { cmd("gamerule doMobSpawning false"); cmd("time set 6000"); cmd("gamerule doDaylightCycle false"); cmd("gamemode survival"); cmd("kill @e[type=!player,type=!rancher_companion:drekki,distance=..200]"); });
+        quiet("roam_on_foot", 20, () -> cmd("gamemode creative"));  /* through survival: a player who was flying (a spectator shot before) walks again */
 
         sec("open_road", () -> {
             /* The Open Road: a real sprint */

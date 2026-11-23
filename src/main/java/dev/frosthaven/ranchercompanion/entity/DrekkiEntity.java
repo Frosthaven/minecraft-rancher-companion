@@ -74,6 +74,8 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
     private static final EntityDataAccessor<Boolean> BARDING_GLINT = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.BOOLEAN);
     /** 0.5.0: a Mature wears a saddle (its saddle slot): drawn, and it can be ridden. Declared last, as above */
     private static final EntityDataAccessor<Boolean> SADDLED = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.BOOLEAN);
+    /** 0.5.0: the biome category it hatched in (life.Places.CATEGORIES index), which tints its feet for life. Declared last */
+    private static final EntityDataAccessor<Integer> BIRTH = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.INT);
 
     /** its life (server: the truth, saved under "Life"; client: unused, the synched values above stand in) */
     public final dev.frosthaven.ranchercompanion.life.Life life = new dev.frosthaven.ranchercompanion.life.Life();
@@ -117,6 +119,7 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
         b.define(FOOD, 10f); b.define(MOOD, 50f); b.define(BAND, 2); b.define(PET_LEFT, 0); b.define(KIN, 0); b.define(GHOST, false); b.define(STANCE, 1); b.define(ACTION, 0); b.define(REVIVING, false); b.define(TRAITS, new CompoundTag()); b.define(JOB, 0);
         b.define(BARDING_GLINT, false);
         b.define(SADDLED, false);
+        b.define(BIRTH, dev.frosthaven.ranchercompanion.look.FootTint.PLAINS);
     }
 
     public int stage() { return entityData.get(STAGE); }
@@ -150,6 +153,23 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
         entityData.set(BARDING_GLINT, s.isEnchanted());
         entityData.set(DYE, dev.frosthaven.ranchercompanion.item.Dyeing.main(s));
         entityData.set(DYE2, dev.frosthaven.ranchercompanion.item.Dyeing.trim(s));
+    }
+
+    /** the biome category it hatched in (spec, Biome affinity: the foot tint is set at birth) */
+    public int birth() { return entityData.get(BIRTH); }
+    public void setBirth(int category) { entityData.set(BIRTH, category); birthKnown = true; }
+    /** server: false for a drekki saved before 0.5.0, which takes its hatchery's biome at its first tick */
+    private boolean birthKnown;
+
+    private void settleBirth() {
+        birthKnown = true;
+        if (drekkiId == null || getServer() == null) return;
+        var e = dev.frosthaven.ranchercompanion.ranch.Ranch.roster(getServer()).get(drekkiId);
+        net.minecraft.core.GlobalPos at = e == null ? null : e.base != null ? e.base : e.home;
+        var where = at == null ? null : getServer().getLevel(at.dimension());
+        setBirth(dev.frosthaven.ranchercompanion.life.Places.CATEGORIES.indexOf(where == null
+            ? dev.frosthaven.ranchercompanion.life.Places.category(level(), blockPosition()) : dev.frosthaven.ranchercompanion.life.Places.category(where, at.pos())));
+        dev.frosthaven.ranchercompanion.ranch.Ranch.touch(this);
     }
 
     public net.minecraft.world.item.ItemStack saddle() { return saddle; }
@@ -847,6 +867,7 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
             if (stage() == 1 && isAlive() && getHealth() < getMaxHealth()) setHealth(getMaxHealth());  /* a pup hurt before 0.3.2 */
             if (actionLeft > 0 && --actionLeft == 0) entityData.set(ACTION, 0);
             if (owned() && isAlive()) {
+                if (!birthKnown) settleBirth();
                 if (stage() >= 3) dev.frosthaven.ranchercompanion.combat.Abilities.tick(this);
                 if (isStaying()) dev.frosthaven.ranchercompanion.ranch.Ranch.workTick(this);  /* on a seat that moves, or employed */
                 if (heldUntil >= 0 && !held()) {  /* Go here's hold is over: not told to stay, it gets up from a plain seat and follows */
@@ -883,6 +904,7 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
         if (!bardingItem.isEmpty()) tag.put("BardingItem", bardingItem.save(registryAccess()));
         if (!accessory.isEmpty()) tag.put("Accessory", accessory.save(registryAccess()));
         if (!saddle.isEmpty()) tag.put("Saddle", saddle.save(registryAccess()));
+        if (birthKnown) tag.putInt("Birth", birth());
         if (owner != null) { tag.putUUID("Owner", owner); tag.putUUID("DrekkiId", drekkiId); tag.putBoolean("Out", out); if (home != null) tag.putLong("Home", home.asLong()); }
     }
 
@@ -899,6 +921,8 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
         if (tag.contains("Bag")) { entityData.set(BAG, tag.getInt("Bag")); entityData.set(BAG_DYE, tag.contains("BagDye") ? tag.getInt("BagDye") : -1); entityData.set(BAG_DYE2, tag.contains("BagDye2") ? tag.getInt("BagDye2") : -1); }
         if (tag.contains("BardingItem")) setBardingItem(net.minecraft.world.item.ItemStack.parseOptional(registryAccess(), tag.getCompound("BardingItem")));
         if (tag.contains("Accessory")) setAccessory(net.minecraft.world.item.ItemStack.parseOptional(registryAccess(), tag.getCompound("Accessory")));
+        birthKnown = false;
+        if (tag.contains("Birth")) setBirth(tag.getInt("Birth"));
         if (tag.contains("Saddle")) setSaddle(net.minecraft.world.item.ItemStack.parseOptional(registryAccess(), tag.getCompound("Saddle")));
         if (tag.contains("Anim")) setAnim(Anim.of(tag.getInt("Anim")), tag.getFloat("Lane"));
         life.settleSlots(dev.frosthaven.ranchercompanion.trait.Trait.cap(stage(), false));
