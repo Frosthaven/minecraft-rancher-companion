@@ -576,10 +576,17 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
     other brewing methods can make it (Create's basin, Ars Nouveau's cauldron and jars, Iron's Spellbooks'
     cauldron; each to test in the pack). That brings splash, lingering and tipped-arrow versions and lets a
     player drink it; all of those do nothing. One ingredient brews three bottles. The two in-between potions do
-    nothing; names proposed: Potion of Distance (after the pearl), Potion of Dusk (after the chorus fruit).
-    Icon (Shane's pick): the tonics' bottle with an emerald stopper, popped-chorus purple over a pale horizon
-    line over two rows of ender-pearl teal, and one row of emerald as the bottom of the glass. Open: a potion
-    type draws as the game's potion bottle tinted in one color, so this icon needs its own item model rule.
+    nothing: Potion of Distance (after the pearl) and Potion of Twilight (after the chorus fruit).
+    Icons, the tonics' bottle filling up step by step (16x16, the tonics' outline `30303a`, glass `e8f0f4`/`ffffff`,
+    shine `ffffff`, sparkle `fff4b0`; six liquid rows under the neck):
+    - Potion of Distance: cork; all ender-pearl teal (`2a9a86`, shade `125e52` to the lower right).
+    - Potion of Twilight: cork; three rows of popped-chorus purple (`b48ad0`, shade `8a62a8`) over three of teal.
+    - Potion of Horizons (Shane's pick): an emerald stopper (`7df5a8`, `17c95c`); two rows of purple, one pale
+      horizon row (`e6fff4`), two rows of teal, and the bottom row of the glass in emerald (`7df5a8`, `17c95c`,
+      shade `0a8a3a`).
+    A potion type draws as the game's potion bottle tinted in one color, so these icons need their own item model
+    rule; a resource pack that restyles potions could override it, and the splash and lingering versions keep the
+    tinted bottle unless drawn too. Fallback: the standard bottle in three tints (teal, purple, emerald green).
   - At the update, an existing drekki that holds more traits than the new cap for its stage is marked as having
     taken the potion and keeps what it has: a pup with 3 and a Fledgling with 5 fit exactly; a Fledgling with 6
     is one over until it matures and then sits on the final 6. No Mature and no bred drekki exist in the launched
