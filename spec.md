@@ -522,6 +522,15 @@ Rules behind the lists:
   the traits. The shank above the foot takes the wing's main color (dark membrane for carnivores, light feathers
   for herbivores). From stage 2 the light chest patch and a small trim ring near the tail tip also take the foot
   tint, and on stage 3 the base segment of each horn does too.
+- Biome traits in their own biome (Shane, 2026-11-23, not built):
+  - On the drekki screen's traits tab a biome trait has a globe icon where other traits have a bullet.
+  - While the drekki is in a biome of the trait's category, the drekki and its owner take 20% less damage from all
+    sources. Proposed, to confirm: the owner gets it within 10 blocks of the drekki, as with every trait; the
+    category is the trait's own, also for a trait a parent passed on.
+  - The trait shows as active or inactive by the biome the drekki is in now. Claude's reading, to confirm: this
+    marks the 20% bonus (the globe lit in its biome, dim elsewhere), and the trait's own effect still works
+    everywhere, as decided before ("Biome traits work everywhere once learned"). The other reading is that the
+    whole trait only works in its biome.
 - Biome capstone traits: a spread of capstone traits that lock in at the start of stage 3.
 
 ## Traits
