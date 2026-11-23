@@ -635,7 +635,7 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
     drekki sets off a creeper's blast around itself (power 3, up to 43 damage at the center, knockback, the blast's
     particles and sound) that damages no blocks and does not hurt the drekki. 1-hour cooldown. Proposed, to confirm:
     it hurts hostile mobs only (not players, pets or villagers), and any break of the barding sets it off.
-    Tooltip: "When its barding breaks, the drekki explodes like a creeper, damaging nearby enemies but not blocks."
+    Tooltip (Shane): "Barding explodes when broken, damaging enemies in an area."
   - Hibernation Plan slows both the player's hunger and the drekki's (see Hunger).
   - Phoenix Heart works on every death and the trait is kept. The egg goes to the owner's inventory when they are
     online with room, otherwise it is held and given on their next login or at the hatchery. It is never dropped.
