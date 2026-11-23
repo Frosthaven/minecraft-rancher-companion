@@ -163,6 +163,7 @@ public final class Vitals {
             Integer pick = Life.pick(l.meals, n -> d.getRandom().nextInt(n));
             diet = pick != null ? pick : d.getRandom().nextInt(4);
             if (d.astral() == Astral.DORMANT) lockAstral(d);
+            l.stance = Life.Stance.PASSIVE;  /* a new Fledgling does not fight until its owner says so (Shane, 2026-11-23) */
         }
         d.setLook(stage, d.line(), diet, d.astral(), d.horn());
         d.applyStageHealth(true);

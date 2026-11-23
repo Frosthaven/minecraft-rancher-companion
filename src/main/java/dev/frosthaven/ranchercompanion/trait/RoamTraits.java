@@ -24,7 +24,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.monster.hoglin.Hoglin;
@@ -218,9 +217,26 @@ public final class RoamTraits {
         }
     }
 
-    /** Natural Repellant: a creeper keeps away from a holder as it does from a cat */
+    /** Natural Repellant: a creeper keeps away from a holder as it does from a cat (6 blocks). Its own goal: the game's
+     *  avoid goal asks whether the creeper could attack what it avoids, and a drekki is often not attackable. */
     private static void repel(Creeper c) {
-        c.goalSelector.addGoal(3, new AvoidEntityGoal<>(c, DrekkiEntity.class, 6.0f, 1.0, 1.2, d -> d instanceof DrekkiEntity x && !x.life.ghost && x.life.traits.contains(Trait.NATURAL_REPELLANT.id)));
+        c.goalSelector.addGoal(3, new net.minecraft.world.entity.ai.goal.Goal() {
+            private net.minecraft.world.level.pathfinder.Path path;
+            { setFlags(java.util.EnumSet.of(Flag.MOVE)); }
+            @Override public boolean canUse() {
+                if (c.tickCount % 5 != 0) return false;
+                DrekkiEntity from = null;
+                for (DrekkiEntity d : Traits.holders(Trait.NATURAL_REPELLANT))
+                    if (d.level() == c.level() && d.isAlive() && d.distanceToSqr(c) <= 6 * 6 && (from == null || d.distanceToSqr(c) < from.distanceToSqr(c))) from = d;
+                if (from == null) return false;
+                Vec3 to = net.minecraft.world.entity.ai.util.DefaultRandomPos.getPosAway(c, 16, 7, from.position());
+                if (to == null || from.distanceToSqr(to) < from.distanceToSqr(c)) return false;
+                path = c.getNavigation().createPath(to.x, to.y, to.z, 0);
+                return path != null;
+            }
+            @Override public boolean canContinueToUse() { return !c.getNavigation().isDone(); }
+            @Override public void start() { c.getNavigation().moveTo(path, 1.2); }
+        });
     }
 
     /** Hoglin Ward, from the hoglin sensor's mixin: with no warped fungus near, a holder within 8 blocks is what it avoids */

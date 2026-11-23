@@ -48,7 +48,7 @@ class TraitRulesTest {
     }
 
     @Test
-    void eachAffinityLearnsTwelveOrThirteenAndOneCapstoneOfItsOwn() {
+    void eachAffinityLearnsNineteenOrTwentyOfFortyAndOneCapstoneOfItsOwn() {
         int[] astrals = {Astral.SOLAR, Astral.LUNAR, Astral.AERO, Astral.UNDERWORLD, Astral.DEEP, Astral.END};
         for (int a : astrals) {
             int learnable = 0, capstones = 0;
@@ -57,7 +57,7 @@ class TraitRulesTest {
                 learnable++;
                 if (Integer.bitCount(t.affinities) == 1) capstones++;
             }
-            assertTrue(learnable == 12 || learnable == 13, Astral.NAMES[a] + " learns " + learnable);
+            assertTrue(learnable == 19 || learnable == 20, Astral.NAMES[a] + " learns " + learnable);
             assertEquals(1, capstones, Astral.NAMES[a]);
         }
     }
@@ -72,6 +72,20 @@ class TraitRulesTest {
         for (int a = Astral.SOLAR; a <= Astral.END; a++) {
             assertFalse(Trait.STAMP_OUT.learnedBy(a) && Trait.HUDDLE_UP.learnedBy(a), Astral.NAMES[a]);
             assertFalse(Trait.PROVOKE.learnedBy(a) && Trait.FADE.learnedBy(a), Astral.NAMES[a]);
+            assertFalse(Trait.LAVA_WALKER.learnedBy(a) && Trait.OCEAN_WALKER.learnedBy(a), Astral.NAMES[a] + ": Surface Tension is for breeding");
         }
+    }
+
+    @Test
+    void thereAreFortyTraitsAndEveryCapstoneIsEpic() {
+        assertEquals(40, Trait.values().length);
+        int epic = 0, rare = 0, uncommon = 0;
+        for (Trait t : Trait.values()) {
+            if (Integer.bitCount(t.affinities) == 1) assertEquals(Trait.Rarity.EPIC, t.rarity, t.id);
+            switch (t.rarity) { case EPIC -> epic++; case RARE -> rare++; case UNCOMMON -> uncommon++; default -> throw new AssertionError(t.id + " is Legendary: that tier is for bred traits"); }
+        }
+        assertEquals(11, epic);
+        assertEquals(10, rare);
+        assertEquals(19, uncommon);
     }
 }
