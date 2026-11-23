@@ -525,7 +525,9 @@ Rules behind the lists:
 - Biome traits in their own biome (Shane, 2026-11-23, not built):
   - On the drekki screen's traits tab a biome trait has a globe icon where other traits have a bullet.
   - While the drekki is in a biome of the trait's category, the drekki and its owner take 20% less damage from all
-    sources. Proposed, to confirm: the owner gets it within 10 blocks of the drekki, as with every trait; the
+    sources. Its barding too (Shane): a hit the barding soaks up costs 20% less durability there. Claude's
+    judgement: the 20% comes off the hit first, then the barding's protection enchantments take their share of what
+    is left, so the two multiply and do not add. Proposed, to confirm: the owner gets it within 10 blocks of the drekki, as with every trait; the
     category is the trait's own, also for a trait a parent passed on.
   - The trait shows as active or inactive by the biome the drekki is in now. Claude's reading, to confirm: this
     marks the 20% bonus (the globe lit in its biome, dim elsewhere), and the trait's own effect still works
