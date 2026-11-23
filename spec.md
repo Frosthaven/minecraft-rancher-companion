@@ -177,8 +177,8 @@ Two craftable items:
   0.6 wide since 2026-11-20 so it fits an open door, whose panel leaves 0.625 at the block's middle; was 1.125 by scale, 1.5 at full size; 1.725 tall). The page's pixel table and loops stay as they are; one scale per stage
   (1, 0.75, 0.75) sets the model, hitbox, shadow, particles, travel speeds and the room it needs in the world.
 - Can be mounted and ridden like a horse.
-- Every ability. No built-in glide or slow fall: flight comes only from the Wings of Hope trait (first elytra-style, since 2026-11-23 jetpack Vector style, see Biome affinity;
-  while ridden, dive to gain speed, pull up to climb), so only a ridden stage 3 flies.
+- Every ability. No built-in glide or slow fall: flight comes only from the Wings of Hope trait (while
+  ridden; jetpack Vector style since 2026-11-23, see Biome affinity), so only a ridden stage 3 flies.
 
 ## Drekki screen
 
