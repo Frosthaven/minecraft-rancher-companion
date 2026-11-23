@@ -348,9 +348,9 @@ Sneak and use the Drekki Whistle while looking at a block (up to 64 blocks away)
 
 - **Where.** It stands on that very block (the middle of the block above the one looked at). With no room for it
   there, nothing happens and a message says so. Looked at a seat (Create's), it sits on it.
-- **How** (decided 2026-11-23; was: summoned when it could not walk there). It walks as far as it can, at most 17
+- **How** (decided 2026-11-23; was: summoned when it could not walk there). It walks as far as it can, at most 15
   blocks, so no drekki is sent across the world. With no path all the way it takes the way that gets it nearest. It
-  stops after 17 blocks walked, at the end of a way that does not reach, or with no progress for 3 seconds (30 seconds
+  stops after 15 blocks walked, at the end of a way that does not reach, or with no progress for 3 seconds (30 seconds
   at most), and the hold below starts where it stopped. Within 4 blocks of the spot a stop becomes a summon onto it (the
   step onto a train seat, a ledge). Not with its owner (another level, an unloaded chunk), it is called to them first
   and then sent.
@@ -1150,7 +1150,7 @@ Diet picks the position (where it fights from) and the two abilities. Damage is 
 No trait sets anything on fire: a burning mob lights the player and the ground. Heat damage, knockback and smite
 stand in. Traits use vanilla status effects wherever one fits.
 
-Baseline for every drekki, no trait needed: one-block step like a horse, catch-up teleport when 15 blocks or more
+Baseline for every drekki, no trait needed: one-block step like a horse, catch-up teleport when 16 blocks or more
 behind, never nearer (decided 2026-11-23; the code had 12, this line said 24), and never while on a Go here, holding after
 one or on an attack order (decided 2026-11-20, eased 2026-11-21: only to a spot with room and firm ground that is not itself in lava or fire,
 unless fire cannot hurt it, as with Fire Resistance; with no such spot it stays put; it arrives unhurt, with no fall

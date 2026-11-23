@@ -25,7 +25,7 @@ public final class GoHere {
     /** walking there: no nearer by half a block in this long, it stops (stopShort). And never longer than the whole */
     private static final int STUCK = 60, LONGEST = 30 * 20;
     /** blocks it walks at most on one Go here; within SNAP of the spot a stop becomes a summon onto it */
-    public static final double TRAVEL = 17, SNAP = 4;
+    public static final double TRAVEL = 15, SNAP = 4;
 
     private GoHere() {}
 

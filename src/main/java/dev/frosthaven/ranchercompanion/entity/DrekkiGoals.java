@@ -19,9 +19,9 @@ public final class DrekkiGoals {
     private DrekkiGoals() {}
 
     /** blocks behind its owner from which a following drekki is caught up (teleported); nearer it walks */
-    public static final double CATCH_UP = 15;
+    public static final double CATCH_UP = 16;
 
-    /** a checked-out drekki follows its owner, and teleports next to them when 15 blocks behind */
+    /** a checked-out drekki follows its owner, and teleports next to them when 16 blocks behind */
     static final class Follow extends Goal {
         private final DrekkiEntity d;
         private Player owner;
@@ -53,7 +53,7 @@ public final class DrekkiGoals {
 
         @Override
         public void tick() {
-            boolean far = d.distanceToSqr(owner) >= CATCH_UP * CATCH_UP;  /* nearer, it walks (decided 2026-11-23: 15, was 12) */
+            boolean far = d.distanceToSqr(owner) >= CATCH_UP * CATCH_UP;  /* nearer, it walks (decided 2026-11-23: 16, was 12) */
             if (!far) d.getLookControl().setLookAt(owner, 10f, d.getMaxHeadXRot());
             if (--recalc > 0) return;
             recalc = adjustedTickDelay(10);

@@ -22,7 +22,7 @@ import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 /**
- * The whistle's Go here (spec, Go here): it walks to the very block looked at and holds; it walks at most 17 blocks,
+ * The whistle's Go here (spec, Go here): it walks to the very block looked at and holds; it walks at most 15 blocks,
  * and the last few blocks with no way there it is summoned; on a job seat it is employed (no longer with its owner, Passive), and off the seat it goes home.
  * Create's seats are stood in for by a minecart, so these run without Create.
  */
@@ -63,7 +63,7 @@ public final class GoHereTests {
     }
 
     @GameTest(template = "floor", timeoutTicks = 500)
-    public static void itWalksAtMost17Blocks(GameTestHelper t) {
+    public static void itWalksAtMost15Blocks(GameTestHelper t) {
         ServerPlayer p = LifeTests.player(t);
         DrekkiEntity d = CombatTests.out(t, p, 2, Diet.RAW, Life.Stance.PASSIVE);
         /* a long walkway 20 blocks above the floor, clear of the tests around this one */
@@ -77,13 +77,13 @@ public final class GoHereTests {
             t.succeedWhen(() -> {
                 t.assertTrue(d.goHere == null && d.held(), "it stopped and holds: goHere " + d.goHere + " at " + d.position());
                 double went = Math.hypot(d.getX() - from[0].x, d.getZ() - from[0].z);
-                t.assertTrue(went > 11 && went < 19 && d.getY() > from[0].y - 1, "about 17 blocks along the walkway, not 44: " + went + " at y " + d.getY());
+                t.assertTrue(went > 10 && went < 17 && d.getY() > from[0].y - 1, "about 15 blocks along the walkway, not 44: " + went + " at y " + d.getY());
             });
         });
     }
 
     @GameTest(template = "floor", timeoutTicks = 500)
-    public static void aPupWalksAtMost17Blocks(GameTestHelper t) {
+    public static void aPupWalksAtMost15Blocks(GameTestHelper t) {
         ServerPlayer p = LifeTests.player(t);
         DrekkiEntity d = CombatTests.out(t, p, 1, Diet.RAW, Life.Stance.PASSIVE);
         /* a long walkway 20 blocks above the floor, clear of the tests around this one */
@@ -97,7 +97,7 @@ public final class GoHereTests {
             t.succeedWhen(() -> {
                 t.assertTrue(d.goHere == null && d.held(), "it stopped and holds: goHere " + d.goHere + " at " + d.position());
                 double went = Math.hypot(d.getX() - from[0].x, d.getZ() - from[0].z);
-                t.assertTrue(went > 11 && went < 19 && d.getY() > from[0].y - 1, "about 17 blocks along the walkway, not 44: " + went + " at y " + d.getY());
+                t.assertTrue(went > 10 && went < 17 && d.getY() > from[0].y - 1, "about 15 blocks along the walkway, not 44: " + went + " at y " + d.getY());
             });
         });
     }
@@ -145,19 +145,19 @@ public final class GoHereTests {
     }
 
     @GameTest(template = "floor", timeoutTicks = 120)
-    public static void noCatchUpTeleportWithin15Blocks(GameTestHelper t) {
+    public static void noCatchUpTeleportWithin16Blocks(GameTestHelper t) {
         ServerPlayer p = LifeTests.player(t);
         DrekkiEntity d = CombatTests.out(t, p, 2, Diet.RAW, Life.Stance.PASSIVE);
         /* a walkway 20 above the floor: the owner 13 blocks along it from the drekki, a wall between them (no walking) */
         for (int x = 0; x <= 16; x++) t.setBlock(new BlockPos(x, 20, 1), net.minecraft.world.level.block.Blocks.STONE);
-        for (int y = 21; y <= 24; y++) t.setBlock(new BlockPos(7, y, 1), net.minecraft.world.level.block.Blocks.STONE);
+        for (int y = 21; y <= 24; y++) for (int z = -2; z <= 4; z++) t.setBlock(new BlockPos(7, y, z), net.minecraft.world.level.block.Blocks.STONE);  /* wider than the drekki: no edge to hug round it */
         t.runAfterDelay(5, () -> {
             p.teleportTo(t.getLevel(), t.absolutePos(new BlockPos(14, 21, 1)).getX() + 0.5, t.absolutePos(new BlockPos(14, 21, 1)).getY(), t.absolutePos(new BlockPos(14, 21, 1)).getZ() + 0.5, 0, 0);
             d.moveTo(Vec3.atBottomCenterOf(t.absolutePos(new BlockPos(1, 21, 1))));
             Vec3 at = d.position();
             t.runAfterDelay(30, () -> {
                 double wall = Vec3.atBottomCenterOf(t.absolutePos(new BlockPos(7, 21, 1))).distanceTo(at);
-                t.assertTrue(d.position().distanceTo(at) < wall, "13 blocks behind, not teleported past the wall: moved " + d.position().distanceTo(at));
+                t.assertTrue(d.position().distanceTo(at) < wall, "13 blocks behind, not teleported past the wall: moved " + d.position().distanceTo(at) + " from " + t.relativePos(BlockPos.containing(at)) + " to " + t.relativePos(d.blockPosition()) + " owner " + t.relativePos(p.blockPosition()));
                 t.succeed();
             });
         });
