@@ -587,6 +587,9 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
     A potion type draws as the game's potion bottle tinted in one color, so these icons need their own item model
     rule; a resource pack that restyles potions could override it, and the splash and lingering versions keep the
     tinted bottle unless drawn too. Fallback: the standard bottle in three tints (teal, purple, emerald green).
+  - On the drekki screen's traits tab (Shane, 2026-11-23): the slot the potion unlocked has an emerald icon to
+    its left where the other traits have a bullet. Hovering the emerald shows "Unlocked by a Potion of Horizons".
+    A drekki that has not had the potion shows no extra slot. The yes/no is saved with the drekki's record.
   - At the update, an existing drekki that holds more traits than the new cap for its stage is marked as having
     taken the potion and keeps what it has: a pup with 3 and a Fledgling with 5 fit exactly; a Fledgling with 6
     is one over until it matures and then sits on the final 6. No Mature and no bred drekki exist in the launched
