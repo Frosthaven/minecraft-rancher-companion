@@ -552,8 +552,9 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
   - All six: Hearty, Patchwork, Training Day, Soft Landing, Balm & Salve, Hook Line & Sinker, Duck & Cover, Night
     Watch (phantoms rarely matter, so not a capstone).
   - One (the capstones): Provoke (Solar), Fade (Lunar), Live Wire (Aero), Point Break (Deep), Hide & Seek
-    (Underworld; stronger than The Fallen Emperor), Staring Contest (End).
-  - Two: Stamp Out (Solar, Underworld); Marked (Solar, Aero); Phoenix Heart (Solar, End); Creature Comforts (Solar,
+    (Underworld; stronger than The Fallen Emperor), Phoenix Heart (End: the strongest trait is the reason to reach
+    the End; Staring Contest was too weak for it).
+  - Two: Stamp Out (Solar, Underworld); Marked (Solar, Aero); Staring Contest (Deep, End); Creature Comforts (Solar,
     Lunar); Huddle Up (Lunar, Aero); Web Cutter and Undertow (Lunar, Deep); Cloud Stompers (Aero, End); Barbed Coat
     (Deep, Underworld); The Fallen Emperor (Underworld, End).
   - So each affinity learns 12 or 13 of the 24 by itself. Thermostat (Stamp Out + Huddle Up) and a drekki with both
