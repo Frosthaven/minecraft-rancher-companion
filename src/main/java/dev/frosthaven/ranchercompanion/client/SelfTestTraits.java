@@ -452,6 +452,7 @@ final class SelfTestTraits {
         check("hearty_max_health", 10, 3, () -> {}, "max health", () -> sd() == null ? -1 : sd().getMaxHealth(), () -> sd() != null && sd().getMaxHealth() == 36);
 
         fresh("totem");
+        quiet("totem_survival", 20, () -> cmd("gamemode survival"));  /* the 0.5.0 section before this ends in creative, where no totem pops */
         learn(Trait.PHOENIX_HEART, 3, 2, () -> { cmd("item replace entity @s weapon.offhand with totem_of_undying"); cmd("damage @s 100 minecraft:generic"); });
         quiet("phoenix_death", 40, () -> { server(m -> m.setHealth(20)); cmd("kill " + id); });
         check("phoenix_heart_egg", 20, 5, () -> {}, "egg in inventory", SelfTestTraits::egg, SelfTestTraits::egg);
