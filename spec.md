@@ -555,7 +555,7 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
   - All six: Hearty, Patchwork, Training Day, Soft Landing, Balm & Salve, Hook Line & Sinker, Duck & Cover, Night
     Watch (phantoms rarely matter, so not a capstone).
   - One (the capstones): Provoke (Solar), Fade (Lunar), Live Wire (Aero), Point Break (Deep), Hide & Seek
-    (Underworld; stronger than The Fallen Emperor), Hedged Gambit (End).
+    (Underworld; stronger than The Fallen Emperor), Rewind (End).
   - Two: Stamp Out (Solar, Underworld); Marked (Solar, Aero); Phoenix Heart (Solar, End); Staring Contest (Deep, End; too weak for a capstone);
     Creature Comforts (Solar,
     Lunar); Huddle Up (Lunar, Aero); Web Cutter and Undertow (Lunar, Deep); Cloud Stompers (Aero, End); Barbed Coat
@@ -683,13 +683,13 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
     (20 s steady, then the game's 10 s of blinking; Shane first gave 4 s and 8 s).
     Storm-skittish works as always: the strike still throws the rider. Proposed, to confirm: a Channeling trident
     thrown at it triggers the trait.
-  - Hedged Gambit (Shane, 2026-11-23, not built): the End capstone, modelled on Ars Additions' Charm of Void's
+  - Rewind (Shane, 2026-11-23, not built): the End capstone, modelled on Ars Additions' Charm of Void's
     Salvation. Learned when the owner throws an ender pearl while falling with no ground under them and lands
     safely, 25% each time. Effect: when the owner takes void damage, the damage is cancelled and the owner is
     returned to the last safe ground they stood on (solid block, same rule as the charm), with the fall distance
     reset; the drekki comes with them. 5-minute cooldown. No block limit (Shane): it works whenever the drekki is
     travelling with its owner, that is checked out, at any distance and in any dimension (not at the hatchery,
-    not employed). Proposed, to confirm: a drekki told to Stay counts, one inside a carrier does not.
+    not employed). A drekki told to Stay counts, one inside a carrier does not.
     Tooltip (proposed): "Saves its owner from the void, returning them to safe ground."
   - Hibernation Plan slows both the player's hunger and the drekki's (see Hunger).
   - Phoenix Heart works on every death and the trait is kept. The egg goes to the owner's inventory when they are
