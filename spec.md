@@ -177,7 +177,7 @@ Two craftable items:
   0.6 wide since 2026-11-20 so it fits an open door, whose panel leaves 0.625 at the block's middle; was 1.125 by scale, 1.5 at full size; 1.725 tall). The page's pixel table and loops stay as they are; one scale per stage
   (1, 0.75, 0.75) sets the model, hitbox, shadow, particles, travel speeds and the room it needs in the world.
 - Can be mounted and ridden like a horse.
-- Every ability. No built-in glide or slow fall: flight comes only from the Wings of Hope trait (elytra-style
+- Every ability. No built-in glide or slow fall: flight comes only from the Wings of Hope trait (first elytra-style, since 2026-11-23 jetpack Vector style, see Biome affinity;
   while ridden, dive to gain speed, pull up to climb), so only a ridden stage 3 flies.
 
 ## Drekki screen
@@ -532,6 +532,19 @@ Rules behind the lists:
     biome time yet, shows no category.
   - Dropped the same day, before anything was built: a 20% damage cut for the drekki, its owner and its barding
     while in the trait's biome, with the globe lit or dim. There is no such bonus; the globe has one look.
+- Wings of Hope (End Exploration; Shane, 2026-11-23, not built): flight like Mekanism's jetpack in Vector mode, in
+  place of the elytra-style flight of the first design. While ridden, holding jump pushes the drekki along its own
+  up direction, which tilts with where the rider looks: level, it climbs; looking down, the push leans forward and
+  it flies forward (read from Mekanism 10.7's `IJetpackItem`: `getUpVector` times the thrust, the vertical part eased
+  as speed builds). What makes it a drekki and not a jetpack:
+  - Wingbeats: the push comes with each beat of the wings, in a rhythm, with the flap and its sound, not as one
+    steady burn.
+  - Stamina, not fuel: a flight meter drains while it beats and refills on the ground. Proposed numbers, to tune:
+    15 s of beating, full again after 10 s on the ground.
+  - No hover: it cannot hang in place.
+  - No glide: when the rider lets go, or the stamina is out, it falls. The fall never hurts the drekki and the
+    rider takes it as their own, so Leap of Faith keeps its worth (Shane).
+  - No dive for speed of its own: Vector steering already gives that (Shane).
 - Biome capstone traits: a spread of capstone traits that lock in at the start of stage 3.
 
 ## Traits
