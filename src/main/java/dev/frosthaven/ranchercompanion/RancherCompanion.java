@@ -63,6 +63,7 @@ public final class RancherCompanion {
         NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.server.ServerStoppedEvent.class, Ranch::onStopped);
         NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.server.ServerStoppedEvent.class, e -> dev.frosthaven.ranchercompanion.life.Feeding.clear());
         dev.frosthaven.ranchercompanion.life.LifeEvents.register(NeoForge.EVENT_BUS);
+        dev.frosthaven.ranchercompanion.entity.FriendlyFire.register(NeoForge.EVENT_BUS);
         dev.frosthaven.ranchercompanion.trait.Learning.register(NeoForge.EVENT_BUS);
         dev.frosthaven.ranchercompanion.trait.Effects.register(NeoForge.EVENT_BUS);
         modBus.addListener(EntityAttributeCreationEvent.class, e -> e.put(DREKKI.get(), DrekkiEntity.createAttributes().build()));

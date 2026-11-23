@@ -583,6 +583,7 @@ public class DrekkiEntity extends PathfinderMob {
             return super.hurt(s, amount);
         }
         braced = -1;
+        playerTouchedAt = tickCount;  /* a spell's or arrow's own debuffs this tick are refused (FriendlyFire) */
         boolean hit = super.hurt(s, 0);
         setLastHurtByMob(null);
         lastHurtByPlayer = null; lastHurtByPlayerTime = 0;
@@ -646,6 +647,9 @@ public class DrekkiEntity extends PathfinderMob {
     }
 
     public void pet() { entityData.set(PET, PET_TICKS); }
+
+    /** server: the tick a player's hit or spell last landed on it (FriendlyFire: sourceless debuffs then are refused) */
+    public int playerTouchedAt = Integer.MIN_VALUE / 2;
 
     /** server: after Go here it holds its spot until this tick, then follows again unless told to stay; -1 when not holding */
     public int heldUntil = -1;

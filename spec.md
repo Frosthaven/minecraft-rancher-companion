@@ -1103,6 +1103,11 @@ fall cannot hurt it, it takes drops of up to 24 blocks to reach its owner (the g
 - Switching stance (decided 2026-11-22): to Passive, every fight ends at once: no target, it forgets who hit it, and
   mobs angry at it (a guard, a golem, a wolf) calm down toward it. Off Passive it starts fresh: only hits from then on,
   to it or its owner, and its owner's attacks from then on, start a fight.
+- No player hurts a drekki (decided 2026-11-22, after an accidental hit snared one and set the player's familiar on
+  it): a player's melee hit only pushes it (no hurt flash, no on-hit enchantment or spell, and it is not the player's
+  last-hurt mob, which summons and pets attack). Harmful effects from a player, or a player's summon, pet, familiar or
+  projectile, are refused, as are sourceless ones while a player's hit or spell lands on it (Ars Nouveau); beneficial
+  ones (a healing spell) apply. A mob a player owns never takes a drekki as its target.
 - Every stance: players only on a server with PvP on. A ridden drekki picks no fights; its rider steers it. A
   negative trait that forces a fight (Crimson temper) overrides the stance.
 
