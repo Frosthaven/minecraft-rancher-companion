@@ -6,8 +6,11 @@
   "mixins": [
     "ExperienceOrbAccess",
     "FishingHookAccess",
+    "HoglinSensorMixin",
     "ItemStackMixin",
     "PiglinAiMixin",
+    "PlayerExhaustionMixin",
+    "PowderSnowBlockMixin",
     "VillagerMixin",
     "WebBlockMixin"
   ],

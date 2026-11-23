@@ -126,5 +126,5 @@ public final class Learning {
     /** the game time of each player's last counted slime landing */
     private static final Map<UUID, Long> BOUNCED = new HashMap<>();
 
-    public static void forget(UUID player) { ONGOING.remove(player); MILK.remove(player); BOUNCED.remove(player); WorldTraits.forget(player); }
+    public static void forget(UUID player) { ONGOING.remove(player); MILK.remove(player); BOUNCED.remove(player); WorldTraits.forget(player); RoamTraits.forget(player); }
 }

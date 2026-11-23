@@ -118,13 +118,14 @@ public final class Traits {
     /** [Trait], its name and effect on hover, as an advancement message shows one */
     public static Component link(Trait t) {
         Component name = Component.translatable("trait.rancher_companion." + t.id);
-        return Component.literal("[").append(name).append("]").withStyle(Style.EMPTY.withColor(ChatFormatting.GREEN)
+        return Component.literal("[").append(name).append("]").withStyle(Style.EMPTY.withColor(t.rarity.color)
             .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Tips.hover(Tips.trait(t.id, 0, false)))));
     }
 
     /** [Trait] for the offer: the same hover, and a click opens the drekki screen */
     private static Component offerLink(Trait t) {
-        return link(t).copy().withStyle(s -> s.withColor(ChatFormatting.GOLD)
+        /* its tier's color, as any trait link: the sentence around it says it wants to learn it */
+        return link(t).copy().withStyle(s -> s
             .withClickEvent(new net.minecraft.network.chat.ClickEvent(net.minecraft.network.chat.ClickEvent.Action.RUN_COMMAND, "/drekki offer")));
     }
 

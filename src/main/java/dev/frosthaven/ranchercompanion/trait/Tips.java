@@ -24,7 +24,10 @@ public final class Tips {
     public static List<Component> trait(String id, long readyIn, boolean ghost) {
         Trait t = Trait.byId(id);
         List<Component> l = new ArrayList<>();
-        l.add(Component.translatable("trait.rancher_companion." + id).withStyle(ChatFormatting.GREEN));
+        /* the name in its tier's color, then the tier (spec, Traits: rarity), as the game names an item's rarity */
+        Style tier = Style.EMPTY.withColor(Trait.color(id));
+        l.add(Component.translatable("trait.rancher_companion." + id).withStyle(tier));
+        if (t != null) l.add(Component.translatable("rarity.rancher_companion." + t.rarity.name().toLowerCase(java.util.Locale.ROOT)).withStyle(tier));
         l.add(Component.translatable("trait.rancher_companion." + id + ".desc").withStyle(ChatFormatting.GRAY));
         if (t != null && t.cooldown > 0) l.add(Component.translatable("trait.rancher_companion.cooldown", time(t.cooldown)).withStyle(ChatFormatting.GOLD));
         if (readyIn > 0) l.add(Component.translatable("trait.rancher_companion.ready_in", time(readyIn)).withStyle(ChatFormatting.RED));

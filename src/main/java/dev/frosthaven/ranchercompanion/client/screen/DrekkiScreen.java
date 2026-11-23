@@ -220,8 +220,9 @@ public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
             if (i < held.size()) {
                 Component name = Component.translatable("trait.rancher_companion." + held.get(i));
                 long readyIn = Math.max(0, d.traitView().getCompound("ready").getLong(held.get(i)) - d.level().getGameTime());
-                if (!unlocked) g.fill(INFO_X, y + 2, INFO_X + 4, y + 6, 0xFF6AA83E);
-                g.drawString(font, name, INFO_X + 7, y, readyIn > 0 ? 0xFF6F9A73 : 0xFF9FE3A6, false);
+                int tier = 0xFF000000 | Trait.color(held.get(i));  /* its rarity's color: the bullet and the name, dimmer while it recharges */
+                if (!unlocked) g.fill(INFO_X, y + 2, INFO_X + 4, y + 6, tier);
+                g.drawString(font, name, INFO_X + 7, y, readyIn > 0 ? dim(tier) : tier, false);
                 if (readyIn > 0) hourglass(g, INFO_X + 7 + font.width(name) + 3, y);  /* recharging: dimmer name and an hourglass after it */
                 int h = 10;
                 spot("trait" + i, INFO_X, y - 1, INFO_W, h);
@@ -246,11 +247,18 @@ public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
         if (Art.in(rx, ry, INFO_X - 3, y - 1, 10, 10)) tip = List.of(Component.translatable("screen.rancher_companion.drekki.horizons").withStyle(ChatFormatting.GREEN));
     }
 
+    /** a rarity color at about half strength toward the info well: a trait that is recharging */
+    private static int dim(int argb) {
+        int r = (argb >> 16 & 255), gr = (argb >> 8 & 255), b = (argb & 255);
+        return 0xFF000000 | (0x2a + (r - 0x2a) * 55 / 100) << 16 | (0x1a + (gr - 0x1a) * 55 / 100) << 8 | (0x33 + (b - 0x33) * 55 / 100);
+    }
+
     /** the trait it wants to learn: a gold name with its tooltip, then yes (learn it) and no (pass) */
     private void offer(GuiGraphics g, DrekkiEntity d, String id, int y, int rx, int ry) {
         Component name = Component.translatable("trait.rancher_companion." + id);
-        g.fill(INFO_X, y + 2, INFO_X + 4, y + 6, 0xFFE0A84A);
-        g.drawString(font, font.plainSubstrByWidth(name.getString(), YES_X - INFO_X - 9), INFO_X + 7, y, 0xFFF0C860, false);
+        /* an offer keeps its rarity's color; a gold "!" stands where the bullet would */
+        g.drawString(font, "!", INFO_X + 1, y, 0xFFF0C860, false);
+        g.drawString(font, font.plainSubstrByWidth(name.getString(), YES_X - INFO_X - 9), INFO_X + 7, y, 0xFF000000 | Trait.color(id), false);
         spot("offer", INFO_X, y - 1, YES_X - INFO_X - 2, 10);
         if (Art.in(rx, ry, INFO_X, y - 1, YES_X - INFO_X - 2, 10)) {
             List<Component> t = new ArrayList<>(dev.frosthaven.ranchercompanion.trait.Tips.trait(id, 0, false));
