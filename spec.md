@@ -569,7 +569,7 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
     message.
   - Biome traits have no affinity limit; the biome is their gate.
 - Caps (Shane, 2026-11-23, not built; was 3/6/9): 2 traits at stage 1, 4 at stage 2, 5 at stage 3. A negative trait
-  takes a slot like any other.
+  never takes a slot (Shane, 2026-11-23; it took one before): it is held as an extra, beside the slots.
   - Potion of Horizons: "Permanently unlocks an extra trait slot when fed to a drekki." Fed by hand, once per
     drekki, so 3/5/6. Recipe (Shane), shaped at a crafting table: `P E P / C B C / P E P` (4 ender pearls
     in the corners, an emerald above and below, popped chorus fruit left and right, the glass bottle in the
