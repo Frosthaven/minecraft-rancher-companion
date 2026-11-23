@@ -559,8 +559,13 @@ Rules behind the lists:
     End: Leap of Faith (land unhurt from a fall of 30 blocks or more, 25% each time), Wings of Hope (be hit by a
     shulker's bullet 10 times: the Levitation it gives is the lesson; counted at the hit, so Balm & Salve stopping
     the effect does not stop the count).
-  - Still to decide: whether the foot tint stays as a look that follows where the drekki was raised (the biome
-    time counting is still in the game and feeds nothing else now); what becomes of "biome capstone traits".
+  - The foot tint is set at birth (Shane, 2026-11-23, not built): the biome the egg hatches in gives the tint,
+    by its biome category, for life. It is a look only and gives no trait. It covers what the biome tint covered
+    before: the feet, from stage 2 the light chest patch and the ring near the tail tip, on stage 3 the base of
+    each horn. It is not inherited: a child gets the tint of where it hatches. Until built, every drekki keeps
+    the stand-in plains tint. To settle when built: the tint of a drekki hatched before then (Claude's suggestion:
+    the biome of the hatchery it lives at). The counting of a Fledgling's biome time now feeds nothing and can go.
+  - Still to decide: what becomes of "biome capstone traits".
   - Surface Tension still needs two affinities (Lava Walker is Deep or Underworld, Ocean Walker Solar or Lunar).
 - Biome capstone traits: a spread of capstone traits that lock in at the start of stage 3.
 
