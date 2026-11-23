@@ -243,6 +243,81 @@ public final class GoHereTests {
         });
     }
 
+    /** a stand-in for Create's seats: a minecart seat on "train" W; returnTools hands back paper in place of a schedule */
+    private static Seats toolSeats(net.minecraft.world.entity.vehicle.Minecart cart, java.util.UUID w, java.util.List<java.util.UUID> calls) {
+        Seats.Seat seat = new Seats.Seat() {
+            @Override public Vec3 at() { return cart.position(); }
+            @Override public boolean free() { return !cart.isVehicle(); }
+            @Override public boolean sit(Mob mob) { return mob.startRiding(cart, true); }
+            @Override public int role() { return Seats.CONDUCTOR; }
+        };
+        return new Seats() {
+            @Override public Seat looked(ServerPlayer pl, double range, double blockDist) { return seat; }
+            @Override public Seat at(ServerLevel l, BlockPos pos) { return null; }
+            @Override public java.util.UUID workplace(Mob mob) { return mob.getVehicle() == cart ? w : null; }
+            @Override public void returnTools(ServerPlayer pl, java.util.UUID workplace, java.util.UUID rider) {
+                calls.add(workplace);
+                if (w.equals(workplace)) pl.getInventory().placeItemBackInInventory(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.PAPER));
+            }
+        };
+    }
+
+    @GameTest(template = "floor", timeoutTicks = 200)
+    public static void recallsHandTheScheduleBack(GameTestHelper t) {
+        ServerPlayer p = LifeTests.player(t);
+        DrekkiEntity d = CombatTests.out(t, p, 2, Diet.RAW, Life.Stance.PASSIVE);
+        ServerLevel level = t.getLevel();
+        var cart = EntityType.MINECART.create(level);
+        cart.moveTo(Vec3.atBottomCenterOf(t.absolutePos(new BlockPos(9, 1, 9))));
+        level.addFreshEntity(cart);
+        java.util.UUID w = java.util.UUID.randomUUID();
+        java.util.List<java.util.UUID> calls = new java.util.ArrayList<>();
+        Seats before = Seats.Holder.seats, tools = toolSeats(cart, w, calls);
+        Seats.Holder.seats = tools;  /* only around each call: the tests run side by side */
+        try { lookAt(t, p, new BlockPos(9, 0, 9)); GoHere.command(p); } finally { Seats.Holder.seats = before; }
+        Roster r = Ranch.roster(level.getServer());
+        t.runAtTickTime(t.getTick() + 120, () -> {
+            Roster.Entry e = r.get(d.drekkiId());
+            t.assertTrue(e.where == Roster.Where.WORK, "conducting: " + e.where);
+            Seats.Holder.seats = tools;
+            try { Ranch.recallFromJob(p, d); } finally { Seats.Holder.seats = before; }
+            {
+                t.assertTrue(calls.equals(java.util.List.of(w)) && p.getInventory().countItem(net.minecraft.world.item.Items.PAPER) == 1, "the screen's recall hands it back: " + calls);
+                t.assertTrue(e.workplace == null, "its workplace is forgotten off the job");
+                t.succeed();
+            }
+        });
+    }
+
+    @GameTest(template = "floor", timeoutTicks = 200)
+    public static void aHatcheryRecallHandsItBackAtTheFeetWhenFull(GameTestHelper t) {
+        ServerPlayer p = LifeTests.player(t);
+        DrekkiEntity d = CombatTests.out(t, p, 2, Diet.RAW, Life.Stance.PASSIVE);
+        ServerLevel level = t.getLevel();
+        var cart = EntityType.MINECART.create(level);
+        cart.moveTo(Vec3.atBottomCenterOf(t.absolutePos(new BlockPos(9, 1, 9))));
+        level.addFreshEntity(cart);
+        java.util.UUID w = java.util.UUID.randomUUID();
+        java.util.List<java.util.UUID> calls = new java.util.ArrayList<>();
+        Seats before = Seats.Holder.seats, tools = toolSeats(cart, w, calls);
+        Seats.Holder.seats = tools;  /* only around each call: the tests run side by side */
+        try { lookAt(t, p, new BlockPos(9, 0, 9)); GoHere.command(p); } finally { Seats.Holder.seats = before; }
+        Roster r = Ranch.roster(level.getServer());
+        t.runAtTickTime(t.getTick() + 120, () -> {
+            Roster.Entry e = r.get(d.drekkiId());
+            t.assertTrue(e.where == Roster.Where.WORK, "employed");
+            for (int i = 0; i < p.getInventory().items.size(); i++) p.getInventory().items.set(i, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.STONE, 64));
+            Seats.Holder.seats = tools;
+            try { Ranch.act(p, t.absolutePos(LifeTests.H), Ranch.Action.CHECK_IN, e.id); } finally { Seats.Holder.seats = before; }
+            {
+                t.assertTrue(e.where == Roster.Where.HOME && calls.equals(java.util.List.of(w)), "checked in at the hatchery, the schedule handed back: " + e.where + " " + calls);
+                var dropped = level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, p.getBoundingBox().inflate(3), it -> it.getItem().is(net.minecraft.world.item.Items.PAPER));
+                t.assertTrue(dropped.size() == 1, "a full inventory: at the player's feet, " + dropped.size());
+                t.succeed();
+            }
+        });
+    }
+
     @GameTest(template = "floor", timeoutTicks = 200)
     public static void recallWithAnotherOutSendsItHome(GameTestHelper t) {
         ServerPlayer p = LifeTests.player(t);

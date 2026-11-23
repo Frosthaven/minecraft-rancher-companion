@@ -25,6 +25,9 @@ public final class DrekkiInteract {
 
     static InteractionResult interact(DrekkiEntity d, Player player, InteractionHand hand) {
         if (!d.live()) return null;  /* live() is synched, so the client agrees and swings the arm on a click that does something */
+        /* at work a plain click is its job's (Create: a schedule handed over or taken back, a stock keeper's order screen);
+           its screen opens on the sneak click (onEntityInteractSpecific) */
+        if (d.job() > 0 && !player.isSecondaryUseActive()) return null;
         ItemStack stack = player.getItemInHand(hand);
         boolean mine = player.getUUID().equals(d.owner());
         if (stack.isEmpty() && player.isSecondaryUseActive() && !d.ghost()) {

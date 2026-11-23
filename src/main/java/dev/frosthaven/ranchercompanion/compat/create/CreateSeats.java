@@ -33,6 +33,32 @@ final class CreateSeats implements Seats {
         if (seat != null && cce.trainId != null) TRAIN_SEATS.put(mob.getUUID(), new TrainSeat(cce.trainId, cce.carriageIndex, seat));
     }
 
+    @Override
+    public java.util.UUID workplace(Mob mob) {
+        return mob.getVehicle() instanceof com.simibubi.create.content.trains.entity.CarriageContraptionEntity cce ? cce.trainId : null;
+    }
+
+    @Override
+    public void returnTools(ServerPlayer p, java.util.UUID workplace, java.util.UUID rider) {
+        if (workplace == null) return;
+        var train = com.simibubi.create.Create.RAILWAYS.trains.get(workplace);
+        if (train == null || train.runtime.getSchedule() == null) return;
+        /* another mob in a conductor seat drives on: the schedule stays with the train */
+        for (var carriage : train.carriages) {
+            var ce = carriage.anyAvailableEntity();
+            if (ce == null || !(ce.getContraption() instanceof com.simibubi.create.content.trains.entity.CarriageContraption cc)) continue;
+            for (var en : cc.getSeatMapping().entrySet()) {
+                if (en.getKey().equals(rider) || en.getValue() >= cc.getSeats().size() || !cc.conductorSeats.containsKey(cc.getSeats().get(en.getValue()))) continue;
+                for (var passenger : ce.getPassengers())
+                    if (passenger.getUUID().equals(en.getKey()) && !(passenger instanceof net.minecraft.world.entity.player.Player)) return;
+            }
+        }
+        var stack = train.runtime.returnSchedule(p.registryAccess());
+        if (stack.isEmpty()) return;
+        p.getInventory().placeItemBackInInventory(stack);  /* at their feet when the inventory is full */
+        p.displayClientMessage(net.minecraft.network.chat.Component.translatable("create.schedule.removed_from_train"), true);
+    }
+
     /**
      * Back on its train seat. A train through an Immersive Portals portal: IP moves the riding player across itself and
      * the carriage's old entity is retired before the drekki's seat reaches the plane, so Create never carries the drekki

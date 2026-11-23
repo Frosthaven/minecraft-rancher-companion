@@ -48,6 +48,14 @@ public interface Seats {
     /** an employed drekki on its seat: remember the seat (a train's: its train, carriage and seat) for reseat */
     default void seated(Mob mob) {}
 
+    /** the workplace of an employed drekki on its seat (a train's id), kept in the roster for returnTools; null when none */
+    default java.util.UUID workplace(Mob mob) { return null; }
+
+    /** a recall from a job (the drekki screen or its hatchery): what its owner handed it goes back to them, into their
+     *  inventory or at their feet when it is full (decided 2026-11-23). A train's schedule: unless another conductor still
+     *  drives that train. rider: the drekki's entity id, or null */
+    default void returnTools(ServerPlayer p, java.util.UUID workplace, java.util.UUID rider) {}
+
     /** an employed drekki off its seat: back on the seat it had, in whichever level that seat's carriage is now; false
      *  when it cannot (the train taken apart, the seat taken) */
     default boolean reseat(Mob mob) { return false; }

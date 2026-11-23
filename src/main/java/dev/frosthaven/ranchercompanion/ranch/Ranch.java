@@ -733,7 +733,11 @@ public final class Ranch {
             return;
         }
         d.offJob = 0;
-        if (e.where == Where.WORK) Seats.get().seated(d);
+        if (e.where == Where.WORK) {
+            Seats.get().seated(d);
+            java.util.UUID w = Seats.get().workplace(d);
+            if (w != null && !w.equals(e.workplace)) { e.workplace = w; r.setDirty(); }
+        }
         if (d.isPassenger() && (!e.stay.dimension().equals(d.level().dimension()) || e.stay.pos().distSqr(d.blockPosition()) > 4 * 4))
             r.stay(e, Roster.at(d.level(), d.blockPosition()));
     }
@@ -751,6 +755,7 @@ public final class Ranch {
         Roster r = roster(p.server);
         Entry e = d.drekkiId() == null ? null : r.get(d.drekkiId());
         if (e == null || e.where != Where.WORK || !e.owner.equals(p.getUUID())) return;
+        Seats.get().returnTools(p, e.workplace != null ? e.workplace : Seats.get().workplace(d), d.getUUID());
         if (d.isPassenger()) d.stopRiding();
         d.setJob(0);
         d.goHere = null;
@@ -777,6 +782,8 @@ public final class Ranch {
         BlockPos at = new Ground(level).place(pos, Math.max(1, e.save.getInt("Stage")));
         if (at == null) { msg(p, "no_room"); return true; }
         DrekkiEntity d = live(e.id);
+        java.util.UUID work = e.workplace != null ? e.workplace : d != null ? Seats.get().workplace(d) : null;
+        Seats.get().returnTools(p, work, d != null ? d.getUUID() : e.save.hasUUID("UUID") ? e.save.getUUID("UUID") : null);
         if (d != null) { r.snapshot(e, save(d)); d.discard(); }
         r.move(e, Where.HOME, home);
         DrekkiEntity n = spawn(level, e, at, pos);

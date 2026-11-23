@@ -358,7 +358,12 @@ Sneak and use the Drekki Whistle while looking at a block (up to 64 blocks away)
   it, in every stance, Passive too, for a fledgling or older; a pup is too young to fight (a message says so). The
   order ends when the mob dies, gets more than 32 blocks away, or the drekki is disengaged: Passive, Stay, or a new Go
   here somewhere else (each drops all aggro).
-- **Clicks.** A click on the drekki itself on a train seat reaches the drekki (a train schedule makes it the conductor).
+- **Schedules** (decided 2026-11-23). A click on the drekki itself on a train seat reaches it: a train schedule makes it
+  the conductor, an empty hand takes the schedule back (Create's own handling). At work a plain click never opens its
+  screen (the sneak click does). Recalled from the job, from its screen or its hatchery, the schedule of the train it
+  drove goes back to its owner, into the inventory or at their feet when it is full, unless another conductor still
+  drives that train; the roster keeps the train's id while it works, so this works with the drekki unloaded.
+- **Clicks.** A click on the drekki itself on a train seat reaches the drekki.
   Create sits the player on a contraption seat at any use click, sneaking too, before the item is used:
   a sneak-use of the whistle on a contraption seat goes to the whistle instead (client, SeatGuardClient).
 - **Then it holds there** (decided 2026-11-22; was: it stays): Go here does not tell it to stay. It holds the spot (or
