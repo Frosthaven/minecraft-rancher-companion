@@ -227,7 +227,7 @@ The screen shows:
 - Biome affinity
 - Bloodline and purity tier (for example Slate, vivid), or the rare line's name
 - A traits tab:
-  - Slots: one icon per slot, 3/6/9 by stage, filled first, the negative marked. Hover shows the trait's tooltip.
+  - Slots: one icon per slot, 2/4/5 by stage (one more with the Potion of Horizons), filled first, the negative marked. Hover shows the trait's tooltip.
   - Naturally Gifted, when it has it, beside the slots as a free trait.
   - Sleeping: inherited traits waiting for a slot; they wake at random at each stage-up.
   - Learning: a progress bar for each counted activity the drekki has started (for example 3/5 phantoms). One-off
@@ -568,8 +568,16 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
   - For a drekki of another affinity the activity is not a learning event at all: nothing counts, no roll, no
     message.
   - Biome traits have no affinity limit; the biome is their gate.
-- Caps (proposal): 3 traits at stage 1, 6 at stage 2, 9 at stage 3. A negative trait takes a slot like any other.
-- Sleeping traits: a child keeps every inherited trait that passes, up to 9, but only as many as its stage cap are
+- Caps (Shane, 2026-11-23, not built; was 3/6/9): 2 traits at stage 1, 4 at stage 2, 5 at stage 3. A negative trait
+  takes a slot like any other.
+  - Potion of Horizons: "Permanently unlocks an extra trait slot when fed to a drekki." Fed by hand, once per
+    drekki, so 3/5/6. Recipe, shapeless at a crafting table: glass bottle, ender pearl, popped chorus fruit (End
+    items that can be farmed; how many of each is open).
+  - At the update, an existing drekki that holds more traits than the new cap for its stage is marked as having
+    taken the potion and keeps what it has: a pup with 3 and a Fledgling with 5 fit exactly; a Fledgling with 6
+    is one over until it matures and then sits on the final 6. No Mature and no bred drekki exist in the launched
+    pack, so nothing can be further over. A drekki at or under the new cap is not marked and can take the potion.
+- Sleeping traits: a child keeps every inherited trait that passes, up to 6 (the final cap with the potion; was 9), but only as many as its stage cap are
   active. The rest sleep. Each stage-up wakes random sleeping traits into the new slots. Sleeping traits come first:
   a learned trait only takes a slot no sleeping trait is waiting for, so a richly bred drekki may have no room to
   learn.
@@ -585,7 +593,7 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
   do. An unnamed drekki is "Your drekki" to
   its owner and "<owner>'s drekki" to everyone else.
 - At the cap a drekki learns nothing new: activities count nothing, no offer is made, and nothing is said in chat.
-- Inheritance: each parent passes each of its traits, positive or negative, at 33% (up to 9 kept; see Sleeping traits). A trait
+- Inheritance: each parent passes each of its traits, positive or negative, at 33% (up to 6 kept; see Sleeping traits). A trait
   both parents hold passes at 56% (1 - 0.67^2). Combos form from the traits that pass, and a combo replaces its
   parts: the child never holds a combo and one of its parts, and does not learn a part later that a held combo covers.
   An inherited biome positive is extra to the one that travel gives.
