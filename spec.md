@@ -654,7 +654,7 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
     (counted). The mob the drekki is ordered to attack with the whistle glows and takes 15% more damage from every
     source while the order holds. Pairs with Provoke. Tooltip (proposed): "Enemies attacked with the whistle glow
     and take 15% more damage."
-  - Surge (Shane, 2026-11-23, not built). Learned when lightning strikes within 8 blocks of the owner, 25% each
+  - Live Wire (Shane, 2026-11-23, not built). Learned when lightning strikes within 8 blocks of the owner, 25% each
     time (a lightning rod block in a storm, or a Channeling trident). Effect: in a thunderstorm the drekki acts as
     a lightning rod. A strike on it does no damage; its attack speed doubles for 4 s and its owner gets Night
     Vision for 8 s. Proposed, to confirm: the bolt drawn to it is visual only (no damage to anyone near, no fire,
