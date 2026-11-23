@@ -643,6 +643,17 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
     it is not spent while only the drekki is fighting. With Provoke on the same drekki, the provoked mob stays on
     the drekki for its 8 s and every other mob is turned away. Tooltip (proposed): "Enemies that target the drekki
     turn to another target for 8 seconds."
+  - Staring Contest (Shane, 2026-11-23, not built). Learned when the owner kills 5 endermen (counted). Endermen do
+    not anger when the owner looks at them within 10 blocks, as with a carved pumpkin. The Lavender line's Ender
+    calm does the same; on a Lavender drekki the trait adds nothing. Tooltip (proposed): "Endermen will not anger
+    when its owner looks at them."
+  - Web Cutter (Shane, 2026-11-23, not built). Learned when the owner kills 10 spiders (spiders and cave spiders,
+    counted). Cobwebs do not slow the owner within 10 blocks or the drekki. Tooltip (proposed): "Cobwebs do not
+    slow the drekki or its owner."
+  - Marked (Shane, 2026-11-23, not built). Learned when the owner lands 10 arrow hits from 30 blocks or more
+    (counted). The mob the drekki is ordered to attack with the whistle glows and takes 15% more damage from every
+    source while the order holds. Pairs with Provoke. Tooltip (proposed): "Enemies attacked with the whistle glow
+    and take 15% more damage."
   - Hibernation Plan slows both the player's hunger and the drekki's (see Hunger).
   - Phoenix Heart works on every death and the trait is kept. The egg goes to the owner's inventory when they are
     online with room, otherwise it is held and given on their next login or at the hatchery. It is never dropped.
