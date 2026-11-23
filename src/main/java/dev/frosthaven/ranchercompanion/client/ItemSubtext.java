@@ -14,6 +14,9 @@ public final class ItemSubtext {
 
     public static void onTooltip(ItemTooltipEvent e) {
         if (wornBag(e)) e.getToolTip().add(1, Component.translatable("screen.rancher_companion.drekki.bag").withStyle(ChatFormatting.YELLOW));
+        /* the Potion of Horizons says what it is for, in place of the game's "No Effects" */
+        if (dev.frosthaven.ranchercompanion.item.DrekkiPotions.step(e.getItemStack()) == 3 && !e.getToolTip().isEmpty())
+            e.getToolTip().add(1, Component.translatable("tooltip.rancher_companion.horizons").withStyle(ChatFormatting.GREEN));
         String kind = kind(e.getItemStack());
         if (kind == null || e.getToolTip().isEmpty()) return;
         e.getToolTip().add(1, Component.translatable("tooltip.rancher_companion.kind." + kind).withStyle(ChatFormatting.GRAY));

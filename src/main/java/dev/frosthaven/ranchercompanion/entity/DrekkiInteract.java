@@ -51,6 +51,11 @@ public final class DrekkiInteract {
             }
             return InteractionResult.sidedSuccess(d.level().isClientSide);
         }
+        /* the Potion of Horizons, from its owner's hand: one more trait slot, once (spec, Traits: caps) */
+        if (mine && hand == InteractionHand.MAIN_HAND && !d.ghost() && dev.frosthaven.ranchercompanion.item.DrekkiPotions.horizons(stack)) {
+            if (!d.level().isClientSide) dev.frosthaven.ranchercompanion.item.DrekkiPotions.feed(d, player, stack);
+            return InteractionResult.sidedSuccess(d.level().isClientSide);
+        }
         /* a ghost under Weakness takes a golden apple and starts to come back (spec, Ghost drekki) */
         if (mine && stack.is(Items.GOLDEN_APPLE) && d.ghost()) {
             if (!d.level().isClientSide && dev.frosthaven.ranchercompanion.life.Vitals.startRevive(d)) stack.consume(1, player);

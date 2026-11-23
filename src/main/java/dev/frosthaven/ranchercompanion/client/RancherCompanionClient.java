@@ -17,6 +17,8 @@ public final class RancherCompanionClient {
         /* the ball is its particles (ElementalBall.tick) */
         modBus.addListener(EntityRenderersEvent.RegisterRenderers.class, e -> e.registerEntityRenderer(RancherCompanion.ELEMENTAL_BALL.get(), net.minecraft.client.renderer.entity.NoopRenderer::new));
         modBus.addListener(RegisterColorHandlersEvent.Item.class, BardingColors::register);
+        modBus.addListener(net.neoforged.neoforge.client.event.ModelEvent.RegisterAdditional.class, PotionModels::additional);
+        modBus.addListener(net.neoforged.neoforge.client.event.ModelEvent.ModifyBakingResult.class, PotionModels::wrap);
         modBus.addListener(RegisterColorHandlersEvent.Block.class, BlockClient::blockColors);
         if (dev.frosthaven.ranchercompanion.item.Bags.sophisticated())
             modBus.addListener(RegisterColorHandlersEvent.Block.class, dev.frosthaven.ranchercompanion.compat.sophisticated.client.SophColors::blocks);

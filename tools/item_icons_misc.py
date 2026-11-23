@@ -31,7 +31,53 @@ def _tonic(light, dark, sparkle=None):
                      "w": "ffffff", "s": sparkle or light}
 
 
+# The Potion of Horizons and the two potions brewed on the way to it (spec, Traits: caps): the tonics' bottle filling up.
+# Stopper (S, s), liquid rows 1 to 6 by letter, the tonics' shine (w) and sparkle (k).
+def _brew(stopper, liquid):
+    rows = _pad([
+        "......oooo......",
+        "......o" + stopper + "o......",
+        "......ogGo......",
+        "......ogGo......",
+        ".....ogggGo.....",
+        "....ogggggGo....",
+    ] + liquid + [".....oooooo....."], 1)
+    return rows, {"o": "30303a", "C": "a07040", "g": "e8f0f4", "G": "ffffff", "w": "ffffff", "k": "fff4b0",
+                  "e": "7df5a8", "E": "17c95c", "d": "0a8a3a", "P": "b48ad0", "Q": "8a62a8", "h": "e6fff4",
+                  "T": "2a9a86", "D": "125e52"}
+
+
+_DISTANCE = _brew("CC", [
+    "...oTTTTTTTTo...",
+    "...oTwTTkTTTo...",
+    "...oTTTTTTTTo...",
+    "...oTTkTTTDDo...",
+    "...oTTTTTDDDo...",
+    "....oDDDDDDo....",
+])
+_TWILIGHT = _brew("CC", [
+    "...oPPPPPPPPo...",
+    "...oPwPPkPPQo...",
+    "...oPPPPPPQQo...",
+    "...oTTkTTTDDo...",
+    "...oTTTTTDDDo...",
+    "....oDDDDDDo....",
+])
+_HORIZONS = _brew("eE", [
+    "...oPPPPPPPPo...",
+    "...oPwPPkPPQo...",
+    "...ohhhhhhhho...",
+    "...oTTkTTTDDo...",
+    "...oTTTTTDDDo...",
+    "....oeEEEEdo....",
+])
+
 ICONS = {
+    "potion_of_distance": _DISTANCE,
+    "potion_of_twilight": _TWILIGHT,
+    "potion_of_horizons": _HORIZONS,
+    # nothing: the tinted overlay layer of a potion drawn with one of the three icons above
+    "potion_no_overlay": ([B] * 16, {}),
     # the carriers are 3D models now (tools/item_models.py)
     "bloodline_tonic": _tonic("d03838", "902020"),
     "heirloom_tonic": _tonic("e8b830", "b08018"),

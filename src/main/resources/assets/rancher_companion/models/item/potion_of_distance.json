@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "rancher_companion:item/potion_no_overlay",
+    "layer1": "rancher_companion:item/potion_of_distance"
+  }
+}
