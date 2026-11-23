@@ -13,7 +13,9 @@ import net.minecraft.world.phys.Vec3;
 /**
  * Create's seats for the whistle's Go here: a seat block (a stock keeper's seat, a train's seat before it is assembled)
  * and a seat on a contraption (an assembled train). A drekki sits on them through Create's own calls, as a leashed mob
- * does, so Create gives it a role and a hat as it would any mob.
+ * does, so Create gives it a role and a hat as it would any mob. Create's own gate (SeatBlock.canBePickedUp) is not asked:
+ * it refuses every mob in create:ignore_seat, which takes all of c:capturing_not_supported, and the drekki is in that tag
+ * to keep it out of capture items. Create reads the gate only when a mob lands on a seat or is led to one on a leash.
  */
 final class CreateSeats implements Seats {
     /** steps along the look ray through a contraption's blocks */
@@ -46,6 +48,9 @@ final class CreateSeats implements Seats {
     }
 
     @Override
+    public boolean steers(net.minecraft.world.entity.Entity vehicle) { return vehicle instanceof AbstractContraptionEntity; }
+
+    @Override
     public Seat at(ServerLevel level, BlockPos pos) {
         return level.getBlockState(pos).getBlock() instanceof SeatBlock ? new Block(level, pos) : null;
     }
@@ -55,16 +60,16 @@ final class CreateSeats implements Seats {
         @Override public Vec3 at() { return Vec3.atBottomCenterOf(pos); }
         @Override public boolean free() { return level.getBlockState(pos).getBlock() instanceof SeatBlock && !SeatBlock.isSeatOccupied(level, pos); }
         @Override public boolean sit(Mob mob) {
-            if (!free() || !SeatBlock.canBePickedUp(mob)) return false;
+            if (!free()) return false;
             mob.stopRiding();
             SeatBlock.sitDown(level, pos, mob);
             return mob.isPassenger();
         }
         /** Create's stock keeper rule (EntityHats.getLogisticsHatFor): a Stock Ticker beside the seat, level or one up */
-        @Override public boolean job() {
+        @Override public int role() {
             for (var d : net.minecraft.core.Direction.Plane.HORIZONTAL) for (int y = 0; y <= 1; y++)
-                if (level.getBlockState(pos.relative(d).above(y)).getBlock() instanceof com.simibubi.create.content.logistics.stockTicker.StockTickerBlock) return true;
-            return false;
+                if (level.getBlockState(pos.relative(d).above(y)).getBlock() instanceof com.simibubi.create.content.logistics.stockTicker.StockTickerBlock) return STOCK_KEEPER;
+            return NO_ROLE;
         }
     }
 
@@ -73,7 +78,7 @@ final class CreateSeats implements Seats {
         @Override public Vec3 at() { return ce.toGlobalVector(Vec3.atBottomCenterOf(local), 1); }
         @Override public boolean free() { return ce.isAlive() && ce.getContraption() != null && !ce.getContraption().getSeatMapping().containsValue(index); }
         @Override public boolean sit(Mob mob) {
-            if (!free() || !SeatBlock.canBePickedUp(mob)) return false;
+            if (!free()) return false;
             mob.stopRiding();
             ce.addSittingPassenger(mob, index);
             return mob.getVehicle() == ce;
@@ -87,6 +92,6 @@ final class CreateSeats implements Seats {
             return null;
         }
         /** a seat of a train's carriage: Create makes a mob there its conductor once the train has a schedule */
-        @Override public boolean job() { return ce instanceof com.simibubi.create.content.trains.entity.CarriageContraptionEntity; }
+        @Override public int role() { return ce instanceof com.simibubi.create.content.trains.entity.CarriageContraptionEntity ? CONDUCTOR : NO_ROLE; }
     }
 }

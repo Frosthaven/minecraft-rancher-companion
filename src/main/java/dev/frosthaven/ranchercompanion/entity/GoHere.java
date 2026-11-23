@@ -84,7 +84,7 @@ public final class GoHere {
         d.getNavigation().stop();
         if (t.seat != null) {
             if (!t.seat.sit(d)) { Ranch.stayHere(d); return; }  /* taken meanwhile, or gone: it stays where it is */
-            if (t.seat.job()) { Ranch.employ(d); return; }
+            if (t.seat.role() != Seats.NO_ROLE) { Ranch.employ(d, t.seat.role()); return; }
         } else {
             Vec3 at = Vec3.atBottomCenterOf(t.stand);
             if (summoned) d.jumpTo(at);  /* not into lava or fire */

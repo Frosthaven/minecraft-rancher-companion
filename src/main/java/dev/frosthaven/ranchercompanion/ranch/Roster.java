@@ -39,6 +39,8 @@ public final class Roster extends SavedData {
         public static final int EGG_OWED = 1, EGG_GIVEN = 2;
         /** OUT and told to stay: where it stays; null while it follows (spec, Stay and follow). WORK: where it last was */
         public GlobalPos stay;
+        /** WORK: its job (Seats.CONDUCTOR, STOCK_KEEPER, or EMPLOYED when not known); 0 otherwise */
+        public int role;
 
         Entry(UUID id, UUID owner, CompoundTag save, Where where, GlobalPos home) {
             this.id = id; this.owner = owner; this.save = save; this.where = where; this.home = home; this.base = home;
@@ -107,6 +109,7 @@ public final class Roster extends SavedData {
         if (home != null) base(e, home);
         if (where != Where.CARRIED) e.carry = null;
         e.stay = null;  /* checked in, carried or checked out again: it follows */
+        if (where != Where.WORK) e.role = 0;
         index(e); setDirty();
     }
 
@@ -134,6 +137,7 @@ public final class Roster extends SavedData {
             Entry e = new Entry(c.getUUID("id"), c.getUUID("owner"), c.getCompound("save"), where, home);
             if (c.hasUUID("carry")) e.carry = c.getUUID("carry");
             e.phoenix = c.getInt("phoenix");
+            e.role = where == Where.WORK ? Math.max(1, c.getInt("role")) : 0;  /* employed before 0.4.13 kept no role */
             if (c.contains("stay")) e.stay = GlobalPos.CODEC.parse(NbtOps.INSTANCE, c.get("stay")).result().orElse(null);
             GlobalPos base = c.contains("base") ? GlobalPos.CODEC.parse(NbtOps.INSTANCE, c.get("base")).result().orElse(home) : home;
             e.base = null;
@@ -152,6 +156,7 @@ public final class Roster extends SavedData {
             c.putUUID("id", e.id); c.putUUID("owner", e.owner); c.put("save", e.save); c.putString("where", e.where.name());
             if (e.carry != null) c.putUUID("carry", e.carry);
             if (e.phoenix != 0) c.putInt("phoenix", e.phoenix);
+            if (e.role != 0) c.putInt("role", e.role);
             if (e.home != null) GlobalPos.CODEC.encodeStart(NbtOps.INSTANCE, e.home).result().ifPresent(h -> c.put("home", h));
             if (e.stay != null) GlobalPos.CODEC.encodeStart(NbtOps.INSTANCE, e.stay).result().ifPresent(h -> c.put("stay", h));
             if (e.base != null) GlobalPos.CODEC.encodeStart(NbtOps.INSTANCE, e.base).result().ifPresent(h -> c.put("base", h));

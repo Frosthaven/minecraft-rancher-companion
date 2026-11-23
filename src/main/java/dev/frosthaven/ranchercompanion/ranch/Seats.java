@@ -18,8 +18,21 @@ public interface Seats {
         boolean free();
         /** sits the mob on it; false when it could not */
         boolean sit(Mob mob);
-        /** a seat with a Create role: a train's, or one beside a Stock Ticker. A drekki sat there is employed */
-        boolean job();
+        /** the Create role a mob sat here takes (ROLE_*): a train's conductor, a stock keeper beside a Stock Ticker, or
+         *  NO_ROLE. A drekki sat in a role is employed */
+        int role();
+    }
+
+    /** a drekki's job, kept in the roster (Entry.role) and synced (DrekkiEntity.job): EMPLOYED when the role is not known */
+    int NO_ROLE = 0, EMPLOYED = 1, CONDUCTOR = 2, STOCK_KEEPER = 3;
+
+    /** the job's title: "Conductor", "Stock keeper", or "Employed" */
+    static net.minecraft.network.chat.Component title(int role) {
+        return net.minecraft.network.chat.Component.translatable(switch (role) {
+            case CONDUCTOR -> "role.rancher_companion.conductor";
+            case STOCK_KEEPER -> "role.rancher_companion.stock_keeper";
+            default -> "screen.rancher_companion.where.employed";
+        });
     }
 
     /** the seat the player looks at within range blocks, before any block closer than blockDist, or null */
@@ -27,6 +40,10 @@ public interface Seats {
 
     /** the seat block at pos, free, or null: a staying drekki put back at its spot sits there again */
     Seat at(ServerLevel level, BlockPos pos);
+
+    /** a vehicle that turns its riders itself (Create's contraptions face them where they go): an employed drekki on it
+     *  does not look around, so the two do not fight */
+    default boolean steers(net.minecraft.world.entity.Entity vehicle) { return false; }
 
     Seats NONE = new Seats() {
         @Override public Seat looked(ServerPlayer p, double range, double blockDist) { return null; }

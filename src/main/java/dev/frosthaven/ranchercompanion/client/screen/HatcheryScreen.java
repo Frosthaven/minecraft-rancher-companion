@@ -199,7 +199,7 @@ public final class HatcheryScreen extends Screen {
             case HatcheryView.HERE -> Component.translatable("screen.rancher_companion.where.here");
             case HatcheryView.WITH_YOU -> Component.translatable("screen.rancher_companion.where.with_you");
             case HatcheryView.CARRIED -> Component.translatable("screen.rancher_companion.where.carried");
-            case HatcheryView.EMPLOYED -> Component.translatable("screen.rancher_companion.where.employed");
+            case HatcheryView.EMPLOYED -> r.place().getString().isEmpty() ? Component.translatable("screen.rancher_companion.where.employed") : r.place();  /* its job's title */
             case HatcheryView.ELSEWHERE -> Component.translatable("screen.rancher_companion.where.at", r.place());
             default -> Component.translatable("screen.rancher_companion.where.none");
         };

@@ -66,8 +66,8 @@ public class DrekkiEntity extends PathfinderMob {
     private static final EntityDataAccessor<Boolean> REVIVING = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.BOOLEAN);
     /** the traits tab: learned trait ids and counted progress */
     private static final EntityDataAccessor<CompoundTag> TRAITS = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.COMPOUND_TAG);
-    /** 0.4.13: employed (spec, Go here: Employed) for the drekki screen's Recall from job: 0 not, 1 employed, 2 employed
-     *  while its owner has another drekki out (the button is off). Kept up by Ranch; not saved */
+    /** 0.4.13: its job (spec, Go here: Employed) for the drekki screen: 0 not employed, else its role (Seats.EMPLOYED,
+     *  CONDUCTOR, STOCK_KEEPER). Kept up by Ranch from the roster; not saved */
     private static final EntityDataAccessor<Integer> JOB = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.INT);
 
     /** its life (server: the truth, saved under "Life"; client: unused, the synched values above stand in) */
@@ -263,7 +263,7 @@ public class DrekkiEntity extends PathfinderMob {
     /** told to stay (spec, Stay and follow): it does not walk, follow or catch up; Ranch keeps the spot */
     public boolean isStaying() { return entityData.get(MOVE) == 2; }
     public int move() { return entityData.get(MOVE); }
-    /** 0 not employed, 1 employed, 2 employed while its owner has another drekki out */
+    /** 0 not employed, else its role (Seats.EMPLOYED, CONDUCTOR, STOCK_KEEPER) */
     public int job() { return entityData.get(JOB); }
     public void setJob(int j) { entityData.set(JOB, j); }
     public void setStaying(boolean on) { entityData.set(MOVE, !out ? 0 : on ? 2 : 1); if (on) getNavigation().stop(); }
@@ -486,9 +486,19 @@ public class DrekkiEntity extends PathfinderMob {
         goalSelector.addGoal(4, new DrekkiGoals.Sleep(this));
         goalSelector.addGoal(5, new DrekkiGoals.Stroll(this));
         targetSelector.addGoal(1, new dev.frosthaven.ranchercompanion.combat.CombatGoals.PickTarget(this));
-        goalSelector.addGoal(5, new net.minecraft.world.entity.ai.goal.LookAtPlayerGoal(this, net.minecraft.world.entity.player.Player.class, 6f));
-        goalSelector.addGoal(6, new net.minecraft.world.entity.ai.goal.RandomLookAroundGoal(this));
+        /* not at work on a train: Create turns it toward where the train goes */
+        goalSelector.addGoal(5, new net.minecraft.world.entity.ai.goal.LookAtPlayerGoal(this, net.minecraft.world.entity.player.Player.class, 6f) {
+            @Override public boolean canUse() { return !steered() && super.canUse(); }
+            @Override public boolean canContinueToUse() { return !steered() && super.canContinueToUse(); }
+        });
+        goalSelector.addGoal(6, new net.minecraft.world.entity.ai.goal.RandomLookAroundGoal(this) {
+            @Override public boolean canUse() { return !steered() && super.canUse(); }
+            @Override public boolean canContinueToUse() { return !steered() && super.canContinueToUse(); }
+        });
     }
+
+    /** employed on a vehicle that turns its riders itself (Seats.steers) */
+    public boolean steered() { return job() > 0 && getVehicle() != null && dev.frosthaven.ranchercompanion.ranch.Seats.get().steers(getVehicle()); }
 
     @Override
     protected net.minecraft.world.entity.ai.navigation.PathNavigation createNavigation(Level level) { return new DrekkiGoals.PenNavigation(this, level); }

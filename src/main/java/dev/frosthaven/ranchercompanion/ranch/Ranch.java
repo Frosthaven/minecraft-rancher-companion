@@ -417,7 +417,7 @@ public final class Ranch {
         }
         if (!ok) { dev.frosthaven.ranchercompanion.Debug.log("server: refused a copy, {} (roster {}, live copy {})", dev.frosthaven.ranchercompanion.Debug.of(d), e == null ? "none" : e.where, other != null); ev.setCanceled(true); return; }
         d.setStaying(e.stay != null);
-        d.setJob(e.where == Where.WORK ? jobFlag(roster(ev.getLevel().getServer()), e) : 0);
+        d.setJob(e.where == Where.WORK ? e.role : 0);
         LIVE.put(d.drekkiId(), d);
         dev.frosthaven.ranchercompanion.trait.Traits.changed();
     }
@@ -697,15 +697,16 @@ public final class Ranch {
 
     /** sat on a Create job seat (spec, Go here: Employed): no longer with its owner, who may take out another; it
      *  stays in the world while they are offline, and the hatchery screen recalls it */
-    public static void employ(DrekkiEntity d) {
+    public static void employ(DrekkiEntity d, int role) {
         Roster r = roster(d.getServer());
         Entry out = d.owner() == null ? null : r.out(d.owner());
         if (out == null || !out.id.equals(d.drekkiId()) || out.where != Where.OUT) { stayHere(d); return; }
         r.move(out, Where.WORK, null);
+        out.role = role;
         r.stay(out, Roster.at(d.level(), d.blockPosition()));
         STAYS.remove(d.owner());
         d.setStaying(true);
-        d.setJob(jobFlag(r, out));
+        d.setJob(role);
         /* at work it fights nothing: Passive, and its stance stays so until it is recalled (DrekkiMenu) */
         d.life.stance = dev.frosthaven.ranchercompanion.life.Life.Stance.PASSIVE;
         d.setTarget(null);
@@ -731,7 +732,6 @@ public final class Ranch {
             return;
         }
         d.offJob = 0;
-        if (e.where == Where.WORK) d.setJob(jobFlag(r, e));  /* the screen's Recall from job: off while its owner has another out */
         if (d.isPassenger() && (!e.stay.dimension().equals(d.level().dimension()) || e.stay.pos().distSqr(d.blockPosition()) > 4 * 4))
             r.stay(e, Roster.at(d.level(), d.blockPosition()));
     }
@@ -742,20 +742,24 @@ public final class Ranch {
         return e != null && e.where == Where.WORK;
     }
 
-    /** the synced job value: 1 employed, 2 employed while its owner has another drekki out */
-    private static int jobFlag(Roster r, Entry e) { return r.out(e.owner) != null ? 2 : 1; }
 
     /** the drekki screen's Recall from job (spec, Go here: Employed): off its seat, checked out with its owner again and
-     *  following. Not while they have another drekki out */
+     *  following; when they have another drekki out, home to its hatchery instead */
     public static void recallFromJob(ServerPlayer p, DrekkiEntity d) {
         Roster r = roster(p.server);
         Entry e = d.drekkiId() == null ? null : r.get(d.drekkiId());
         if (e == null || e.where != Where.WORK || !e.owner.equals(p.getUUID())) return;
-        if (r.out(p.getUUID()) != null) { msg(p, "gohere.recall_busy"); return; }
         if (d.isPassenger()) d.stopRiding();
-        r.move(e, Where.OUT, null);  /* with its owner again; the move clears the stay spot */
         d.setJob(0);
         d.goHere = null;
+        if (r.out(p.getUUID()) != null) {  /* its owner has another out: home to its hatchery (syncHatchery puts it there) */
+            r.snapshot(e, save(d));
+            d.discard();
+            r.move(e, e.base != null ? Where.HOME : Where.NONE, e.base);
+            msg(p, e.base != null ? "gohere.recall_home" : "gohere.recall_none", label(e.save));
+            return;
+        }
+        r.move(e, Where.OUT, null);  /* with its owner again; the move clears the stay spot */
         d.setStaying(false);
         msg(p, "stay.off", label(e.save));
     }

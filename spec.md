@@ -354,16 +354,24 @@ Sneak and use the Drekki Whistle while looking at a block (up to 64 blocks away)
 - **Then it stays**, as told to stay (spec, Stay and follow): the roster keeps the spot. The whistle (not sneaking) or
   the Follow button makes it follow again and takes it off a seat.
 - **Seats.** Create's seat blocks and the seats of a contraption (an assembled train). A drekki on a seat sits as any
-  mob does, so Create gives it its role: a train's conductor, a stock keeper.
+  mob does, so Create gives it its role: a train's conductor, a stock keeper. Create's own rule for which mobs may sit
+  (create:ignore_seat, which takes all of c:capturing_not_supported, where the drekki is) is not asked: the drekki is in
+  that tag only to keep it out of capture items.
 - **Employed.** On a job seat (a train's seat, or a seat beside a Stock Ticker) the drekki is employed: no longer with
   its owner, who may check out another. It stays in the world while its owner is offline (the train runs on), is set
   to Passive, and its stance and Stay/Follow buttons are locked ("... is employed. Recall it at a hatchery"). The
-  hatchery screen lists it as "Employed"; Check in with it selected recalls it to that hatchery, and Check out brings
+  hatchery screen lists it by its job's title, "Conductor" or "Stock keeper" ("Employed" when the role is not known,
+  as for one employed before 0.4.13); Check in with it selected recalls it to that hatchery, and Check out brings
   it to its owner. Off its seat for 2 seconds (the train taken apart, the seat broken) it goes home to its hatchery
   ("... lost its seat and went home"), or to No hatchery without one.
-- **Recall from job** (decided 2026-11-22): the drekki screen of an employed drekki has a Recall from job button just
-  left of Stay, in the same group. It takes the drekki off its seat and it follows its owner again, checked out. Off
-  (dimmed, "Check in the drekki you have out first.") while the owner has another drekki out.
+- **Recall from job** (decided 2026-11-22): while it is employed, the drekki screen shows a Recall from job button in
+  place of Stay and Follow, right aligned where they stand; its tooltip names the job. It takes the drekki off its seat
+  and it follows its owner again, checked out. With another drekki out it still works: the drekki goes home to its
+  hatchery ("... left its job and went home to its hatchery"), or to No hatchery without one.
+- **Opening its screen at work** (decided 2026-11-22): the owner's sneak click opens it (no petting at work). On a seat
+  beside a Stock Ticker, Create takes every other click on the sitter for its order screen, for everyone.
+- **Facing** (decided 2026-11-22): on a seat block it looks around as it likes. On a moving contraption Create turns its
+  riders toward where it goes; an employed drekki there does not look around, so the two do not fight.
 - **A seat a drekki sits on is taken** (decided 2026-11-22): a player's click on it does nothing, on a seat block and
   on a train's seat alike (Create would throw the drekki off and sit the player there). Sneaking, the click works as
   usual (blocks placed against the seat).

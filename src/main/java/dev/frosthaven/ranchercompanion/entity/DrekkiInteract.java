@@ -91,6 +91,19 @@ public final class DrekkiInteract {
             || stack.is(Items.NAME_TAG) || stack.is(Items.LEAD) || stack.getItem() instanceof net.minecraft.world.item.SpawnEggItem);
     }
 
+    /**
+     * Employed, its owner's sneak click opens its screen (Recall from job); no petting at work. Before Create's own
+     * handler (this one runs at HIGH): on a seat beside a Stock Ticker Create takes every click on the sitter for its
+     * order screen, sneaking or not, and that plain click stays Create's for everyone.
+     */
+    public static void onEntityInteractSpecific(net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.EntityInteractSpecific ev) {
+        Player p = ev.getEntity();
+        if (!(ev.getTarget() instanceof DrekkiEntity d) || d.job() == 0 || !p.isSecondaryUseActive() || !p.getUUID().equals(d.owner())) return;
+        if (ev.getHand() == InteractionHand.MAIN_HAND && p instanceof net.minecraft.server.level.ServerPlayer sp) openScreen(sp, d, false);
+        ev.setCancellationResult(ev.getHand() == InteractionHand.MAIN_HAND ? InteractionResult.sidedSuccess(ev.getLevel().isClientSide) : InteractionResult.PASS);
+        ev.setCanceled(true);
+    }
+
     /** a name tag runs before the mob's own interaction, so only the owner may name it is checked on the event */
     public static void onEntityInteract(net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.EntityInteract ev) {
         if (!(ev.getTarget() instanceof DrekkiEntity d) || !d.owned() || !ev.getItemStack().is(Items.NAME_TAG)) return;

@@ -73,7 +73,7 @@ public record HatcheryView(BlockPos pos, Component title, boolean named, ItemSta
                 case HOME -> e.livesAt(home) ? HERE : ELSEWHERE;
             };
             rows.add(new Row(e.id, Ranch.label(e.save), e.save.getInt("Line"), e.save.getInt("Horn"), e.save.getInt("Hat"),
-                Math.max(1, e.save.getInt("Stage")), where, where == ELSEWHERE ? where(p, e) : Component.empty()));
+                Math.max(1, e.save.getInt("Stage")), where, where == ELSEWHERE ? where(p, e) : where == EMPLOYED ? dev.frosthaven.ranchercompanion.ranch.Seats.title(e.role) : Component.empty()));
         }
         boolean ready = be.hasEgg() && dev.frosthaven.ranchercompanion.look.Incubation.ready(be.incubation());
         List<String> problems = ready ? Ranch.hatchProblems(p.serverLevel(), be.getBlockPos()) : List.of();

@@ -78,7 +78,7 @@ public final class GoHereTests {
             @Override public Vec3 at() { return cart.position(); }
             @Override public boolean free() { return !cart.isVehicle(); }
             @Override public boolean sit(Mob mob) { return mob.startRiding(cart, true); }
-            @Override public boolean job() { return true; }
+            @Override public int role() { return Seats.EMPLOYED; }
         };
         Seats before = Seats.Holder.seats;
         Seats.Holder.seats = new Seats() {
@@ -115,7 +115,7 @@ public final class GoHereTests {
             @Override public Vec3 at() { return cart.position(); }
             @Override public boolean free() { return !cart.isVehicle(); }
             @Override public boolean sit(Mob mob) { return mob.startRiding(cart, true); }
-            @Override public boolean job() { return true; }
+            @Override public int role() { return Seats.EMPLOYED; }
         };
         Seats before = Seats.Holder.seats;
         Seats.Holder.seats = new Seats() {
@@ -130,6 +130,42 @@ public final class GoHereTests {
             Ranch.recallFromJob(p, d);
             t.assertTrue(e.where == Roster.Where.OUT && r.out(p.getUUID()) == e, "checked out with its owner again: " + e.where);
             t.assertTrue(!d.isPassenger() && !d.isStaying() && d.job() == 0, "off its seat, following");
+            t.succeed();
+        });
+    }
+
+    @GameTest(template = "floor", timeoutTicks = 200)
+    public static void recallWithAnotherOutSendsItHome(GameTestHelper t) {
+        ServerPlayer p = LifeTests.player(t);
+        DrekkiEntity d = CombatTests.out(t, p, 2, Diet.RAW, Life.Stance.PASSIVE);
+        BlockPos hatchery = t.absolutePos(LifeTests.H);
+        ServerLevel level = t.getLevel();
+        var cart = EntityType.MINECART.create(level);
+        cart.moveTo(Vec3.atBottomCenterOf(t.absolutePos(new BlockPos(9, 1, 9))));
+        level.addFreshEntity(cart);
+        Seats.Seat seat = new Seats.Seat() {
+            @Override public Vec3 at() { return cart.position(); }
+            @Override public boolean free() { return !cart.isVehicle(); }
+            @Override public boolean sit(Mob mob) { return mob.startRiding(cart, true); }
+            @Override public int role() { return Seats.STOCK_KEEPER; }
+        };
+        Seats before = Seats.Holder.seats;
+        Seats.Holder.seats = new Seats() {
+            @Override public Seat looked(ServerPlayer pl, double range, double blockDist) { return seat; }
+            @Override public Seat at(ServerLevel l, BlockPos pos) { return null; }
+        };
+        try { lookAt(t, p, new BlockPos(9, 0, 9)); GoHere.command(p); } finally { Seats.Holder.seats = before; }
+        Roster r = Ranch.roster(level.getServer());
+        t.runAtTickTime(t.getTick() + 120, () -> {
+            Roster.Entry e = r.get(d.drekkiId());
+            t.assertTrue(e.where == Roster.Where.WORK && e.role == Seats.STOCK_KEEPER && d.job() == Seats.STOCK_KEEPER, "employed as the stock keeper: " + e.where + " role " + e.role);
+            Ranch.putEgg(p, hatchery, dev.frosthaven.ranchercompanion.item.CreativeEggItem.egg(4));
+            Ranch.hatch(p, hatchery);
+            Roster.Entry second = r.of(p.getUUID()).stream().filter(x -> !x.id.equals(e.id)).findFirst().orElseThrow();
+            Ranch.act(p, hatchery, Ranch.Action.CHECK_OUT, second.id);
+            t.assertTrue(r.out(p.getUUID()) == second, "another drekki is out");
+            Ranch.recallFromJob(p, d);
+            t.assertTrue(d.isRemoved() && e.where == Roster.Where.HOME && e.role == 0 && r.out(p.getUUID()) == second, "it went home to its hatchery; the other stays out: " + e.where);
             t.succeed();
         });
     }
