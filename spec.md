@@ -658,9 +658,10 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
     time (a lightning rod block in a storm, or a Channeling trident). Effect: in a thunderstorm the drekki acts as
     a lightning rod: it pulls strikes within 64 blocks and needs open sky above it (about one strike every 1.5
     minutes in a storm). The bolt drawn to it is visual only: no damage to it or anyone near, no fire, no villager
-    or pig transformations. On a strike its attack speed doubles for 4 s and its owner gets Night Vision for 8 s.
+    or pig transformations. On a strike its attack speed doubles for 10 s and its owner gets Night Vision for 30 s
+    (20 s steady, then the game's 10 s of blinking; Shane first gave 4 s and 8 s).
     Storm-skittish works as always: the strike still throws the rider. Proposed, to confirm: a Channeling trident
-    thrown at it triggers the trait. Open: Night Vision blinks in its last 10 s, so 8 s blinks throughout.
+    thrown at it triggers the trait.
   - Hibernation Plan slows both the player's hunger and the drekki's (see Hunger).
   - Phoenix Heart works on every death and the trait is kept. The egg goes to the owner's inventory when they are
     online with room, otherwise it is held and given on their next login or at the hatchery. It is never dropped.
