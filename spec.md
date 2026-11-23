@@ -547,17 +547,20 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
 - No stacking: a player in range of several drekki with the same trait gets it once, the strongest copy. Training
   Day still drops XP from each drekki.
 - Biome traits work everywhere once learned, not only in their biome.
+- The void never kills a drekki (Shane, 2026-11-23, not built): any stage, any trait or none, checked out or not.
+  Void damage to a drekki is cancelled. Proposed, to confirm: it is put back on the last safe ground it stood on,
+  or brought to its owner when it is checked out.
 - Affinity limits on learning (Shane, 2026-11-23, not built), to make breeding matter. An activity trait can be
   learned only by a drekki of a listed astral affinity; the sheet's "Learned by" column holds the list:
   - All six: Hearty, Patchwork, Training Day, Soft Landing, Balm & Salve, Hook Line & Sinker, Duck & Cover, Night
     Watch (phantoms rarely matter, so not a capstone).
   - One (the capstones): Provoke (Solar), Fade (Lunar), Live Wire (Aero), Point Break (Deep), Hide & Seek
-    (Underworld; stronger than The Fallen Emperor), Phoenix Heart (End: the strongest trait is the reason to reach
-    the End; Staring Contest was too weak for it).
-  - Two: Stamp Out (Solar, Underworld); Marked (Solar, Aero); Staring Contest (Deep, End); Creature Comforts (Solar,
+    (Underworld; stronger than The Fallen Emperor), Hedged Gambit (End).
+  - Two: Stamp Out (Solar, Underworld); Marked (Solar, Aero); Phoenix Heart (Solar, End); Staring Contest (Deep, End; too weak for a capstone);
+    Creature Comforts (Solar,
     Lunar); Huddle Up (Lunar, Aero); Web Cutter and Undertow (Lunar, Deep); Cloud Stompers (Aero, End); Barbed Coat
     (Deep, Underworld); The Fallen Emperor (Underworld, End).
-  - So each affinity learns 12 or 13 of the 24 by itself. Thermostat (Stamp Out + Huddle Up) and a drekki with both
+  - So each affinity learns 12 or 13 of the 25 by itself. Thermostat (Stamp Out + Huddle Up) and a drekki with both
     Provoke and Fade (day and night) come only from a cross-affinity pair.
   - Inherited traits ignore the limit: a child keeps what passes, whatever its affinity. A poly trait widens
     learning as it widens the home terrain (Polyphasic Solaris learns as Solar and as Lunar, and so on). A Dormant
@@ -680,6 +683,13 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
     (20 s steady, then the game's 10 s of blinking; Shane first gave 4 s and 8 s).
     Storm-skittish works as always: the strike still throws the rider. Proposed, to confirm: a Channeling trident
     thrown at it triggers the trait.
+  - Hedged Gambit (Shane, 2026-11-23, not built): the End capstone, modelled on Ars Additions' Charm of Void's
+    Salvation. Learned when the owner throws an ender pearl while falling with no ground under them and lands
+    safely, 25% each time. Effect: when the owner takes void damage, the damage is cancelled and the owner is
+    returned to the last safe ground they stood on (solid block, same rule as the charm), with the fall distance
+    reset; the drekki comes with them. 5-minute cooldown. Proposed, to confirm: it works when the owner was within
+    10 blocks of the drekki on leaving that safe ground, or is riding it (a falling owner is soon out of range).
+    Tooltip (proposed): "Saves its owner from the void, returning them to safe ground."
   - Hibernation Plan slows both the player's hunger and the drekki's (see Hunger).
   - Phoenix Heart works on every death and the trait is kept. The egg goes to the owner's inventory when they are
     online with room, otherwise it is held and given on their next login or at the hatchery. It is never dropped.
