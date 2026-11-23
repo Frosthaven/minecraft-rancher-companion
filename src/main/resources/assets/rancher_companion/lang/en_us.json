@@ -302,6 +302,7 @@
   "screen.rancher_companion.drekki.free_slot": "Free slot",
   "screen.rancher_companion.drekki.horizons": "Unlocked by a Potion of Horizons",
   "tooltip.rancher_companion.horizons": "Permanently unlocks an extra trait slot when fed to a drekki",
+  "tooltip.rancher_companion.horizons_step": "A step toward the Potion of Horizons",
   "message.rancher_companion.horizons_fed": "%s has a new trait slot",
   "message.rancher_companion.horizons_had": "%s has already had a Potion of Horizons",
   "item.minecraft.potion.effect.drekki_distance": "Potion of Distance",

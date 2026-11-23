@@ -149,7 +149,7 @@ public final class FightTraits {
 
     // ---- Fade ----
 
-    public static boolean faded(DrekkiEntity d) { return FADED.getOrDefault(d.getUUID(), Long.MIN_VALUE) > Vitals.now(d); }
+    public static boolean faded(DrekkiEntity d) { return FADED.getOrDefault(d.getUUID(), Long.MIN_VALUE) > Vitals.now(d) && has(d, Trait.FADE); }
 
     private static void retarget(LivingChangeTargetEvent e) {
         if (!(e.getEntity() instanceof Mob mob) || mob.level().isClientSide) return;

@@ -42,6 +42,8 @@ public final class SelfTest {
     /** with -Drancher_companion.selftest.ui=true: hatch and check out a pup, then only the trait screen and chat shots */
     private static final boolean UI = Boolean.getBoolean("rancher_companion.selftest.ui");
     private static final boolean GEAR = Boolean.getBoolean("rancher_companion.selftest.gear");
+    /** only the 0.5.0 section: the Potion of Horizons, the nine new traits, the void (SelfTestNewTraits) */
+    private static final boolean NEW = Boolean.getBoolean("rancher_companion.selftest.new");
 
     /** patience: for a check that waits on the server (movement, AI), how many more 20-tick tries before it fails */
     private record Step(String name, int delay, Runnable act, BooleanSupplier check, boolean shot, int patience) {}
@@ -226,6 +228,7 @@ public final class SelfTest {
         quiet("walk_off", 100, () -> { mc().setScreen(null); cmd("tp @s " + (o.getX() + 7.5) + " " + o.getY() + " " + (o.getZ() + 6.5)); });
         stepUntil("follows", 10, 15, () -> {}, () -> pup() != null && pup().distanceTo(mc().player) < 6);
         if (TRAITS) { SelfTestTraits.build(o); return; }
+        if (NEW) { SelfTestTraits.site(o); SelfTestNewTraits.steps(); quiet("new_end", 10, () -> cmd("gamemode creative")); return; }
         if (UI) { SelfTestTraits.ui(); return; }
         if (GEAR) { SelfTestTraits.gear(o); return; }
         quiet("far_away", 80, () -> cmd("tp @s " + (o.getX() + 40.5) + " " + o.getY() + " " + (o.getZ() + 0.5)));
@@ -422,7 +425,7 @@ public final class SelfTest {
             }
             return;
         }
-        if (TRAITS || UI || GEAR) SelfTestTraits.tick();
+        if (TRAITS || UI || GEAR || NEW) SelfTestTraits.tick();
         if (started < 0) { started = 0; build(); timer = 200; RancherCompanion.LOG.info("[selftest] start, {} steps", STEPS.size()); return; }
         if (--timer > 0) return;
         if (index >= 0 && index < STEPS.size()) {

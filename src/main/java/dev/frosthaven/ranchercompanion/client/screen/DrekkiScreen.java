@@ -238,12 +238,12 @@ public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
     /** the slot a Potion of Horizons unlocked: an emerald where the other rows have their bullet, with its own tooltip */
     private void emerald(GuiGraphics g, int y, int rx, int ry) {
         g.pose().pushPose();
-        g.pose().translate(INFO_X - 2, y, 0);
-        g.pose().scale(0.5f, 0.5f, 1);
+        g.pose().translate(INFO_X - 3, y - 1, 0);
+        g.pose().scale(0.625f, 0.625f, 1);  /* 10 px: the gem itself is about the bullet's size */
         g.renderItem(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.EMERALD), 0, 0);
         g.pose().popPose();
         spot("horizons", INFO_X - 2, y, 8, 8);
-        if (Art.in(rx, ry, INFO_X - 2, y, 8, 8)) tip = List.of(Component.translatable("screen.rancher_companion.drekki.horizons").withStyle(ChatFormatting.GREEN));
+        if (Art.in(rx, ry, INFO_X - 3, y - 1, 10, 10)) tip = List.of(Component.translatable("screen.rancher_companion.drekki.horizons").withStyle(ChatFormatting.GREEN));
     }
 
     /** the trait it wants to learn: a gold name with its tooltip, then yes (learn it) and no (pass) */

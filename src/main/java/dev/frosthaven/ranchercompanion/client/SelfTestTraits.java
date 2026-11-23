@@ -37,7 +37,8 @@ import net.minecraft.world.phys.AABB;
 final class SelfTestTraits {
     private SelfTestTraits() {}
 
-    private static BlockPos o, pool, slime, snow, fire;
+    static BlockPos o;
+    private static BlockPos pool, slime, snow, fire;
     private static boolean autoFish;
     private static int fishWait, lastLured = -1, xpBefore;
     private static long lastLuredAt;
@@ -45,16 +46,16 @@ final class SelfTestTraits {
     // ---- helpers ----
 
     /** the pup as the server sees it */
-    private static DrekkiEntity sd() {
+    static DrekkiEntity sd() {
         var srv = mc().getSingleplayerServer(); var c = pup();
         if (srv == null || c == null) return null;
         for (var l : srv.getAllLevels()) if (l.getEntity(c.getUUID()) instanceof DrekkiEntity d) return d;
         return null;
     }
 
-    private static void server(java.util.function.Consumer<ServerPlayer> f) { var m = me(); if (m != null) m.server.execute(() -> f.accept(m)); }
+    static void server(java.util.function.Consumer<ServerPlayer> f) { var m = me(); if (m != null) m.server.execute(() -> f.accept(m)); }
 
-    private static boolean has(Trait t) {
+    static boolean has(Trait t) {
         var c = pup();
         if (c == null) return false;
         for (Tag s : c.traitView().getList("traits", Tag.TAG_STRING)) if (s.getAsString().equals(t.id)) return true;
@@ -62,7 +63,7 @@ final class SelfTestTraits {
     }
 
     /** a clean slate for the next trait: no traits, no counts, no cooldowns, petted (Thriving), beside the player */
-    private static void fresh(String name) {
+    static void fresh(String name) {
         quiet("fresh_" + name, 10, () -> {
             if (mc().player.isDeadOrDying()) mc().player.respawn();  /* a mob may have killed the test player */
         });
@@ -76,15 +77,20 @@ final class SelfTestTraits {
     }
 
     /** the pup to just beside the player (within the 10 blocks it learns and helps in) */
-    private static void pupHere() {
+    static void pupHere() {
         life(d -> { var m = me(); if (m != null) d.teleportTo(m.getX() + 1.5, Math.max(m.getY(), o.getY()), m.getZ() + 1.5); });
     }
 
-    private static void tp(double x, double y, double z) { cmd("tp @s " + x + " " + y + " " + z + " -90 0"); }
+    static void tp(double x, double y, double z) { cmd("tp @s " + x + " " + y + " " + z + " -90 0"); }
 
     /** repeats the activity every `every` seconds until the trait is learned (at most `tries` times), so the next
      *  step starts right after it is learned */
-    private static void learn(Trait t, int tries, int every, Runnable act) {
+    static void learn(Trait t, int tries, int every, Runnable act) {
+        /* most traits are for some astral affinities only (spec, Traits: affinity limits): it gets one that can learn this */
+        quiet("affinity_for_" + t.id, 10, () -> life(d -> {
+            if (t.learnedBy(d.astral())) return;
+            for (int a = 1; a <= 6; a++) if (t.learnedBy(a)) { d.setLook(d.stage(), d.line(), d.diet(), a, d.horn()); return; }
+        }));
         int[] polls = {0};
         stepUntil("learns_" + t.id, 10, tries * every, act, () -> {
             if (has(t)) return true;
@@ -95,34 +101,34 @@ final class SelfTestTraits {
     }
 
     /** hotbar slot 9 emptied and selected: a right-click opens the screen (a fish left there from fishing would feed it) */
-    private static void emptyHand() { cmd("item replace entity @s hotbar.8 with air"); select(8); }
+    static void emptyHand() { cmd("item replace entity @s hotbar.8 with air"); select(8); }
 
     /** the pup's server state, logged beside each ability check: its traits, cooldowns, and distance to the player */
-    private static String state() {
+    static String state() {
         DrekkiEntity d = sd(); var m = me();
         if (d == null || m == null) return "no pup";
         return "traits " + d.life.traits + " progress " + d.life.progress + " cooldowns " + d.life.cooldowns.keySet() + " (now " + Vitals.now(d) + " " + d.life.cooldowns + ") dist " + String.format("%.1f", d.distanceTo(m)) + " band " + d.band();
     }
 
     /** an ability, the way a player meets it after learning: cooldowns cleared, the pup beside them, then the trigger */
-    private static void ability(String name, Runnable reset, Runnable trigger, int wait, int patience, String what, java.util.function.Supplier<Object> seen, BooleanSupplier ok) {
+    static void ability(String name, Runnable reset, Runnable trigger, int wait, int patience, String what, java.util.function.Supplier<Object> seen, BooleanSupplier ok) {
         quiet(name + "_reset", 30, () -> { reset.run(); life(d -> d.life.cooldowns.clear()); pupHere(); });
         check(name, wait, patience, trigger, what, () -> seen.get() + " | " + state(), ok);
     }
 
     /** a check that logs what it saw */
-    private static void check(String name, int delay, int patience, Runnable act, String what, java.util.function.Supplier<Object> seen, BooleanSupplier ok) {
+    static void check(String name, int delay, int patience, Runnable act, String what, java.util.function.Supplier<Object> seen, BooleanSupplier ok) {
         stepUntil(name, delay, patience, act, () -> { boolean r = ok.getAsBoolean(); RancherCompanion.LOG.info("[selftest] {}: {} = {}", name, what, seen.get()); return r; });
     }
 
-    private static Entity nearest(String type) {
+    static Entity nearest(String type) {
         Entity best = null; var p = mc().player;
         for (Entity e : mc().level.getEntities(null, new AABB(p.blockPosition()).inflate(12)))
             if (e.isAlive() && BuiltInRegistries.ENTITY_TYPE.getKey(e.getType()).getPath().equals(type) && (best == null || e.distanceTo(p) < best.distanceTo(p))) best = e;
         return best;
     }
 
-    private static Mob serverMob(String type) {
+    static Mob serverMob(String type) {
         var m = me();
         if (m == null) return null;
         for (Entity e : m.serverLevel().getEntities((Entity) null, m.getBoundingBox().inflate(24), e -> e.isAlive() && BuiltInRegistries.ENTITY_TYPE.getKey(e.getType()).getPath().equals(type)))
@@ -131,7 +137,7 @@ final class SelfTestTraits {
     }
 
     /** a real melee kill: a 1-health mob summoned in front, hit with the sword in hotbar slot 5 */
-    private static Runnable kill(String type, double ahead) {
+    static Runnable kill(String type, double ahead) {
         return () -> {
             select(5);
             cmd("summon " + type + " ^ ^ ^" + ahead + " {NoAI:1b,Health:1f,PersistenceRequired:1b,IsImmuneToZombification:1b}");
@@ -141,7 +147,7 @@ final class SelfTestTraits {
 
     /** actions due a number of client ticks from now */
     private static final java.util.List<Object[]> DUE = new java.util.ArrayList<>();
-    private static void after(int ticks, Runnable r) { DUE.add(new Object[]{ticks, r}); }
+    static void after(int ticks, Runnable r) { DUE.add(new Object[]{ticks, r}); }
     private static boolean fallLog, fireLog;
     private static int[] hoverAt;
 
@@ -157,6 +163,22 @@ final class SelfTestTraits {
     }
 
     // ---- the run ----
+
+    /** the bare pad 4000 blocks east, for the 0.5.0 section run by itself (SelfTestNewTraits) */
+    static void site(BlockPos origin) {
+        o = origin.offset(4000, 0, 0);
+        quiet("new_site", 60, () -> {
+            cmd("forceload add " + (o.getX() - 12) + " " + (o.getZ() - 12) + " " + (o.getX() + 12) + " " + (o.getZ() + 12));
+            cmd("fill " + at(o.offset(-12, -1, -12)) + " " + at(o.offset(12, -1, 12)) + " stone");
+            cmd("fill " + at(o.offset(-12, 0, -12)) + " " + at(o.offset(12, 12, 12)) + " air");
+            cmd("tp @s " + (o.getX() + 0.5) + " " + o.getY() + " " + (o.getZ() + 0.5) + " -90 0");
+        });
+        quiet("new_site_rules", 40, () -> {
+            cmd("gamemode survival"); cmd("weather clear"); cmd("difficulty normal"); cmd("gamerule doFireTick false");
+            hotbar(5, "netherite_sword");
+        });
+        stepUntil("pup_follows_to_the_site", 20, 15, () -> {}, () -> pup() != null && pup().distanceTo(mc().player) < 8);
+    }
 
     static void build(BlockPos origin) {
         o = origin.offset(4000, 0, 0);  /* away from any colony or claim in the world the test runs in */
@@ -430,6 +452,7 @@ final class SelfTestTraits {
         learn(Trait.PHOENIX_HEART, 3, 2, () -> { cmd("item replace entity @s weapon.offhand with totem_of_undying"); cmd("damage @s 100 minecraft:generic"); });
         quiet("phoenix_death", 40, () -> { server(m -> m.setHealth(20)); cmd("kill " + id); });
         check("phoenix_heart_egg", 20, 5, () -> {}, "egg in inventory", SelfTestTraits::egg, SelfTestTraits::egg);
+        SelfTestNewTraits.steps();  /* 0.5.0: the potion, the new traits, the void */
         quiet("traits_end", 10, () -> cmd("gamemode creative"));
         /* a learned message's trait link in chat, hovered: the same lines as the screen, wrapped the same way */
         quiet("chat_open", 20, () -> mc().setScreen(new net.minecraft.client.gui.screens.ChatScreen("")));
@@ -983,7 +1006,7 @@ final class SelfTestTraits {
     }
 
     /** the game's own cursor position (what screens are drawn with), set inside the game: no desktop input */
-    private static void mouse(double x, double y) {
+    static void mouse(double x, double y) {
         try {
             var h = mc().mouseHandler;
             for (String f : new String[]{"xpos", "ypos"}) {

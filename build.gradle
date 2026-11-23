@@ -28,6 +28,13 @@ neoForge {
 
     runs {
         client { client() }
+        // the real-game test of 0.5.0 (client/SelfTestNewTraits) in the world run/saves/selftest
+        selfTestNew {
+            client()
+            programArguments.addAll '--quickPlaySingleplayer', 'selftest'
+            jvmArgument '-Drancher_companion.selftest=true'
+            jvmArgument '-Drancher_companion.selftest.new=true'
+        }
         server {
             server()
             programArgument '--nogui'

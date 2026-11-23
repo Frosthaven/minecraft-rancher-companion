@@ -47,10 +47,13 @@ public final class WhistleItem extends Item {
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
     }
 
+    /** the self test shows the expanded tooltip without a held key */
+    public static boolean testExpanded;
+
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> lines, TooltipFlag flag) {
         /* its two uses, one line each, while Shift is held (as the pack's other mods expand a tooltip) */
-        if (flag.hasShiftDown()) {
+        if (flag.hasShiftDown() || testExpanded) {
             lines.add(Component.translatable(getDescriptionId() + ".use").withStyle(ChatFormatting.GRAY));
             lines.add(Component.translatable(getDescriptionId() + ".sneak_use").withStyle(ChatFormatting.GRAY));
         } else lines.add(Component.translatable(getDescriptionId() + ".tooltip").withStyle(ChatFormatting.DARK_GRAY));

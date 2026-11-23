@@ -14,9 +14,15 @@ public final class ItemSubtext {
 
     public static void onTooltip(ItemTooltipEvent e) {
         if (wornBag(e)) e.getToolTip().add(1, Component.translatable("screen.rancher_companion.drekki.bag").withStyle(ChatFormatting.YELLOW));
-        /* the Potion of Horizons says what it is for, in place of the game's "No Effects" */
-        if (dev.frosthaven.ranchercompanion.item.DrekkiPotions.step(e.getItemStack()) == 3 && !e.getToolTip().isEmpty())
-            e.getToolTip().add(1, Component.translatable("tooltip.rancher_companion.horizons").withStyle(ChatFormatting.GREEN));
+        /* the Potion of Horizons says what it is for, and the two on the way to it that they are not done, in place of
+           the game's "No Effects" */
+        int brewed = dev.frosthaven.ranchercompanion.item.DrekkiPotions.step(e.getItemStack());
+        if (brewed > 0 && !e.getToolTip().isEmpty()) {
+            String none = Component.translatable("effect.none").getString();
+            e.getToolTip().removeIf(line -> line.getString().equals(none));
+            e.getToolTip().add(1, Component.translatable(brewed == 3 ? "tooltip.rancher_companion.horizons" : "tooltip.rancher_companion.horizons_step")
+                .withStyle(brewed == 3 ? ChatFormatting.GREEN : ChatFormatting.GRAY));
+        }
         String kind = kind(e.getItemStack());
         if (kind == null || e.getToolTip().isEmpty()) return;
         e.getToolTip().add(1, Component.translatable("tooltip.rancher_companion.kind." + kind).withStyle(ChatFormatting.GRAY));
