@@ -526,10 +526,9 @@ Rules behind the lists:
   - A biome trait does not count against the trait total: it has a row of its own beside the 2/4/5 slots, as the
     potion's slot has. That settles what happens to a Fledgling whose slots are full at the lock-in: nothing.
   - Its row has a globe icon where other traits have a bullet.
-  - Until the drekki has its biome trait, that row shows the name of the biome category it matches now, in the
-    disabled text color. Claude's reading, to confirm: "matches now" is the category in the lead by counted time,
-    the one it would get if it locked this moment (the foot tint follows the same lead); a pup, which counts no
-    biome time yet, shows no category.
+  - Until the drekki has its biome trait, that row shows, in the disabled text color, the name of the category of
+    the biome it is standing in now (Shane: the biome it stands in, not the one in the lead by counted time). It
+    changes as the drekki moves, at every stage, a pup's too.
   - Dropped the same day, before anything was built: a 20% damage cut for the drekki, its owner and its barding
     while in the trait's biome, with the globe lit or dim. There is no such bonus; the globe has one look.
 - Wings of Hope (End Exploration; Shane, 2026-11-23, not built): flight like Mekanism's jetpack in Vector mode, in
