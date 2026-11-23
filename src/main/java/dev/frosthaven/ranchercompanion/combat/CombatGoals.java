@@ -135,13 +135,13 @@ public final class CombatGoals {
             if (ranged()) {
                 if ((dist > 8 * 8 || !sees) && --repath <= 0) { d.getNavigation().moveTo(t, 1.1); repath = 10; }
                 else if (dist <= 8 * 8 && sees) d.getNavigation().stop();
-                if (cooldown == 0 && sees && dist <= 10 * 10) { d.act(Anim.BALL, 56); strikeIn = 8; cooldown = 40; }
+                if (cooldown == 0 && sees && dist <= 10 * 10) { d.act(Anim.BALL, 56); strikeIn = 8; cooldown = d.surged() ? 20 : 40; }
             } else {
                 /* it reaches as far as the game's melee mobs do (a zombie's rule: its box grown 0.83 a side meets the
                    target's), and never less than before. A zombie hit it from further off than it could bite */
                 double reach = d.getBbWidth() / 2 + t.getBbWidth() / 2 + 1.0;
                 if (--repath <= 0) { d.getNavigation().moveTo(t, 1.2); repath = 8; }
-                if (cooldown == 0 && (dist <= reach * reach || d.isWithinMeleeAttackRange(t))) { d.act(Anim.BITE, 32); strikeIn = 6; cooldown = 24; }
+                if (cooldown == 0 && (dist <= reach * reach || d.isWithinMeleeAttackRange(t))) { d.act(Anim.BITE, 32); strikeIn = 6; cooldown = d.surged() ? 12 : 24; }
             }
         }
 

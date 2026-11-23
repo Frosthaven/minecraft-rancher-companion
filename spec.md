@@ -675,7 +675,8 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
   - Barbed Coat (added by the team as Reflecting Pain; decided 2026-11-23, not built). Learned when the owner is
     hurt by spikes, 25% each time: by damage type, so modded blocks count without compat code (cactus, sweet berry
     bush, thorns: a guardian's spikes, a pufferfish and a mob in Thorns armor, stalagmite and falling stalactite;
-    Biomes O' Plenty's Bramble counts if it deals one of these, to check when building). Effect: a mob that hits
+    checked 2026-11-23: Biomes O' Plenty's Bramble has its own type, `biomesoplenty:bramble`, so the list is the damage type tag
+    `rancher_companion:spikes`, which names it as optional; Creeper Overhaul's creepers extend the game's Creeper). Effect: a mob that hits
     the drekki in melee takes 25% of that damage back, at least 1 (half a heart), as thorns damage, in every
     stance. Projectiles and explosions return nothing. On a Clay drekki it adds to the line's own Thorns.
   - Point Break (Shane, 2026-11-23, not built). Learned when a creeper's blast breaks the drekki's barding (creepers

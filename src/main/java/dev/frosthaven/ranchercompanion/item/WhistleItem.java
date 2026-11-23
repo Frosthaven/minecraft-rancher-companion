@@ -49,6 +49,10 @@ public final class WhistleItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> lines, TooltipFlag flag) {
-        lines.add(Component.translatable(getDescriptionId() + ".tooltip").withStyle(ChatFormatting.GRAY));
+        /* its two uses, one line each, while Shift is held (as the pack's other mods expand a tooltip) */
+        if (flag.hasShiftDown()) {
+            lines.add(Component.translatable(getDescriptionId() + ".use").withStyle(ChatFormatting.GRAY));
+            lines.add(Component.translatable(getDescriptionId() + ".sneak_use").withStyle(ChatFormatting.GRAY));
+        } else lines.add(Component.translatable(getDescriptionId() + ".tooltip").withStyle(ChatFormatting.DARK_GRAY));
     }
 }

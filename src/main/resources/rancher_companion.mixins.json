@@ -7,7 +7,8 @@
     "FishingHookAccess",
     "ItemStackMixin",
     "PiglinAiMixin",
-    "VillagerMixin"
+    "VillagerMixin",
+    "WebBlockMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -530,10 +530,13 @@ public class DrekkiEntity extends PathfinderMob {
     protected void actuallyHurt(net.minecraft.world.damagesource.DamageSource source, float amount) {
         if (amount <= 0) return;  /* a player's hit: the push only */
         if (!bardingItem.isEmpty() && !source.is(net.minecraft.tags.DamageTypeTags.BYPASSES_WOLF_ARMOR) && level() instanceof net.minecraft.server.level.ServerLevel sl) {
+            boolean[] broke = {false};
             bardingItem.hurtAndBreak(net.minecraft.util.Mth.ceil(amount), sl, this, item -> {
                 playSound(net.minecraft.sounds.SoundEvents.WOLF_ARMOR_BREAK);
                 setBardingItem(net.minecraft.world.item.ItemStack.EMPTY);
+                broke[0] = true;
             });
+            if (broke[0]) dev.frosthaven.ranchercompanion.trait.FightTraits.bardingBroke(this, source);  /* Point Break */
             if (bardingItem.isEmpty() || bardingItem.getCount() == 0) setBardingItem(net.minecraft.world.item.ItemStack.EMPTY);
             else playSound(net.minecraft.sounds.SoundEvents.WOLF_ARMOR_DAMAGE);
             dev.frosthaven.ranchercompanion.ranch.Ranch.touch(this);
@@ -619,7 +622,8 @@ public class DrekkiEntity extends PathfinderMob {
     /** a ghost that falls out of the world comes back (spec, Ghost drekki) instead of falling forever */
     @Override
     protected void onBelowWorld() {
-        if (life.ghost && !level().isClientSide && owned()) { dev.frosthaven.ranchercompanion.ranch.Death.bringBack(this); return; }
+        /* the void never kills a drekki, a ghost or not (spec, Traits): back to the last solid ground, its owner or home */
+        if (!level().isClientSide && owned()) { dev.frosthaven.ranchercompanion.trait.WorldTraits.outOfTheVoid(this); return; }
         super.onBelowWorld();
     }
 
@@ -652,6 +656,13 @@ public class DrekkiEntity extends PathfinderMob {
     /** server: the hostile mob Go here told it to attack (GoHere.attack): fought in every stance until it dies, gets away
      *  or the drekki is disengaged (Passive, Stay, a new Go here) */
     public net.minecraft.world.entity.LivingEntity ordered;
+
+    /** server: Live Wire's surge, struck by lightning: it attacks twice as fast until this tick (spec, Traits) */
+    public int surgeUntil = Integer.MIN_VALUE / 2;
+    public boolean surged() { return tickCount < surgeUntil; }
+
+    /** server: the last solid ground it stood on, where the void puts it back (spec, Traits: the void never kills a drekki) */
+    public net.minecraft.core.GlobalPos safeGround;
 
     /** server: the tick a player's hit or spell last landed on it (FriendlyFire: sourceless debuffs then are refused) */
     public int playerTouchedAt = Integer.MIN_VALUE / 2;
@@ -727,6 +738,7 @@ public class DrekkiEntity extends PathfinderMob {
         if (level().isClientSide) trackSpeed();
         else {
             if (petTicks() > 0) entityData.set(PET, petTicks() - 1);
+            if (owned()) dev.frosthaven.ranchercompanion.trait.WorldTraits.standing(this);
             if (stage() == 1 && isAlive() && getHealth() < getMaxHealth()) setHealth(getMaxHealth());  /* a pup hurt before 0.3.2 */
             if (actionLeft > 0 && --actionLeft == 0) entityData.set(ACTION, 0);
             if (owned() && isAlive()) {

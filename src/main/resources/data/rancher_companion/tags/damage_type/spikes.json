@@ -1,0 +1,10 @@
+{
+  "values": [
+    "minecraft:cactus",
+    "minecraft:sweet_berry_bush",
+    "minecraft:thorns",
+    "minecraft:stalagmite",
+    "minecraft:falling_stalactite",
+    { "id": "biomesoplenty:bramble", "required": false }
+  ]
+}
