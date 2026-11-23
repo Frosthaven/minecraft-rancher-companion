@@ -571,8 +571,10 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
 - Caps (Shane, 2026-11-23, not built; was 3/6/9): 2 traits at stage 1, 4 at stage 2, 5 at stage 3. A negative trait
   takes a slot like any other.
   - Potion of Horizons: "Permanently unlocks an extra trait slot when fed to a drekki." Fed by hand, once per
-    drekki, so 3/5/6. Recipe, shapeless at a crafting table: glass bottle, ender pearl, popped chorus fruit (End
-    items that can be farmed; how many of each is open).
+    drekki, so 3/5/6. Recipe (Shane), shaped at a crafting table: `P E P / C B C / P E P` (4 ender pearls
+    in the corners, an emerald above and below, popped chorus fruit left and right, the glass bottle in the
+    middle). Icon: the tonics' bottle with an emerald stopper and an emerald foot, popped-chorus purple over
+    ender-pearl teal with a pale horizon line between (drawn as a preview, not in the mod yet).
   - At the update, an existing drekki that holds more traits than the new cap for its stage is marked as having
     taken the potion and keeps what it has: a pup with 3 and a Fledgling with 5 fit exactly; a Fledgling with 6
     is one over until it matures and then sits on the final 6. No Mature and no bred drekki exist in the launched
