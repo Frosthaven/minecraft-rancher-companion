@@ -555,7 +555,7 @@ Rules behind the lists:
     Solar, Lunar: Ocean Walker (travel 1,000 blocks by boat). Solar, Aero: Four Winds (ride a horse, donkey, mule or
     camel 1,000 blocks). Solar, End: Natural Repellant (kill 10 creepers). Solar, Underworld: Hoglin Ward (kill 5
     hoglins). Deep, Underworld: Lava Walker (ride a strider 300 blocks over lava), Inverse Luminance (place 64
-    torches). Underworld, End: Draconic Vampirism (be in the End when the Ender Dragon dies; always teaches). Aero,
+    torches). Underworld, End: Draconic Vampirism (kill 10 hostile mobs while at 3 hearts or less; counted). Aero,
     End: Leap of Faith (land unhurt from a fall of 30 blocks or more, 25% each time), Wings of Hope (be hit by a
     shulker's bullet 10 times: the Levitation it gives is the lesson; counted at the hit, so Balm & Salve stopping
     the effect does not stop the count).
@@ -830,7 +830,8 @@ Effect numbers, written into the sheet's rows (starting points, to tune in testi
 - Training Day: 18 XP every 6,000 ticks (3.5 skeletons at 5 XP, rounded up).
 - Patchwork (was Jerryrigging): the 7 days are elapsed game time, 168,000 ticks, so sleeping does not shorten them.
 - Inverse Luminance: light 14 minus the light where it stands, at most 14 (a torch).
-- Draconic Vampirism: 25% (Shane, 2026-11-23; was 15%) rounded to the nearest point, at most 4 health (2 hearts) a second.
+- Draconic Vampirism: 10% of damage dealt, at most 2 health (1 heart) a second (2026-11-23, Claude's numbers, accepted by
+  Shane; it was 15%, then 25%, with 2 hearts a second: at 25% a strong sword healed 4 a second, more than any Regeneration).
 - Predator's Eye: 24 blocks, mobs in the monster category.
 - Homes & Gardens: a 25% chance of one extra growth step after each natural one, 20 blocks as a sphere.
 
