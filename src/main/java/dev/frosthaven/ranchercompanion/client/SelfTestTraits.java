@@ -440,6 +440,8 @@ final class SelfTestTraits {
         step("astral_tooltip", 10, () -> hoverSpot("astral"), () -> ds() != null && ds().spot("astral") != null);
         quiet("close", 10, () -> { dev.frosthaven.ranchercompanion.client.screen.DrekkiScreen.testMouse = null; mc().setScreen(null); });
 
+        SelfTestNewTraits.steps();  /* 0.5.0: the potion, the new traits, the void; before Phoenix Heart, which ends in its death */
+
         /* ---- a Fledgling: Hearty, then Phoenix Heart (its death) ---- */
         fresh("fledgling");
         quiet("grow", 20, () -> { life(d -> { d.setLook(2, d.line(), d.diet(), d.astral(), d.horn()); d.applyStageHealth(true); }); pupHere(); });
@@ -452,7 +454,6 @@ final class SelfTestTraits {
         learn(Trait.PHOENIX_HEART, 3, 2, () -> { cmd("item replace entity @s weapon.offhand with totem_of_undying"); cmd("damage @s 100 minecraft:generic"); });
         quiet("phoenix_death", 40, () -> { server(m -> m.setHealth(20)); cmd("kill " + id); });
         check("phoenix_heart_egg", 20, 5, () -> {}, "egg in inventory", SelfTestTraits::egg, SelfTestTraits::egg);
-        SelfTestNewTraits.steps();  /* 0.5.0: the potion, the new traits, the void */
         quiet("traits_end", 10, () -> cmd("gamemode creative"));
         /* a learned message's trait link in chat, hovered: the same lines as the screen, wrapped the same way */
         quiet("chat_open", 20, () -> mc().setScreen(new net.minecraft.client.gui.screens.ChatScreen("")));
