@@ -648,6 +648,10 @@ public class DrekkiEntity extends PathfinderMob {
 
     public void pet() { entityData.set(PET, PET_TICKS); }
 
+    /** server: the hostile mob Go here told it to attack (GoHere.attack): fought in every stance until it dies, gets away
+     *  or the drekki is disengaged (Passive, Stay, a new Go here) */
+    public net.minecraft.world.entity.LivingEntity ordered;
+
     /** server: the tick a player's hit or spell last landed on it (FriendlyFire: sourceless debuffs then are refused) */
     public int playerTouchedAt = Integer.MIN_VALUE / 2;
 
@@ -679,6 +683,7 @@ public class DrekkiEntity extends PathfinderMob {
      */
     public void disengage() {
         if (!(level() instanceof net.minecraft.server.level.ServerLevel sl)) return;
+        ordered = null;
         setTarget(null);
         setLastHurtByMob(null);
         lastHurtByPlayer = null; lastHurtByPlayerTime = 0;

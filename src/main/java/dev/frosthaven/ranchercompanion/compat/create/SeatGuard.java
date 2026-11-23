@@ -26,6 +26,11 @@ public final class SeatGuard {
             }
     }
 
+    /** the player looks at a contraption seat within reach */
+    public static boolean onLookedSeat(net.minecraft.world.entity.player.Player p, double reach) {
+        return CreateSeats.onContraption(p, reach) != null;
+    }
+
     /** a drekki sits on the contraption seat the player looks at within reach */
     public static boolean drekkiOnLookedSeat(net.minecraft.world.entity.player.Player p, double reach) {
         CreateSeats.OnContraption seat = CreateSeats.onContraption(p, reach);

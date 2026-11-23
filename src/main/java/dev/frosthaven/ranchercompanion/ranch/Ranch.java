@@ -575,7 +575,7 @@ public final class Ranch {
         if (ARRIVALS.containsKey(p.getUUID())) return;  /* it waits for a spot its owner walks over */
         DrekkiEntity d = live(out.id);
         if (d != null && d.level() == p.level()) {
-            if (d.distanceTo(p) > 12) d.teleportNear(p);
+            if (d.distanceTo(p) > dev.frosthaven.ranchercompanion.entity.DrekkiGoals.CATCH_UP && d.goHere == null && !d.held() && d.ordered == null) d.teleportNear(p);  /* sent off by Go here: not pulled back meanwhile */
             return;
         }
         if (d != null) { r.snapshot(out, save(d)); d.discard(); }

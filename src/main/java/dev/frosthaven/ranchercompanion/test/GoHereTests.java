@@ -22,8 +22,8 @@ import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 /**
- * The whistle's Go here (spec, Go here): it walks to the very block looked at and stays; with no way to walk there it
- * is summoned; on a job seat it is employed (no longer with its owner, Passive), and off the seat it goes home.
+ * The whistle's Go here (spec, Go here): it walks to the very block looked at and holds; it walks at most 17 blocks,
+ * and the last few blocks with no way there it is summoned; on a job seat it is employed (no longer with its owner, Passive), and off the seat it goes home.
  * Create's seats are stood in for by a minecart, so these run without Create.
  */
 @GameTestHolder(RancherCompanion.ID)
@@ -59,6 +59,107 @@ public final class GoHereTests {
                     t.succeed();
                 });
             }
+        });
+    }
+
+    @GameTest(template = "floor", timeoutTicks = 500)
+    public static void itWalksAtMost17Blocks(GameTestHelper t) {
+        ServerPlayer p = LifeTests.player(t);
+        DrekkiEntity d = CombatTests.out(t, p, 2, Diet.RAW, Life.Stance.PASSIVE);
+        /* a long walkway 20 blocks above the floor, clear of the tests around this one */
+        for (int x = 0; x <= 46; x++) for (int z = 0; z <= 2; z++) t.setBlock(new BlockPos(x, 20, z), Blocks.STONE);
+        Vec3[] from = new Vec3[1];
+        t.runAfterDelay(5, () -> {  /* it is placed after the first tick */
+            d.moveTo(Vec3.atBottomCenterOf(t.absolutePos(new BlockPos(1, 21, 1))));
+            d.setDeltaMovement(Vec3.ZERO);
+            from[0] = d.position();
+            GoHere.sendTo(d, t.absolutePos(new BlockPos(45, 21, 1)));
+            t.succeedWhen(() -> {
+                t.assertTrue(d.goHere == null && d.held(), "it stopped and holds: goHere " + d.goHere + " at " + d.position());
+                double went = Math.hypot(d.getX() - from[0].x, d.getZ() - from[0].z);
+                t.assertTrue(went > 11 && went < 19 && d.getY() > from[0].y - 1, "about 17 blocks along the walkway, not 44: " + went + " at y " + d.getY());
+            });
+        });
+    }
+
+    @GameTest(template = "floor", timeoutTicks = 500)
+    public static void aPupWalksAtMost17Blocks(GameTestHelper t) {
+        ServerPlayer p = LifeTests.player(t);
+        DrekkiEntity d = CombatTests.out(t, p, 1, Diet.RAW, Life.Stance.PASSIVE);
+        /* a long walkway 20 blocks above the floor, clear of the tests around this one */
+        for (int x = 0; x <= 46; x++) for (int z = 0; z <= 2; z++) t.setBlock(new BlockPos(x, 20, z), Blocks.STONE);
+        Vec3[] from = new Vec3[1];
+        t.runAfterDelay(5, () -> {  /* it is placed after the first tick */
+            d.moveTo(Vec3.atBottomCenterOf(t.absolutePos(new BlockPos(1, 21, 1))));
+            d.setDeltaMovement(Vec3.ZERO);
+            from[0] = d.position();
+            GoHere.sendTo(d, t.absolutePos(new BlockPos(45, 21, 1)));
+            t.succeedWhen(() -> {
+                t.assertTrue(d.goHere == null && d.held(), "it stopped and holds: goHere " + d.goHere + " at " + d.position());
+                double went = Math.hypot(d.getX() - from[0].x, d.getZ() - from[0].z);
+                t.assertTrue(went > 11 && went < 19 && d.getY() > from[0].y - 1, "about 17 blocks along the walkway, not 44: " + went + " at y " + d.getY());
+            });
+        });
+    }
+
+    @GameTest(template = "floor", timeoutTicks = 200)
+    public static void goHereOnAHostileMobIsAnAttackOrderEvenWhenPassive(GameTestHelper t) {
+        ServerPlayer p = LifeTests.player(t);
+        DrekkiEntity d = CombatTests.out(t, p, 2, Diet.RAW, Life.Stance.PASSIVE);
+        var z = CombatTests.zombie(t, new BlockPos(9, 1, 9));
+        t.runAfterDelay(5, () -> {
+            p.lookAt(EntityAnchorArgument.Anchor.EYES, z.position().add(0, 1, 0));
+            t.assertTrue(GoHere.command(p), "ordered");
+            t.assertTrue(d.ordered == z && d.getTarget() == z, "its target is that mob, in Passive");
+            t.succeedWhen(() -> t.assertTrue(z.getHealth() < z.getMaxHealth(), "it bites: " + z.getHealth()));
+        });
+    }
+
+    @GameTest(template = "floor", timeoutTicks = 60)
+    public static void aPupIsTooYoungToFight(GameTestHelper t) {
+        ServerPlayer p = LifeTests.player(t);
+        DrekkiEntity d = CombatTests.out(t, p, 1, Diet.RAW, Life.Stance.AGGRESSIVE);
+        var z = CombatTests.zombie(t, new BlockPos(9, 1, 9));
+        t.runAfterDelay(5, () -> {
+            p.lookAt(EntityAnchorArgument.Anchor.EYES, z.position().add(0, 1, 0));
+            t.assertTrue(!GoHere.command(p), "no order for a pup");
+            t.assertTrue(d.ordered == null && d.getTarget() == null, "no target");
+            t.succeed();
+        });
+    }
+
+    @GameTest(template = "floor", timeoutTicks = 60)
+    public static void goHereElsewhereDropsTheOrder(GameTestHelper t) {
+        ServerPlayer p = LifeTests.player(t);
+        DrekkiEntity d = CombatTests.out(t, p, 2, Diet.RAW, Life.Stance.PASSIVE);
+        var z = CombatTests.zombie(t, new BlockPos(9, 1, 9));
+        t.runAfterDelay(5, () -> {
+            GoHere.attack(d, z);
+            lookAt(t, p, new BlockPos(2, 0, 10));
+            t.assertTrue(GoHere.command(p), "sent elsewhere");
+            t.runAfterDelay(25, () -> {
+                t.assertTrue(d.ordered == null && d.getTarget() == null, "the order and its target are gone: " + d.getTarget());
+                t.succeed();
+            });
+        });
+    }
+
+    @GameTest(template = "floor", timeoutTicks = 120)
+    public static void noCatchUpTeleportWithin15Blocks(GameTestHelper t) {
+        ServerPlayer p = LifeTests.player(t);
+        DrekkiEntity d = CombatTests.out(t, p, 2, Diet.RAW, Life.Stance.PASSIVE);
+        /* a walkway 20 above the floor: the owner 13 blocks along it from the drekki, a wall between them (no walking) */
+        for (int x = 0; x <= 16; x++) t.setBlock(new BlockPos(x, 20, 1), net.minecraft.world.level.block.Blocks.STONE);
+        for (int y = 21; y <= 24; y++) t.setBlock(new BlockPos(7, y, 1), net.minecraft.world.level.block.Blocks.STONE);
+        t.runAfterDelay(5, () -> {
+            p.teleportTo(t.getLevel(), t.absolutePos(new BlockPos(14, 21, 1)).getX() + 0.5, t.absolutePos(new BlockPos(14, 21, 1)).getY(), t.absolutePos(new BlockPos(14, 21, 1)).getZ() + 0.5, 0, 0);
+            d.moveTo(Vec3.atBottomCenterOf(t.absolutePos(new BlockPos(1, 21, 1))));
+            Vec3 at = d.position();
+            t.runAfterDelay(30, () -> {
+                double wall = Vec3.atBottomCenterOf(t.absolutePos(new BlockPos(7, 21, 1))).distanceTo(at);
+                t.assertTrue(d.position().distanceTo(at) < wall, "13 blocks behind, not teleported past the wall: moved " + d.position().distanceTo(at));
+                t.succeed();
+            });
         });
     }
 

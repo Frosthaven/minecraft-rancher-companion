@@ -145,6 +145,8 @@
   "message.rancher_companion.stay.off": "%s is following you",
   "message.rancher_companion.stay.none": "No drekki is out with you",
   "message.rancher_companion.gohere.going": "%s is on its way there",
+  "message.rancher_companion.gohere.attack": "%s goes for it",
+  "message.rancher_companion.gohere.too_young": "%s is too young to fight",
   "message.rancher_companion.gohere.sit": "%s is on its way to the seat",
   "message.rancher_companion.gohere.taken": "Someone already sits there",
   "message.rancher_companion.gohere.nothing": "Look at a block to send your drekki there",

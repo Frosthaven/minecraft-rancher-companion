@@ -85,11 +85,15 @@ public final class DrekkiInteract {
             d.hasCustomName() ? d.getCustomName() : Component.literal(d.lineage().name())), buf -> { buf.writeVarInt(d.getId()); buf.writeBoolean(traits); });
     }
 
-    /** items with their own use on a drekki keep it: carriers, name tags, leads, spawn eggs (hats are handled above) */
+    /** items with their own use on a drekki keep it: carriers, name tags, leads, spawn eggs, Create's train schedule (handed
+     *  to a drekki on a train seat, it makes it the conductor; hats are handled above) */
     public static boolean opensScreen(ItemStack stack) {
         return stack.isEmpty() || !(stack.getItem() instanceof dev.frosthaven.ranchercompanion.item.CarrierItem
-            || stack.is(Items.NAME_TAG) || stack.is(Items.LEAD) || stack.getItem() instanceof net.minecraft.world.item.SpawnEggItem);
+            || stack.is(Items.NAME_TAG) || stack.is(Items.LEAD) || stack.getItem() instanceof net.minecraft.world.item.SpawnEggItem
+            || SCHEDULE.equals(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem())));
     }
+
+    private static final net.minecraft.resources.ResourceLocation SCHEDULE = net.minecraft.resources.ResourceLocation.parse("create:schedule");
 
     /**
      * Employed, its owner's sneak click opens its screen (Recall from job); no petting at work. Before Create's own

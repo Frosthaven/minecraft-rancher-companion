@@ -348,11 +348,21 @@ Sneak and use the Drekki Whistle while looking at a block (up to 64 blocks away)
 
 - **Where.** It stands on that very block (the middle of the block above the one looked at). With no room for it
   there, nothing happens and a message says so. Looked at a seat (Create's), it sits on it.
-- **How.** It walks when a path reaches the spot. With no path, a spot more than 64 blocks away, or no progress for 3
-  seconds on the way (30 seconds at most), it is summoned there. Not with its owner (another level, an unloaded chunk),
-  it is called to them first and then sent.
+- **How** (decided 2026-11-23; was: summoned when it could not walk there). It walks as far as it can, at most 17
+  blocks, so no drekki is sent across the world. With no path all the way it takes the way that gets it nearest. It
+  stops after 17 blocks walked, at the end of a way that does not reach, or with no progress for 3 seconds (30 seconds
+  at most), and the hold below starts where it stopped. Within 4 blocks of the spot a stop becomes a summon onto it (the
+  step onto a train seat, a ledge). Not with its owner (another level, an unloaded chunk), it is called to them first
+  and then sent.
+- **Attack** (decided 2026-11-23). Looked at a hostile mob (the red health bar's rule), Go here is an order to attack
+  it, in every stance, Passive too, for a fledgling or older; a pup is too young to fight (a message says so). The
+  order ends when the mob dies, gets more than 32 blocks away, or the drekki is disengaged: Passive, Stay, or a new Go
+  here somewhere else (each drops all aggro).
+- **Clicks.** A click on the drekki itself on a train seat reaches the drekki (a train schedule makes it the conductor).
+  Create sits the player on a contraption seat at any use click, sneaking too, before the item is used:
+  a sneak-use of the whistle on a contraption seat goes to the whistle instead (client, SeatGuardClient).
 - **Then it holds there** (decided 2026-11-22; was: it stays): Go here does not tell it to stay. It holds the spot (or
-  the seat) for 2 seconds, and if it was not told to stay by then (the whistle, not sneaking, or the Stay button) it
+  the seat, or where it stopped) for 2 seconds, and if it was not told to stay by then (the whistle, not sneaking, or the Stay button) it
   gets up and follows again. A job seat is different: there it is employed (below). The whistle (not sneaking) or the
   Follow button makes a staying drekki follow again and takes it off a seat.
 - **Seats.** Create's seat blocks and the seats of a contraption (an assembled train). A drekki on a seat sits as any
@@ -1135,8 +1145,9 @@ Diet picks the position (where it fights from) and the two abilities. Damage is 
 No trait sets anything on fire: a burning mob lights the player and the ground. Heat damage, knockback and smite
 stand in. Traits use vanilla status effects wherever one fits.
 
-Baseline for every drekki, no trait needed: one-block step like a horse, catch-up teleport when more than 24
-blocks behind (decided 2026-11-20, eased 2026-11-21: only to a spot with room and firm ground that is not itself in lava or fire,
+Baseline for every drekki, no trait needed: one-block step like a horse, catch-up teleport when 15 blocks or more
+behind, never nearer (decided 2026-11-23; the code had 12, this line said 24), and never while on a Go here, holding after
+one or on an attack order (decided 2026-11-20, eased 2026-11-21: only to a spot with room and firm ground that is not itself in lava or fire,
 unless fire cannot hurt it, as with Fire Resistance; with no such spot it stays put; it arrives unhurt, with no fall
 carried over and no fire; the server then sends it to players as new, not as a move: owners saw no drekki after a
 catch-up while other players did, 2026-11-21), comes along to another dimension with its owner (on the game's dimension change, and when the

@@ -24,10 +24,17 @@ public final class CombatGoals {
     private CombatGoals() {}
 
     public static final float BITE = 4;
-    static final double AGGRO = 10, LEASH = 16;
+    static final double AGGRO = 10, LEASH = 16, ORDER = 32;
 
     public static boolean fights(DrekkiEntity d) {
-        return d.owned() && d.stage() >= 2 && !d.life.ghost && d.life.stance != Life.Stance.PASSIVE && !d.isSleepingLoop();
+        return d.owned() && d.stage() >= 2 && !d.life.ghost && (d.life.stance != Life.Stance.PASSIVE || order(d) != null) && !d.isSleepingLoop();
+    }
+
+    /** an attack order still on (GoHere.attack): the mob alive, fair and within ORDER; else it is dropped */
+    public static LivingEntity order(DrekkiEntity d) {
+        LivingEntity o = d.ordered;
+        if (o != null && (!fair(d, o) || o.level() != d.level() || o.distanceToSqr(d) > ORDER * ORDER)) { d.ordered = null; o = null; }
+        return o;
     }
 
     /** a fair target: alive, not itself, its owner, the owner's pets or drekki; no creepers; players only with PvP on */
@@ -67,6 +74,8 @@ public final class CombatGoals {
 
         private LivingEntity choose() {
             LivingEntity cur = d.getTarget();
+            LivingEntity o = order(d);
+            if (o != null) return o == cur ? null : o;  /* an attack order: that mob, nothing else */
             if (cur != null && fair(d, cur) && cur.distanceToSqr(d) <= LEASH * LEASH) return null;  /* keeps its fight */
             d.setTarget(null);
             Player owner = d.ownerPlayer();
@@ -103,7 +112,7 @@ public final class CombatGoals {
         public boolean canUse() { return fights(d) && fair(d, d.getTarget()); }
 
         @Override
-        public boolean canContinueToUse() { return canUse() && d.getTarget().distanceToSqr(d) <= LEASH * LEASH; }
+        public boolean canContinueToUse() { return canUse() && d.getTarget().distanceToSqr(d) <= (d.ordered == d.getTarget() ? ORDER * ORDER : LEASH * LEASH); }
 
         @Override
         public void start() { repath = 0; strikeIn = 0; }

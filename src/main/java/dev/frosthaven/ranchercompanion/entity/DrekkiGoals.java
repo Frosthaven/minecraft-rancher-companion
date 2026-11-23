@@ -15,10 +15,13 @@ import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
 import dev.frosthaven.ranchercompanion.ranch.Flood;
 
 /** The live drekki's goals and its pen-aware navigation (spec, Checkout: Wandering; Pup release: follow). */
-final class DrekkiGoals {
+public final class DrekkiGoals {
     private DrekkiGoals() {}
 
-    /** a checked-out drekki follows its owner, and teleports next to them when 12 blocks behind (the tamed mobs' rule) */
+    /** blocks behind its owner from which a following drekki is caught up (teleported); nearer it walks */
+    public static final double CATCH_UP = 15;
+
+    /** a checked-out drekki follows its owner, and teleports next to them when 15 blocks behind */
     static final class Follow extends Goal {
         private final DrekkiEntity d;
         private Player owner;
@@ -50,7 +53,7 @@ final class DrekkiGoals {
 
         @Override
         public void tick() {
-            boolean far = d.distanceToSqr(owner) >= 12 * 12;
+            boolean far = d.distanceToSqr(owner) >= CATCH_UP * CATCH_UP;  /* nearer, it walks (decided 2026-11-23: 15, was 12) */
             if (!far) d.getLookControl().setLookAt(owner, 10f, d.getMaxHeadXRot());
             if (--recalc > 0) return;
             recalc = adjustedTickDelay(10);
