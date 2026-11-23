@@ -1099,6 +1099,7 @@ fall cannot hurt it, it takes drops of up to 24 blocks to reach its owner (the g
 - Every stance, only hostile mobs (decided 2026-11-22): a mob without a red health bar (a village's guard or iron golem
   that turns on a player who hit a villager, a wolf, a bee) is never fought, even when it hits the drekki or its owner,
   and its hits do the drekki no harm.
+- A stay command ends its fights the same way (decided 2026-11-22): the whistle, the Stay button, a spot it is sent to.
 - Switching stance (decided 2026-11-22): to Passive, every fight ends at once: no target, it forgets who hit it, and
   mobs angry at it (a guard, a golem, a wolf) calm down toward it. Off Passive it starts fresh: only hits from then on,
   to it or its owner, and its owner's attacks from then on, start a fight.

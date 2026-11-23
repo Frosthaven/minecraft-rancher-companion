@@ -646,6 +646,7 @@ public final class Ranch {
             r.stay(out, Roster.at(d.level(), d.blockPosition()));
             STAYS.put(p.getUUID(), out.stay);
             d.setStaying(true);
+            d.disengage();  /* a stay command ends its fights (decided 2026-11-22) */
         } else {
             r.stay(out, null);
             STAYS.remove(p.getUUID());
@@ -693,6 +694,7 @@ public final class Ranch {
         roster(d.getServer()).stay(out, Roster.at(d.level(), d.blockPosition()));
         STAYS.put(d.owner(), out.stay);
         d.setStaying(true);
+        d.disengage();
     }
 
     /** sat on a Create job seat (spec, Go here: Employed): no longer with its owner, who may take out another; it

@@ -166,6 +166,23 @@ public final class CombatTests {
         });
     }
 
+    /** a stay command ends its fight too (2026-11-22) */
+    @GameTest(template = "floor", timeoutTicks = 300)
+    public static void stayEndsAFight(GameTestHelper t) {
+        ServerPlayer p = LifeTests.player(t);
+        DrekkiEntity d = out(t, p, 2, Diet.RAW, Life.Stance.REACTIVE);
+        Husk z = zombie(t, new BlockPos(6, 1, 8));
+        t.runAfterDelay(70, () -> {
+            p.hurt(p.damageSources().mobAttack(z), 1);
+            t.runAfterDelay(30, () -> {
+                t.assertTrue(d.getTarget() == z, "reactive: the husk that hit its owner: " + d.getTarget());
+                Ranch.setStay(p, true);
+                t.assertTrue(d.isStaying() && d.getTarget() == null, "told to stay: the fight ended");
+                t.runAfterDelay(30, () -> { t.assertTrue(d.getTarget() == null, "the old hit starts nothing: " + d.getTarget()); t.succeed(); });
+            });
+        });
+    }
+
     @GameTest(template = "floor", timeoutTicks = 200)
     public static void phoenixHeartTurnsIntoItsEggAndBack(GameTestHelper t) {
         ServerPlayer p = LifeTests.player(t);

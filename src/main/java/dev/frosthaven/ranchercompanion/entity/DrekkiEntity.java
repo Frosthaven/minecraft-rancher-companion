@@ -656,29 +656,38 @@ public class DrekkiEntity extends PathfinderMob {
     public net.minecraft.world.entity.player.Player fightsFromOwner;
 
     /**
-     * A stance change (spec, Stances). To Passive, every fight ends now: no target, it forgets who hit it, and mobs
-     * that were angry at it (a guard, a golem, a wolf) calm down toward it. Off Passive, it starts fresh: only hits from
-     * now on, to it or its owner, and its owner's own attacks from now on, start a fight.
+     * A stance change (spec, Stances). To Passive, every fight ends now ({@link #disengage}). Off Passive, it starts
+     * fresh: only hits from now on, to it or its owner, and its owner's own attacks from now on, start a fight.
      */
     public void setStance(dev.frosthaven.ranchercompanion.life.Life.Stance s) {
         var passive = dev.frosthaven.ranchercompanion.life.Life.Stance.PASSIVE;
         var was = life.stance;
         life.stance = s;
-        if (s == passive && was != passive && level() instanceof net.minecraft.server.level.ServerLevel sl) {
-            setTarget(null);
-            setLastHurtByMob(null);
-            lastHurtByPlayer = null; lastHurtByPlayerTime = 0;
-            for (var m : sl.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, getBoundingBox().inflate(48), m -> m.getTarget() == this)) m.setTarget(null);
-            for (var m : sl.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, getBoundingBox().inflate(48), m -> m instanceof net.minecraft.world.entity.NeutralMob))
-                if (getUUID().equals(((net.minecraft.world.entity.NeutralMob) m).getPersistentAngerTarget())) ((net.minecraft.world.entity.NeutralMob) m).stopBeingAngry();
-        }
-        if (was == passive && s != passive) {
-            fightsFrom = tickCount;
-            fightsFromOwner = ownerPlayer();
-            fightsFromOwnerTick = fightsFromOwner != null ? fightsFromOwner.tickCount : 0;
-        }
+        if (s == passive && was != passive) disengage();
+        if (was == passive && s != passive) freshFromNow();
         if (s != was) setTarget(null);
         syncLife();
+    }
+
+    /**
+     * Every fight ends now (told to stay, or set Passive): no target, it forgets who hit it, mobs that were angry at it
+     * (a guard, a golem, a wolf) calm down toward it, and only hits from now on start a fight again.
+     */
+    public void disengage() {
+        if (!(level() instanceof net.minecraft.server.level.ServerLevel sl)) return;
+        setTarget(null);
+        setLastHurtByMob(null);
+        lastHurtByPlayer = null; lastHurtByPlayerTime = 0;
+        for (var m : sl.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, getBoundingBox().inflate(48), m -> m.getTarget() == this)) m.setTarget(null);
+        for (var m : sl.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, getBoundingBox().inflate(48), m -> m instanceof net.minecraft.world.entity.NeutralMob))
+            if (getUUID().equals(((net.minecraft.world.entity.NeutralMob) m).getPersistentAngerTarget())) ((net.minecraft.world.entity.NeutralMob) m).stopBeingAngry();
+        freshFromNow();
+    }
+
+    private void freshFromNow() {
+        fightsFrom = tickCount;
+        fightsFromOwner = ownerPlayer();
+        fightsFromOwnerTick = fightsFromOwner != null ? fightsFromOwner.tickCount : 0;
     }
 
     @Override
