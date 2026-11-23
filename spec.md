@@ -629,6 +629,13 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
     Biomes O' Plenty's Bramble counts if it deals one of these, to check when building). Effect: a mob that hits
     the drekki in melee takes 25% of that damage back, at least 1 (half a heart), as thorns damage, in every
     stance. Projectiles and explosions return nothing. On a Clay drekki it adds to the line's own Thorns.
+  - Point Break (Shane, 2026-11-23, not built). Learned when a creeper's blast breaks the drekki's barding (creepers
+    only: not TNT, beds, end crystals or fireballs; the pack's Creeper Overhaul creepers by a tag, to check when
+    building). Always teaches; the barding is the cost, and a pup wears none. Effect: when its barding breaks, the
+    drekki sets off a creeper's blast around itself (power 3, up to 43 damage at the center, knockback, the blast's
+    particles and sound) that damages no blocks and does not hurt the drekki. 1-hour cooldown. Proposed, to confirm:
+    it hurts hostile mobs only (not players, pets or villagers), and any break of the barding sets it off.
+    Tooltip: "When its barding breaks, the drekki explodes like a creeper, damaging nearby enemies but not blocks."
   - Hibernation Plan slows both the player's hunger and the drekki's (see Hunger).
   - Phoenix Heart works on every death and the trait is kept. The egg goes to the owner's inventory when they are
     online with room, otherwise it is held and given on their next login or at the hatchery. It is never dropped.
