@@ -531,19 +531,37 @@ Rules behind the lists:
     changes as the drekki moves, at every stage, a pup's too.
   - Dropped the same day, before anything was built: a 20% damage cut for the drekki, its owner and its barding
     while in the trait's biome, with the globe lit or dim. There is no such bonus; the globe has one look.
-- Wings of Hope (End Exploration; Shane, 2026-11-23, not built): flight like Mekanism's jetpack in Vector mode, in
-  place of the elytra-style flight of the first design. While ridden, holding jump pushes the drekki along its own
-  up direction, which tilts with where the rider looks: level, it climbs; looking down, the push leans forward and
-  it flies forward (read from Mekanism 10.7's `IJetpackItem`: `getUpVector` times the thrust, the vertical part eased
-  as speed builds). What makes it a drekki and not a jetpack:
+- Wings of Hope (Shane, 2026-11-23, not built): flight like Mekanism's jetpack in Vector mode, in place of the
+  elytra-style flight of the first design. While ridden, holding jump pushes the drekki along its own up direction,
+  which tilts with where the rider looks: level, it climbs; looking down, the push leans forward and it flies
+  forward (read from Mekanism 10.7's `IJetpackItem`: `getUpVector` times the thrust, the vertical part eased as speed
+  builds). What makes it a drekki and not a jetpack:
   - Wingbeats: the push comes with each beat of the wings, in a rhythm, with the flap and its sound, not as one
     steady burn.
-  - Stamina, not fuel: a flight meter drains while it beats and refills on the ground. Proposed numbers, to tune:
-    15 s of beating, full again after 10 s on the ground.
+  - It never runs out (Shane): no fuel and no stamina. (A flight stamina was proposed the same day and dropped.)
   - No hover: it cannot hang in place.
-  - No glide: when the rider lets go, or the stamina is out, it falls. The fall never hurts the drekki and the
-    rider takes it as their own, so Leap of Faith keeps its worth (Shane).
+  - No glide: when the rider lets go, it falls. The fall never hurts the drekki and the rider takes it as their
+    own, so Leap of Faith keeps its worth (Shane).
   - No dive for speed of its own: Vector steering already gives that (Shane).
+- **Biome traits become activity traits (Shane, 2026-11-23, not built).** The 15 traits of the biome categories are
+  learned like any other trait, from an activity of the owner's, by the astral affinities listed, and take a trait
+  slot like any other. This replaces learning by travel: there is no biome lock-in, no "one trait from the biome it
+  grew up in", no biome row with a globe, and the text above about those is history. Claude spread them and chose
+  the activities; Shane chose Wings of Hope's. Each affinity now learns 19 or 20 of 40 traits.
+  - All six: The Open Road (sprint 2,000 blocks on foot), Homes & Gardens (harvest 64 fully grown crops),
+    Downstream (swim 500 blocks).
+  - Lunar, Aero: Frost Strider (walk 300 blocks on snow or ice). Lunar, Deep: Hibernation Plan (sleep through 5
+    nights with the drekki beside you), Predator's Eye (look at 10 different hostile mobs through a spyglass).
+    Solar, Lunar: Ocean Walker (travel 1,000 blocks by boat). Solar, Aero: Four Winds (ride a horse, donkey, mule or
+    camel 1,000 blocks). Solar, End: Natural Repellant (kill 10 creepers). Solar, Underworld: Hoglin Ward (kill 5
+    hoglins). Deep, Underworld: Lava Walker (ride a strider 300 blocks over lava), Inverse Luminance (place 64
+    torches). Underworld, End: Draconic Vampirism (be in the End when the Ender Dragon dies; always teaches). Aero,
+    End: Leap of Faith (land unhurt from a fall of 30 blocks or more, 25% each time), Wings of Hope (be hit by a
+    shulker's bullet 10 times: the Levitation it gives is the lesson; counted at the hit, so Balm & Salve stopping
+    the effect does not stop the count).
+  - Still to decide: whether the foot tint stays as a look that follows where the drekki was raised (the biome
+    time counting is still in the game and feeds nothing else now); what becomes of "biome capstone traits".
+  - Surface Tension still needs two affinities (Lava Walker is Deep or Underworld, Ocean Walker Solar or Lunar).
 - Biome capstone traits: a spread of capstone traits that lock in at the start of stage 3.
 
 ## Traits
