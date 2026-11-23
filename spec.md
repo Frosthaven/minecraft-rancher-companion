@@ -602,9 +602,18 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
   - Uncommon, green (19): Duck & Cover, Marked, Barbed Coat, The Fallen Emperor, Stamp Out, Huddle Up, Night Watch,
     Staring Contest, Web Cutter, Natural Repellant, Hoglin Ward, Predator's Eye, Inverse Luminance, Hibernation
     Plan, The Open Road, Homes & Gardens, Downstream, Frost Strider, Hook Line & Sinker.
-  - To settle when built: where the color shows (the trait's name on the traits tab, in the offer, in the learned
-    chat line; today a learned trait is green and an offer gold, so an offer needs another mark), and the tier of
-    the breeding combos and poly traits (epic, or a color of their own).
+  - Legendary, orange (Shane): every trait that only breeding gives. Today's list: Surface Tension, Thermostat,
+    Triage, Launch Protocol, Polyphasic Solaris, Polystratic Caelum, Polyplanar Eschaton, Polytria Opus.
+  - Where the color shows (Claude's design, on Shane's "lets solve the color"; not built):
+    - A trait's name is in its tier color everywhere it is named: its row on the traits tab, the title of its
+      tooltip, the [Trait] link in chat. Its bullet takes the same color.
+    - The tooltip's second line names the tier in that color ("Epic"), as the game names an item's rarity.
+    - Recharging: the name dims toward the panel, in its own hue, with the hourglass as today.
+    - An offer no longer turns the name gold (gold and Legendary's orange are too close, and the tier would be
+      hidden): the name keeps its tier color, the bullet becomes a gold "!" and the yes and no buttons stay. In
+      chat the offer's link keeps the tier color and the sentence says it wants to learn it.
+    - A sleeping trait: its tier color at half strength, in italics. A free slot stays dim grey.
+    - Colors, to tune on the screen: Uncommon `5fd17a`, Rare `5aa9ff`, Epic `c77dff`, Legendary `ff9d3c`.
 - 0.5.0 as built (2026-11-23), where the code settles what the text above left open:
   - The update from 3/6/9 runs when a drekki's record is next loaded (its save has no "caps" mark), not as one walk
     over the roster; the result is the same, and a drekki hatched later is never marked.
