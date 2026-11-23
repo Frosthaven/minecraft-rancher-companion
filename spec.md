@@ -354,6 +354,8 @@ Sneak and use the Drekki Whistle while looking at a block (up to 64 blocks away)
   at most), and the hold below starts where it stopped. Within 4 blocks of the spot a stop becomes a summon onto it (the
   step onto a train seat, a ledge). Not with its owner (another level, an unloaded chunk), it is called to them first
   and then sent.
+- **Whistle tooltip** (decided 2026-11-23, not built). Holding Shift expands the tooltip, in the way the pack's other
+  mods do ("Hold [Shift]"), to two lines: "Use: stay or follow" and "Sneak use: go to location or attack".
 - **Attack** (decided 2026-11-23). Looked at a hostile mob (the red health bar's rule), Go here is an order to attack
   it, in every stance, Passive too, for a fledgling or older; a pup is too young to fight (a message says so). The
   order ends when the mob dies, gets more than 32 blocks away, or the drekki is disengaged: Passive, Stay, or a new Go
@@ -614,12 +616,33 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
     An arrow or trident (not the owner's own) about to hit its owner within 10 blocks bounces off as from a shield
     (the game's reverse deflection, with the shield sound). 6-second cooldown (3 s in its home terrain): about 1 in 3
     of a skeleton's arrows on Normal. Other projectiles (fireballs, potions, shulker bullets) are not stopped.
+  - Provoke (added by the team as Come Get Me; decided 2026-11-23, not built). Learned by whistle attack orders (see
+    Go here, Attack): the drekki lands a hit on 5 different mobs it was ordered to attack. Counted; a second hit on
+    the same mob does not count, nor does a fight it picked itself. Effect: the mob it was ordered to attack, from
+    the drekki's first hit on it, can only target the drekki. One mob at a time, for 8 s, then no new taunt until
+    16 s after the taunt started. Every mob, bosses too (the Warden and mobs that pick targets by a brain need their
+    own handling; the Ender Dragon has no target to change). It ends early when the mob or the drekki dies or is
+    gone, the whistle sends the drekki elsewhere, or it is set to Passive.
+  - Barbed Coat (added by the team as Reflecting Pain; decided 2026-11-23, not built). Learned when the owner is
+    hurt by spikes, 25% each time: by damage type, so modded blocks count without compat code (cactus, sweet berry
+    bush, thorns: a guardian's spikes, a pufferfish and a mob in Thorns armor, stalagmite and falling stalactite;
+    Biomes O' Plenty's Bramble counts if it deals one of these, to check when building). Effect: a mob that hits
+    the drekki in melee takes 25% of that damage back, at least 1 (half a heart), as thorns damage, in every
+    stance. Projectiles and explosions return nothing. On a Clay drekki it adds to the line's own Thorns.
   - Hibernation Plan slows both the player's hunger and the drekki's (see Hunger).
   - Phoenix Heart works on every death and the trait is kept. The egg goes to the owner's inventory when they are
     online with room, otherwise it is held and given on their next login or at the hatchery. It is never dropped.
 
 Effect numbers, written into the sheet's rows (starting points, to tune in testing). `snowy_beach` is in Snow & Ice only:
 
+- Breeding combos decided 2026-11-23 (not built; each replaces its parts and takes one slot):
+  - Surface Tension (the sheet's Obsidian Walker): Lava Walker + Ocean Walker. The drekki and its rider stand, walk
+    and run on any liquid, modded fluids too. The drekki is lavaproof, as with Lava Walker.
+  - Thermostat (the sheet's Temperature Control): Stamp Out + Huddle Up. Both effects, each with its own cooldown.
+  - Triage (the sheet's Field Medic): Thermostat + Balm & Salve. All three effects, each with its own cooldown, and
+    they protect the drekki itself as well as players. Balm & Salve's rule already covers Wither and Hunger (every
+    harmful effect milk cures). The first combo with a combo as a part: a combo can be a part of another combo, so
+    this one takes two generations.
 - Balm & Salve: only harmful effects that milk cures; beneficial effects are kept. Once it acts, every such effect is
   kept off for 5 s (2026-11-20: a lingering cloud or a wither rose applies its effect again every few ticks).
 - Hook Line & Sinker: a 50% chance per tick of one extra countdown tick, about a third less waiting.
