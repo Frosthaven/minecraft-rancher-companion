@@ -1452,8 +1452,31 @@ Decided 2026-11-05:
 - Barding: first pass on the design page (Model tab, Barding): a breastplate with shoulder plates, two bands per
   neck segment with a throat plate, and a face and brow plate; each tier a plate color with a darker rim (wood,
   leather brown, stone, iron, gold, diamond, netherite). Review the shapes, then port them to the rig.
-  Enchanted barding shows the enchantment glint (a violet shimmer across the plates; the page's Enchanted toggle).
-  Open: which enchantments barding accepts, and how (enchanting table, anvil, or both).
+  Enchanted barding shows the enchantment glint (a violet shimmer across the plates; the page's Enchanted toggle):
+  in the game it is the game's own glint, drawn on a plates-only copy of the model (built in 0.5.0).
+- Barding enchantments (Shane, 2026-11-23: "all the same enchants as normal chest armor for players and swords for
+  players", the rest by Claude's judgement; built in 0.5.0). Barding takes them at an enchanting table and on an
+  anvil (the item tags `enchantable/chest_armor`, `sword` and the tags those enchantments ask for; enchantability by
+  material: wood, leather and netherite 15, stone 5, iron 9, gold 25, diamond 10). A drekki does not wear barding in
+  one of the game's equipment slots and barding soaks a hit into its durability, so each effect is the mod's own
+  (`item/BardingEnchants`), kept to the game's numbers:
+  - Protection: 4% a level off the durability a hit costs. Fire, Blast and Projectile Protection: 8% a level, for
+    their kind of damage. Together 80% at most; a hit always costs at least 1.
+  - Thorns: 15% a level that a mob's melee hit costs it 1 to 4 health and the barding 2 more durability. It adds to
+    Barbed Coat.
+  - Unbreaking: the game's own rule, as on armor.
+  - Mending: experience its owner picks up within 10 blocks of it repairs the barding first, 2 durability a point;
+    the owner gets what is left of the orb.
+  - Curse of Binding: once on, it comes off only by breaking (a player in creative can take it off). Curse of
+    Vanishing: it is gone with the drekki, not left in the tombstone.
+  - Sharpness (+0.5 a level, +0.5), Smite and Bane of Arthropods (+2.5 a level against their kind): on every attack
+    that deals damage, which today is the bite and the Elemental ball. Fire Aspect (4 s a level) and Looting (a
+    kill's loot counts the level): both attacks too. Knockback (0.5 a level) and Sweeping Edge (the mobs within 1.5
+    blocks of the target take level / (level + 1) of the hit): the bite only.
+  - The pounce (the Mature's lunge) has an animation and deals no damage yet; when it does, it goes through the same
+    strike (`BardingEnchants.strike`) and gets the same enchantments.
+  - An enchantment from another mod that fits a chestplate or a sword can be put on barding and does nothing there.
+  - Unbreaking and the protections make barding last longer, so Point Break (the blast when it breaks) comes less often.
 - Effect numbers for every trait and ability.
 - Poly eyes: one color per eye on the design page and in the rig's eye sheet.
 - Railwright, Idol, Ruin, Sakura, Brew, Summit, Prospector, Prismarine, Vault, Tome, Deep and Bastion: their travel passives and

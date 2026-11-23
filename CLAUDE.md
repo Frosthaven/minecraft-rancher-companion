@@ -76,6 +76,8 @@ hatching, the roster, check in and out, the small carrier, petting, names, the t
   Contest, Web Cutter, Live Wire, Rewind, the void), `Tips`. `item/DrekkiPotions` (the Potion of Horizons and the two
   potions brewed on the way: potion types, the brewing mixes, feeding it) with `client/PotionModels` (their icons, a
   wrap of the game's potion model). `life/Life.settleSlots` is the one-time update of a drekki saved under the 3/6/9 caps.
+  `item/BardingEnchants` (what each chestplate and sword enchantment does on barding; `look/EnchantMath` its numbers);
+  `client/rig/RigBake` bakes a plates-only copy of the model for the enchantment glint (`Baked.glint`, `Node.glint`).
   `-Drancher_companion.selftest.new=true` runs `client/SelfTestNewTraits` (0.5.0 in the real game; `./gradlew
   runSelfTestNew` in `run/saves/selftest`, a copy of the showcase world); `runSelfTestTraits` runs every trait.
 - `compat/journeymap/DrekkiMap` (the magenta death marker; JourneyMap finds it by its annotation),
