@@ -143,7 +143,8 @@ public final class Death {
     private static void gearToTomb(DrekkiEntity d) {
         if (d.owner() == null) return;
         java.util.List<ItemStack> gear = new java.util.ArrayList<>(java.util.List.of(
-            d.hat() > 0 ? DrekkiItems.hatStack(d.hat()) : ItemStack.EMPTY, d.bardingItem(), d.accessory()));
+            d.hat() > 0 ? DrekkiItems.hatStack(d.hat()) : ItemStack.EMPTY,
+            dev.frosthaven.ranchercompanion.item.BardingEnchants.vanishes(d.bardingItem()) ? ItemStack.EMPTY : d.bardingItem(), d.accessory()));  /* Curse of Vanishing */
         /* its record as it fell, look and all (kept for later; spec, Tombstone): the worn items are in the tombstone, not in it */
         net.minecraft.nbt.CompoundTag record = Ranch.save(d);
         record.remove("BardingItem");

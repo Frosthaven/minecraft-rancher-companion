@@ -18,6 +18,8 @@ public final class Node {
     /** set by an animation that needs a free rotation, cleared by reset() */
     public Quaternionf quat;
     public ModelPart part;
+    /** its part in the barding-only copy of the model, which draws the enchantment glint; null without barding */
+    public ModelPart glint;
 
     Node(Node parent, double x, double y, double z, double rx) {
         this.parent = parent;

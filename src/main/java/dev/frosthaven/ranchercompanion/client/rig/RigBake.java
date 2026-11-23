@@ -80,10 +80,20 @@ public final class RigBake {
         Map<Node, PartDefinition> defs = new HashMap<>();
         Map<Node, String> names = new HashMap<>();
         int[] count = {0};
-        build(rig.root, vroot, defs, names, cellOf, Coplanar.grow(rig), count, true);
+        build(rig.root, vroot, defs, names, cellOf, Coplanar.grow(rig), count, true, false);
         ModelPart baked = LayerDefinition.create(mesh, texW, texH).bakeRoot();
         ModelPart root = baked.getChild("root");
-        link(rig.root, root, names);
+        link(rig.root, root, names, false);
+        /* the barding plates again as a model of their own, same parts and poses: the enchantment glint draws on it alone */
+        ModelPart glint = null;
+        if (rig.look.barding() > 0 && rig.all.stream().anyMatch(n -> n.boxes.stream().anyMatch(RigBake::plate))) {
+            MeshDefinition plates = new MeshDefinition();
+            PartDefinition proot = plates.getRoot().addOrReplaceChild("root", CubeListBuilder.create(), PartPose.offset(0, 24, 0));
+            Map<Node, String> pnames = new HashMap<>();
+            build(rig.root, proot, new HashMap<>(), pnames, cellOf, Coplanar.grow(rig), new int[]{0}, true, true);
+            glint = LayerDefinition.create(plates, texW, texH).bakeRoot();
+            link(rig.root, glint.getChild("root"), pnames, true);
+        }
 
         ResourceLocation tex = ResourceLocation.fromNamespaceAndPath(RancherCompanion.ID, "dynamic/" + key);
         ResourceLocation eyes = ResourceLocation.fromNamespaceAndPath(RancherCompanion.ID, "dynamic/" + key + "_eyes");
@@ -91,34 +101,40 @@ public final class RigBake {
         DynamicTexture furT = new DynamicTexture(fur), glowT = new DynamicTexture(glow);
         Minecraft.getInstance().getTextureManager().register(tex, furT);
         Minecraft.getInstance().getTextureManager().register(eyes, glowT);
-        if (sheen == null) return new Baked(rig, baked, tex, eyes, null, furT, glowT);
+        if (sheen == null) { Baked b = new Baked(rig, baked, tex, eyes, null, furT, glowT); b.glint = glint; return b; }
         ResourceLocation sheenTex = ResourceLocation.fromNamespaceAndPath(RancherCompanion.ID, "dynamic/" + key + "_sheen");
         DynamicTexture sheenT = new DynamicTexture(sheen);
         Minecraft.getInstance().getTextureManager().register(sheenTex, sheenT);
-        return new Baked(rig, baked, tex, eyes, sheenTex, furT, glowT, sheenT);
+        Baked b = new Baked(rig, baked, tex, eyes, sheenTex, furT, glowT, sheenT);
+        b.glint = glint;
+        return b;
     }
 
-    private static void build(Node n, PartDefinition pd, Map<Node, PartDefinition> defs, Map<Node, String> names, Map<Node.Box, Cell> cellOf, Map<Node.Box, Integer> grow, int[] count, boolean isRoot) {
+    /** a barding plate (BardingRig's box kinds) */
+    private static boolean plate(Node.Box b) { return b.kind() > BardingRig.KIND && b.kind() <= BardingRig.KIND + 7; }
+
+    /** platesOnly: the same tree of parts with the barding plates' cubes alone */
+    private static void build(Node n, PartDefinition pd, Map<Node, PartDefinition> defs, Map<Node, String> names, Map<Node.Box, Cell> cellOf, Map<Node.Box, Integer> grow, int[] count, boolean isRoot, boolean platesOnly) {
         PartDefinition mine = pd;
         if (!isRoot) {
             String name = "n" + count[0]++;
             names.put(n, name);
             CubeListBuilder cb = CubeListBuilder.create();
-            for (Node.Box b : n.boxes) if (!b.rotated()) addBox(cb, b, cellOf.get(b), 0, 0, 0, grow.get(b));
+            for (Node.Box b : n.boxes) if (!b.rotated() && (!platesOnly || plate(b))) addBox(cb, b, cellOf.get(b), 0, 0, 0, grow.get(b));
             Vector3f e = rot(n);
             mine = pd.addOrReplaceChild(name, cb, PartPose.offsetAndRotation(n.x, -n.y, -n.z, e.x, e.y, e.z));
         } else {
             mine = pd;
         }
         int bi = 0;
-        for (Node.Box b : n.boxes) if (b.rotated()) {
+        for (Node.Box b : n.boxes) if (b.rotated() && (!platesOnly || plate(b))) {
             Quaternionf q = new Quaternionf().rotationX(b.rx()).rotateY(b.ry()).rotateZ(b.rz());
             Vector3f e = new Vector3f(); Baked.eulerZYX(q.x, -q.y, -q.z, q.w, e);
             CubeListBuilder cb = CubeListBuilder.create(); addBox(cb, b, cellOf.get(b), -b.x(), -b.y(), -b.z(), grow.get(b));
             mine.addOrReplaceChild("b" + bi++, cb, PartPose.offsetAndRotation(b.x(), -b.y(), -b.z(), e.x, e.y, e.z));
         }
         defs.put(n, mine);
-        for (Node c : n.children) build(c, mine, defs, names, cellOf, grow, count, false);
+        for (Node c : n.children) build(c, mine, defs, names, cellOf, grow, count, false, platesOnly);
     }
 
     /** a box centered at (x, y, z) in the page's space becomes a vanilla cube from its min corner, y and z flipped. It grows by
@@ -129,9 +145,9 @@ public final class RigBake {
         cb.texOffs(c.u + 1, c.v + 1).addBox(x - b.w() / 2, -y - b.h() / 2, -z - b.d() / 2, b.w(), b.h(), b.d(), new CubeDeformation(Coplanar.STEP * step));
     }
 
-    private static void link(Node n, ModelPart part, Map<Node, String> names) {
-        n.part = part;
-        for (Node c : n.children) link(c, part.getChild(names.get(c)), names);
+    private static void link(Node n, ModelPart part, Map<Node, String> names, boolean glint) {
+        if (glint) n.glint = part; else n.part = part;
+        for (Node c : n.children) link(c, part.getChild(names.get(c)), names, glint);
     }
 
     private static Vector3f rot(Node n) {

@@ -163,7 +163,7 @@ public final class CombatGoals {
                 /* a bite begun in reach lands: a hit that knocks the drekki back in its 6 ticks no longer spoils it
                    (2026-11-21: in water a zombie kept it from ever biting). Not on a target that has gone far */
                 if (d.level() != t.level() || d.distanceToSqr(t) > 6 * 6) return;
-                if (t.hurt(d.damageSources().mobAttack(d), BITE)) d.playSound(dev.frosthaven.ranchercompanion.DrekkiSounds.BITE2.get(), 0.8f, 1.1f);
+                if (dev.frosthaven.ranchercompanion.item.BardingEnchants.strike(d, t, d.damageSources().mobAttack(d), BITE, true)) d.playSound(dev.frosthaven.ranchercompanion.DrekkiSounds.BITE2.get(), 0.8f, 1.1f);
             }
         }
     }

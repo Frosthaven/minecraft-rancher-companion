@@ -24,6 +24,12 @@ public class BardingItem extends Item {
         lines.add(net.minecraft.network.chat.Component.translatable("tooltip.rancher_companion.barding.knockback").withStyle(net.minecraft.ChatFormatting.BLUE));
     }
 
+    /** how well it takes enchantments at a table, its material's armor value in the game (spec, Barding: enchantments) */
+    @Override
+    public int getEnchantmentValue() {
+        return switch (tier) { case WOOD, LEATHER, NETHERITE -> 15; case STONE -> 5; case IRON -> 9; case GOLD -> 25; case DIAMOND -> 10; };
+    }
+
     @Override
     public boolean isValidRepairItem(ItemStack self, ItemStack repair) {
         return switch (tier) {

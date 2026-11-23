@@ -62,7 +62,7 @@ public final class DrekkiMenu extends AbstractContainerMenu {
         if (gear) {
             addSlot(new Slot(barding, 0, HAT_X, BARDING_Y) {
                 @Override public boolean mayPlace(ItemStack s) { return !locked() && fitsBarding(d, s); }
-                @Override public boolean mayPickup(Player p) { return !locked(); }
+                @Override public boolean mayPickup(Player p) { return !locked() && !dev.frosthaven.ranchercompanion.item.BardingEnchants.bound(getItem(), p); }
                 @Override public int getMaxStackSize() { return 1; }
             });
             addSlot(new Slot(accessory, 0, HAT_X, ACCESSORY_Y) {

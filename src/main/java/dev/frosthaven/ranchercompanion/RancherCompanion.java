@@ -69,6 +69,7 @@ public final class RancherCompanion {
         dev.frosthaven.ranchercompanion.trait.Learning.register(NeoForge.EVENT_BUS);
         dev.frosthaven.ranchercompanion.trait.Effects.register(NeoForge.EVENT_BUS);
         dev.frosthaven.ranchercompanion.trait.FightTraits.register(NeoForge.EVENT_BUS);
+        dev.frosthaven.ranchercompanion.item.BardingEnchants.register(NeoForge.EVENT_BUS);
         dev.frosthaven.ranchercompanion.trait.WorldTraits.register(NeoForge.EVENT_BUS);
         NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.server.ServerStoppedEvent.class, e -> { dev.frosthaven.ranchercompanion.trait.FightTraits.clear(); dev.frosthaven.ranchercompanion.trait.WorldTraits.clear(); });
         modBus.addListener(EntityAttributeCreationEvent.class, e -> e.put(DREKKI.get(), DrekkiEntity.createAttributes().build()));

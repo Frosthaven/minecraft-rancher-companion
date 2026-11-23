@@ -20,6 +20,7 @@ public final class DrekkiRenderer extends MobRenderer<DrekkiEntity, DrekkiModel>
         super(ctx, DrekkiModels.fallback(), 0.9f);
         addLayer(new Glow(this));
         addLayer(new Sheen(this));
+        addLayer(new Glint(this));
     }
 
     @Override
@@ -100,6 +101,18 @@ public final class DrekkiRenderer extends MobRenderer<DrekkiEntity, DrekkiModel>
             DrekkiModel m = getParentModel();
             if (m.baked.sheen == null || e.isInvisible()) return;
             m.renderToBuffer(ps, buf.getBuffer(RenderType.eyes(m.baked.sheen)), LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, -1);
+        }
+    }
+
+    /** enchanted barding: the game's enchantment glint across the plates, as on enchanted armor (spec, Barding) */
+    private static final class Glint extends RenderLayer<DrekkiEntity, DrekkiModel> {
+        Glint(DrekkiRenderer parent) { super(parent); }
+
+        @Override
+        public void render(PoseStack ps, MultiBufferSource buf, int light, DrekkiEntity e, float limbSwing, float limbSwingAmount, float partial, float age, float yaw, float pitch) {
+            DrekkiModel m = getParentModel();
+            if (m.baked.glint == null || !e.bardingGlint() || e.isInvisible() || e.ghost()) return;
+            m.baked.glint.render(ps, buf.getBuffer(RenderType.armorEntityGlint()), light, OverlayTexture.NO_OVERLAY);
         }
     }
 }

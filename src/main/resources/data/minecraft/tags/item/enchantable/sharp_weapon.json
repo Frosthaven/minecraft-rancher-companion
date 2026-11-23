@@ -1,0 +1,19 @@
+{
+  "replace": false,
+  "values": [
+    "rancher_companion:fledgling_wood_barding",
+    "rancher_companion:fledgling_leather_barding",
+    "rancher_companion:fledgling_stone_barding",
+    "rancher_companion:fledgling_iron_barding",
+    "rancher_companion:fledgling_gold_barding",
+    "rancher_companion:fledgling_diamond_barding",
+    "rancher_companion:fledgling_netherite_barding",
+    "rancher_companion:wood_barding",
+    "rancher_companion:leather_barding",
+    "rancher_companion:stone_barding",
+    "rancher_companion:iron_barding",
+    "rancher_companion:gold_barding",
+    "rancher_companion:diamond_barding",
+    "rancher_companion:netherite_barding"
+  ]
+}

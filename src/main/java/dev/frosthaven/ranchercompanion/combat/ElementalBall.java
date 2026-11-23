@@ -50,12 +50,19 @@ public final class ElementalBall extends ThrowableProjectile {
     protected void onHitEntity(EntityHitResult hit) {
         super.onHitEntity(hit);
         Entity owner = getOwner();
-        if (hit.getEntity() instanceof LivingEntity t) t.hurt(damageSources().indirectMagic(this, owner), DAMAGE);
+        if (hit.getEntity() instanceof LivingEntity t) land(t);
+    }
+
+    /** the ball's hit; a drekki's carries its barding's sword enchantments (item/BardingEnchants) */
+    private void land(LivingEntity t) {
+        var source = damageSources().indirectMagic(this, getOwner());
+        if (getOwner() instanceof dev.frosthaven.ranchercompanion.entity.DrekkiEntity d) dev.frosthaven.ranchercompanion.item.BardingEnchants.strike(d, t, source, DAMAGE, false);
+        else t.hurt(source, DAMAGE);
     }
 
     /** a hit at once, never added to the world: the target is too close for a ball in flight */
     public void strike(LivingEntity t) {
-        t.hurt(damageSources().indirectMagic(this, getOwner()), DAMAGE);
+        land(t);
         burst();
     }
 

@@ -69,6 +69,9 @@ public class DrekkiEntity extends PathfinderMob {
     /** 0.4.13: its job (spec, Go here: Employed) for the drekki screen: 0 not employed, else its role (Seats.EMPLOYED,
      *  CONDUCTOR, STOCK_KEEPER). Kept up by Ranch from the roster; not saved */
     private static final EntityDataAccessor<Integer> JOB = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.INT);
+    /** its barding is enchanted: the glint on the plates. Declared last: a synched value is never put in the middle
+     *  (see CLAUDE.md, Release: network compatibility) */
+    private static final EntityDataAccessor<Boolean> BARDING_GLINT = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.BOOLEAN);
 
     /** its life (server: the truth, saved under "Life"; client: unused, the synched values above stand in) */
     public final dev.frosthaven.ranchercompanion.life.Life life = new dev.frosthaven.ranchercompanion.life.Life();
@@ -109,6 +112,7 @@ public class DrekkiEntity extends PathfinderMob {
         b.define(STAGE, 3); b.define(LINE, 0); b.define(DIET, 0); b.define(ASTRAL, 1); b.define(HORN, 0); b.define(HAT, 0); b.define(BARDING, 0); b.define(DYE, -1); b.define(DYE2, -1); b.define(BAG, 0); b.define(BAG_DYE, -1); b.define(BAG_DYE2, -1); b.define(ANIM, 0); b.define(LANE, 0f); b.define(OWNED, false); b.define(PET, 0); b.define(SLEEPING, false); b.define(OWNER, java.util.Optional.empty());
         b.define(MOVE, 0);
         b.define(FOOD, 10f); b.define(MOOD, 50f); b.define(BAND, 2); b.define(PET_LEFT, 0); b.define(KIN, 0); b.define(GHOST, false); b.define(STANCE, 1); b.define(ACTION, 0); b.define(REVIVING, false); b.define(TRAITS, new CompoundTag()); b.define(JOB, 0);
+        b.define(BARDING_GLINT, false);
     }
 
     public int stage() { return entityData.get(STAGE); }
@@ -131,6 +135,7 @@ public class DrekkiEntity extends PathfinderMob {
     public void setGear(int hat, int barding, int dye) { entityData.set(HAT, hat); entityData.set(BARDING, barding); entityData.set(DYE, dye); }
 
     public net.minecraft.world.item.ItemStack bardingItem() { return bardingItem; }
+    public boolean bardingGlint() { return entityData.get(BARDING_GLINT); }
     public net.minecraft.world.item.ItemStack accessory() { return accessory; }
 
     /** wears this barding (EMPTY for none); the look follows */
@@ -138,6 +143,7 @@ public class DrekkiEntity extends PathfinderMob {
         bardingItem = s;
         int tier = s.getItem() instanceof dev.frosthaven.ranchercompanion.item.BardingItem b ? b.tier.gearIndex() : 0;
         entityData.set(BARDING, tier);
+        entityData.set(BARDING_GLINT, s.isEnchanted());
         entityData.set(DYE, dev.frosthaven.ranchercompanion.item.Dyeing.main(s));
         entityData.set(DYE2, dev.frosthaven.ranchercompanion.item.Dyeing.trim(s));
     }
@@ -531,7 +537,9 @@ public class DrekkiEntity extends PathfinderMob {
         if (amount <= 0) return;  /* a player's hit: the push only */
         if (!bardingItem.isEmpty() && !source.is(net.minecraft.tags.DamageTypeTags.BYPASSES_WOLF_ARMOR) && level() instanceof net.minecraft.server.level.ServerLevel sl) {
             boolean[] broke = {false};
-            bardingItem.hurtAndBreak(net.minecraft.util.Mth.ceil(amount), sl, this, item -> {
+            /* its enchantments (item/BardingEnchants): the protections cut what the hit costs it, Thorns hits back */
+            int wear = dev.frosthaven.ranchercompanion.item.BardingEnchants.wear(bardingItem, source, amount) + dev.frosthaven.ranchercompanion.item.BardingEnchants.thorns(this, source);
+            bardingItem.hurtAndBreak(wear, sl, this, item -> {
                 playSound(net.minecraft.sounds.SoundEvents.WOLF_ARMOR_BREAK);
                 setBardingItem(net.minecraft.world.item.ItemStack.EMPTY);
                 broke[0] = true;
@@ -656,6 +664,15 @@ public class DrekkiEntity extends PathfinderMob {
     /** server: the hostile mob Go here told it to attack (GoHere.attack): fought in every stance until it dies, gets away
      *  or the drekki is disengaged (Passive, Stay, a new Go here) */
     public net.minecraft.world.entity.LivingEntity ordered;
+
+    /** server: one of its attacks is landing: its barding stands in for a held weapon, so the kill's loot reads the
+     *  barding's Looting (item/BardingEnchants.strike). Only then: a mob drops what its hands hold when it dies. */
+    public boolean striking;
+
+    @Override
+    public net.minecraft.world.item.ItemStack getItemBySlot(net.minecraft.world.entity.EquipmentSlot slot) {
+        return striking && slot == net.minecraft.world.entity.EquipmentSlot.MAINHAND ? bardingItem : super.getItemBySlot(slot);
+    }
 
     /** server: Live Wire's surge, struck by lightning: it attacks twice as fast until this tick (spec, Traits) */
     public int surgeUntil = Integer.MIN_VALUE / 2;

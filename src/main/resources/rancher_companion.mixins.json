@@ -4,6 +4,7 @@
   "package": "dev.frosthaven.ranchercompanion.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "ExperienceOrbAccess",
     "FishingHookAccess",
     "ItemStackMixin",
     "PiglinAiMixin",

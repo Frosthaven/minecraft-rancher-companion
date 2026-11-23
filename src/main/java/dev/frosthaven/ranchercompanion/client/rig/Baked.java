@@ -12,6 +12,8 @@ public final class Baked {
     public final ResourceLocation texture, eyes;
     /** the sheen texture, drawn additively; null for a line without a sheen */
     public final ResourceLocation sheen;
+    /** the barding plates alone, posed with the rest, for the enchantment glint; null without barding */
+    public ModelPart glint;
     /** the mouth in the built pose, entity space blocks */
     public final Vector3f mouthRest;
     /** the textures as registered: another mod may release or replace them (see {@link #alive}) */
@@ -51,6 +53,8 @@ public final class Baked {
             quat(n, q);
             eulerZYX(q.x, -q.y, -q.z, q.w, e);
             p.xRot = e.x; p.yRot = e.y; p.zRot = e.z;
+            ModelPart g = n.glint;
+            if (g != null) { g.visible = p.visible; g.x = p.x; g.y = p.y; g.z = p.z; g.xRot = p.xRot; g.yRot = p.yRot; g.zRot = p.zRot; }
         }
     }
 
