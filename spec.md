@@ -636,6 +636,13 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
     particles and sound) that damages no blocks and does not hurt the drekki. 1-hour cooldown. Proposed, to confirm:
     it hurts hostile mobs only (not players, pets or villagers), and any break of the barding sets it off.
     Tooltip (Shane): "Barding explodes when broken, damaging enemies in an area."
+  - Fade (Shane, 2026-11-23, not built): the inverse of Provoke. Learned when the owner hits a mob that is targeting
+    the drekki, 5 different mobs (counted). Effect: the moment a mob targets the drekki while another target
+    exists, mobs cannot target the drekki for 8 s; 16 s cooldown from the start. Another target exists when the mob
+    was hit by someone else in the last few seconds, or a player or another fighting pet is in the mob's range, so
+    it is not spent while only the drekki is fighting. With Provoke on the same drekki, the provoked mob stays on
+    the drekki for its 8 s and every other mob is turned away. Tooltip (proposed): "Enemies that target the drekki
+    turn to another target for 8 seconds."
   - Hibernation Plan slows both the player's hunger and the drekki's (see Hunger).
   - Phoenix Heart works on every death and the trait is kept. The egg goes to the owner's inventory when they are
     online with room, otherwise it is held and given on their next login or at the hatchery. It is never dropped.
