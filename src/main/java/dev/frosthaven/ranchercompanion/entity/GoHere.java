@@ -14,7 +14,8 @@ import net.minecraft.world.phys.Vec3;
 /**
  * The whistle's Go here (spec, Go here): sneak and blow it at a block and the owner's drekki goes to stand on that very
  * block, or sits on the seat looked at (Create's: a stock keeper's seat, a train's). It walks when a path reaches the
- * spot; with none, or stuck on the way, it is summoned there. Once there it stays, as told to stay.
+ * spot; with none, or stuck on the way, it is summoned there. Once there it holds the spot for {@link #HOLD} ticks and
+ * then follows again, unless its owner told it to stay by then (the whistle's plain use); on a job seat it is employed.
  */
 public final class GoHere {
     /** how far the whistle points */
@@ -76,14 +77,17 @@ public final class GoHere {
         return path != null && path.canReach() && (t.seat != null || path.getTarget().equals(t.stand)) ? path : null;
     }
 
-    /** there (walked), or summoned: it stands on the very block, or sits; then it stays */
+    /** server ticks it holds its spot after Go here before it follows again, unless told to stay by then */
+    public static final int HOLD = 40;
+
+    /** there (walked), or summoned: it stands on the very block, or sits; then it holds there (DrekkiEntity.heldUntil) */
     static void arrive(DrekkiEntity d, boolean summoned) {
         Target t = d.goHere;
         d.goHere = null;
         if (t == null) return;
         d.getNavigation().stop();
         if (t.seat != null) {
-            if (!t.seat.sit(d)) { Ranch.stayHere(d); return; }  /* taken meanwhile, or gone: it stays where it is */
+            if (!t.seat.sit(d)) { d.heldUntil = d.tickCount + HOLD; return; }  /* taken meanwhile, or gone: it holds where it is */
             if (t.seat.role() != Seats.NO_ROLE) { Ranch.employ(d, t.seat.role()); return; }
         } else {
             Vec3 at = Vec3.atBottomCenterOf(t.stand);
@@ -92,7 +96,7 @@ public final class GoHere {
             d.setDeltaMovement(Vec3.ZERO);  /* no slide off the spot */
         }
         dev.frosthaven.ranchercompanion.Debug.log("server: {} sent {} {}", dev.frosthaven.ranchercompanion.Debug.of(d), summoned ? "and summoned to" : "and walked to", t.seat != null ? "a seat" : t.stand.toShortString());
-        Ranch.stayHere(d);
+        d.heldUntil = d.tickCount + HOLD;  /* not told to stay: that is the whistle's plain use (decided 2026-11-22) */
     }
 
     /** walking there; it outranks following, eating and fights, and is summoned when stuck */

@@ -37,7 +37,7 @@ public final class GoHereTests {
     }
 
     @GameTest(template = "floor", timeoutTicks = 300)
-    public static void itWalksToTheVeryBlockAndStays(GameTestHelper t) {
+    public static void itWalksToTheVeryBlockHoldsThenFollows(GameTestHelper t) {
         ServerPlayer p = LifeTests.player(t);
         DrekkiEntity d = CombatTests.out(t, p, 2, Diet.RAW, Life.Stance.PASSIVE);
         BlockPos floor = new BlockPos(2, 0, 10);
@@ -46,11 +46,19 @@ public final class GoHereTests {
         t.assertTrue(GoHere.command(p), "sent");
         t.assertTrue(d.goHere != null && d.position().equals(from), "with a way there, it walks: not summoned");
         BlockPos stand = t.absolutePos(floor.above());
-        t.succeedWhen(() -> {
-            t.assertTrue(d.goHere == null && d.blockPosition().equals(stand), "on the block: " + d.blockPosition() + " for " + stand);
-            t.assertTrue(Math.abs(d.getX() - (stand.getX() + 0.5)) < 0.01 && Math.abs(d.getZ() - (stand.getZ() + 0.5)) < 0.01, "in its middle: " + d.position());
-            Roster.Entry e = Ranch.roster(t.getLevel().getServer()).out(p.getUUID());
-            t.assertTrue(d.isStaying() && e != null && e.stay != null && e.stay.pos().equals(stand), "it stays there, the roster keeps the spot");
+        long[] arrived = {-1};
+        t.onEachTick(() -> {
+            if (arrived[0] < 0 && d.goHere == null && d.blockPosition().equals(stand)) {
+                arrived[0] = t.getTick();
+                t.assertTrue(Math.abs(d.getX() - (stand.getX() + 0.5)) < 0.01 && Math.abs(d.getZ() - (stand.getZ() + 0.5)) < 0.01, "in its middle: " + d.position());
+                Roster.Entry e = Ranch.roster(t.getLevel().getServer()).out(p.getUUID());
+                t.assertTrue(!d.isStaying() && e != null && e.stay == null && d.held(), "not told to stay: it holds the spot");
+                t.runAfterDelay(GoHere.HOLD - 5, () -> t.assertTrue(d.blockPosition().equals(stand), "still there within the hold: " + d.blockPosition()));
+                t.runAfterDelay(GoHere.HOLD + 60, () -> {
+                    t.assertTrue(!d.held() && d.distanceTo(p) < Vec3.atCenterOf(stand).distanceTo(p.position()) - 2, "after the hold it follows its owner again: " + d.distanceTo(p));
+                    t.succeed();
+                });
+            }
         });
     }
 
@@ -63,7 +71,7 @@ public final class GoHereTests {
         lookAt(t, p, top);
         t.assertTrue(GoHere.command(p), "sent");
         BlockPos stand = t.absolutePos(top.above());
-        t.succeedWhen(() -> t.assertTrue(d.goHere == null && d.blockPosition().equals(stand) && d.isStaying(), "summoned onto the pillar, staying: " + d.blockPosition()));
+        t.succeedWhen(() -> t.assertTrue(d.goHere == null && d.blockPosition().equals(stand) && d.held() && !d.isStaying(), "summoned onto the pillar, holding: " + d.blockPosition()));
     }
 
     @GameTest(template = "floor", timeoutTicks = 200)

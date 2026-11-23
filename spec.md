@@ -351,8 +351,10 @@ Sneak and use the Drekki Whistle while looking at a block (up to 64 blocks away)
 - **How.** It walks when a path reaches the spot. With no path, a spot more than 64 blocks away, or no progress for 3
   seconds on the way (30 seconds at most), it is summoned there. Not with its owner (another level, an unloaded chunk),
   it is called to them first and then sent.
-- **Then it stays**, as told to stay (spec, Stay and follow): the roster keeps the spot. The whistle (not sneaking) or
-  the Follow button makes it follow again and takes it off a seat.
+- **Then it holds there** (decided 2026-11-22; was: it stays): Go here does not tell it to stay. It holds the spot (or
+  the seat) for 2 seconds, and if it was not told to stay by then (the whistle, not sneaking, or the Stay button) it
+  gets up and follows again. A job seat is different: there it is employed (below). The whistle (not sneaking) or the
+  Follow button makes a staying drekki follow again and takes it off a seat.
 - **Seats.** Create's seat blocks and the seats of a contraption (an assembled train). A drekki on a seat sits as any
   mob does, so Create gives it its role: a train's conductor, a stock keeper. Create's own rule for which mobs may sit
   (create:ignore_seat, which takes all of c:capturing_not_supported, where the drekki is) is not asked: the drekki is in

@@ -647,6 +647,10 @@ public class DrekkiEntity extends PathfinderMob {
 
     public void pet() { entityData.set(PET, PET_TICKS); }
 
+    /** server: after Go here it holds its spot until this tick, then follows again unless told to stay; -1 when not holding */
+    public int heldUntil = -1;
+    public boolean held() { return tickCount < heldUntil; }
+
     /** server: hits before this (its own tick, and its owner's) start no fight; see setStance */
     public int fightsFrom, fightsFromOwnerTick;
     public net.minecraft.world.entity.player.Player fightsFromOwner;
@@ -708,6 +712,10 @@ public class DrekkiEntity extends PathfinderMob {
             if (actionLeft > 0 && --actionLeft == 0) entityData.set(ACTION, 0);
             if (owned() && isAlive()) {
                 if (isStaying()) dev.frosthaven.ranchercompanion.ranch.Ranch.workTick(this);  /* on a seat that moves, or employed */
+                if (heldUntil >= 0 && !held()) {  /* Go here's hold is over: not told to stay, it gets up from a plain seat and follows */
+                    heldUntil = -1;
+                    if (!isStaying() && job() == 0 && isPassenger()) stopRiding();
+                }
                 if (!caughtUp) { caughtUp = true; dev.frosthaven.ranchercompanion.life.Vitals.resume(this); }
                 else if (tickCount % 20 == 0) dev.frosthaven.ranchercompanion.life.Vitals.update(this);
                 if (!accessory.isEmpty() && dev.frosthaven.ranchercompanion.item.Bags.sophisticated() && accessory.getItem() instanceof dev.frosthaven.ranchercompanion.item.DrekkiBag)
