@@ -130,9 +130,7 @@ public final class DrekkiMenu extends AbstractContainerMenu {
         }
         if (locked() || drekki.stage() < 2 || id < 0 || id >= Life.Stance.values().length) return false;
         if (player instanceof net.minecraft.server.level.ServerPlayer sp && Ranch.employed(drekki)) { Ranch.tell(sp, "gohere.employed", drekki); return true; }  /* Passive at work */
-        drekki.life.stance = Life.Stance.values()[id];
-        drekki.setTarget(null);
-        drekki.syncLife();
+        drekki.setStance(Life.Stance.values()[id]);
         Ranch.touch(drekki);
         return true;
     }

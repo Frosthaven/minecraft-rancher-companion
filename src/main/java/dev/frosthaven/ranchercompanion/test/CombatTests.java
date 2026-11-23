@@ -141,6 +141,31 @@ public final class CombatTests {
         });
     }
 
+    /** Passive ends a fight at once; off Passive it starts fresh: an old hit starts nothing, a new one does (2026-11-22) */
+    @GameTest(template = "floor", timeoutTicks = 400)
+    public static void passiveEndsAFightAndItStartsFresh(GameTestHelper t) {
+        ServerPlayer p = LifeTests.player(t);
+        DrekkiEntity d = out(t, p, 2, Diet.RAW, Life.Stance.REACTIVE);
+        Husk z = zombie(t, new BlockPos(6, 1, 8));
+        t.runAfterDelay(70, () -> {  /* after a new player's spawn protection */
+            p.hurt(p.damageSources().mobAttack(z), 1);
+            t.runAfterDelay(30, () -> {
+                t.assertTrue(d.getTarget() == z, "reactive: the husk that hit its owner: " + d.getTarget());
+                d.setStance(Life.Stance.PASSIVE);
+                t.assertTrue(d.getTarget() == null && d.getLastHurtByMob() == null, "passive: the fight ended");
+                t.runAfterDelay(20, () -> {
+                    d.setStance(Life.Stance.REACTIVE);
+                    t.runAfterDelay(30, () -> {
+                        t.assertTrue(d.getTarget() == null, "off passive, the old hit starts nothing: " + d.getTarget());
+                        p.invulnerableTime = 0;
+                        p.hurt(p.damageSources().mobAttack(z), 1);
+                        t.succeedWhen(() -> t.assertTrue(d.getTarget() == z, "a new hit starts the fight: " + d.getTarget()));
+                    });
+                });
+            });
+        });
+    }
+
     @GameTest(template = "floor", timeoutTicks = 200)
     public static void phoenixHeartTurnsIntoItsEggAndBack(GameTestHelper t) {
         ServerPlayer p = LifeTests.player(t);

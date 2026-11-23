@@ -708,9 +708,7 @@ public final class Ranch {
         d.setStaying(true);
         d.setJob(role);
         /* at work it fights nothing: Passive, and its stance stays so until it is recalled (DrekkiMenu) */
-        d.life.stance = dev.frosthaven.ranchercompanion.life.Life.Stance.PASSIVE;
-        d.setTarget(null);
-        d.syncLife();
+        d.setStance(dev.frosthaven.ranchercompanion.life.Life.Stance.PASSIVE);
         touch(d);
     }
 

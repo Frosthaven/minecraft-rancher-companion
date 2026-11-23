@@ -70,11 +70,16 @@ public final class CombatGoals {
             if (cur != null && fair(d, cur) && cur.distanceToSqr(d) <= LEASH * LEASH) return null;  /* keeps its fight */
             d.setTarget(null);
             Player owner = d.ownerPlayer();
-            if (d.getLastHurtByMob() != null && fair(d, d.getLastHurtByMob()) && d.tickCount - d.getLastHurtByMobTimestamp() < 200) return d.getLastHurtByMob();
+            /* only hits since it last left Passive count: it starts fresh (DrekkiEntity.setStance) */
+            if (d.getLastHurtByMob() != null && fair(d, d.getLastHurtByMob()) && d.tickCount - d.getLastHurtByMobTimestamp() < 200
+                && d.getLastHurtByMobTimestamp() >= d.fightsFrom) return d.getLastHurtByMob();
             if (owner != null) {
+                boolean fresh = owner == d.fightsFromOwner;
                 if (owner.getLastHurtByMob() != null && fair(d, owner.getLastHurtByMob()) && owner.tickCount - owner.getLastHurtByMobTimestamp() < 200
+                    && (!fresh || owner.getLastHurtByMobTimestamp() >= d.fightsFromOwnerTick)
                     && owner.getLastHurtByMob().distanceToSqr(d) <= LEASH * LEASH) return owner.getLastHurtByMob();
                 if (owner.getLastHurtMob() != null && fair(d, owner.getLastHurtMob()) && owner.tickCount - owner.getLastHurtMobTimestamp() < 200
+                    && (!fresh || owner.getLastHurtMobTimestamp() >= d.fightsFromOwnerTick)
                     && owner.getLastHurtMob().distanceToSqr(d) <= LEASH * LEASH) return owner.getLastHurtMob();
             }
             if (d.life.stance != Life.Stance.AGGRESSIVE) return null;
