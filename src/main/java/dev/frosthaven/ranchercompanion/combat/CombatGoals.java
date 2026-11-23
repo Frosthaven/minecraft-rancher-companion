@@ -7,8 +7,8 @@ import dev.frosthaven.ranchercompanion.look.Anim;
 import dev.frosthaven.ranchercompanion.look.Diet;
 import java.util.EnumSet;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.NeutralMob;
+import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.OwnableEntity;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.monster.Creeper;
@@ -38,12 +38,14 @@ public final class CombatGoals {
         if (t instanceof DrekkiEntity o && owner != null && owner.equals(o.owner())) return false;
         if (t instanceof OwnableEntity o && owner != null && owner.equals(o.getOwnerUUID())) return false;
         if (t instanceof Player p && (p.isCreative() || p.isSpectator() || d.getServer() == null || !d.getServer().isPvpAllowed())) return false;
-        return true;
+        /* only a hostile mob, in every stance (decided 2026-11-22): the red health bar's rule (Enemy). A village's guard
+           or iron golem that turns on a player who hit a villager, an angry wolf or bee, is not fought back */
+        return t instanceof Player || t instanceof Enemy;
     }
 
+    /** Aggressive picks these by itself: a hostile mob, and a neutral one (an enderman, a zombified piglin) only while angry */
     private static boolean hostile(LivingEntity t) {
-        if (t instanceof NeutralMob n) return n.isAngry();
-        return t.getType().getCategory() == MobCategory.MONSTER;
+        return t instanceof Enemy && (!(t instanceof NeutralMob n) || n.isAngry());
     }
 
     /** picks its target twice a second by the stance's rules, nearest first */

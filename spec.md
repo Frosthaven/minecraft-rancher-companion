@@ -1088,12 +1088,15 @@ spot that is not itself on fire or in lava: lava beside the spot or below it doe
 Resistance from a trait or a potion): it may walk and land there. One knocked into lava floats, to get out. Because a
 fall cannot hurt it, it takes drops of up to 24 blocks to reach its owner (the game's mobs stop at 3).
 
-- Aggressive: fights any hostile mob within 10 blocks, and everything Reactive answers. Hostile means a monster;
-  neutral mobs (endermen, zombified piglins, wolves, bees) only while they are angry. It leaves creepers alone, as
-  wolves do. A checked-in drekki stays in its wander area, so it fights what comes into the stable.
+- Aggressive: fights any hostile mob within 10 blocks, and everything Reactive answers. Hostile means the red health
+  bar's mobs (Enemy); among them neutral ones (endermen, zombified piglins) only while they are angry. It leaves
+  creepers alone, as wolves do. A checked-in drekki stays in its wander area, so it fights what comes into the stable.
 - Reactive: fights whatever hits it or its owner, and whatever its owner attacks (the wolf rule).
 - Passive: never deals damage in a fight. It still uses its defensive abilities: Rejuvenate, Steel edge, and
   defensive traits (Heal pulse, Arrow guard, Bubble, Phase ward, Thorns).
+- Every stance, only hostile mobs (decided 2026-11-22): a mob without a red health bar (a village's guard or iron golem
+  that turns on a player who hit a villager, a wolf, a bee) is never fought, even when it hits the drekki or its owner,
+  and its hits do the drekki no harm.
 - Every stance: players only on a server with PvP on. A ridden drekki picks no fights; its rider steers it. A
   negative trait that forces a fight (Crimson temper) overrides the stance.
 

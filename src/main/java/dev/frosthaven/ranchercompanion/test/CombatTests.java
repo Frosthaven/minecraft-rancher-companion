@@ -118,6 +118,29 @@ public final class CombatTests {
         });
     }
 
+    /** a village's guard or golem that turns on its owner (who hit a villager) is not fought, nor can it hurt the drekki;
+     *  a monster that hits its owner still is (decided 2026-11-22: only the red health bar's hostile mobs) */
+    @GameTest(template = "floor", timeoutTicks = 300)
+    public static void reactiveLeavesAGolemThatHitsItsOwner(GameTestHelper t) {
+        ServerPlayer p = LifeTests.player(t);
+        DrekkiEntity d = out(t, p, 2, Diet.RAW, Life.Stance.REACTIVE);
+        var golem = t.spawn(net.minecraft.world.entity.EntityType.IRON_GOLEM, new BlockPos(8, 1, 8));
+        golem.setNoAi(true);
+        t.runAfterDelay(70, () -> {  /* after a new player's spawn protection */
+            p.hurt(p.damageSources().mobAttack(golem), 1);
+            t.assertTrue(p.getLastHurtByMob() == golem, "the golem hit its owner: " + p.getLastHurtByMob());
+            float before = d.getHealth();
+            d.hurt(d.damageSources().mobAttack(golem), 6);
+            t.assertTrue(d.getHealth() == before, "a golem's hit does nothing: " + before + " -> " + d.getHealth());
+            t.runAfterDelay(40, () -> {
+                t.assertTrue(d.getTarget() != golem, "the golem that hit its owner is left alone: target " + d.getTarget());
+                Husk z = zombie(t, new BlockPos(6, 1, 8));
+                p.hurt(p.damageSources().mobAttack(z), 1);
+                t.succeedWhen(() -> t.assertTrue(d.getTarget() == z, "a husk that hits its owner is answered: target " + d.getTarget()));
+            });
+        });
+    }
+
     @GameTest(template = "floor", timeoutTicks = 200)
     public static void phoenixHeartTurnsIntoItsEggAndBack(GameTestHelper t) {
         ServerPlayer p = LifeTests.player(t);

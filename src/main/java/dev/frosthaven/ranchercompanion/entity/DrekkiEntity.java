@@ -561,6 +561,8 @@ public class DrekkiEntity extends PathfinderMob {
            moving train), a drill, a saw, crushing wheels, a roller, a fan's fire. By the damage type's namespace, Create's
            and its addons' ("create..."): Create is not a dependency */
         if (s.typeHolder().unwrapKey().map(k -> k.location().getNamespace().startsWith("create")).orElse(false)) return true;
+        /* nor any mob that is not hostile (the red health bar's rule, Enemy): a village's guard or iron golem, a wolf */
+        if (s.getEntity() instanceof net.minecraft.world.entity.LivingEntity a && !(a instanceof net.minecraft.world.entity.player.Player) && !(a instanceof net.minecraft.world.entity.monster.Enemy)) return true;
         /* on a seat it cannot step out of a wall: an adult's head reaches past a carriage's roof into a tunnel's rock */
         if (isPassenger() && s.is(net.minecraft.world.damagesource.DamageTypes.IN_WALL)) return true;
         return super.isInvulnerableTo(s) || stage() == 1 && !byPlayer(s) && !s.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY);
