@@ -56,6 +56,7 @@ public final class Traits {
     public static void activity(Player p, Trait t) {
         DrekkiEntity d = learner(p);
         if (d == null || d.life.traits.contains(t.id) || t.id.equals(d.life.offer) || full(d)) return;
+        if (!t.learnedBy(d.astral())) return;  /* not its affinity's to learn: no count, no roll, no message */
         Life.Band band = d.band();
         switch (t.learn) {
             case COUNTED -> {
@@ -68,7 +69,7 @@ public final class Traits {
         }
     }
 
-    private static boolean full(DrekkiEntity d) { return d.life.traits.size() >= Trait.cap(d.stage()); }
+    private static boolean full(DrekkiEntity d) { return d.life.traits.size() >= Trait.cap(d.stage(), d.life.horizons); }
 
     /** it wants to learn the trait: the owner answers on its screen (spec, Traits: offers). A new offer replaces the
      *  old one, whose count stays full, so it comes back on its next count. The owner only is told. */

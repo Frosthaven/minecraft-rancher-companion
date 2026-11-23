@@ -195,6 +195,7 @@ public class DrekkiEntity extends PathfinderMob {
         l.progress.forEach(pr::putInt);
         v.put("progress", pr);
         if (l.offer != null) v.putString("offer", l.offer);
+        if (l.horizons) v.putBoolean("horizons", true);
         /* the trait index changes with the traits or the ghost state, not with a cooldown */
         if (!t.equals(entityData.get(TRAITS).getList("traits", net.minecraft.nbt.Tag.TAG_STRING)) || l.ghost != entityData.get(GHOST))
             dev.frosthaven.ranchercompanion.trait.Traits.changed();
@@ -780,6 +781,7 @@ public class DrekkiEntity extends PathfinderMob {
         if (tag.contains("BardingItem")) setBardingItem(net.minecraft.world.item.ItemStack.parseOptional(registryAccess(), tag.getCompound("BardingItem")));
         if (tag.contains("Accessory")) setAccessory(net.minecraft.world.item.ItemStack.parseOptional(registryAccess(), tag.getCompound("Accessory")));
         if (tag.contains("Anim")) setAnim(Anim.of(tag.getInt("Anim")), tag.getFloat("Lane"));
+        life.settleSlots(dev.frosthaven.ranchercompanion.trait.Trait.cap(stage(), false));
         applyStageHealth(false);
         if (tag.hasUUID("Owner")) bind(tag.getUUID("Owner"), tag.getUUID("DrekkiId"), tag.contains("Home") ? BlockPos.of(tag.getLong("Home")) : null);
         syncLife();

@@ -205,31 +205,45 @@ public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
     private int offerRow(DrekkiEntity d) {
         if (d.ghost() || !d.traitView().contains("offer")) return -1;
         int n = d.traitView().getList("traits", Tag.TAG_STRING).size();
-        return n < Trait.cap(d.stage()) ? 26 + n * 10 : -1;
+        return n < Trait.cap(d.stage(), d.traitView().getBoolean("horizons")) ? 26 + n * 10 : -1;
     }
 
     /** its trait slots by stage: learned ones in green with their tooltip, the offer in gold with yes and no, free ones dim */
     private void traits(GuiGraphics g, DrekkiEntity d, int rx, int ry) {
         List<String> held = new ArrayList<>();
         for (Tag s : d.traitView().getList("traits", Tag.TAG_STRING)) held.add(s.getAsString());
-        int y = 26, slots = Math.max(Trait.cap(d.stage()), held.size()), offerY = offerRow(d);
+        boolean horizons = d.traitView().getBoolean("horizons");
+        int y = 26, slots = Math.max(Trait.cap(d.stage(), horizons), held.size()), offerY = offerRow(d);
         for (int i = 0; i < slots; i++) {
-            if (y == offerY) { offer(g, d, d.traitView().getString("offer"), y, rx, ry); y += 10; continue; }
+            boolean unlocked = horizons && i == slots - 1;  /* the slot a Potion of Horizons unlocked: the last one */
+            if (y == offerY) { offer(g, d, d.traitView().getString("offer"), y, rx, ry); if (unlocked) emerald(g, y, rx, ry); y += 10; continue; }
             if (i < held.size()) {
                 Component name = Component.translatable("trait.rancher_companion." + held.get(i));
                 long readyIn = Math.max(0, d.traitView().getCompound("ready").getLong(held.get(i)) - d.level().getGameTime());
-                g.fill(INFO_X, y + 2, INFO_X + 4, y + 6, 0xFF6AA83E);
+                if (!unlocked) g.fill(INFO_X, y + 2, INFO_X + 4, y + 6, 0xFF6AA83E);
                 g.drawString(font, name, INFO_X + 7, y, readyIn > 0 ? 0xFF6F9A73 : 0xFF9FE3A6, false);
                 if (readyIn > 0) hourglass(g, INFO_X + 7 + font.width(name) + 3, y);  /* recharging: dimmer name and an hourglass after it */
                 int h = 10;
                 spot("trait" + i, INFO_X, y - 1, INFO_W, h);
                 if (Art.in(rx, ry, INFO_X, y - 1, INFO_W, h)) tip = dev.frosthaven.ranchercompanion.trait.Tips.trait(held.get(i), readyIn, d.ghost());
             } else {
-                g.fill(INFO_X, y + 2, INFO_X + 4, y + 6, 0xFF3B2A44);
+                if (!unlocked) g.fill(INFO_X, y + 2, INFO_X + 4, y + 6, 0xFF3B2A44);
                 g.drawString(font, Component.translatable("screen.rancher_companion.drekki.free_slot"), INFO_X + 7, y, Art.DIM, false);
             }
+            if (unlocked) emerald(g, y, rx, ry);
             y += 10;
         }
+    }
+
+    /** the slot a Potion of Horizons unlocked: an emerald where the other rows have their bullet, with its own tooltip */
+    private void emerald(GuiGraphics g, int y, int rx, int ry) {
+        g.pose().pushPose();
+        g.pose().translate(INFO_X - 2, y, 0);
+        g.pose().scale(0.5f, 0.5f, 1);
+        g.renderItem(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.EMERALD), 0, 0);
+        g.pose().popPose();
+        spot("horizons", INFO_X - 2, y, 8, 8);
+        if (Art.in(rx, ry, INFO_X - 2, y, 8, 8)) tip = List.of(Component.translatable("screen.rancher_companion.drekki.horizons").withStyle(ChatFormatting.GREEN));
     }
 
     /** the trait it wants to learn: a gold name with its tooltip, then yes (learn it) and no (pass) */

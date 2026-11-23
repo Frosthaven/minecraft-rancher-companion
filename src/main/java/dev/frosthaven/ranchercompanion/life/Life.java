@@ -37,6 +37,18 @@ public final class Life {
     /** the trait it wants to learn, waiting for its owner's yes or no on the drekki screen, or null (one at a time) */
     public String offer;
     public boolean ghost;
+    /** it has had a Potion of Horizons: one more trait slot, for good (spec, Traits: caps) */
+    public boolean horizons;
+    /** read from a save made before the 2/4/5 caps: {@link #settleSlots} has not looked at it yet (not saved) */
+    public boolean oldCaps;
+
+    /** The update to the 2/4/5 caps, once per drekki: one that holds more traits than its stage's new cap counts as
+     *  having had the potion and keeps what it has; one at or under the cap is left to take the potion later. */
+    public void settleSlots(int newCap) {
+        if (!oldCaps) return;
+        oldCaps = false;
+        if (traits.size() > newCap) horizons = true;
+    }
     /** trait cooldowns and timers: the game time each is ready again, by trait id (saved) */
     public final Map<String, Long> cooldowns = new HashMap<>();
     /** health owed by regeneration, paid a whole point at a time (not saved) */

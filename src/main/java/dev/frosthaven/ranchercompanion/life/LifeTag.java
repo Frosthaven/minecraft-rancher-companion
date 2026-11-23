@@ -30,6 +30,8 @@ public final class LifeTag {
         t.put("progress", pr);
         if (l.offer != null) t.putString("offer", l.offer);
         t.putBoolean("ghost", l.ghost);
+        t.putBoolean("horizons", l.horizons);
+        if (!l.oldCaps) t.putInt("caps", 1);  /* settled under the 2/4/5 caps; absent in a save from before them */
         CompoundTag cd = new CompoundTag();
         l.cooldowns.forEach(cd::putLong);
         t.put("cooldowns", cd);
@@ -58,6 +60,8 @@ public final class LifeTag {
         for (String k : pr.getAllKeys()) l.progress.put(k, pr.getInt(k));
         l.offer = t.contains("offer") ? t.getString("offer") : null;
         l.ghost = t.getBoolean("ghost");
+        l.horizons = t.getBoolean("horizons");
+        l.oldCaps = !t.contains("caps");
         l.cooldowns.clear();
         CompoundTag cd = t.getCompound("cooldowns");
         for (String k : cd.getAllKeys()) l.cooldowns.put(k, cd.getLong(k));
