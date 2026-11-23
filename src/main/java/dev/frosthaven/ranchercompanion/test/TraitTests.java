@@ -112,8 +112,8 @@ public final class TraitTests {
         t.assertTrue(!has(d, Trait.HOOK_LINE_SINKER) && d.life.progress.get(Trait.HOOK_LINE_SINKER.id) == 4, "4 of 5 catches counted");
         NeoForge.EVENT_BUS.post(new ItemFishedEvent(List.of(new ItemStack(Items.COD)), 1, hook));
         t.assertTrue(has(d, Trait.HOOK_LINE_SINKER), "Hook, Line & Sinker at 5 catches");
-        p.giveExperienceLevels(3);
-        t.assertTrue(has(d, Trait.TRAINING_DAY), "Training Day at 3 levels");
+        p.giveExperienceLevels(6);
+        t.assertTrue(has(d, Trait.TRAINING_DAY), "Training Day at 6 levels");
         Villager v = t.spawn(EntityType.VILLAGER, LifeTests.H.offset(-3, 0, 3));
         for (int i = 0; i < 5; i++) {
             MerchantOffer o = new MerchantOffer(new ItemCost(Items.EMERALD, 2), new ItemStack(Items.BREAD), 12, 1, 0.05f);
@@ -156,7 +156,7 @@ public final class TraitTests {
         ServerPlayer p = LifeTests.player(t);
         DrekkiEntity d = CombatTests.out(t, p, 2, Diet.SEED, Life.Stance.PASSIVE);
         give(d, Trait.PATCHWORK); give(d, Trait.STAMP_OUT);
-        p.giveExperienceLevels(3);
+        p.giveExperienceLevels(6);
         t.assertTrue(has(d, Trait.TRAINING_DAY), "a Fledgling learns a third trait");
         for (int i = 0; i < 5; i++) {
             d.setHealth(d.getMaxHealth() - 4);
@@ -189,7 +189,7 @@ public final class TraitTests {
         FishingHook hook = new FishingHook(p, t.getLevel(), 0, 0);
         for (int i = 0; i < 5; i++) NeoForge.EVENT_BUS.post(new ItemFishedEvent(List.of(new ItemStack(Items.COD)), 1, hook));
         t.assertTrue(Trait.HOOK_LINE_SINKER.id.equals(d.life.offer) && d.life.traits.isEmpty(), "5 catches offer Hook, Line & Sinker, not learned yet");
-        p.giveExperienceLevels(3);
+        p.giveExperienceLevels(6);
         t.assertTrue(Trait.TRAINING_DAY.id.equals(d.life.offer) && d.life.progress.get(Trait.HOOK_LINE_SINKER.id) == 5, "a new offer replaces the old; the old count stays full");
         Traits.answer(d, false);
         t.assertTrue(d.life.offer == null && !d.life.progress.containsKey(Trait.TRAINING_DAY.id) && d.life.traits.isEmpty(), "a pass learns nothing and sets the count to 0");
@@ -222,7 +222,7 @@ public final class TraitTests {
             t.assertTrue(has(d, Trait.PHOENIX_HEART) && p.isAlive(), "Phoenix Heart from a totem");
             give(d, Trait.PATCHWORK);
             int before = d.life.traits.size();
-            p.giveExperienceLevels(3);
+            p.giveExperienceLevels(6);
             t.assertTrue(d.life.traits.size() == before && !has(d, Trait.TRAINING_DAY), "at the cap it learns nothing");
             t.succeed();
         });

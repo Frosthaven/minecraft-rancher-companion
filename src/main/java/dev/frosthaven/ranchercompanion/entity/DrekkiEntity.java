@@ -585,7 +585,7 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
     public boolean isInvulnerableTo(net.minecraft.world.damagesource.DamageSource s) {
         if (life.ghost) return !s.is(net.minecraft.world.damagesource.DamageTypes.GENERIC_KILL);  /* a ghost cannot die again; /kill still removes it */
         /* a safety rule (2026-11-21): with no rider, lava and falls never hurt it, so following its owner cannot kill it */
-        if (s.is(net.minecraft.world.damagesource.DamageTypes.FALL) || !isVehicle() && s.is(net.minecraft.world.damagesource.DamageTypes.LAVA)) return true;  /* a fall never, ridden or not */
+        if (s.is(net.minecraft.world.damagesource.DamageTypes.FALL) || !lavaBurns() && s.is(net.minecraft.world.damagesource.DamageTypes.LAVA)) return true;  /* a fall never, ridden or not */
         /* nor any Create machine: a train running it over (it cannot ride, so its catch-up lands it beside its owner's
            moving train), a drill, a saw, crushing wheels, a roller, a fan's fire. By the damage type's namespace, Create's
            and its addons' ("create..."): Create is not a dependency */
@@ -638,7 +638,10 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
 
     /** lava neither burns it nor sets it on fire */
     @Override
-    public void lavaHurt() { if (isVehicle()) super.lavaHurt(); }
+    public void lavaHurt() { if (lavaBurns()) super.lavaHurt(); }
+
+    /** lava burns it only under a rider, and not a Lava Walker, which wades in it as a strider does */
+    private boolean lavaBurns() { return isVehicle() && !Riding.holds(this, dev.frosthaven.ranchercompanion.trait.Trait.LAVA_WALKER); }
 
     /** falls cannot hurt it, so it takes a long drop to reach its owner (the game's mobs stop at 3 blocks) */
     @Override

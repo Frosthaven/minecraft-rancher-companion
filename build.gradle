@@ -50,6 +50,14 @@ neoForge {
             jvmArgument '-Drancher_companion.selftest=true'
             jvmArgument '-Drancher_companion.selftest.new=true'
         }
+        // the 15 roam traits and the Mature stage only (client/SelfTestMature)
+        selfTestMature {
+            client()
+            programArguments.addAll '--quickPlaySingleplayer', 'selftest'
+            jvmArgument '-Drancher_companion.selftest=true'
+            jvmArgument '-Drancher_companion.selftest.new=true'
+            jvmArgument '-Drancher_companion.selftest.mature=true'
+        }
         server {
             server()
             programArgument '--nogui'

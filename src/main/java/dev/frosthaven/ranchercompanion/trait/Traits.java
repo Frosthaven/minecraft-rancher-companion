@@ -24,12 +24,15 @@ public final class Traits {
     public static final double RANGE = 10, TELL_RANGE = 30;
 
     /** the drekki watching this player and able to learn now, or null: the roster's checked-out one, by id */
-    public static DrekkiEntity learner(Player p) {
+    public static DrekkiEntity learner(Player p) { return learner(p, RANGE); }
+
+    /** the learner within a range of its own: the travel traits count while it follows, further off than 10 blocks */
+    public static DrekkiEntity learner(Player p, double range) {
         if (!(p instanceof ServerPlayer sp) || sp.server == null) return null;
         Roster.Entry out = Ranch.roster(sp.server).out(p.getUUID());
         if (out == null || out.where != Roster.Where.OUT) return null;
         DrekkiEntity d = Ranch.liveOf(out.id);
-        return d != null && d.level() == p.level() && d.distanceToSqr(p) <= RANGE * RANGE && !d.life.ghost && d.isAlive() ? d : null;
+        return d != null && d.level() == p.level() && d.distanceToSqr(p) <= range * range && !d.life.ghost && d.isAlive() ? d : null;
     }
 
     /* The live drekki whose traits work, by trait: game hooks that run often (piglin AI asks about gold many times a
@@ -53,8 +56,10 @@ public final class Traits {
 
     /** the player did the activity: counted ones count (twice when Thriving), one-off ones roll the mood's chance, death
      *  ones always; a pass makes it an offer. At its cap a drekki learns nothing and counts nothing. */
-    public static void activity(Player p, Trait t) {
-        DrekkiEntity d = learner(p);
+    public static void activity(Player p, Trait t) { activity(p, t, RANGE); }
+
+    public static void activity(Player p, Trait t, double range) {
+        DrekkiEntity d = learner(p, range);
         if (d == null || d.life.traits.contains(t.id) || t.id.equals(d.life.offer) || full(d)) return;
         if (!t.learnedBy(d.astral())) return;  /* not its affinity's to learn: no count, no roll, no message */
         Life.Band band = d.band();

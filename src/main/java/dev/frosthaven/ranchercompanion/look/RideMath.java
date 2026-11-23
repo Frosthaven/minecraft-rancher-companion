@@ -19,7 +19,7 @@ public final class RideMath {
     /** a liquid this deep at its feet takes the rider off (a puddle does not) */
     public static final double DEEP = 0.9;
     /** the server forgets a fall while it sinks slower than this: a landing under wings or a slow fall is no fall */
-    public static final double FALLING = 0.45;
+    public static final double FALLING = 0.3;
 
     /** the push of one tick of flight: along the rider's up direction on the beat's downstroke, the vertical part eased
      *  as the climb builds (Mekanism's Vector mode, in beats); null between downstrokes */

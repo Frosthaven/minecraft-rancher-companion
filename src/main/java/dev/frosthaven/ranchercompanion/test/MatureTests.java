@@ -216,8 +216,10 @@ public final class MatureTests {
         t.assertTrue(!d.canStandOnFluid(water) && !d.canStandOnFluid(lava), "without the traits it walks on neither");
         give(d, Trait.OCEAN_WALKER);
         t.assertTrue(d.canStandOnFluid(water) && !d.canStandOnFluid(lava), "Ocean Walker: water only");
+        t.assertTrue(!d.isInvulnerableTo(d.damageSources().lava()), "lava burns a ridden drekki without Lava Walker");
         give(d, Trait.LAVA_WALKER);
         t.assertTrue(d.canStandOnFluid(lava), "Lava Walker: lava");
+        t.assertTrue(d.isInvulnerableTo(d.damageSources().lava()), "and lava does not burn a ridden Lava Walker");
         d.fallDistance = 6;
         t.assertTrue(!d.canStandOnFluid(water), "from more than 3 blocks it plunges in");
         d.fallDistance = 0;

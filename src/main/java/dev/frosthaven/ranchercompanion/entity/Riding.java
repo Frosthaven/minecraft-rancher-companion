@@ -85,8 +85,11 @@ public final class Riding {
         /* any liquid takes the rider off (as water does a horse's), unless the drekki walks on it */
         if (d.getFluidTypeHeight(d.getMaxHeightFluidType()) >= RideMath.DEEP) { d.ejectPassengers(); return; }
         /* a slow descent is no fall: the server counts every block it sinks, wings or not */
-        if (d.getY() - d.rideY > -RideMath.FALLING) { d.fallDistance = 0; rider.fallDistance = 0; }
-        d.rideY = d.getY();
+        /* over 5 ticks: the rider's game sends its moves unevenly, and one late move must not end a real fall */
+        if (d.tickCount % 5 == 0) {
+            if (d.getY() - d.rideY > -RideMath.FALLING * 5) { d.fallDistance = 0; rider.fallDistance = 0; }
+            d.rideY = d.getY();
+        }
         if (holds(d, Trait.WINGS_OF_HOPE)) ((dev.frosthaven.ranchercompanion.mixin.VehicleFloatAccess) rider.connection).rancher$setVehicleFloat(0);
         /* Predator's Eye: hostile mobs within 24 blocks glow through walls */
         if (d.tickCount % 10 == 0 && holds(d, Trait.PREDATORS_EYE))

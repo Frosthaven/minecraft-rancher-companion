@@ -138,6 +138,7 @@ final class SelfTestNewTraits {
     static void steps() {
         BlockPos o = SelfTestTraits.o;
         if (ENCHANTS_ONLY) { enchants(); return; }
+        if (SelfTestMature.ONLY) { SelfTestMature.steps(); return; }
         quiet("new_rules", 20, () -> { cmd("gamerule doMobSpawning false"); cmd("gamerule mobGriefing false"); cmd("time set 6000"); cmd("gamerule doDaylightCycle false"); });
 
         /* ---- the three potions and the whistle: icons and tooltips ---- */
@@ -315,6 +316,7 @@ final class SelfTestNewTraits {
         quiet("home", 60, () -> cmd("execute in minecraft:overworld run tp @s " + (o.getX() + 0.5) + " " + o.getY() + " " + (o.getZ() + 0.5)));
         stepUntil("pup_comes_home", 20, 20, () -> {}, () -> pup() != null && pup().distanceTo(mc().player) < 8);
         enchants();
+        SelfTestMature.steps();
         quiet("new_rules_back", 10, () -> { cmd("gamerule doMobSpawning true"); cmd("gamerule mobGriefing true"); cmd("gamerule doDaylightCycle true"); RancherCompanion.LOG.info("[selftest] 0.5.0 section done"); });
     }
 }

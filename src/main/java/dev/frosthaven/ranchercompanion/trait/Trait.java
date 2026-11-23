@@ -17,7 +17,7 @@ public enum Trait {
     HUDDLE_UP("huddle_up", Learn.ONE_OFF, 1, false, 2400, of(Astral.LUNAR, Astral.AERO), Rarity.UNCOMMON),
     PHOENIX_HEART("phoenix_heart", Learn.DEATH, 1, false, 0, of(Astral.SOLAR, Astral.END), Rarity.EPIC),
     CLOUD_STOMPERS("cloud_stompers", Learn.COUNTED, 10, true, 0, of(Astral.AERO, Astral.END), Rarity.RARE),
-    TRAINING_DAY("training_day", Learn.COUNTED, 3, false, 6000, Trait.ALL, Rarity.RARE),
+    TRAINING_DAY("training_day", Learn.COUNTED, 6, false, 6000, Trait.ALL, Rarity.RARE),
     CREATURE_COMFORTS("creature_comforts", Learn.COUNTED, 5, false, 0, of(Astral.SOLAR, Astral.LUNAR), Rarity.EPIC),
     NIGHT_WATCH("night_watch", Learn.COUNTED, 5, false, 0, Trait.ALL, Rarity.UNCOMMON),
     SOFT_LANDING("soft_landing", Learn.ONE_OFF, 1, false, 2400, Trait.ALL, Rarity.RARE),

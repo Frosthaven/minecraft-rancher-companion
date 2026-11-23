@@ -271,7 +271,7 @@ final class SelfTestTraits {
 
         /* ---- counted: other activities ---- */
         fresh("training");
-        learn(Trait.TRAINING_DAY, 5, 1, () -> cmd("xp add @s 1 levels"));
+        learn(Trait.TRAINING_DAY, 9, 1, () -> cmd("xp add @s 1 levels"));
         quiet("training_due", 80, () -> { xpBefore = mc().player.totalExperience; life(d -> d.life.cooldowns.put(Trait.TRAINING_DAY.id, Vitals.now(d))); });
         check("training_day_drops_xp", 10, 5, () -> {}, "xp before/after", () -> xpBefore + " / " + mc().player.totalExperience,
             () -> mc().player.totalExperience >= xpBefore + 18 || !mc().level.getEntitiesOfClass(net.minecraft.world.entity.ExperienceOrb.class, mc().player.getBoundingBox().inflate(10)).isEmpty());

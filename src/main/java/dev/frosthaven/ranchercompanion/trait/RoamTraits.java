@@ -79,6 +79,8 @@ public final class RoamTraits {
         new Road(Stats.HORSE_ONE_CM, Trait.FOUR_WINDS, 10000),      /* horse, donkey, mule or camel: 1,000 blocks */
         new Road(Stats.STRIDER_ONE_CM, Trait.LAVA_WALKER, 3000),    /* 300 blocks */
     };
+    /** travel counts while the drekki follows: a runner, a boat or a horse leaves it more than 10 blocks behind between its catch-ups */
+    public static final double ROAD_RANGE = 48;
     static final double SNOW_STEP = 30;  /* Frost Strider: 10 counts, 300 blocks on snow or ice */
 
     private static final ResourceLocation SPEED = id("open_road"), SWIM = id("downstream_swim"), AIR = id("downstream_air");
@@ -124,18 +126,18 @@ public final class RoamTraits {
 
     public static void tick(ServerPlayer p) {
         Trail t = TRAILS.computeIfAbsent(p.getUUID(), k -> new Trail());
-        boolean watched = Traits.learner(p) != null;
+        boolean watched = Traits.learner(p) != null, followed = Traits.learner(p, ROAD_RANGE) != null;
         if (p.tickCount % 20 == 0) {
             for (Road r : ROADS) {
                 int now = p.getStats().getValue(Stats.CUSTOM.get(r.stat));
                 Integer was = t.stat.put(r.stat, now);
-                if (was != null && watched && now > was) owe(p, t, r.trait, now - was, r.step);
+                if (was != null && followed && now > was) owe(p, t, r.trait, now - was, r.step);
             }
             modifiers(p);
         }
         /* Frost Strider: on foot over snow or ice */
         Vec3 at = p.position();
-        if (t.at != null && watched && p.onGround() && !p.isPassenger() && snowy(p)) owe(p, t, Trait.FROST_STRIDER, Math.hypot(at.x - t.at.x, at.z - t.at.z), SNOW_STEP);
+        if (t.at != null && followed && p.onGround() && !p.isPassenger() && snowy(p)) owe(p, t, Trait.FROST_STRIDER, Math.hypot(at.x - t.at.x, at.z - t.at.z), SNOW_STEP);
         t.at = at;
         /* Predator's Eye: a different hostile mob in the spyglass each time */
         if (watched && p.isScoping() && p.tickCount % 5 == 0) {
@@ -157,7 +159,7 @@ public final class RoamTraits {
 
     private static void owe(ServerPlayer p, Trail t, Trait trait, double amount, double step) {
         double owed = t.owed.merge(trait, amount, Double::sum);
-        while (owed >= step) { owed -= step; Traits.activity(p, trait); }
+        while (owed >= step) { owed -= step; Traits.activity(p, trait, ROAD_RANGE); }
         t.owed.put(trait, owed);
     }
 
