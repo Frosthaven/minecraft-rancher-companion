@@ -522,18 +522,16 @@ Rules behind the lists:
   the traits. The shank above the foot takes the wing's main color (dark membrane for carnivores, light feathers
   for herbivores). From stage 2 the light chest patch and a small trim ring near the tail tip also take the foot
   tint, and on stage 3 the base segment of each horn does too.
-- Biome traits in their own biome (Shane, 2026-11-23, not built):
-  - On the drekki screen's traits tab a biome trait has a globe icon where other traits have a bullet.
-  - While the drekki and its owner are both in a biome of the trait's category, they take 20% less damage from all
-    sources: a hostile mob's hit, a fall, fire, anything. Its barding too: a hit the barding soaks up costs 20% less
-    durability there. The 20% comes off the hit first, then the barding's protection enchantments take their share
-    of what is left (Claude's judgement: the two multiply and do not add).
-  - Only while the drekki is travelling with its owner: checked out, not at a hatchery, at work or in a carrier.
-    The drekki and its owner must both be in a biome of the trait's category (Shane): with either one outside it,
-    neither gets the bonus, nor does the barding. No other distance rule; a drekki told to Stay counts while both
-    are in the category. For a trait a parent passed on, the category is the trait's own.
-  - The globe is lit while the bonus is on and dim while it is off. That marks the 20% only (Shane: "A"): the
-    trait's own effect works everywhere, as decided before.
+- The biome trait on the drekki screen and in the count (Shane, 2026-11-23, not built):
+  - A biome trait does not count against the trait total: it has a row of its own beside the 2/4/5 slots, as the
+    potion's slot has. That settles what happens to a Fledgling whose slots are full at the lock-in: nothing.
+  - Its row has a globe icon where other traits have a bullet.
+  - Until the drekki has its biome trait, that row shows the name of the biome category it matches now, in the
+    disabled text color. Claude's reading, to confirm: "matches now" is the category in the lead by counted time,
+    the one it would get if it locked this moment (the foot tint follows the same lead); a pup, which counts no
+    biome time yet, shows no category.
+  - Dropped the same day, before anything was built: a 20% damage cut for the drekki, its owner and its barding
+    while in the trait's biome, with the globe lit or dim. There is no such bonus; the globe has one look.
 - Biome capstone traits: a spread of capstone traits that lock in at the start of stage 3.
 
 ## Traits
