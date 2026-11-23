@@ -571,10 +571,15 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
 - Caps (Shane, 2026-11-23, not built; was 3/6/9): 2 traits at stage 1, 4 at stage 2, 5 at stage 3. A negative trait
   never takes a slot (Shane, 2026-11-23; it took one before): it is held as an extra, beside the slots.
   - Potion of Horizons: "Permanently unlocks an extra trait slot when fed to a drekki." Fed by hand, once per
-    drekki, so 3/5/6. Recipe (Shane), shaped at a crafting table: `P E P / C B C / P E P` (4 ender pearls
-    in the corners, an emerald above and below, popped chorus fruit left and right, the glass bottle in the
-    middle). Icon: the tonics' bottle with an emerald stopper and an emerald foot, popped-chorus purple over
-    ender-pearl teal with a pale horizon line between (drawn as a preview, not in the mod yet).
+    drekki, so 3/5/6. Brewed, not crafted (Shane, 2026-11-23; the 3x3 crafting recipe is dropped): Awkward
+    Potion + ender pearl, then + popped chorus fruit, then + emerald. It is a registered potion type so the pack's
+    other brewing methods can make it (Create's basin, Ars Nouveau's cauldron and jars, Iron's Spellbooks'
+    cauldron; each to test in the pack). That brings splash, lingering and tipped-arrow versions and lets a
+    player drink it; all of those do nothing. One ingredient brews three bottles. The two in-between potions do
+    nothing; names proposed: Potion of Distance (after the pearl), Potion of Dusk (after the chorus fruit).
+    Icon (Shane's pick): the tonics' bottle with an emerald stopper, popped-chorus purple over a pale horizon
+    line over two rows of ender-pearl teal, and one row of emerald as the bottom of the glass. Open: a potion
+    type draws as the game's potion bottle tinted in one color, so this icon needs its own item model rule.
   - At the update, an existing drekki that holds more traits than the new cap for its stage is marked as having
     taken the potion and keeps what it has: a pup with 3 and a Fledgling with 5 fit exactly; a Fledgling with 6
     is one over until it matures and then sits on the final 6. No Mature and no bred drekki exist in the launched
