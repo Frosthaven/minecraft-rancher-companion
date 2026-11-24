@@ -638,6 +638,9 @@ final class SelfTestTraits {
             () -> sd() != null && sd().bardingItem().getDamageValue() == 10 && sd().getHealth() == sd().getMaxHealth());
         check("gear_this_game_sees_the_wear", 10, 3, () -> {}, "the barding's wear on this game's drekki", () -> pup() == null ? "-" : pup().bardingItem() + " " + pup().bardingItem().getDamageValue(),
             () -> pup() != null && !pup().bardingItem().isEmpty() && pup().bardingItem().getDamageValue() == 10);
+        /* its armor points on this game, and (with Jade) the tooltip: Jade's own armor icons, as for wolf armor */
+        check("gear_armor_points_and_jade", 20, 2, () -> { mc().setScreen(null); look(); }, "this game's armor points for iron Fledgling barding", () -> pup() == null ? "-" : pup().getArmorValue(),
+            () -> pup() != null && pup().getArmorValue() == 13);
         check("gear_dye_barding", 5, 0, () -> {}, "barding dyed red left, blue right", () -> {
                 var r = craft(net.minecraft.world.item.crafting.CraftingInput.of(3, 1, java.util.List.of(new ItemStack(Items.RED_DYE), new ItemStack(DrekkiItems.FLEDGLING_BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.IRON).get()), new ItemStack(Items.BLUE_DYE))));
                 return Integer.toHexString(dev.frosthaven.ranchercompanion.item.Dyeing.main(r)) + "/" + Integer.toHexString(dev.frosthaven.ranchercompanion.item.Dyeing.trim(r)); },

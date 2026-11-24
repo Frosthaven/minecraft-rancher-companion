@@ -196,6 +196,12 @@ Two craftable items:
   - The rider is drawn as the design page's (client/RiderSeat): hips on the saddle of the body as it is posed each
     frame, turning with it; arms 40 degrees forward and 8 in (the reins), legs 72 forward and 22 out. The pose is set
     after other mods' (Not Enough Animations let the arms hang). A swinging or item-using arm stays the game's.
+  - Barding gives armor points beside its soak, as wolf armor does (Shane, 2026-11-24): by its durability against wolf
+    armor's (64 durability, 11 armor), rounded, 3 at least and 20 at most, no toughness. Fledgling wood to netherite:
+    4, 6, 8, 13, 15, 20, 20; Mature: 6, 8, 12, 18, 20, 20, 20. Nearly all damage that armor cuts is soaked by
+    the barding first, so the points change little: of the damage that goes past barding, only thorns (and drying
+    out) is cut by armor. Jade shows the points with its own armor icons. The mod adds no
+    barding line to Jade (Shane, 2026-11-24): durability is for the pack's health bar, which reads the synced stack.
   - The barding stack itself (wear, enchantments) is synced to every game (2026-11-24): `bardingItem()` is the real
     stack on the client too, for other mods' displays (a health bar's durability). Sent only when the stack changes
     (put on, taken off, worn by a hit, mended), and only to the games that track that drekki; no timer.

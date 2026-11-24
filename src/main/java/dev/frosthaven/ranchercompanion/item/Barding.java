@@ -26,6 +26,11 @@ public enum Barding {
 
     public int durability(int stage) { return stage == 2 ? fledglingDurability : matureDurability; }
 
+    /** Armor points while worn, as wolf armor has beside its soak (Shane, 2026-11-24: "if wolves get armor points drekki
+     *  should too"): by durability against wolf armor's (64 durability, 11 armor), rounded, 3 at least, 20 at most; no
+     *  toughness. Fledgling 4, 6, 8, 13, 15, 20, 20; Mature 6, 8, 12, 18, 20, 20, 20. */
+    public static int armor(int durability) { return Math.max(3, Math.min(20, Math.round(durability * 11f / 64))); }
+
     /** the Gear.BARDING index (0 is none) */
     public int gearIndex() { return ordinal() + 1; }
 }

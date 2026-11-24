@@ -160,10 +160,22 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
      *  off, loaded, worn by a hit, mended), never on a timer: nothing is sent while nothing changes */
     public void syncBarding() { if (!level().isClientSide) entityData.set(BARDING_STACK, bardingItem.copy()); }
 
+    private static final net.minecraft.resources.ResourceLocation BARDING_ARMOR = net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(dev.frosthaven.ranchercompanion.RancherCompanion.ID, "barding");
+
     /** wears this barding (EMPTY for none); the look follows */
     public void setBardingItem(net.minecraft.world.item.ItemStack s) {
         bardingItem = s;
         syncBarding();
+        if (!level().isClientSide) {
+            /* its armor points with it (item/Barding.armor): a modifier that is not saved, put on again when the barding
+               is (a load included), so none stacks; off with the barding */
+            var armor = getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR);
+            if (armor != null) {
+                armor.removeModifier(BARDING_ARMOR);
+                if (s.getItem() instanceof dev.frosthaven.ranchercompanion.item.BardingItem)
+                    armor.addTransientModifier(new net.minecraft.world.entity.ai.attributes.AttributeModifier(BARDING_ARMOR, dev.frosthaven.ranchercompanion.item.Barding.armor(s.getMaxDamage()), net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE));
+            }
+        }
         int tier = s.getItem() instanceof dev.frosthaven.ranchercompanion.item.BardingItem b ? b.tier.gearIndex() : 0;
         entityData.set(BARDING, tier);
         entityData.set(BARDING_GLINT, s.isEnchanted());

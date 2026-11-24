@@ -29,6 +29,30 @@ public final class GearTests {
     static ItemStack fledglingBarding(Barding tier) { return new ItemStack(DrekkiItems.FLEDGLING_BARDING.get(tier).get()); }
     static ItemStack bag(int kind) { return new ItemStack(DrekkiItems.BAGS.get(kind - 1).get()); }
 
+    /** as wolf armor, barding gives armor points too: on when worn, off when removed or broken, never stacked by a reload */
+    @GameTest(template = "floor")
+    public static void bardingGivesArmorPointsWhileWorn(GameTestHelper t) {
+        ServerPlayer p = LifeTests.player(t);
+        DrekkiEntity d = CombatTests.out(t, p, 2, Diet.RAW, Life.Stance.PASSIVE);
+        t.assertTrue(d.getArmorValue() == 0, "bare: " + d.getArmorValue());
+        d.setBardingItem(fledglingBarding(Barding.IRON));
+        t.assertTrue(d.getArmorValue() == 13, "iron on a Fledgling (74 durability): " + d.getArmorValue());
+        d.setBardingItem(fledglingBarding(Barding.WOOD));
+        t.assertTrue(d.getArmorValue() == 4, "swapped for wood, not added to it: " + d.getArmorValue());
+        d.setBardingItem(fledglingBarding(Barding.IRON));
+        d.load(d.saveWithoutId(new net.minecraft.nbt.CompoundTag()));
+        d.load(d.saveWithoutId(new net.minecraft.nbt.CompoundTag()));
+        t.assertTrue(d.getArmorValue() == 13, "loaded twice, still one modifier: " + d.getArmorValue());
+        d.invulnerableTime = 0;
+        d.hurt(d.damageSources().generic(), 200);
+        t.assertTrue(d.bardingItem().isEmpty() && d.getArmorValue() == 0, "broken, the points go: " + d.getArmorValue());
+        d.setBardingItem(fledglingBarding(Barding.NETHERITE));
+        t.assertTrue(d.getArmorValue() == 20, "capped at 20: " + d.getArmorValue());
+        d.setBardingItem(ItemStack.EMPTY);
+        t.assertTrue(d.getArmorValue() == 0, "taken off: " + d.getArmorValue());
+        t.succeed();
+    }
+
     /** as wolf armor: hits go into the barding's durability until it breaks; starving goes through (a damage that passes armor) */
     @GameTest(template = "floor", timeoutTicks = 40)
     public static void bardingSoaksUpDamageUntilItBreaks(GameTestHelper t) {

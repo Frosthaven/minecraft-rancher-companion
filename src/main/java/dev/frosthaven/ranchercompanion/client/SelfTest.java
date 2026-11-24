@@ -166,7 +166,7 @@ public final class SelfTest {
     }
 
     /** the camera on the drekki, for Jade */
-    private static void look() {
+    static void look() {
         DrekkiEntity d = pup();
         if (d != null) mc().player.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES, d.position().add(0, d.getBbHeight() * 0.5, 0));
     }
