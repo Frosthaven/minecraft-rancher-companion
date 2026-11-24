@@ -93,6 +93,31 @@ public final class MatureTests {
         t.assertTrue(!other.isPassenger(), "another player cannot mount it");
         d.interact(p, InteractionHand.MAIN_HAND);
         t.assertTrue(p.getVehicle() == d && d.getControllingPassenger() == p, "its owner mounts with an empty hand");
+        /* any item with no use of its own on a drekki mounts too; one with a use keeps it; a sneak click opens the screen */
+        p.stopRiding();
+        p.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.DIAMOND_SWORD));
+        p.setShiftKeyDown(true);
+        try { d.interact(p, InteractionHand.MAIN_HAND); } catch (RuntimeException e) { /* the mock player has no connection for the screen's packet */ }
+        t.assertTrue(!p.isPassenger(), "a sneak click with an item does not mount (it opens the screen)");
+        p.setShiftKeyDown(false);
+        d.interact(p, InteractionHand.MAIN_HAND);
+        t.assertTrue(p.getVehicle() == d, "its owner mounts with a sword in hand");
+        p.stopRiding();
+        p.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.LEAD));
+        d.interact(p, InteractionHand.MAIN_HAND);
+        t.assertTrue(!p.isPassenger(), "a lead keeps its own use");
+        /* employed, it is not ridden, and work puts a rider down */
+        p.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+        d.setJob(1);
+        d.interact(p, InteractionHand.MAIN_HAND);
+        t.assertTrue(!d.rideable() && !p.isPassenger(), "an employed drekki is not ridden");
+        d.setJob(0);
+        d.interact(p, InteractionHand.MAIN_HAND);
+        t.assertTrue(p.getVehicle() == d, "back from work it is ridden again");
+        d.setJob(1);
+        t.assertTrue(!p.isPassenger(), "taking a job puts its rider down");
+        d.setJob(0);
+        d.interact(p, InteractionHand.MAIN_HAND);
         t.assertTrue(!CombatGoals.fights(d), "a ridden drekki picks no fights");
         /* the saddle taken off under the rider: the rider gets down */
         m.slots.get(3).set(ItemStack.EMPTY);

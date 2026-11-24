@@ -186,9 +186,11 @@ Two craftable items:
   - The saddle slot (Shane): a Mature has a fourth equipment slot, under the accessory, that takes the game's saddle. A
     drekki shows a saddle only when it wears one, and only a saddled Mature is ridden. A tombstone holds it in a fourth
     slot. Taking the saddle off under a rider puts the rider down.
-  - Mounting: its owner's empty-handed click on a saddled Mature mounts it (an unsaddled one opens its screen as
-    before). The screen of a saddled one: the inventory key while riding, as a horse, or a click with any plain item in
-    hand. Sneak dismounts. Only the owner rides. A ghost and an employed drekki are not ridden.
+  - Mounting (Shane): its owner's click on a saddled Mature mounts it, with an empty hand or any item, but for an item
+    with a use of its own on a drekki (a hat, a carrier, a name tag, a lead, food, the Potion of Horizons, a train
+    schedule). An unsaddled one opens its screen as before. The screen of a saddled one: the inventory key while
+    riding, as a horse, or a sneak click with an item in hand. Sneak dismounts. Only the owner rides. A ghost and an
+    employed drekki are not ridden; taking a job puts its rider down.
   - Under a rider it does nothing of its own: no goals, no fights, no catch-up. Its rider's game moves it, as a horse.
   - Speed 0.2 as the game's movement attribute (about 8.8 blocks a second; an average horse is 0.225). The Open Road
     adds 10%. The jump key jumps about 2 blocks at once (no charge).

@@ -318,6 +318,10 @@ final class SelfTestMature {
         /* mounting by a click, and its screen by the inventory key */
         quiet("to_mount", 15, () -> { emptyHand(); near(pup()); });
         step("mounts_with_an_empty_hand", 25, () -> interact("mount it"), SelfTestMature::riding);
+        /* any item with no use of its own on a drekki mounts too */
+        quiet("down_again", 20, () -> { mc().options.keyShift.setDown(true); after(4, () -> mc().options.keyShift.setDown(false)); });
+        quiet("sword_in_hand", 15, () -> { hotbar(1, "diamond_sword"); select(1); near(pup()); });
+        step("mounts_with_an_item_in_hand", 25, () -> interact("mount it with a sword in hand"), SelfTestMature::riding);
         step("inventory_key_opens_its_screen", 20, () -> mc().player.sendOpenInventory(), () -> ds() != null && ds().getMenu().saddled);
         quiet("riding_screen_closed", 10, () -> { mc().setScreen(null); mc().options.setCameraType(CameraType.THIRD_PERSON_BACK); });
         /* riding with the real keys */
@@ -391,7 +395,9 @@ final class SelfTestMature {
         quiet("tiers", 20, () -> { life(d -> { d.setSaddle(new ItemStack(Items.SADDLE)); d.life.horizons = true; d.life.traits.clear(); d.life.cooldowns.clear();
             for (Trait t : new Trait[]{Trait.WINGS_OF_HOPE, Trait.LEAP_OF_FAITH, Trait.OPEN_ROAD, Trait.REWIND, Trait.OCEAN_WALKER}) d.life.traits.add(t.id);
             d.life.cooldowns.put(Trait.REWIND.id, Vitals.now(d) + 4000); d.life.offer = Trait.DRACONIC_VAMPIRISM.id; d.syncLife(); }); hotbar(0, "stick"); select(0); near(pup()); });
-        step("mature_screen", 25, () -> interact("open its screen with an item in hand"), () -> ds() != null && !riding());
+        quiet("sneak_for_the_screen", 8, () -> mc().options.keyShift.setDown(true));
+        step("mature_screen", 25, () -> interact("open its screen with a sneak click, an item in hand"), () -> ds() != null && !riding());
+        quiet("unsneak", 5, () -> mc().options.keyShift.setDown(false));
         step("rarity_colors_on_the_traits_tab", 10, () -> clickSpot("tab_traits"), () -> ds() != null && ds().spot("trait4") != null && ds().spot("offer") != null);
         step("epic_tooltip", 10, () -> hoverSpot("trait0"), () -> ds() != null);
         step("rare_tooltip", 10, () -> hoverSpot("trait1"), () -> ds() != null);

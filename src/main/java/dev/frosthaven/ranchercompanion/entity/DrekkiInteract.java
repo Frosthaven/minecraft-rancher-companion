@@ -79,9 +79,10 @@ public final class DrekkiInteract {
             }
             return InteractionResult.sidedSuccess(d.level().isClientSide);
         }
-        /* a Mature takes its owner on its back at an empty-handed click (spec, Stage 3). Its screen: the inventory key
-           while riding, or a click with any other item in hand */
-        if (mine && hand == InteractionHand.MAIN_HAND && stack.isEmpty() && d.rideable() && !d.isVehicle() && !player.isPassenger()) {
+        /* a saddled Mature takes its owner on its back at a click, whatever the hand holds, but for an item with a use of
+           its own on a drekki (above, and opensScreen). Its screen: the inventory key while riding, or a sneak click
+           with an item in hand (spec, Stage 3) */
+        if (mine && hand == InteractionHand.MAIN_HAND && opensScreen(stack) && !player.isSecondaryUseActive() && d.rideable() && !d.isVehicle() && !player.isPassenger()) {
             if (!d.level().isClientSide) { d.setSleepingLoop(false); d.getNavigation().stop(); d.setTarget(null); player.startRiding(d); }
             return InteractionResult.sidedSuccess(d.level().isClientSide);
         }

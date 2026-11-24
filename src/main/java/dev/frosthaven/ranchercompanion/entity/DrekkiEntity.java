@@ -309,7 +309,8 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
     public int move() { return entityData.get(MOVE); }
     /** 0 not employed, else its role (Seats.EMPLOYED, CONDUCTOR, STOCK_KEEPER) */
     public int job() { return entityData.get(JOB); }
-    public void setJob(int j) { entityData.set(JOB, j); }
+    /** at work it carries no rider */
+    public void setJob(int j) { entityData.set(JOB, j); if (j > 0) ejectPassengers(); }
     public void setStaying(boolean on) { entityData.set(MOVE, !out ? 0 : on ? 2 : 1); if (on) getNavigation().stop(); }
 
     public net.minecraft.world.entity.player.Player ownerPlayer() { return owner == null ? null : level().getPlayerByUUID(owner); }
