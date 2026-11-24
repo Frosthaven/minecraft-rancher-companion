@@ -335,6 +335,21 @@ public final class Rig {
 
     public void reset() { for (Node n : all) n.reset(); for (Node l : lids) l.visible = false; }
 
+    /** the pose now, to blend another onto: position and rotation of every node */
+    public float[] snap() {
+        float[] v = new float[all.size() * 6];
+        for (int i = 0; i < all.size(); i++) { Node n = all.get(i); int o = i * 6; v[o] = n.x; v[o + 1] = n.y; v[o + 2] = n.z; v[o + 3] = n.rx; v[o + 4] = n.ry; v[o + 5] = n.rz; }
+        return v;
+    }
+
+    /** the pose now, taken w of the way from a snapshot (0: the snapshot, 1: unchanged) */
+    public void blendFrom(float[] v, double w) {
+        float k = (float) w;
+        for (int i = 0; i < all.size(); i++) { Node n = all.get(i); int o = i * 6;
+            n.x = v[o] + (n.x - v[o]) * k; n.y = v[o + 1] + (n.y - v[o + 1]) * k; n.z = v[o + 2] + (n.z - v[o + 2]) * k;
+            n.rx = v[o + 3] + (n.rx - v[o + 3]) * k; n.ry = v[o + 4] + (n.ry - v[o + 4]) * k; n.rz = v[o + 5] + (n.rz - v[o + 5]) * k; }
+    }
+
     /** two-beat stride on reverse-jointed legs; w is the stride phase in radians */
     public void gait(double w, double amp, double bob) {
         for (Leg L : legs) { double c = w + (L.s > 0 ? 0 : Math.PI), sw = Math.sin(c), lift = Math.max(0, Math.cos(c)), stance = Math.max(0, -Math.cos(c)), push = Math.max(0, -sw) * stance;

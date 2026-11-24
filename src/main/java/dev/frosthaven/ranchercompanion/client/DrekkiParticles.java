@@ -57,6 +57,16 @@ public final class DrekkiParticles {
         mc.particleEngine.add(new DrekkiCube(mc.level, x, y, z, v, g, c.y, life, size, rgb, opacity, mode, w, h, Rt, F).preRun(age));
     }
 
+    /** a live drekki's Elemental ball, as the page's: the 0.34 cube, one tick at a time, shedding cube sparks as it
+     *  flies; where it ends, the page's two bursts */
+    public static void ball(dev.frosthaven.ranchercompanion.combat.ElementalBall b, boolean end) {
+        double k = Anim.stageK(b.getOwner() instanceof DrekkiEntity d ? d.stage() : 2);
+        Ctx c = new Ctx(null, b.getX(), b.getY() + 0.15, b.getZ(), Layout.forward(0), Layout.right(0), 0);
+        if (end) { burst(c, 0, 0, 0, 16, MAGIC, 2.6, 4, k); burst(c, 0, 0, 0, 8, MAGIC_L, 2, 4, k); return; }
+        spark(c, 0, 0, 0, 0, 0, 0, 0.1, 0.34 * k, MAGIC, 0, 0);
+        for (int i = 0; i < 2; i++) if (R.nextDouble() < 0.85) spark(c, 0, 0, 0, rnd(-.3, .3), rnd(-.3, .3), rnd(-.3, .3), 0.45, 0.11 * k, R.nextDouble() < 0.6 ? MAGIC : MAGIC_L, 0, 0);
+    }
+
     /** the page's burst(): n cubes out of a point, spread speed sp, gravity g */
     private static void burst(Ctx c, double fw, double up, double sd, int n, int rgb, double sp, double g, double k) {
         for (int i = 0; i < n; i++) { double a = R.nextDouble() * 6.283, b = rnd(-0.4, 1.2), v = rnd(0.4, 1) * sp * k;

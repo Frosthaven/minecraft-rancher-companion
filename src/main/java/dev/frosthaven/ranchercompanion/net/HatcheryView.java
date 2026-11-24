@@ -56,8 +56,7 @@ public record HatcheryView(BlockPos pos, Component title, boolean named, ItemSta
         if (e.home == null) return Component.empty();
         if (p.level().dimension().equals(e.home.dimension()) && p.level().isLoaded(e.home.pos())
             && p.level().getBlockEntity(e.home.pos()) instanceof HatcheryBlockEntity h && h.name() != null) return h.name();
-        BlockPos b = e.home.pos();
-        return Component.literal(b.getX() + ", " + b.getY() + ", " + b.getZ());
+        return Component.translatable("block.rancher_companion.hatchery");  /* unnamed, or too far to read its name: the plain name, never coordinates */
     }
 
     public static HatcheryView of(ServerPlayer p, HatcheryBlockEntity be) {

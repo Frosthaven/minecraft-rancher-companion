@@ -87,8 +87,13 @@ hatching, the roster, check in and out, the small carrier, petting, names, the t
   `entity/OwnClicks` lets an owner's click on their own drekki through on claimed land. `Ranch.keepUp` is the
   once-a-second net that brings a lost follower back (off on the GameTest server, whose mock owners stay online).
   `-Drancher_companion.selftest.mature=true` with `selftest.new` runs `client/SelfTestMature` (`./gradlew
-  runSelfTestMature`; `-Drancher_companion.selftest.sections=a+b` picks sections): the real sprint, swim, boat, horse
+  runSelfTestMature`; `-Prancher_sections=a+b` picks sections): the real sprint, swim, boat, horse
   and strider rides, and riding with the real keys.
+  `client/RideTest` + `RideTestServer` are the ride on a dedicated server (`./gradlew runRideTestServer` in
+  `run/ridetest-server`, then `runRideTestClient`; the server needs `eula.txt`, an offline `server.properties` on port
+  25577, the player in `ops.json` and a world where they have a drekki checked out, e.g. a copy of `run/saves/selftest`).
+  Single player hides what a server does with its rider's moves; this run counts "moved wrongly" in the server's log.
+  A new entity must have its real hitbox before any synced value comes (the constructor's `refreshDimensions`).
 - `compat/journeymap/DrekkiMap` (the magenta death marker; JourneyMap finds it by its annotation),
   `compat/jei/DrekkiJei` (barding dye recipes for JEI) and `compat/ponder/DrekkiPonder` (build guides; schematics and
   lang from `uv run --with nbtlib python -I tools/ponder_scenes.py`): optional, compile only against JEI's and

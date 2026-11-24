@@ -105,6 +105,11 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
 
     public DrekkiEntity(EntityType<? extends PathfinderMob> type, Level level) {
         super(type, level);
+        /* its hitbox from its stage, not the entity type's size. A game is sent only the values that differ from the
+           defaults, so for a Mature (stage 3, the default) no stage change ever came and its hitbox stayed the type's
+           1.5 by 2.3 on that game, against 0.6 by 1.725 on the server: a ridden one was carried back at every block's
+           lip, where the two sides met the step at different moments (2026-11-24) */
+        refreshDimensions();
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -197,9 +202,16 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
     }
     public Anim anim() {
         if (!entityData.get(OWNED)) return Anim.of(entityData.get(ANIM));
-        if (entityData.get(ACTION) > 0) return Anim.of(entityData.get(ACTION) - 1);
+        if (entityData.get(ACTION) > 0) {
+            Anim act = Anim.of(entityData.get(ACTION) - 1);
+            /* an attack's loop stands still. The fight ends the loop when it ends (CombatGoals.Attack.stop); this is the
+               net under it: one that travels moves its legs, so it never slides in a bite's pose (2026-11-24) */
+            boolean stands = act == Anim.BITE || act == Anim.BALL || act == Anim.BREATH;
+            if (!stands || speedAvg < 1 || isPassenger() || isVehicle()) return act;
+            return speedAvg < 2.6 ? Anim.WALK : Anim.RUN;
+        }
         if (entityData.get(SLEEPING)) return Anim.SLEEP;
-        if (isVehicle() && rideable()) return Riding.loop(this, speedAvg, getY() - yo);
+        if (isVehicle() && rideable()) return Riding.loop(this, speedAvg, riseAvg);
         if (isPassenger()) return Anim.IDLE;  /* a train's speed is not its own: no walk or run (bobbing) on a moving seat */
         return speedAvg < 0.15 ? Anim.IDLE : speedAvg < 2.6 ? Anim.WALK : Anim.RUN;
     }
@@ -254,6 +266,8 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
     /** sent again when it is the same action as the one still on (a second bite): each game starts the loop over */
     public void act(Anim a, int ticks) { entityData.set(ACTION, ticks > 0 ? a.ordinal() + 1 : 0, true); actionLeft = ticks; }
     private int actionLeft;
+    /** ends this action's loop now, if it is the one playing (an attack whose target died: back to its normal loops) */
+    public void endAct(Anim a) { if (actionLeft > 0 && entityData.get(ACTION) == a.ordinal() + 1) { actionLeft = 0; entityData.set(ACTION, 0); } }
 
     /** max health by stage, plus Hearty (spec: 10, 30, 50) */
     public void applyStageHealth(boolean heal) {
@@ -302,6 +316,7 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
     public void bind(java.util.UUID owner, java.util.UUID id, BlockPos home) {
         this.owner = owner; this.drekkiId = id; this.home = home; this.out = home == null;
         entityData.set(MOVE, out ? 1 : 0);
+        if (!out && !level().isClientSide) ejectPassengers();  /* checked in, it carries no rider */
         entityData.set(OWNED, true); entityData.set(OWNER, java.util.Optional.of(owner)); setPersistenceRequired();
     }
 
@@ -495,6 +510,8 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
 
     /** Seconds into the loops, shared by the model, the particles and the lane. */
     public double time(float partial) { return (tickCount + partial) / 20.0 + phase; }
+    /** the part of a tick a loop time is into */
+    public float partial(double t) { return (float) Math.max(0, Math.min(1, (t - phase) * 20 - tickCount)); }
 
     /** client side: the loop time a live drekki fell asleep at (NaN awake; far back when it was asleep as it came into view) */
     private double sleptAt = Double.NaN;
@@ -822,6 +839,26 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
     /** server: its height a tick ago while ridden; every side: ticks it has been off the ground */
     double rideY;
     int airSeen;
+    /** a ridden drekki's air state as every game sees it, eased tick by tick so its pose never snaps: how far into the
+     *  air pose it is, its rise in blocks a tick, how far into the glide, how hard it beats its wings; the "was" values
+     *  are last tick's, for the frames between */
+    private float airAmt, airWas, riseAvg, riseWas, glideAmt, glideWas, flapAmt, flapWas;
+    private static float mid(float was, float now, float partial) { return was + (now - was) * partial; }
+    public float airAmt(float partial) { return mid(airWas, airAmt, partial); }
+    public float rise(float partial) { return mid(riseWas, riseAvg, partial); }
+    public float glideAmt(float partial) { return mid(glideWas, glideAmt, partial); }
+    public float flapAmt(float partial) { return mid(flapWas, flapAmt, partial); }
+    /** ticks in the air */
+    public int airTicks() { return airSeen; }
+    private void airTick() {
+        airWas = airAmt; riseWas = riseAvg; glideWas = glideAmt; flapWas = flapAmt;
+        boolean air = airSeen >= 2 && !isInLiquid() && isVehicle();  /* a step down is a tick in the air: no pose for it */
+        riseAvg += ((float) (getY() - yo) - riseAvg) * 0.35f;
+        airAmt += ((air ? 1 : 0) - airAmt) * 0.3f;
+        boolean glide = air && Riding.glides(this, riseAvg);
+        glideAmt += ((glide ? 1 : 0) - glideAmt) * 0.18f;
+        flapAmt += ((glide && riseAvg > -0.03 ? 1 : 0) - flapAmt) * 0.15f;  /* climbing or holding its height: on wingbeats */
+    }
 
     /** a Mature with a saddle in its saddle slot carries its owner (Shane, 2026-11-23). Not a ghost, not at work */
     /** for other mods' displays (read by reflection, client side): the Four Winds dash of the drekki this game steers.
@@ -829,7 +866,7 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
     public float dashCooldown() { return ride.dashIn / (float) dev.frosthaven.ranchercompanion.look.RideMath.DASH_COOLDOWN; }
     public boolean canDash() { return Riding.holds(this, dev.frosthaven.ranchercompanion.trait.Trait.FOUR_WINDS); }
 
-    public boolean rideable() { return stage() >= 3 && live() && entityData.get(SADDLED) && !ghost() && job() == 0; }
+    public boolean rideable() { return stage() >= 3 && live() && entityData.get(SADDLED) && !ghost() && job() == 0 && move() != 0; }  /* checked out only: not one that lives at a hatchery */
 
     @Override
     public net.minecraft.world.entity.LivingEntity getControllingPassenger() {
@@ -891,6 +928,7 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
     public void tick() {
         super.tick();
         airSeen = onGround() ? 0 : airSeen + 1;
+        airTick();
         if (level().isClientSide) trackSpeed();
         else {
             if (getControllingPassenger() instanceof net.minecraft.server.level.ServerPlayer rider) Riding.serverTick(this, rider); else rideY = getY();

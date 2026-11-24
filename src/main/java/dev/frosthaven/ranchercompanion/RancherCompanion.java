@@ -83,6 +83,7 @@ public final class RancherCompanion {
         modBus.addListener(EntityAttributeCreationEvent.class, e -> e.put(DREKKI.get(), DrekkiEntity.createAttributes().build()));
         NeoForge.EVENT_BUS.addListener(RegisterCommandsEvent.class, DrekkiCommands::register);
         NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerLoggedInEvent.class, Showcase::onLogin);
+        if (RideTestServer.ON) NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.tick.ServerTickEvent.Post.class, RideTestServer::tick);
         NeoForge.EVENT_BUS.addListener(ServerTickEvent.Post.class, Showcase::onServerTick);
         NeoForge.EVENT_BUS.addListener(ServerStartedEvent.class, ShowcaseBuild::onStarted);
         NeoForge.EVENT_BUS.addListener(ServerTickEvent.Post.class, ShowcaseBuild::onTick);

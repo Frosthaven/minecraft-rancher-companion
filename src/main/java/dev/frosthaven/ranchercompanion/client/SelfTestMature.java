@@ -120,6 +120,7 @@ final class SelfTestMature {
 
     /** this section runs on the flat world's ground under the pad: the lanes need room, and a fall needs somewhere to land */
     private static BlockPos pad, ground;
+    private static int backs, hits;
 
     static void steps() {
         pad = SelfTestTraits.o;
@@ -330,6 +331,24 @@ final class SelfTestMature {
         step("mounts_with_an_item_in_hand", 25, () -> interact("mount it with a sword in hand"), SelfTestMature::riding);
         step("inventory_key_opens_its_screen", 20, () -> mc().player.sendOpenInventory(), () -> ds() != null && ds().getMenu().saddled);
         quiet("riding_screen_closed", 10, () -> { mc().setScreen(null); mc().options.setCameraType(CameraType.THIRD_PERSON_BACK); });
+        /* a staircase of full blocks under a rider: straight on, at 20 and 40 degrees, and with half its body over the
+           staircase's side. It is never carried back: the server takes every step its rider's game takes */
+        for (int course = 0; course < 4; course++) {
+            int c = course;
+            String name = new String[]{"straight_on", "at_20_degrees", "at_40_degrees", "half_over_the_side"}[c];
+            float yaw = new float[]{-90, -110, -130, -90}[c];
+            quiet(name + "_built", 10, () -> { for (int i = 1; i <= 12; i++)
+                cmd("fill " + at(o.offset(6 + 2 * i, i - 1, c == 3 ? -8 : -34)) + " " + at(o.offset(44, i - 1, -6)) + " stone"); });
+            quiet(name + "_start", 35, () -> rideAt(o.getX() + 0.5, ground, o.getZ() - (c == 3 ? 8.0 : 8.5)));
+            quiet(name + "_go", 150, () -> { keys(true, false, false); backs = 0; peak = ground;
+                for (int i = 1; i <= 148; i++) after(i, () -> { DrekkiEntity d = pup(); if (d == null) return;
+                    mc().player.setYRot(yaw);
+                    if (d.getX() < d.xo - 0.01) backs++;
+                    peak = Math.max(peak, d.getY()); }); });
+            check("climbs_full_blocks_" + name, 5, 2, () -> keys(false, false, false), "12 steps climbed, never carried back",
+                () -> pup() == null ? "?" : String.format("peak %.2f, back %d ticks", peak - ground, backs), () -> riding() && backs == 0 && peak - ground >= 12);
+            quiet(name + "_gone", 10, () -> { mc().player.setYRot(-90); cmd("fill " + at(o.offset(6, 0, -34)) + " " + at(o.offset(44, 12, -6)) + " air"); });
+        }
         /* riding with the real keys */
         quiet("ride_start", 35, () -> { rideAt(o.getX() + 0.5, ground, o.getZ() - 8.5); });
         quiet("ride_forward", 60, () -> { DrekkiEntity c = pup(); mark = c == null ? 0 : c.getX(); keys(true, false, false); });
@@ -402,12 +421,26 @@ final class SelfTestMature {
         /* after the leap it is drawn where the server has it, in front of its target and not past it, and the loop is over */
         check("the_pounce_ends_where_it_is", 2, 0, () -> {}, "this game's drekki from the server's, and from its target", () -> { DrekkiEntity c = pup(), d = sd(); return c == null || d == null ? "?" : String.format("%.2f apart, %.2f short of the husk, loop %s", c.position().distanceTo(d.position()), mark - c.getX(), c.anim()); },
             () -> { DrekkiEntity c = pup(), d = sd(); return c != null && d != null && c.position().distanceTo(d.position()) < 0.75 && mark - c.getX() > 0.4 && mark - c.getX() < 2.2 && c.anim() != dev.frosthaven.ranchercompanion.look.Anim.POUNCE; });
-        quiet("breath_setup", 30, () -> { clearMobs(); life(d -> { d.disengage(); d.setLook(3, d.line(), Diet.COOKED.ordinal(), d.astral(), d.horn()); d.abilityAt = 0; }); pupHere(); });
-        quiet("breath_foe", 24, () -> { DrekkiEntity c = pup(); if (c != null) cmd("summon husk " + (c.getX() + 3) + " " + c.getY() + " " + c.getZ() + " {NoAI:1b,PersistenceRequired:1b,Tags:[\"st\",\"breathed\"]}"); });
+        /* its target dead, an Aggressive drekki goes for the next one at once (no loop held over from the kill) */
+        quiet("next_foe", 10, () -> { DrekkiEntity c = pup(); if (c != null) cmd("summon husk " + (c.getX() + 2) + " " + c.getY() + " " + (c.getZ() + 5) + " {NoAI:1b,PersistenceRequired:1b,Tags:[\"st\",\"next\"]}"); });
+        check("after_the_kill_the_next_target", 20, 12, () -> {}, "the first husk, and the next one's health", () -> { Entity a2 = tagged("pounced"), b2 = tagged("next"); return (a2 == null ? "dead" : "alive") + ", " + (b2 == null ? "dead" : String.valueOf(((Mob) b2).getHealth())); },
+            () -> { Entity a2 = tagged("pounced"), b2 = tagged("next"); return a2 == null && (b2 == null || ((Mob) b2).getHealth() < 20); });
+        quiet("walks_back", 70, () -> { clearMobs(); life(d -> d.setStance(Life.Stance.PASSIVE)); });
+        step("back_at_its_owners_side", 2, () -> {}, () -> pup() != null && pup().distanceTo(mc().player) < 6 && pup().anim() != dev.frosthaven.ranchercompanion.look.Anim.BITE);
+        quiet("breath_setup", 30, () -> { clearMobs(); life(d -> { d.disengage(); d.setStance(Life.Stance.AGGRESSIVE); d.setLook(3, d.line(), Diet.COOKED.ordinal(), d.astral(), d.horn()); d.abilityAt = 0; }); });  /* no move to its owner here: a watcher took that for a slide back after the fight */
+        quiet("breath_foe", 24, () -> { DrekkiEntity c = pup(); if (c != null) cmd("summon husk " + c.getX() + " " + c.getY() + " " + (c.getZ() - 3) + " {NoAI:1b,PersistenceRequired:1b,Tags:[\"st\",\"breathed\"]}"); });  /* to its side: it turns to it, then breathes */
         step("breath_shot", 2, () -> {}, () -> true);
         check("the_breath_burns", 20, 4, () -> {}, "the husk's health and the ability's cooldown", () -> { Entity e = tagged("breathed"); DrekkiEntity d = sd(); return (e == null ? "dead" : String.valueOf(((Mob) e).getHealth())) + ", ready in " + (d == null ? "?" : d.abilityAt - Vitals.now(d)); },
             () -> { Entity e = tagged("breathed"); DrekkiEntity d = sd(); return d != null && d.abilityAt > Vitals.now(d) && (e == null || ((Mob) e).getHealth() < 20); });
-        quiet("abilities_done", 20, () -> { clearMobs(); life(d -> { d.disengage(); d.setStance(Life.Stance.PASSIVE); }); });
+        /* the magic ball at a Mature's pace: an ability-less round on a tough husk 7 blocks off, a ball every 30 ticks */
+        quiet("ball_setup", 30, () -> { clearMobs(); life(d -> { d.disengage(); d.abilityAt = Vitals.now(d) + 20 * 600; }); });
+        quiet("ball_foe", 100, () -> { DrekkiEntity c = pup(); if (c == null) return;
+            cmd("summon husk " + (c.getX() + 7) + " " + c.getY() + " " + c.getZ() + " {NoAI:1b,PersistenceRequired:1b,Health:200f,attributes:[{id:\"minecraft:generic.max_health\",base:200d}],Tags:[\"st\",\"balled\"]}");
+            hits = 0; mark = 200;
+            for (int i = 12; i <= 98; i++) after(i, () -> { Entity e = tagged("balled"); if (e instanceof Mob m && m.getHealth() < mark - 0.01) { hits++; mark = m.getHealth(); } }); });
+        step("ball_shot", 2, () -> {}, () -> true);
+        check("the_ball_at_a_matures_pace", 2, 0, () -> {}, "balls that hit in 4.3 seconds (one every 30 ticks)", () -> hits + ", husk at " + mark, () -> hits >= 2 && hits <= 4);
+        quiet("abilities_done", 20, () -> { clearMobs(); life(d -> { d.disengage(); d.abilityAt = 0; d.setStance(Life.Stance.PASSIVE); }); });
         /* the rarity colors on the Traits tab: one of each tier, a recharging one, an offer */
         quiet("tiers", 20, () -> { life(d -> { d.setSaddle(new ItemStack(Items.SADDLE)); d.life.horizons = true; d.life.traits.clear(); d.life.cooldowns.clear();
             for (Trait t : new Trait[]{Trait.WINGS_OF_HOPE, Trait.LEAP_OF_FAITH, Trait.OPEN_ROAD, Trait.REWIND, Trait.OCEAN_WALKER}) d.life.traits.add(t.id);

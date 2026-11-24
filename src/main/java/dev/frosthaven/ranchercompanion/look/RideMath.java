@@ -8,6 +8,8 @@ public final class RideMath {
     public static final double SPEED = 0.2;
     /** the jump: about 2 blocks */
     public static final double JUMP = 0.62;
+    /** a ridden drekki steps down a ledge this high or less at once (as it steps up a full block) */
+    public static final double STEP_DOWN = 1.0;
     /** Four Winds: a camel's dash (2.0 along, 0.6 up) at twice the speed, and its 55 ticks between dashes */
     public static final double DASH = 4.0, DASH_UP = 0.6;
     public static final int DASH_COOLDOWN = 55;

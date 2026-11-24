@@ -115,11 +115,10 @@ public final class HatcheryScreen extends Screen {
     public void render(GuiGraphics g, int mx, int my, float pt) {
         super.render(g, mx, my, pt);
         int cx = confirming ? -1 : mx, cy = confirming ? -1 : my;
-        /* the title on the left, then what it is and where in the dimmer thread (spec, Checkout: Names) */
+        /* the title on the left; a named one says what it is in the dimmer thread (spec, Checkout: Names). No coordinates:
+           they do not matter to a player (Shane, 2026-11-24) */
         g.drawString(font, title, left + 8, top + 8, Art.THREAD, false);
-        BlockPos p = view.pos();
-        Component sub = Component.literal((view.named() ? "Drekki Hatchery · " : "") + p.getX() + ", " + p.getY() + ", " + p.getZ());
-        g.drawString(font, sub, left + 8 + font.width(title) + 6, top + 8, Art.DIM, false);
+        if (view.named()) g.drawString(font, Component.translatable("block.rancher_companion.hatchery"), left + 8 + font.width(title) + 6, top + 8, Art.DIM, false);
         nest(g, cx, cy);
         roster(g, cx, cy);
         Row sel = selected == null ? null : row(selected);

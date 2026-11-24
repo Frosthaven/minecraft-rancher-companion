@@ -52,6 +52,8 @@ public final class RancherCompanionClient {
         DrekkiDebug.register();
         NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, ShowcaseClient::tick);
         NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, SelfTest::tick);
+        dev.frosthaven.ranchercompanion.combat.ElementalBall.look = DrekkiParticles::ball;
+        if (RideTest.ON) NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, RideTest::tick);
         NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, BlockShowcaseClient::tick);
     }
 }

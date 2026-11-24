@@ -190,7 +190,8 @@ Two craftable items:
     with a use of its own on a drekki (a hat, a carrier, a name tag, a lead, food, the Potion of Horizons, a train
     schedule). An unsaddled one opens its screen as before. The screen of a saddled one: the inventory key while
     riding, as a horse, or a sneak click with an item in hand. Sneak dismounts. Only the owner rides. A ghost and an
-    employed drekki are not ridden; taking a job puts its rider down.
+    employed drekki are not ridden; taking a job puts its rider down. Only a checked-out drekki is ridden (Shane,
+    2026-11-24): one that lives at a hatchery opens its screen at the click, and a check in puts its rider down.
   - Under a rider it does nothing of its own: no goals, no fights, no catch-up. Its rider's game moves it, as a horse.
   - The rider is drawn as the design page's (client/RiderSeat): hips on the saddle of the body as it is posed each
     frame, turning with it; arms 40 degrees forward and 8 in (the reins), legs 72 forward and 22 out. The pose is set
@@ -199,6 +200,16 @@ Two craftable items:
     dashed) and `canDash()` (it holds Four Winds).
   - Speed 0.2 as the game's movement attribute (about 8.8 blocks a second; an average horse is 0.225). The Open Road
     adds 10%. The jump key jumps about 2 blocks at once (no charge).
+  - Steps (Shane, 2026-11-24): it steps up a full block as a horse does, and steps down a ledge of a block or less in
+    one tick (`RideMath.STEP_DOWN`), no fall and no float, at its ground speed. Its hitbox comes from its stage the
+    moment the entity exists on either side: a game is sent only the values that differ from the defaults, stage 3 is
+    the default, so a Mature's hitbox once stayed the entity type's 1.5 by 2.3 on a game against the server's 0.6 by
+    1.725, and the server refused every step the rider's game took ("moved wrongly", carried back each tick).
+  - In the air its pose is one blend, not a switch of loops (Shane, 2026-11-24; `DrekkiAnimations.rideAir`): from the
+    ground loop into the launch (legs trailing, nose up, wings out, the tail already lifting), the reach at the top,
+    and on into the fall (tail high), by its smoothed rise; the glide is eased over it after 8 ticks on its wings, and
+    the wingbeat over the glide while it climbs or holds its height, one continuous beat. In the air the loop is the
+    glide, the jump or the fall, never the walk or the run; the dash only for the dash's own hop (under 14 ticks up).
   - Cloud Stompers: one more jump in the air. Four Winds: the sprint key dashes (a camel's dash at twice the push:
     about 20 blocks), 55 ticks between dashes.
   - Wings of Hope: the jump key held in the air flies. A wingbeat every 12 ticks pushes for 5 of them along the
@@ -520,7 +531,8 @@ Rules behind the lists:
   ivory horns and magical diets (Cooked, Root) turn them ebony. Talons match the horns. Fangs stay ivory
   (assumption).
 - Position and abilities: see Combat.
-- The ball and the breath are magenta. Open: their element.
+- The ball and the breath are magenta. Open: their element. A live drekki's ball looks as the page's (2026-11-24): the
+  mod's own cube, 0.34 of a block, shedding small cubes, two cube bursts where it ends; not the game's dust.
 - Carnivore: talons, one fang on each side of the lip from stage 2, and leathery membrane wings. Herbivore: no
   talons, no fangs, feathered wings, and more plumage on the tail.
 - Threat response: Carnivore is offensive. Herbivore is defensive.
@@ -914,11 +926,11 @@ Effect numbers, written into the sheet's rows (starting points, to tune in testi
 Decided 2026-11-04. A player has one drekki checked out at a time; the rest are checked in at hatcheries.
 
 - Names (revised 2026-11-16): a hatchery is named with an anvil, like a chest; the name stays on the block and on the
-  item when broken. The screen's title is the name, with "Drekki Hatchery" and the coordinates under it; unnamed, the
-  title is "Drekki Hatchery". Every hatchery screen shows the owner's whole roster, every drekki they own and where it
-  is: "Here", "With you", "At <name>", "At another hatchery" for an unnamed one, or "No hatchery".
+  item when broken. The screen's title is the name, with "Drekki Hatchery" beside it; unnamed, the
+  title is "Drekki Hatchery". No coordinates anywhere a player reads (Shane, 2026-11-24): they do not matter to players. Every hatchery screen shows the owner's whole roster, every drekki they own and where it
+  is: "Here", "With you", "At <name>", "At Drekki Hatchery" for an unnamed one (or one too far to read its name), or "No hatchery".
 - Move… (2026-11-16): any drekki that is not checked out can be moved from any hatchery screen to any of the owner's
-  hatcheries. The picker lists them by name (unnamed ones by coordinates) with each one's count against its cap; a
+  hatcheries. The picker lists them by name (unnamed ones as "Drekki Hatchery") with each one's count against its cap; a
   full one is disabled. The target's chunk is loaded briefly to place it.
 - Roster on the hatchery screen (proposal 2026-11-16, design page UI tab): one row per drekki the player owns, with a
   portrait of its head rendered from its own model, face on (in the game: the entity renderer drawn into the row, as
@@ -929,7 +941,7 @@ Decided 2026-11-04. A player has one drekki checked out at a time; the rest are 
   hatchery with it.
   The list shows four rows and scrolls; its header counts the drekki living at this hatchery against its cap.
 - Follow-up screens (proposal 2026-11-16, design page UI tab), each in the same panel with Back:
-  - Move: the drekki's card, every hatchery (name or coordinates, count against its cap; full and current ones
+  - Move: the drekki's card, every hatchery (name, or "Drekki Hatchery", count against its cap; full and current ones
     disabled), then "Move to <name>".
   - Pair: the picked drekki plus a partner from the stage 3 drekki living here (resting or hungry ones disabled with
     the reason), the optional tonic slot, and a preview of the child by the breeding rules (fur tier or new hue, eyes,
@@ -1435,6 +1447,14 @@ Diet picks the position (where it fights from) and the two abilities. Damage is 
   Regeneration I for 5 s to itself and those players. Steel edge and Rejuvenate work in every stance; a ghost has none.
 - A Mature attacks a third faster than a Fledgling, bite and ball alike (Shane, 2026-11-23): 3/4 of the wait between
   attacks (a bite every 18 ticks for 24, a ball every 30 for 40; surged 9 and 15).
+- It faces its target before a breath or a ball (Shane, 2026-11-24): standing in range it turns its body to the target,
+  30 degrees a tick at most, and breathes or throws only within 15 degrees of it; it keeps facing it while it stands,
+  so the cone goes where it looks.
+- An attack that ends, ends its loop (Shane, 2026-11-24): when the target dies, gets away or is no longer fair, the
+  bite or ball loop stops at once (a breath already out too), not at the end of its fixed time, and the drekki is back
+  to what it does: the next target if its stance fights, else its owner's side or its post. Under that, a drekki that
+  travels faster than a block a second during a bite, ball or breath loop draws the walk or the run, so it never
+  slides in a standing pose.
 - The Pounce in the world (Shane, 2026-11-23; `look/LeapMath`): a 2-tick crouch, then the drekki itself leaps and
   lands at biting reach of its target (boxes 0.3 apart) 7 ticks later, as the bite lands. The launch speed comes from
   the game's own air physics, so it does not go past. On a live drekki the loop draws no leap of its own (the page's

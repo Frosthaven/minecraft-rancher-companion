@@ -75,6 +75,9 @@ public final class MatureTests {
     public static void theSaddleSlotIsAMaturesAndOnlyASaddledOneIsRidden(GameTestHelper t) {
         ServerPlayer p = LifeTests.player(t);
         DrekkiEntity d = CombatTests.out(t, p, 2, Diet.RAW, Life.Stance.PASSIVE);
+        /* a new entity (as a game makes one from the server's packet, before any synced value) has its stage's hitbox */
+        DrekkiEntity fresh = new DrekkiEntity(dev.frosthaven.ranchercompanion.RancherCompanion.DREKKI.get(), t.getLevel());
+        t.assertTrue(fresh.getBbWidth() == dev.frosthaven.ranchercompanion.look.Dims.of(fresh.stage()).hitW, "a new entity's hitbox is its stage's: " + fresh.getBbWidth());
         DrekkiMenu young = new DrekkiMenu(1, p.getInventory(), d);
         t.assertTrue(!young.saddled && young.slots.size() == 3 + 36, "a Fledgling has no saddle slot");
         d.setLook(3, d.line(), d.diet(), d.astral(), d.horn());
@@ -108,6 +111,13 @@ public final class MatureTests {
         t.assertTrue(!p.isPassenger(), "a lead keeps its own use");
         /* employed, it is not ridden, and work puts a rider down */
         p.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+        /* checked in (it lives at a hatchery), it is not ridden, and a check in puts its rider down */
+        d.interact(p, InteractionHand.MAIN_HAND);
+        d.bind(p.getUUID(), d.drekkiId(), t.absolutePos(net.minecraft.core.BlockPos.ZERO));
+        t.assertTrue(!d.rideable() && !p.isPassenger(), "a check in puts its rider down");
+        try { d.interact(p, InteractionHand.MAIN_HAND); } catch (RuntimeException e) { /* the mock player has no connection for the screen's packet */ }
+        t.assertTrue(!p.isPassenger(), "a drekki that is not checked out is not ridden");
+        d.bind(p.getUUID(), d.drekkiId(), null);
         d.setJob(1);
         d.interact(p, InteractionHand.MAIN_HAND);
         t.assertTrue(!d.rideable() && !p.isPassenger(), "an employed drekki is not ridden");

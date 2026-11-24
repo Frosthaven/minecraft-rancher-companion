@@ -107,6 +107,8 @@ public final class CombatGoals {
 
     /** closes in and bites, or keeps its range and shoots */
     public static final class Attack extends Goal {
+        /** a breath or a ball goes out only with the body this near to the way to the target, in degrees */
+        static final float FACING = 15;
         private final DrekkiEntity d;
         private int cooldown, strikeIn, repath, leapIn;
         private boolean pouncing;
@@ -128,7 +130,16 @@ public final class CombatGoals {
         private int pace(int ticks) { return d.stage() >= 3 ? Math.round(ticks * 0.75f) : ticks; }
 
         @Override
-        public void stop() { d.getNavigation().stop(); if (!fair(d, d.getTarget())) d.setTarget(null); }
+        public void stop() {
+            d.getNavigation().stop();
+            if (!fair(d, d.getTarget())) d.setTarget(null);
+            /* the attack is over (its target died, got away or is no longer fair): so is its loop, at once, not at the
+               end of its fixed time. The drekki is back to what it does: the next target if its stance fights, else
+               its owner's side or its post (Shane, 2026-11-24). A breath not yet out still comes */
+            strikeIn = 0;
+            d.endAct(Anim.BITE); d.endAct(Anim.BALL);
+            if (d.breathIn <= 0) d.endAct(Anim.BREATH);
+        }
 
         @Override
         public boolean requiresUpdateEveryTick() { return true; }
@@ -146,8 +157,11 @@ public final class CombatGoals {
             if (ranged()) {
                 if ((dist > 8 * 8 || !sees) && --repath <= 0) { d.getNavigation().moveTo(t, 1.1); repath = 10; }
                 else if (dist <= 8 * 8 && sees) d.getNavigation().stop();
-                if (cooldown == 0 && sees && dist <= Abilities.BREATH_RANGE * Abilities.BREATH_RANGE && Abilities.ready(d)) { Abilities.breath(d); cooldown = 50; }
-                else if (cooldown == 0 && sees && dist <= 10 * 10) { d.act(Anim.BALL, 56); strikeIn = 8; cooldown = pace(d.surged() ? 20 : 40); }
+                /* it turns to its target first and breathes or throws only once it faces it; standing, it keeps facing
+                   it, so the cone goes where it looks (Shane, 2026-11-24: a breath went out sideways, then it turned) */
+                boolean faces = d.getNavigation().isDone() ? face(t) : aimed(t);
+                if (cooldown == 0 && faces && sees && dist <= Abilities.BREATH_RANGE * Abilities.BREATH_RANGE && Abilities.ready(d)) { Abilities.breath(d); cooldown = 50; }
+                else if (cooldown == 0 && faces && sees && dist <= 10 * 10) { d.act(Anim.BALL, 56); strikeIn = 8; cooldown = pace(d.surged() ? 20 : 40); }
             } else {
                 /* it reaches as far as the game's melee mobs do (a zombie's rule: its box grown 0.83 a side meets the
                    target's), and never less than before. A zombie hit it from further off than it could bite */
@@ -157,6 +171,21 @@ public final class CombatGoals {
                     Abilities.pounce(d, t); pouncing = true; leapIn = Abilities.POUNCE_CROUCH; strikeIn = Abilities.POUNCE_LANDS; cooldown = Abilities.POUNCE_ENDS; repath = 0;
                 } else if (cooldown == 0 && (dist <= reach * reach || d.isWithinMeleeAttackRange(t))) { d.act(Anim.BITE, 32); strikeIn = 6; cooldown = pace(d.surged() ? 12 : 24); }
             }
+        }
+
+        /** degrees its body is off the way to its target */
+        private float off(LivingEntity t) {
+            float want = (float) (net.minecraft.util.Mth.atan2(t.getZ() - d.getZ(), t.getX() - d.getX()) * (180 / Math.PI)) - 90;
+            return net.minecraft.util.Mth.wrapDegrees(want - d.yBodyRot);
+        }
+
+        private boolean aimed(LivingEntity t) { return Math.abs(off(t)) <= FACING; }
+
+        /** standing: its body turns to its target, 30 degrees a tick at most; true once it faces it */
+        private boolean face(LivingEntity t) {
+            float off = off(t), turn = net.minecraft.util.Mth.clamp(off, -30, 30);
+            d.setYRot(d.yBodyRot + turn); d.yBodyRot = d.getYRot(); d.yHeadRot = d.getYRot();
+            return Math.abs(off - turn) <= FACING;
         }
 
         private void strike(LivingEntity t) {

@@ -57,10 +57,24 @@ neoForge {
             jvmArgument '-Drancher_companion.selftest=true'
             jvmArgument '-Drancher_companion.selftest.new=true'
             jvmArgument '-Drancher_companion.selftest.mature=true'
+            // -Prancher_sections=a+b runs only those sections
+            if (project.hasProperty('rancher_sections')) jvmArgument "-Drancher_companion.selftest.sections=${project.property('rancher_sections')}"
         }
         server {
             server()
             programArgument '--nogui'
+        }
+        // the ride on a dedicated server (client/RideTest): the server in run/ridetest-server, then the game that joins it
+        rideTestServer {
+            server()
+            gameDirectory = file('run/ridetest-server')
+            jvmArgument '-Drancher_companion.ridetest=true'
+            programArgument '--nogui'
+        }
+        rideTestClient {
+            client()
+            programArguments.addAll '--quickPlayMultiplayer', 'localhost:25577'
+            jvmArgument '-Drancher_companion.ridetest=true'
         }
         gameTestServer {
             type = "gameTestServer"

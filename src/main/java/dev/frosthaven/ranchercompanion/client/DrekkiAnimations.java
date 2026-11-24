@@ -26,14 +26,23 @@ public final class DrekkiAnimations {
         Rig P = b.rig; P.reset();
         int stage = e.stage(); double k = Anim.stageK(stage);
         idle(P, t);
-        boolean ridden = e.isVehicle() && e.rideable();  /* really in the air: the loops' own lift and timing do not apply */
-        switch (e.anim()) {
+        boolean ridden = e.isVehicle() && e.rideable();
+        float pt = e.partial(t), air = ridden ? e.airAmt(pt) : 0;
+        Anim loop = e.anim();
+        /* a ridden drekki in the air: its ground loop (what it runs at that speed) eased into one air pose and back */
+        if (air > 0.001 && (loop == Anim.IDLE || loop == Anim.WALK || loop == Anim.RUN || loop == Anim.JUMP || loop == Anim.FALL || loop == Anim.GLIDE)) {
+            if (loop == Anim.WALK) walk(P, t); else if (loop != Anim.IDLE) run(P, t);
+            float[] ground = P.snap();
+            P.reset(); idle(P, t);
+            rideAir(P, e, t, pt, k);
+            P.blendFrom(ground, ease(air));
+        } else switch (loop) {
             case WALK -> walk(P, t);
             case RUN -> run(P, t);
             case DASH -> dash(P, t);
-            case GLIDE -> { glide(P, t, k); if (ridden) { P.lift(0); if (e.getY() > e.yo) P.flare(0.1 + sin(t * Math.PI * 2 / (dev.frosthaven.ranchercompanion.look.RideMath.BEAT / 20.0)) * 0.45); } }  /* climbing on Wings of Hope: a wingbeat a push */
-            case JUMP -> { if (ridden) rideAir(P, t, true); else jump(P, t, k); }
-            case FALL -> { if (ridden) rideAir(P, t, false); else fall(P, t, k); }
+            case GLIDE -> glide(P, t, k);
+            case JUMP -> jump(P, t, k);
+            case FALL -> fall(P, t, k);
             case SLEEP -> sleep(P, t, e.sleepTime(t));
             case FEED -> feed(P, t, k, stage, e.live());
             case BITE -> bite(P, t, k);
@@ -116,10 +125,35 @@ public final class DrekkiAnimations {
         P.lift(y); P.body.y -= (float) (crouch * P.crouchPx); P.body.rx = (float) pitch; P.mouth(0); P.flare(fl); P.tail.rx = (float) (P.tailBase - (y / H) * 0.3);
     }
 
-    /** a ridden drekki in the air: the jump's reach on the way up, the fall's pose on the way down, held (no lift: it is there) */
-    static void rideAir(Rig P, double t, boolean rising) {
-        if (rising) { P.legPose(J_REACH[0], J_REACH[1], J_REACH[2]); P.body.rx = -0.08f; P.flare(0.2); }
-        else { P.legPose(F_REACH[0], F_REACH[1], F_REACH[2]); P.head.rx += 0.35f; P.neck2.rx -= 0.1f; P.body.rx = 0.12f; P.mouth(0.25); P.flare(0.35 + sin(t * 22) * 0.15); P.tail.rx = (float) (P.tailBase + 0.5); }
+    /** the legs trailing behind a push-off */
+    static final double[] J_BACK = {0.5, 0.55, 0.3};
+
+    /** A ridden drekki in the air (no lift: it is there). One pose, by its smoothed rise: the launch (legs trailing from
+     *  the push, nose up, wings thrown out, the tail already lifting), the reach at the top, then eased into the fall
+     *  (legs forward to land, head down, wings fluttering, tail high). Nothing switches at the top of the jump: every
+     *  joint goes through. On its wings the glide is blended over it, and the wingbeat over the glide. */
+    static void rideAir(Rig P, DrekkiEntity e, double t, float pt, double k) {
+        double rise = e.rise(pt), u = ease((0.1 - rise) / 0.36), launch = ease(1 - (e.airTicks() + pt - 2) / 7.0) * (1 - u);
+        double[] up = {J_REACH[0] + (J_BACK[0] - J_REACH[0]) * launch, J_REACH[1] + (J_BACK[1] - J_REACH[1]) * launch, J_REACH[2] + (J_BACK[2] - J_REACH[2]) * launch};
+        P.legMix(up, F_REACH, u);
+        P.body.rx = (float) ((-0.13 - 0.07 * launch) * (1 - u) + 0.12 * u);
+        P.head.rx += (float) (-0.1 * (1 - u) + 0.35 * u); P.neck2.rx += (float) (0.06 * (1 - u) - 0.1 * u);
+        P.mouth(0.25 * u);
+        P.flare((0.3 + 0.4 * launch + sin(t * 9) * 0.04) * (1 - u) + (0.35 + sin(t * 22) * 0.15) * u);
+        double tail = 0.22 + 0.08 * launch + (0.5 - 0.22) * u;
+        P.tail.rx = (float) (P.tailBase + tail);
+        for (int i = 0; i < P.tailSegs.size(); i++) P.tailSegs.get(i).rx += (float) ((0.07 * (1 - u) - 0.05 * u) * (i + 1) / P.tailSegs.size());  /* the tip follows: curled up on the rise, streaming on the fall */
+        float g = e.glideAmt(pt);
+        if (g > 0.001) {
+            float[] plain = P.snap();
+            P.reset(); idle(P, t);
+            glide(P, t, k); P.lift(0);
+            /* climbing or holding its height it beats its wings, one beat to a push of Wings of Hope; else it soars */
+            double beat = sin(t * Math.PI * 2 / (dev.frosthaven.ranchercompanion.look.RideMath.BEAT / 20.0)), f = e.flapAmt(pt);
+            P.flare(0.1 + sin(t * 1.6) * 0.07 * (1 - f) + beat * 0.45 * f);
+            P.body.rx += (float) (beat * 0.025 * f);
+            P.blendFrom(plain, ease(g));
+        }
     }
 
     static void fall(Rig P, double t, double k) {

@@ -27,7 +27,7 @@ public final class Riding {
     public static Keys keys;
 
     /** client-side state of the one drekki this game steers */
-    static final class State { boolean jumpWas, sprintWas; int airJumps, air, dashIn, beat = -1; }
+    static final class State { boolean jumpWas, sprintWas, groundWas; int airJumps, air, dashIn, beat = -1; }
 
     public static boolean holds(DrekkiEntity d, Trait t) {
         if (d.ghost()) return false;
@@ -41,6 +41,11 @@ public final class Riding {
         boolean jump = keys != null && keys.jump(), sprint = keys != null && keys.sprint();
         boolean grounded = d.onGround();
         Vec3 v = d.getDeltaMovement();
+        /* off a ledge of a block or less it steps down at once, as it steps up: no float, no fall loop on a staircase */
+        if (d.level().isClientSide && !grounded && s.groundWas && v.y <= 0 && !d.isInLiquid()) {
+            double drop = net.minecraft.world.entity.Entity.collideBoundingBox(d, new Vec3(0, -RideMath.STEP_DOWN, 0), d.getBoundingBox(), d.level(), java.util.List.of()).y;
+            if (drop < 0 && drop > -RideMath.STEP_DOWN) { d.setPos(d.getX(), d.getY() + drop, d.getZ()); d.setOnGround(true); d.fallDistance = 0; grounded = true; }
+        }
         if (grounded) { s.airJumps = 0; s.air = 0; s.beat = -1; } else s.air++;
         if (s.dashIn > 0) s.dashIn--;
         if (jump && !s.jumpWas) {
@@ -61,7 +66,7 @@ public final class Riding {
         /* Leap of Faith: past a plain fall's 3 blocks it falls slowly */
         if (!grounded && s.beat < 0 && v.y < -RideMath.SLOW_FALL && d.fallDistance > RideMath.SAFE_FALL && holds(d, Trait.LEAP_OF_FAITH)) v = new Vec3(v.x, -RideMath.SLOW_FALL, v.z);
         d.setDeltaMovement(v);
-        s.jumpWas = jump; s.sprintWas = sprint;
+        s.jumpWas = jump; s.sprintWas = sprint; s.groundWas = grounded;
     }
 
     /** Ocean Walker and Lava Walker: ridden, it stays on top when it steps on or lands from 3 blocks or less */
@@ -70,12 +75,21 @@ public final class Riding {
         return f.is(FluidTags.WATER) && holds(d, Trait.OCEAN_WALKER) || f.is(FluidTags.LAVA) && holds(d, Trait.LAVA_WALKER);
     }
 
-    /** the loop of a ridden drekki, from what every game sees of it: its speed, the ground, its rise or fall */
+    /** a dash leaves the ground for about this many ticks; in the air longer, its speed is flight */
+    static final int DASH_AIR = 14;
+
+    /** in the air on its wings: more than 8 ticks up, not dropping fast, with Wings of Hope (rising too) or Leap of Faith */
+    static boolean glides(DrekkiEntity d, double rise) {
+        return d.airSeen > 8 && rise > -0.3 && (holds(d, Trait.WINGS_OF_HOPE) || rise < 0.05 && holds(d, Trait.LEAP_OF_FAITH));
+    }
+
+    /** the loop of a ridden drekki (its sounds and particles; its pose in the air is DrekkiAnimations.rideAir), from what
+     *  every game sees of it: its speed, the ground, its rise or fall (smoothed). In the air it is never a walk or a
+     *  run, whatever its rise: level flight between wingbeats once fell through to the run (2026-11-24) */
     static Anim loop(DrekkiEntity d, double speed, double rise) {
-        if (!d.onGround() && !d.isInLiquid()) {
-            if (speed > 12) return Anim.DASH;
-            if (rise > 0.05) return d.airSeen > 8 && holds(d, Trait.WINGS_OF_HOPE) ? Anim.GLIDE : Anim.JUMP;
-            if (rise < -0.05) return rise > -0.3 && d.airSeen > 8 && (holds(d, Trait.LEAP_OF_FAITH) || holds(d, Trait.WINGS_OF_HOPE)) ? Anim.GLIDE : Anim.FALL;
+        if (!d.onGround() && !d.isInLiquid() && d.airSeen >= 2) {
+            if (speed > 12 && d.airSeen < DASH_AIR) return Anim.DASH;  /* the dash's own hop; fast flight is no dash */
+            return glides(d, rise) ? Anim.GLIDE : rise >= 0 ? Anim.JUMP : Anim.FALL;
         }
         return speed > 12 ? Anim.DASH : speed < 0.15 ? Anim.IDLE : speed < 4.5 ? Anim.WALK : Anim.RUN;
     }
