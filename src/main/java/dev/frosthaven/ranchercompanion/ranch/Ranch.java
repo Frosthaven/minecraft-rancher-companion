@@ -457,8 +457,8 @@ public final class Ranch {
         ARRIVALS.remove(p.getUUID());
     }
 
-    /* a checked-out drekki comes back next to its owner on the events that part them, with no polling: login, respawn,
-       a dimension change, leaving spectator mode, and its chunk unloading while the owner is online */
+    /* a checked-out drekki comes back next to its owner on the events that part them: login, respawn, a dimension
+       change, leaving spectator mode, and its chunk unloading while the owner is online. keepUp is the net under them */
     public static void onLogin(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent ev) { if (ev.getEntity() instanceof ServerPlayer p) { bringBack(p); Death.giveEggs(p); Tombs.onLogin(p); } }
     public static void onRespawn(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerRespawnEvent ev) { if (ev.getEntity() instanceof ServerPlayer p) bringBack(p); }
     public static void onDimension(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerChangedDimensionEvent ev) { if (ev.getEntity() instanceof ServerPlayer p) follow(p); }
@@ -489,6 +489,9 @@ public final class Ranch {
             DUE.removeIf(en -> { if (en.getKey() > tick) return false; run.add(en.getValue()); return true; });
             run.forEach(Runnable::run);
         }
+        /* not on the GameTest server: it keeps every finished test's mock owner online, and their drekki went with the test */
+        if (ev.getServer().getTickCount() % 20 == 0 && !(ev.getServer() instanceof net.minecraft.gametest.framework.GameTestServer))
+            for (ServerPlayer p : List.copyOf(ev.getServer().getPlayerList().getPlayers())) keepUp(p);
         if (RECHECK.isEmpty()) return;
         int now = ev.getServer().getTickCount();
         RECHECK.entrySet().removeIf(en -> {
@@ -582,8 +585,31 @@ public final class Ranch {
         if (d != null) { r.snapshot(out, save(d)); d.discard(); }
         DrekkiEntity n = spawn(p.serverLevel(), out, p.blockPosition(), null);
         if (n == null) return;
-        n.teleportNear(p);
+        /* no spot by an owner in the air (flying, gliding, falling): it stays data until they are near ground, and
+           keepUp looks again each second. Spawned in the air it only fell, and was left behind again */
+        if (!n.teleportNear(p) && airborne(p)) return;
         add(p.serverLevel(), n);
+    }
+
+    /** nothing to stand on within 4 blocks under them (or their mount), and not in a liquid */
+    private static boolean airborne(ServerPlayer p) {
+        Entity v = p.getRootVehicle();
+        return !v.isInLiquid() && p.level().noCollision(v, v.getBoundingBox().expandTowards(0, -4, 0));
+    }
+
+    /** blocks from its owner past which a follower is looked for by keepUp: twice the catch-up, so its own goal goes first */
+    public static final double LOST = dev.frosthaven.ranchercompanion.entity.DrekkiGoals.CATCH_UP * 2;
+
+    /** once a second for each owner online: a follower out of reach comes back. The events do not cover every way to
+     *  lose one: a catch-up that found no spot (the owner in the air, the chunks around them not loaded yet) left it
+     *  in a chunk that stopped ticking, where its goal no longer runs, and when that chunk unloaded no event followed
+     *  (Shane, 2026-11-23: lost when flying far and fast, only the whistle brought it back) */
+    public static void keepUp(ServerPlayer p) {
+        Entry out = roster(p.server).out(p.getUUID());
+        if (out == null || out.where != Where.OUT || out.stay != null || ARRIVALS.containsKey(p.getUUID())) return;
+        DrekkiEntity d = live(out.id);
+        if (d != null && d.level() == p.level() && d.distanceToSqr(p) <= LOST * LOST) return;
+        bringBack(p);
     }
 
     // ---- stay and follow (spec, Stay and follow) ----

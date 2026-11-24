@@ -192,6 +192,11 @@ Two craftable items:
     riding, as a horse, or a sneak click with an item in hand. Sneak dismounts. Only the owner rides. A ghost and an
     employed drekki are not ridden; taking a job puts its rider down.
   - Under a rider it does nothing of its own: no goals, no fights, no catch-up. Its rider's game moves it, as a horse.
+  - The rider is drawn as the design page's (client/RiderSeat): hips on the saddle of the body as it is posed each
+    frame, turning with it; arms 40 degrees forward and 8 in (the reins), legs 72 forward and 22 out. The pose is set
+    after other mods' (Not Enough Animations let the arms hang). A swinging or item-using arm stays the game's.
+  - For other mods' displays, read by reflection on the client: `DrekkiEntity.dashCooldown()` (0 ready, 1 just
+    dashed) and `canDash()` (it holds Four Winds).
   - Speed 0.2 as the game's movement attribute (about 8.8 blocks a second; an average horse is 0.225). The Open Road
     adds 10%. The jump key jumps about 2 blocks at once (no charge).
   - Cloud Stompers: one more jump in the air. Four Winds: the sprint key dashes (a camel's dash at twice the push:
@@ -1426,6 +1431,16 @@ Diet picks the position (where it fights from) and the two abilities. Damage is 
 
 No trait sets anything on fire: a burning mob lights the player and the ground. Heat damage, knockback and smite
 stand in. Traits use vanilla status effects wherever one fits.
+
+Kept with its owner (Shane, 2026-11-23): once a second the server looks at every online owner's follower. One that is
+gone, in another level or more than 32 blocks away is brought back (Ranch.keepUp). An owner in the air (flying, gliding,
+falling: nothing to stand on within 4 blocks under them) has no spot for it, so it waits as data and is beside them
+within a second of the landing. Before this, a catch-up that found no spot left it in a chunk that stopped ticking, and
+only the whistle brought it back.
+
+On claimed land (Shane, 2026-11-23): an owner's click on their own drekki and their whistle work on another player's
+claim. Claim mods (FTB Chunks, MineColonies) cancel a visitor's clicks on every entity; the mod lets the owner's click
+on their own unemployed drekki through again (entity/OwnClicks). Other players stay stopped.
 
 Baseline for every drekki, no trait needed: one-block step like a horse, catch-up teleport when 16 blocks or more
 behind, never nearer (decided 2026-11-23; the code had 12, this line said 24), and never while on a Go here, holding after

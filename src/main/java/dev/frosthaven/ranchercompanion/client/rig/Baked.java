@@ -59,7 +59,7 @@ public final class Baked {
     }
 
     /** Euler angles for vanilla's rotationZYX(z, y, x), which applies x first. */
-    static void eulerZYX(float x, float y, float z, float w, Vector3f out) {
+    public static void eulerZYX(float x, float y, float z, float w, Vector3f out) {
         out.x = (float) Math.atan2(2 * (w * x + y * z), 1 - 2 * (x * x + y * y));
         double sp = 2 * (w * y - z * x);
         out.y = (float) Math.asin(Math.max(-1, Math.min(1, sp)));

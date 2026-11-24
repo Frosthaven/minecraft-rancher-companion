@@ -374,12 +374,12 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
     /** next to a block (its owner's feet): the first clear spot in a 5x5 around it, as tamed mobs teleport */
     /** to a safe spot 2 to 3 blocks from pos, then up to 6 when none is free there, or nowhere: it stays put rather than
      *  land somewhere that hurts it. It arrives unhurt: no fall carried over, no fire. */
-    public void teleportNear(BlockPos pos) { teleportNear(pos, null); }
+    public boolean teleportNear(BlockPos pos) { return teleportNear(pos, null); }
 
     /** the same, next to who: when they stand in a portal (they just came out of it), only on their side of it */
-    public void teleportNear(net.minecraft.world.entity.Entity who) { teleportNear(who.blockPosition(), who); }
+    public boolean teleportNear(net.minecraft.world.entity.Entity who) { return teleportNear(who.blockPosition(), who); }
 
-    private void teleportNear(BlockPos pos, net.minecraft.world.entity.Entity who) {
+    private boolean teleportNear(BlockPos pos, net.minecraft.world.entity.Entity who) {
         var side = who == null ? null : portalSide(who);
         for (int i = 0; i < 30; i++) {
             int r = i < 10 ? 3 : 6;  /* a cramped portal room had no spot within 3, and the drekki stayed in the portal */
@@ -403,8 +403,9 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
             resetFallDistance();
             clearFire();
             getNavigation().stop();
-            return;
+            return true;
         }
+        return false;
     }
 
     /** a portal block: the game's own, and a portal mod's by its block's name (Immersive Portals fills a frame with
@@ -798,6 +799,11 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
     int airSeen;
 
     /** a Mature with a saddle in its saddle slot carries its owner (Shane, 2026-11-23). Not a ghost, not at work */
+    /** for other mods' displays (read by reflection, client side): the Four Winds dash of the drekki this game steers.
+     *  dashCooldown: 0 = ready, 1 = just dashed */
+    public float dashCooldown() { return ride.dashIn / (float) dev.frosthaven.ranchercompanion.look.RideMath.DASH_COOLDOWN; }
+    public boolean canDash() { return Riding.holds(this, dev.frosthaven.ranchercompanion.trait.Trait.FOUR_WINDS); }
+
     public boolean rideable() { return stage() >= 3 && live() && entityData.get(SADDLED) && !ghost() && job() == 0; }
 
     @Override

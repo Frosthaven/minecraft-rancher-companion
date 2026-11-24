@@ -60,6 +60,11 @@ public final class RancherCompanion {
         NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.level.ChunkEvent.Load.class, Ranch::onChunkLoad);
         NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerChangeGameModeEvent.class, Ranch::onGameMode);
         NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.level.LevelEvent.Save.class, Ranch::onSave);
+        var last = net.neoforged.bus.api.EventPriority.LOWEST;  /* after the claim mods, cancelled events too (entity/OwnClicks) */
+        NeoForge.EVENT_BUS.addListener(last, true, net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.EntityInteract.class, dev.frosthaven.ranchercompanion.entity.OwnClicks::onEntity);
+        NeoForge.EVENT_BUS.addListener(last, true, net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.EntityInteractSpecific.class, dev.frosthaven.ranchercompanion.entity.OwnClicks::onEntitySpecific);
+        NeoForge.EVENT_BUS.addListener(last, true, net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickBlock.class, dev.frosthaven.ranchercompanion.entity.OwnClicks::onBlock);
+        NeoForge.EVENT_BUS.addListener(last, true, net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickItem.class, dev.frosthaven.ranchercompanion.entity.OwnClicks::onItem);
         NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.EntityInteract.class, dev.frosthaven.ranchercompanion.entity.DrekkiInteract::onEntityInteract);
         NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGH, net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.EntityInteractSpecific.class, dev.frosthaven.ranchercompanion.entity.DrekkiInteract::onEntityInteractSpecific);
         NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.server.ServerStoppedEvent.class, Ranch::onStopped);

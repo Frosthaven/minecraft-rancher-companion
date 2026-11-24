@@ -83,6 +83,9 @@ hatching, the roster, check in and out, the small carrier, petting, names, the t
 - `trait/RoamTraits` (the fifteen former biome traits: learning, and the effects that need no rider), `entity/Riding`
   (a ridden Mature: the rider's game steers it, `look/RideMath` its numbers; the server's rules for a rider),
   `combat/Abilities` (Pounce, Elemental breath, Steel edge, Rejuvenate), `look/FootTint` (the birth biome's tint).
+  `client/RiderSeat` draws the rider as the page does (on the animated saddle, hands at the reins; `mixin/PlayerModelMixin`).
+  `entity/OwnClicks` lets an owner's click on their own drekki through on claimed land. `Ranch.keepUp` is the
+  once-a-second net that brings a lost follower back (off on the GameTest server, whose mock owners stay online).
   `-Drancher_companion.selftest.mature=true` with `selftest.new` runs `client/SelfTestMature` (`./gradlew
   runSelfTestMature`; `-Drancher_companion.selftest.sections=a+b` picks sections): the real sprint, swim, boat, horse
   and strider rides, and riding with the real keys.

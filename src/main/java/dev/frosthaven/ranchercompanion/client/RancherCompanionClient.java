@@ -30,6 +30,7 @@ public final class RancherCompanionClient {
         modBus.addListener(RegisterColorHandlersEvent.Item.class, BlockClient::itemColors);
         modBus.addListener(EntityRenderersEvent.RegisterRenderers.class, BlockClient::renderers);
         NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, DrekkiParticles::tick);
+        NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.client.event.RenderPlayerEvent.Pre.class, RiderSeat::onRender);
         NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.entity.player.ItemTooltipEvent.class, ItemSubtext::onTooltip);
         /* Sophisticated's open-backpack key opens one's own drekki's bag while looking at it */
         if (dev.frosthaven.ranchercompanion.item.Bags.sophisticated())

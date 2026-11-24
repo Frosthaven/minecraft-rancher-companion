@@ -298,6 +298,12 @@ final class SelfTestMature {
         quiet("restore", 30, () -> { cmd("gamemode creative"); cmd("gamerule sendCommandFeedback true"); life(d -> d.setNoAi(false)); SelfTestTraits.tp(SelfTestTraits.o.getX() + 0.5, SelfTestTraits.o.getY(), SelfTestTraits.o.getZ() + 0.5); pupHere(); });
     }
 
+    /** the side camera (an unseen armor stand) beside the drekki, looking at it */
+    private static void camHere() {
+        DrekkiEntity c = pup();
+        if (c != null) cmd("tp @e[tag=cam,limit=1] " + (c.getX() + 1.2) + " " + c.getY() + " " + (c.getZ() + 3.2) + " 180 8");
+    }
+
     private static void mature() {
         BlockPos o = ground;
         int ground = o.getY();
@@ -328,7 +334,15 @@ final class SelfTestMature {
         quiet("ride_start", 35, () -> { rideAt(o.getX() + 0.5, ground, o.getZ() - 8.5); });
         quiet("ride_forward", 60, () -> { DrekkiEntity c = pup(); mark = c == null ? 0 : c.getX(); keys(true, false, false); });
         check("rides_forward", 5, 2, () -> {}, "blocks ridden in 3 s", () -> pup() == null ? "?" : String.format("%.1f", pup().getX() - mark), () -> riding() && pup().getX() - mark > 12);
+        /* the rider from the side and the front, running and at rest: on the saddle with the body, hands at the reins */
+        quiet("side_cam", 5, () -> { DrekkiEntity c = pup(); if (c != null) cmd("summon armor_stand " + c.getX() + " " + ground + " " + (c.getZ() + 3.2) + " {Invisible:1b,NoGravity:1b,Tags:[\"st\",\"cam\"]}"); });
+        quiet("side_cam_on", 4, () -> { camHere(); Entity e = tagged("cam"); if (e != null) mc().setCameraEntity(e); });
+        for (int i = 1; i <= 3; i++) step("rider_running_from_the_side_" + i, 3 + i, SelfTestMature::camHere, SelfTestMature::riding);
         quiet("ride_halt", 20, () -> keys(false, false, false));
+        step("rider_at_rest_from_the_side", 6, SelfTestMature::camHere, SelfTestMature::riding);
+        quiet("front_view", 6, () -> { mc().setCameraEntity(mc().player); cmd("kill @e[tag=cam]"); mc().options.setCameraType(CameraType.THIRD_PERSON_FRONT); });
+        step("rider_at_rest_from_the_front", 3, () -> {}, SelfTestMature::riding);
+        quiet("back_view", 4, () -> mc().options.setCameraType(CameraType.THIRD_PERSON_BACK));
         quiet("jump", 30, () -> { sample(28); keys(false, false, true); after(3, () -> keys(false, false, false)); });
         check("jumps_about_two_blocks", 5, 1, () -> {}, "the jump's height", () -> String.format("%.2f", peak - ground), () -> peak - ground > 1.6 && peak - ground < 2.6);
         quiet("stompers", 10, () -> give(Trait.CLOUD_STOMPERS));
@@ -404,5 +418,11 @@ final class SelfTestMature {
         step("uncommon_tooltip", 10, () -> hoverSpot("trait2"), () -> ds() != null);
         step("offer_tooltip", 10, () -> hoverSpot("offer"), () -> ds() != null);
         quiet("tiers_done", 20, () -> { dev.frosthaven.ranchercompanion.client.screen.DrekkiScreen.testMouse = null; mc().setScreen(null); life(d -> { d.life.offer = null; d.life.cooldowns.clear(); d.syncLife(); }); emptyHand(); });
+        /* an owner who flies far and fast: no spot beside them in the air, so it waits; it is back within seconds of the landing */
+        quiet("fly_far", 80, () -> { life(d -> d.setSaddle(ItemStack.EMPTY)); mc().player.getAbilities().flying = true; mc().player.onUpdateAbilities(); cmd("tp @s ~400 " + (ground + 60) + " ~"); });
+        check("no_drekki_falls_beside_a_flying_owner", 5, 1, () -> {}, "the drekki, from its owner", () -> { DrekkiEntity d = sd(); return d == null ? "waits as data" : String.format("%.0f blocks", d.distanceTo(mc().player)); },
+            () -> { DrekkiEntity d = sd(); return d == null || d.distanceTo(mc().player) > 32; });
+        quiet("land", 5, () -> { mc().player.getAbilities().flying = false; mc().player.onUpdateAbilities(); cmd("tp @s ~ " + ground + " ~"); });
+        stepUntil("the_follower_is_back_after_the_landing", 60, 10, () -> {}, () -> { DrekkiEntity d = sd(); return d != null && d.distanceTo(mc().player) < 12; });
     }
 }

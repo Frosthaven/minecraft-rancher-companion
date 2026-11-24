@@ -376,6 +376,46 @@ public final class RanchTests {
         besideOwner(t, p, h, e, "back after its chunk unloaded");
     }
 
+    /** on a claim (a mod that cancels every click on an entity there): the owner's click on their own drekki still works,
+     *  another player's stays stopped */
+    @GameTest(template = "field")
+    public static void anOwnersClickWorksOnAClaim(GameTestHelper t) {
+        BlockPos h = field(t);
+        ServerPlayer p = player(t), other = player(t);
+        Roster.Entry e = hatch(t, p, h);
+        DrekkiEntity d = checkedOut(t, p, h, e);
+        java.util.function.Consumer<net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.EntityInteract> claim = ev -> { if (ev.getTarget() == d) ev.setCanceled(true); };
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.EntityInteract.class, claim);
+        try {
+            other.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new ItemStack(net.minecraft.world.item.Items.LEAD));
+            other.interactOn(d, net.minecraft.world.InteractionHand.MAIN_HAND);
+            t.assertTrue(!d.isLeashed(), "another player's click stays stopped by the claim");
+            p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, dev.frosthaven.ranchercompanion.item.DrekkiItems.hatStack(1));
+            p.interactOn(d, net.minecraft.world.InteractionHand.MAIN_HAND);
+            t.assertTrue(d.hat() == 1, "its owner's click goes through: hat " + d.hat());
+        } finally { net.neoforged.neoforge.common.NeoForge.EVENT_BUS.unregister(claim); }
+        Ranch.act(p, h, Ranch.Action.RELEASE, e.id);
+        t.succeed();
+    }
+
+    /** an owner in the air has no spot for it: it waits as data, and is beside them a second after they are down */
+    @GameTest(template = "field")
+    public static void aFlyingOwnersDrekkiComesBackWhenTheyLand(GameTestHelper t) {
+        BlockPos h = field(t);
+        ServerPlayer p = player(t);
+        Roster.Entry e = hatch(t, p, h);
+        DrekkiEntity d = checkedOut(t, p, h, e);
+        p.moveTo(t.absoluteVec(FAR.getCenter()).add(0, 30, 0));
+        d.remove(net.minecraft.world.entity.Entity.RemovalReason.UNLOADED_TO_CHUNK);
+        t.runAfterDelay(3, () -> {
+            Ranch.keepUp(p);  /* the server's once-a-second look, while they fly */
+            t.assertTrue(drekki(t, p).isEmpty(), "none while its owner is in the air: " + drekki(t, p).size() + " live");
+            p.moveTo(t.absoluteVec(FAR.getCenter()));
+            Ranch.keepUp(p);
+            besideOwner(t, p, h, e, "back at the next look after its owner landed");
+        });
+    }
+
     @GameTest(template = "floor")
     public static void leavingSpectatorBringsItBack(GameTestHelper t) {
         BlockPos h = stable(t);
