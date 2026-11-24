@@ -941,11 +941,17 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
      *  sound tick, once a game tick at most: Entity Culling gives a drekki the player cannot see a reduced tick that
      *  moves it but never runs {@link #tick}, so a speed kept only there froze at "walking" and its steps played on
      *  while it stood behind a player in a menu (2026-11-22) */
+    private static final double TELEPORT = 8;
+    private net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> seenLevel;
+
     public void trackSpeed() {
         long now = level().getGameTime(), dt = now - seenAt;
         if (dt <= 0) return;
-        if (!Double.isNaN(seenX)) speedAvg += (Math.hypot(getX() - seenX, getZ() - seenZ) * 20 / dt - speedAvg) * 0.3;
-        seenX = getX(); seenZ = getZ(); seenAt = now;
+        double step = Double.isNaN(seenX) ? 0 : Math.hypot(getX() - seenX, getZ() - seenZ);
+        /* a portal crossing or a teleport is no speed: the Nether's coordinates are an eighth of the Overworld's, and the
+           jump read as a dash after every crossing (2026-11-24). No drekki runs TELEPORT blocks a tick */
+        if (!Double.isNaN(seenX) && level().dimension() == seenLevel && step <= TELEPORT * dt) speedAvg += (step * 20 / dt - speedAvg) * 0.3;
+        seenX = getX(); seenZ = getZ(); seenAt = now; seenLevel = level().dimension();
     }
 
     @Override
