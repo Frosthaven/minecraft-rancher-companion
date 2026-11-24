@@ -1391,6 +1391,14 @@ fall cannot hurt it, it takes drops of up to 24 blocks to reach its owner (the g
   that turns on a player who hit a villager, a wolf, a bee) is never fought, even when it hits the drekki or its owner,
   and its hits do the drekki no harm.
 - A stay command ends its fights the same way (decided 2026-11-22): the whistle, the Stay button, a spot it is sent to.
+- The whistle in a fight (Shane, 2026-11-23: in Aggressive or Reactive it stayed in the fight after a whistle, and
+  died). In a fight = it has a target, or a mob within 16 blocks has it as its target.
+  - The plain use always means Follow, never Stay. Its fight ends, and it takes no target until 2 seconds after it is
+    within 5 blocks of its owner (`DrekkiEntity.callOff`, `calm`).
+  - The sneak use (Go here) sends it as always; it takes no target on the whole trip or in the 2-second hold at the
+    end. This holds for every Go here trip, in a fight or not.
+  - After that its stance applies again.
+  - The exception: an attack order (the sneak use on a hostile mob) ends any such truce. It is an order to fight.
 - Switching stance (decided 2026-11-22): to Passive, every fight ends at once: no target, it forgets who hit it, and
   mobs angry at it (a guard, a golem, a wolf) calm down toward it. Off Passive it starts fresh: only hits from then on,
   to it or its owner, and its owner's attacks from then on, start a fight.

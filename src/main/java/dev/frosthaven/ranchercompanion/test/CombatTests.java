@@ -87,6 +87,59 @@ public final class CombatTests {
         });
     }
 
+    /** a husk that outlives the test's bites */
+    private static Husk tough(GameTestHelper t, BlockPos rel) {
+        Husk z = zombie(t, rel);
+        z.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(1000);
+        z.setHealth(1000);
+        return z;
+    }
+
+    /** the whistle in a fight: it follows (never stays), the fight is off until 2 seconds after it is with its owner,
+     *  then its stance applies again */
+    @GameTest(template = "floor", timeoutTicks = 400)
+    public static void theWhistleCallsItOffAFight(GameTestHelper t) {
+        ServerPlayer p = LifeTests.player(t);
+        DrekkiEntity d = out(t, p, 2, Diet.RAW, Life.Stance.AGGRESSIVE);
+        Husk z = tough(t, LifeTests.H.offset(-3, 0, 2));
+        int[] phase = {0}, at = {0};
+        t.onEachTick(() -> {
+            if (phase[0] == 0 && d.getTarget() == z) {
+                boolean stays = dev.frosthaven.ranchercompanion.ranch.Ranch.whistle(p);
+                t.assertTrue(!stays && !d.isStaying() && d.getTarget() == null && d.calm() && !dev.frosthaven.ranchercompanion.combat.CombatGoals.fights(d), "called off: it follows and has no target");
+                at[0] = d.tickCount; phase[0] = 1;
+            } else if (phase[0] == 1) {
+                if (d.calm()) t.assertTrue(d.getTarget() == null, "no target during the truce, a hostile mob 5 blocks off");
+                else { t.assertTrue(d.tickCount - at[0] >= DrekkiEntity.TRUCE, "the truce lasts 2 seconds past the catch-up: " + (d.tickCount - at[0])); phase[0] = 2; }
+            } else if (phase[0] == 2 && d.getTarget() == z) t.succeed();  /* Aggressive again */
+        });
+    }
+
+    /** Go here in a fight: no fight for the whole trip and its 2-second hold; an attack order ends any truce */
+    @GameTest(template = "floor", timeoutTicks = 500)
+    public static void goHereSuspendsTheFight(GameTestHelper t) {
+        ServerPlayer p = LifeTests.player(t);
+        DrekkiEntity d = out(t, p, 2, Diet.RAW, Life.Stance.AGGRESSIVE);
+        Husk z = tough(t, LifeTests.H.offset(-3, 0, 2));
+        int[] phase = {0};
+        t.onEachTick(() -> {
+            if (phase[0] == 0 && d.getTarget() == z) {
+                dev.frosthaven.ranchercompanion.entity.GoHere.sendTo(d, t.absolutePos(LifeTests.H.offset(2, 0, 5)));
+                t.assertTrue(d.getTarget() == null && d.calm(), "sent off: no target");
+                phase[0] = 1;
+            } else if (phase[0] == 1) {
+                if (d.calm()) t.assertTrue(d.getTarget() == null, "no target on the trip or its hold");
+                else phase[0] = 2;
+            } else if (phase[0] == 2 && d.getTarget() == z) {  /* its stance again; now the whistle, then an order */
+                dev.frosthaven.ranchercompanion.ranch.Ranch.whistle(p);
+                t.assertTrue(d.calm() && d.getTarget() == null, "called off");
+                dev.frosthaven.ranchercompanion.entity.GoHere.attack(d, z);
+                t.assertTrue(!d.calm() && d.getTarget() == z && dev.frosthaven.ranchercompanion.combat.CombatGoals.fights(d), "an attack order is still an order to fight");
+                t.succeed();
+            }
+        });
+    }
+
     @GameTest(template = "floor", timeoutTicks = 300)
     public static void aggressiveFledglingBitesAMonster(GameTestHelper t) {
         ServerPlayer p = LifeTests.player(t);

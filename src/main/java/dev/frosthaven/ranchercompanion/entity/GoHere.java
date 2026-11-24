@@ -91,6 +91,7 @@ public final class GoHere {
         Ranch.leaveStay(d);
         d.disengage();
         d.goHere = null;
+        d.endCalm();  /* an order to fight, whatever truce the whistle made */
         d.ordered = mob;
         d.setTarget(mob);
     }

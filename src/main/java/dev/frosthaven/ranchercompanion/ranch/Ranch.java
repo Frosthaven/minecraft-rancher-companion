@@ -650,6 +650,14 @@ public final class Ranch {
     /** the whistle: a drekki with its owner changes between staying and following; one that is not comes to them and follows */
     public static boolean whistle(ServerPlayer p) {
         Entry out = roster(p.server).out(p.getUUID());
+        /* in a fight the whistle always calls it (never Stay), and the fight is off until 2 seconds after it is with
+           its owner (Shane, 2026-11-23: in Aggressive or Reactive it stayed in the fight after a whistle, and died) */
+        DrekkiEntity d = out == null ? null : live(out.id);
+        if (d != null && !d.ghost() && dev.frosthaven.ranchercompanion.combat.CombatGoals.inFight(d)) {
+            setStay(p, false, true);
+            d.callOff();
+            return false;
+        }
         return setStay(p, out != null && out.stay == null, true);
     }
 

@@ -27,7 +27,13 @@ public final class CombatGoals {
     static final double AGGRO = 10, LEASH = 16, ORDER = 32;
 
     public static boolean fights(DrekkiEntity d) {
-        return d.owned() && d.stage() >= 2 && !d.life.ghost && !d.isVehicle() && (d.life.stance != Life.Stance.PASSIVE || order(d) != null) && !d.isSleepingLoop();
+        return d.owned() && d.stage() >= 2 && !d.life.ghost && !d.isVehicle() && (d.life.stance != Life.Stance.PASSIVE || order(d) != null) && !d.isSleepingLoop() && !d.calm();
+    }
+
+    /** in a fight now: it has a target, or a hostile mob has it as its own */
+    public static boolean inFight(DrekkiEntity d) {
+        if (d.getTarget() != null || order(d) != null) return true;
+        return !d.level().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, d.getBoundingBox().inflate(LEASH), m -> m.getTarget() == d && m.isAlive()).isEmpty();
     }
 
     /** an attack order still on (GoHere.attack): the mob alive, fair and within ORDER; else it is dropped */

@@ -737,6 +737,30 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
     public int heldUntil = -1;
     public boolean held() { return tickCount < heldUntil; }
 
+    /** called off a fight by the whistle (spec, Stances: the whistle in a fight): on its way back to its owner, then
+     *  2 more seconds; server only, not saved */
+    public boolean coming;
+    private int comingSince, truceUntil = -1;
+    /** blocks from its owner at which a called drekki has caught up (its follow starts at 4), and the truce after, ticks */
+    public static final double CAUGHT_UP = 5;
+    public static final int TRUCE = 40;
+
+    /** the whistle calls it out of a fight: the fight ends, and it takes no target until 2 seconds after it is with its owner */
+    public void callOff() { disengage(); coming = true; comingSince = tickCount; }
+
+    /** it does not fight now: called off, or on a Go here trip and its hold. Its stance applies again after */
+    public boolean calm() { return coming || tickCount < truceUntil || goHere != null || held(); }
+
+    /** an attack order ends every truce: it is an order to fight */
+    public void endCalm() { coming = false; truceUntil = -1; heldUntil = -1; }
+
+    private void truceTick() {
+        if (!coming) return;
+        net.minecraft.world.entity.player.Player o = ownerPlayer();
+        if (o == null || o.level() != level() || isStaying() || tickCount - comingSince > 600) coming = false;  /* nobody to come to: no truce is left hanging */
+        else if (distanceToSqr(o) <= CAUGHT_UP * CAUGHT_UP) { coming = false; truceUntil = tickCount + TRUCE; }
+    }
+
     /** server: hits before this (its own tick, and its owner's) start no fight; see setStance */
     public int fightsFrom, fightsFromOwnerTick;
     public net.minecraft.world.entity.player.Player fightsFromOwner;
@@ -877,6 +901,7 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
                 if (!birthKnown) settleBirth();
                 if (stage() >= 3) dev.frosthaven.ranchercompanion.combat.Abilities.tick(this);
                 if (isStaying()) dev.frosthaven.ranchercompanion.ranch.Ranch.workTick(this);  /* on a seat that moves, or employed */
+                truceTick();
                 if (heldUntil >= 0 && !held()) {  /* Go here's hold is over: not told to stay, it gets up from a plain seat and follows */
                     heldUntil = -1;
                     if (!isStaying() && job() == 0 && isPassenger()) stopRiding();
