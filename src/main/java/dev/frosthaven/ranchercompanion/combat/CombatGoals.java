@@ -108,7 +108,7 @@ public final class CombatGoals {
     /** closes in and bites, or keeps its range and shoots */
     public static final class Attack extends Goal {
         private final DrekkiEntity d;
-        private int cooldown, strikeIn, repath;
+        private int cooldown, strikeIn, repath, leapIn;
         private boolean pouncing;
 
         public Attack(DrekkiEntity d) { this.d = d; setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK)); }
@@ -122,7 +122,10 @@ public final class CombatGoals {
         public boolean canContinueToUse() { return canUse() && d.getTarget().distanceToSqr(d) <= (d.ordered == d.getTarget() ? ORDER * ORDER : LEASH * LEASH); }
 
         @Override
-        public void start() { repath = 0; strikeIn = 0; }
+        public void start() { repath = 0; strikeIn = 0; leapIn = 0; pouncing = false; }
+
+        /** a Mature attacks a third faster than a Fledgling, bite and ball (Shane, 2026-11-23): 3/4 of the wait */
+        private int pace(int ticks) { return d.stage() >= 3 ? Math.round(ticks * 0.75f) : ticks; }
 
         @Override
         public void stop() { d.getNavigation().stop(); if (!fair(d, d.getTarget())) d.setTarget(null); }
@@ -137,20 +140,22 @@ public final class CombatGoals {
             d.getLookControl().setLookAt(t, 30, 30);
             double dist = d.distanceToSqr(t);
             if (cooldown > 0) cooldown--;
+            if (leapIn > 0 && --leapIn == 0) Abilities.leap(d, t);
             if (strikeIn > 0 && --strikeIn == 0) strike(t);
             boolean sees = d.hasLineOfSight(t);
             if (ranged()) {
                 if ((dist > 8 * 8 || !sees) && --repath <= 0) { d.getNavigation().moveTo(t, 1.1); repath = 10; }
                 else if (dist <= 8 * 8 && sees) d.getNavigation().stop();
                 if (cooldown == 0 && sees && dist <= Abilities.BREATH_RANGE * Abilities.BREATH_RANGE && Abilities.ready(d)) { Abilities.breath(d); cooldown = 50; }
-                else if (cooldown == 0 && sees && dist <= 10 * 10) { d.act(Anim.BALL, 56); strikeIn = 8; cooldown = d.surged() ? 20 : 40; }
+                else if (cooldown == 0 && sees && dist <= 10 * 10) { d.act(Anim.BALL, 56); strikeIn = 8; cooldown = pace(d.surged() ? 20 : 40); }
             } else {
                 /* it reaches as far as the game's melee mobs do (a zombie's rule: its box grown 0.83 a side meets the
                    target's), and never less than before. A zombie hit it from further off than it could bite */
                 double reach = d.getBbWidth() / 2 + t.getBbWidth() / 2 + 1.0;
-                if (--repath <= 0) { d.getNavigation().moveTo(t, 1.2); repath = 8; }
-                if (cooldown == 0 && sees && dist <= Abilities.POUNCE_RANGE * Abilities.POUNCE_RANGE && Abilities.ready(d)) { Abilities.pounce(d, t); pouncing = true; strikeIn = Abilities.POUNCE_LANDS; cooldown = 40; }
-                else if (cooldown == 0 && (dist <= reach * reach || d.isWithinMeleeAttackRange(t))) { d.act(Anim.BITE, 32); strikeIn = 6; cooldown = d.surged() ? 12 : 24; }
+                if (!pouncing && --repath <= 0) { d.getNavigation().moveTo(t, 1.2); repath = 8; }  /* a pounce is its own way there */
+                if (cooldown == 0 && sees && dist <= Abilities.POUNCE_RANGE * Abilities.POUNCE_RANGE && Abilities.ready(d)) {
+                    Abilities.pounce(d, t); pouncing = true; leapIn = Abilities.POUNCE_CROUCH; strikeIn = Abilities.POUNCE_LANDS; cooldown = Abilities.POUNCE_ENDS; repath = 0;
+                } else if (cooldown == 0 && (dist <= reach * reach || d.isWithinMeleeAttackRange(t))) { d.act(Anim.BITE, 32); strikeIn = 6; cooldown = pace(d.surged() ? 12 : 24); }
             }
         }
 

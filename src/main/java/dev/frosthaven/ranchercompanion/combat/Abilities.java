@@ -6,6 +6,7 @@ import dev.frosthaven.ranchercompanion.item.BardingEnchants;
 import dev.frosthaven.ranchercompanion.life.Vitals;
 import dev.frosthaven.ranchercompanion.look.Anim;
 import dev.frosthaven.ranchercompanion.look.Diet;
+import dev.frosthaven.ranchercompanion.look.LeapMath;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -28,7 +29,9 @@ import net.minecraft.world.phys.Vec3;
 public final class Abilities {
     private Abilities() {}
 
-    public static final int COOLDOWN = 300, EDGE_TICKS = 100, BREATH_AT = 14, POUNCE_LANDS = 9;
+    public static final int COOLDOWN = 300, EDGE_TICKS = 100, BREATH_AT = 14;
+    /** the Pounce by the tick, as its loop on the page: a crouch, the leap, the landing with the bite, the jaws shut */
+    public static final int POUNCE_CROUCH = 2, POUNCE_LANDS = 9, POUNCE_ENDS = 15;
     public static final double POUNCE_RANGE = 5, BREATH_RANGE = 4, SUPPORT_RANGE = 10;
     public static final float POUNCE = CombatGoals.BITE * 2, BREATH = 4, EDGE = 2, HEAL = 4;
     private static final ResourceLocation EDGE_ID = ResourceLocation.fromNamespaceAndPath(RancherCompanion.ID, "steel_edge");
@@ -41,14 +44,27 @@ public final class Abilities {
 
     private static void spend(DrekkiEntity d) { d.abilityAt = Vitals.now(d) + (Vitals.atHome(d) ? COOLDOWN / 2 : COOLDOWN); }
 
-    /** the Pounce: a leap at a target up to 5 blocks away; the bite lands POUNCE_LANDS ticks later for twice a bite */
+    /** the Pounce begins: the crouch. The leap follows POUNCE_CROUCH ticks later (leap), the bite at POUNCE_LANDS for
+     *  twice a bite; the loop is over at POUNCE_ENDS, and a bite can follow at once */
     static void pounce(DrekkiEntity d, LivingEntity t) {
         spend(d);
-        d.act(Anim.POUNCE, 48);
-        Vec3 to = t.position().subtract(d.position()).multiply(1, 0, 1);
-        double h = to.length();
-        if (h > 1.5) { d.setDeltaMovement(to.scale(Math.min(0.9, (h - 1) / POUNCE_LANDS * 1.6) / h).add(0, 0.42, 0)); d.hasImpulse = true; }
+        d.act(Anim.POUNCE, POUNCE_ENDS);
+        d.getNavigation().stop();
         d.playSound(dev.frosthaven.ranchercompanion.DrekkiSounds.BITE2.get(), 0.8f, 0.8f);
+    }
+
+    /** the leap: launched to land at biting reach of the target, where it is now, when the bite lands. The drekki
+     *  itself flies there (its loop draws no leap of its own on a live one), so what is seen is where it is */
+    static void leap(DrekkiEntity d, LivingEntity t) {
+        Vec3 to = t.position().subtract(d.position());
+        double h = Math.hypot(to.x, to.z), dist = Math.max(0, h - (d.getBbWidth() / 2 + t.getBbWidth() / 2 + 0.3));
+        var under = d.getBlockPosBelowThatAffectsMyMovement();
+        double ground = d.onGround() ? d.level().getBlockState(under).getFriction(d.level(), under, d) * LeapMath.AIR : LeapMath.AIR;
+        double[] v = LeapMath.launch(dist, Math.max(-3, Math.min(2, to.y)), POUNCE_LANDS - POUNCE_CROUCH, ground);
+        Vec3 dir = h > 1e-4 ? new Vec3(to.x / h, 0, to.z / h) : Vec3.ZERO;
+        d.getNavigation().stop();
+        d.setDeltaMovement(dir.scale(v[0]).add(0, Math.min(v[1], 0.8), 0));
+        d.hasImpulse = true;
     }
 
     /** the Elemental breath: a cone ahead, 4 blocks; it hits BREATH_AT ticks into the loop */

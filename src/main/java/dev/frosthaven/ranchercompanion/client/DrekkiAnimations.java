@@ -37,7 +37,7 @@ public final class DrekkiAnimations {
             case SLEEP -> sleep(P, t, e.sleepTime(t));
             case FEED -> feed(P, t, k, stage, e.live());
             case BITE -> bite(P, t, k);
-            case POUNCE -> pounce(P, t, k);
+            case POUNCE -> { pounce(P, t, k); if (e.live()) { P.forward(0); P.lift(0); } }  /* a live one really leaps: drawn where it is */
             case BALL -> ball(P, t);
             case BREATH -> breath(P, t);
             case GUARD -> guard(P, t);

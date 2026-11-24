@@ -214,9 +214,12 @@ public final class RoamTraitTests {
         var hoglin = EntityType.HOGLIN.create(t.getLevel()); hoglin.moveTo(d.getX() - 3, d.getY(), d.getZ()); hoglin.setInvulnerable(true); t.getLevel().addFreshEntity(hoglin);
         hoglin.setImmuneToZombification(true);
         double start = creeper.distanceTo(d);
+        /* seen at any tick: its sensor looks once a second, and at the edge of the 8 blocks the memory comes and goes */
+        boolean[] warded = {false};
+        t.onEachTick(() -> warded[0] |= hoglin.getBrain().hasMemoryValue(MemoryModuleType.NEAREST_REPELLENT));
         t.runAfterDelay(80, () -> {
             t.assertTrue(creeper.distanceTo(d) > start + 1.5, "Natural Repellant: the creeper moved away (" + start + " to " + creeper.distanceTo(d) + ")");
-            t.assertTrue(hoglin.getBrain().hasMemoryValue(MemoryModuleType.NEAREST_REPELLENT) || hoglin.distanceTo(d) > 8, "Hoglin Ward: the hoglin takes the drekki for warped fungus, or has already left its 8 blocks (" + hoglin.distanceTo(d) + ")");
+            t.assertTrue(warded[0] || hoglin.distanceTo(d) > 8, "Hoglin Ward: the hoglin takes the drekki for warped fungus, or has already left its 8 blocks (" + hoglin.distanceTo(d) + ")");
             t.succeed();
         });
     }

@@ -109,8 +109,9 @@ public final class DrekkiParticles {
             case FALL -> { double f = Anim.loop(t, 2.6); if (cross(lastF, f, 0.36)) burst(c, 0, 0.08, 0, 20, DUST, 3, 5, k); e.lastF = f; }
             case BITE -> { double f = Anim.loop(t, 1.6), dx = Layout.props(a, k)[0][0];
                 if (cross(lastF, f, 0.18)) { burst(c, dx, 1.25 * k, 0, 10, WHITE, 2.2, 6, k); burst(c, dx, 1.25 * k, 0, 6, HAY, 2.2, 6, k); } e.lastF = f; }
-            case POUNCE -> { double f = Anim.loop(t, 2.4), dx = Layout.props(a, k)[0][0];
-                if (cross(lastF, f, 0.18)) { burst(c, dx, 1.25 * k, 0, 18, WHITE, 3, 6, k); burst(c, dx, 1.25 * k, 0, 10, HAY, 3, 6, k); burst(c, Anim.POUNCE_LEAP * k + 0.3 * k, 0.1, 0, 16, DUST, 2.6, 5, k); } e.lastF = f; }
+            case POUNCE -> { boolean live = e.live();  /* a live one has leapt there itself: the bite at its jaws, the dust at its feet */
+                double f = Anim.loop(t, 2.4), dx = live ? Layout.props(Anim.BITE, k)[0][0] : Layout.props(a, k)[0][0];
+                if (cross(lastF, f, 0.18)) { burst(c, dx, 1.25 * k, 0, 18, WHITE, 3, 6, k); burst(c, dx, 1.25 * k, 0, 10, HAY, 3, 6, k); burst(c, (live ? 0 : Anim.POUNCE_LEAP * k) + 0.3 * k, 0.1, 0, 16, DUST, 2.6, 5, k); } e.lastF = f; }
             case BALL -> { double f = Anim.loop(t, 2.8), tx = Layout.props(a, k)[0][0];
                 if (!e.live() && cross(lastF, f, 0.5)) { burst(c, tx, 1.2 * k, 0, 16, MAGIC, 2.6, 4, k); burst(c, tx, 1.2 * k, 0, 8, MAGIC_L, 2, 4, k); } e.lastF = f; }
             case GUARD -> { double f = Anim.loop(t, 4.4);

@@ -1433,6 +1433,13 @@ Diet picks the position (where it fights from) and the two abilities. Damage is 
   Steel edge: when a player within 10 blocks hit or was hit in the last 5 s, +2 attack damage for every player within
   10 blocks, 5 s. Rejuvenate: when it or a player within 10 blocks is missing 4 health or more, heals 4 and gives
   Regeneration I for 5 s to itself and those players. Steel edge and Rejuvenate work in every stance; a ghost has none.
+- A Mature attacks a third faster than a Fledgling, bite and ball alike (Shane, 2026-11-23): 3/4 of the wait between
+  attacks (a bite every 18 ticks for 24, a ball every 30 for 40; surged 9 and 15).
+- The Pounce in the world (Shane, 2026-11-23; `look/LeapMath`): a 2-tick crouch, then the drekki itself leaps and
+  lands at biting reach of its target (boxes 0.3 apart) 7 ticks later, as the bite lands. The launch speed comes from
+  the game's own air physics, so it does not go past. On a live drekki the loop draws no leap of its own (the page's
+  loop moves the model 4.2 blocks; drawn on top of the real leap it went twice as far, stood there, and snapped back
+  when the loop ended). The loop is over 15 ticks in, and a bite can follow at once.
 - Stage 1 has no attacks. Bite and Elemental ball start in stage 2. The cooldown abilities (Pounce, Elemental
   breath, Steel edge, Rejuvenate) only activate in stage 3.
 - In its astral home terrain every cooldown is halved.

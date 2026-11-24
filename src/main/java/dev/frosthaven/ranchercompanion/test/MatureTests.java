@@ -170,7 +170,18 @@ public final class MatureTests {
         DrekkiEntity d = mature(t, p, Diet.RAW, Life.Stance.AGGRESSIVE);
         Husk z = EntityAt.husk(t, d, 4, 0);
         float full = z.getHealth();
+        /* the leap lands at biting reach of the target, not past it, as the bite lands */
+        int[] began = {-1};
+        t.onEachTick(() -> {
+            if (began[0] < 0 && !Abilities.ready(d)) began[0] = d.tickCount;
+            if (began[0] >= 0 && d.tickCount == began[0] + Abilities.POUNCE_LANDS + 3) {
+                double gap = z.getX() - d.getX(), touch = d.getBbWidth() / 2 + z.getBbWidth() / 2;
+                t.assertTrue(gap > touch - 0.2 && gap < touch + 1.0 && Math.abs(z.getZ() - d.getZ()) < 0.6 && d.onGround(),
+                    "it lands in front of its target, in reach: " + gap + " blocks short of it (boxes touch at " + touch + "), on the ground " + d.onGround());
+            }
+        });
         t.runAfterDelay(40, () -> {
+            t.assertTrue(began[0] >= 0, "it pounced");
             t.assertTrue(full - z.getHealth() >= Abilities.POUNCE - 2.01f, "a pounce from 4 blocks: " + (full - z.getHealth()) + " damage (armor takes some of 8)");
             t.assertTrue(!Abilities.ready(d) && d.abilityAt > Vitals.now(d) + 100, "and its 15 s cooldown runs");
             t.succeed();

@@ -251,7 +251,8 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
     }
 
     /** a loop to play over its movement for a while (eating, a bite, a ball); 0 ticks ends it */
-    public void act(Anim a, int ticks) { entityData.set(ACTION, ticks > 0 ? a.ordinal() + 1 : 0); actionLeft = ticks; }
+    /** sent again when it is the same action as the one still on (a second bite): each game starts the loop over */
+    public void act(Anim a, int ticks) { entityData.set(ACTION, ticks > 0 ? a.ordinal() + 1 : 0, true); actionLeft = ticks; }
     private int actionLeft;
 
     /** max health by stage, plus Hearty (spec: 10, 30, 50) */

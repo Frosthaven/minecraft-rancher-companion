@@ -449,7 +449,7 @@ final class SelfTestTraits {
         String id = "@e[type=rancher_companion:drekki,limit=1,sort=nearest]";
         learn(Trait.HEARTY, 8, 1, () -> { cmd("damage " + id + " 4"); life(d -> d.life.cooldowns.remove("hearty_heal"));
             after(5, () -> cmd("effect give " + id + " instant_health 1 0")); });
-        check("hearty_max_health", 10, 3, () -> {}, "max health", () -> sd() == null ? -1 : sd().getMaxHealth(), () -> sd() != null && sd().getMaxHealth() == 36);
+        check("hearty_max_health", 10, 3, () -> {}, "max health", () -> sd() == null ? -1 : sd().getMaxHealth(), () -> sd() != null && sd().getMaxHealth() == (sd().stage() >= 3 ? 56 : 36));  /* 6 over its stage's: a run that grew it up before this has a Mature */
 
         fresh("totem");
         quiet("totem_survival", 20, () -> cmd("gamemode survival"));  /* the 0.5.0 section before this ends in creative, where no totem pops */

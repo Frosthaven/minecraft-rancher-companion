@@ -395,10 +395,13 @@ final class SelfTestMature {
         quiet("air_back", 20, () -> life(d -> { d.level().setBlockAndUpdate(d.blockPosition().above(), Blocks.AIR.defaultBlockState()); d.setNoAi(false); }));
         /* the abilities: the Pounce and the breath on real husks */
         quiet("pounce_setup", 30, () -> { give(); life(d -> { d.abilityAt = 0; d.setStance(Life.Stance.AGGRESSIVE); }); pupHere(); });
-        quiet("pounce_foe", 14, () -> { DrekkiEntity c = pup(); if (c != null) cmd("summon husk " + (c.getX() + 4) + " " + c.getY() + " " + c.getZ() + " {NoAI:1b,PersistenceRequired:1b,Tags:[\"st\",\"pounced\"]}"); });
+        quiet("pounce_foe", 14, () -> { DrekkiEntity c = pup(); if (c != null) { mark = c.getX() + 4; cmd("summon husk " + mark + " " + c.getY() + " " + c.getZ() + " {NoAI:1b,PersistenceRequired:1b,Tags:[\"st\",\"pounced\"]}"); } });
         step("pounce_shot", 2, () -> {}, () -> true);
         check("the_pounce_lands", 20, 4, () -> {}, "the husk's health and the ability's cooldown", () -> { Entity e = tagged("pounced"); DrekkiEntity d = sd(); return (e == null ? "dead" : String.valueOf(((Mob) e).getHealth())) + ", ready in " + (d == null ? "?" : d.abilityAt - Vitals.now(d)); },
             () -> { Entity e = tagged("pounced"); DrekkiEntity d = sd(); return d != null && d.abilityAt > Vitals.now(d) && (e == null || ((Mob) e).getHealth() <= 20 - Abilities.POUNCE + 2.5f); });
+        /* after the leap it is drawn where the server has it, in front of its target and not past it, and the loop is over */
+        check("the_pounce_ends_where_it_is", 2, 0, () -> {}, "this game's drekki from the server's, and from its target", () -> { DrekkiEntity c = pup(), d = sd(); return c == null || d == null ? "?" : String.format("%.2f apart, %.2f short of the husk, loop %s", c.position().distanceTo(d.position()), mark - c.getX(), c.anim()); },
+            () -> { DrekkiEntity c = pup(), d = sd(); return c != null && d != null && c.position().distanceTo(d.position()) < 0.75 && mark - c.getX() > 0.4 && mark - c.getX() < 2.2 && c.anim() != dev.frosthaven.ranchercompanion.look.Anim.POUNCE; });
         quiet("breath_setup", 30, () -> { clearMobs(); life(d -> { d.disengage(); d.setLook(3, d.line(), Diet.COOKED.ordinal(), d.astral(), d.horn()); d.abilityAt = 0; }); pupHere(); });
         quiet("breath_foe", 24, () -> { DrekkiEntity c = pup(); if (c != null) cmd("summon husk " + (c.getX() + 3) + " " + c.getY() + " " + c.getZ() + " {NoAI:1b,PersistenceRequired:1b,Tags:[\"st\",\"breathed\"]}"); });
         step("breath_shot", 2, () -> {}, () -> true);
