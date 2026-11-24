@@ -562,7 +562,8 @@ final class SelfTestTraits {
         quiet("gear_near", 15, () -> { emptyHand(); near(pup()); });
         step("gear_screen_empty", 25, () -> interact("open its screen"), () -> ds() != null && ds().getMenu().gear);
         step("gear_wrong_stage_refused", 10, () -> shiftClick(3 + 27 + 3), () -> pup() != null && pup().barding() == 0);
-        step("gear_barding_on", 15, () -> shiftClick(3 + 27), () -> pup() != null && pup().barding() == 4);
+        check("gear_barding_on", 15, 2, () -> shiftClick(3 + 27), "the barding on this game's drekki and the server's", () -> pup() == null || sd() == null ? "-" : pup().barding() + " " + pup().bardingItem() + " / " + sd().barding() + " " + sd().bardingItem(),
+            () -> pup() != null && pup().barding() == 4);
         step("gear_satchel_on", 15, () -> shiftClick(3 + 27 + 1), () -> pup() != null && pup().bag() == 1);
         step("gear_bag_tooltip", 10, () -> hoverSpot("accessory"), () -> ds() != null);
         boolean soph = dev.frosthaven.ranchercompanion.item.Bags.sophisticated();
@@ -635,6 +636,8 @@ final class SelfTestTraits {
         check("gear_hit_into_barding", 10, 3, () -> { server(m -> { var d = sd(); if (d != null) { d.invulnerableTime = 0; d.hurt(d.damageSources().generic(), 10); } }); },
             "barding wear and health", () -> sd() == null ? "-" : sd().bardingItem().getDamageValue() + " " + sd().getHealth(),
             () -> sd() != null && sd().bardingItem().getDamageValue() == 10 && sd().getHealth() == sd().getMaxHealth());
+        check("gear_this_game_sees_the_wear", 10, 3, () -> {}, "the barding's wear on this game's drekki", () -> pup() == null ? "-" : pup().bardingItem() + " " + pup().bardingItem().getDamageValue(),
+            () -> pup() != null && !pup().bardingItem().isEmpty() && pup().bardingItem().getDamageValue() == 10);
         check("gear_dye_barding", 5, 0, () -> {}, "barding dyed red left, blue right", () -> {
                 var r = craft(net.minecraft.world.item.crafting.CraftingInput.of(3, 1, java.util.List.of(new ItemStack(Items.RED_DYE), new ItemStack(DrekkiItems.FLEDGLING_BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.IRON).get()), new ItemStack(Items.BLUE_DYE))));
                 return Integer.toHexString(dev.frosthaven.ranchercompanion.item.Dyeing.main(r)) + "/" + Integer.toHexString(dev.frosthaven.ranchercompanion.item.Dyeing.trim(r)); },

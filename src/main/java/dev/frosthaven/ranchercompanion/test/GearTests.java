@@ -47,7 +47,15 @@ public final class GearTests {
         d.invulnerableTime = 0;
         d.hurt(d.damageSources().generic(), 5);
         t.assertTrue(d.getHealth() == full - 9, "now hits land: health " + d.getHealth());
-        t.succeed();
+        /* every game sees the barding and its wear (another mod's health bar reads it there) */
+        d.setBardingItem(fledglingBarding(Barding.IRON));
+        d.invulnerableTime = 0;
+        d.hurt(d.damageSources().generic(), 7);
+        t.runAfterDelay(8, () -> {
+            t.assertTrue(d.bardingSeen().getDamageValue() == 7 && d.bardingSeen().getItem() == d.bardingItem().getItem(), "the wear is synced: " + d.bardingSeen() + " " + d.bardingSeen().getDamageValue());
+            d.setBardingItem(net.minecraft.world.item.ItemStack.EMPTY);
+            t.runAfterDelay(8, () -> { t.assertTrue(d.bardingSeen().isEmpty(), "taken off, it is gone for every game"); t.succeed(); });
+        });
     }
 
     /** each slot takes only what fits the stage: barding of its own stage, the satchel from 2, saddlebags from 3 */

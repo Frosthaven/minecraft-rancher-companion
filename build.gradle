@@ -50,6 +50,13 @@ neoForge {
             jvmArgument '-Drancher_companion.selftest=true'
             jvmArgument '-Drancher_companion.selftest.new=true'
         }
+        // barding and bags through the real drekki screen (SelfTestTraits.gear)
+        selfTestGear {
+            client()
+            programArguments.addAll '--quickPlaySingleplayer', 'selftest'
+            jvmArgument '-Drancher_companion.selftest=true'
+            jvmArgument '-Drancher_companion.selftest.gear=true'
+        }
         // the 15 roam traits and the Mature stage only (client/SelfTestMature)
         selfTestMature {
             client()

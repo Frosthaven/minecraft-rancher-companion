@@ -76,6 +76,9 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
     private static final EntityDataAccessor<Boolean> SADDLED = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.BOOLEAN);
     /** 0.5.0: the biome category it hatched in (life.Places.CATEGORIES index), which tints its feet for life. Declared last */
     private static final EntityDataAccessor<Integer> BIRTH = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.INT);
+    /** the barding it wears, with its wear and enchantments, for every game (another mod's health bar reads its
+     *  durability through bardingItem() on the client). Declared last: see CLAUDE.md, network compatibility */
+    private static final EntityDataAccessor<net.minecraft.world.item.ItemStack> BARDING_STACK = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.ITEM_STACK);
 
     /** its life (server: the truth, saved under "Life"; client: unused, the synched values above stand in) */
     public final dev.frosthaven.ranchercompanion.life.Life life = new dev.frosthaven.ranchercompanion.life.Life();
@@ -125,6 +128,7 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
         b.define(BARDING_GLINT, false);
         b.define(SADDLED, false);
         b.define(BIRTH, dev.frosthaven.ranchercompanion.look.FootTint.PLAINS);
+        b.define(BARDING_STACK, net.minecraft.world.item.ItemStack.EMPTY);
     }
 
     public int stage() { return entityData.get(STAGE); }
@@ -147,12 +151,19 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
     public void setGear(int hat, int barding, int dye) { entityData.set(HAT, hat); entityData.set(BARDING, barding); entityData.set(DYE, dye); }
 
     public net.minecraft.world.item.ItemStack bardingItem() { return bardingItem; }
+    /** the barding as every game has it (the synced copy; a game's bardingItem() is this) */
+    public net.minecraft.world.item.ItemStack bardingSeen() { return entityData.get(BARDING_STACK); }
     public boolean bardingGlint() { return entityData.get(BARDING_GLINT); }
     public net.minecraft.world.item.ItemStack accessory() { return accessory; }
+
+    /** the barding as it is now to every game that tracks this drekki. Called where the stack changes (put on, taken
+     *  off, loaded, worn by a hit, mended), never on a timer: nothing is sent while nothing changes */
+    public void syncBarding() { if (!level().isClientSide) entityData.set(BARDING_STACK, bardingItem.copy()); }
 
     /** wears this barding (EMPTY for none); the look follows */
     public void setBardingItem(net.minecraft.world.item.ItemStack s) {
         bardingItem = s;
+        syncBarding();
         int tier = s.getItem() instanceof dev.frosthaven.ranchercompanion.item.BardingItem b ? b.tier.gearIndex() : 0;
         entityData.set(BARDING, tier);
         entityData.set(BARDING_GLINT, s.isEnchanted());
@@ -545,6 +556,7 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
     public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
         super.onSyncedDataUpdated(key);
         if (STAGE.equals(key)) refreshDimensions();
+        if (BARDING_STACK.equals(key) && level().isClientSide) bardingItem = entityData.get(BARDING_STACK).copy();
         if (ACTION.equals(key) && level().isClientSide && entityData.get(ACTION) > 0) {
             phase = -tickCount / 20f; lastF = -1;
             /* eating: past the loop's walk up to the feeder, which the drekki has done on its own feet */
@@ -603,7 +615,7 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
             });
             if (broke[0]) dev.frosthaven.ranchercompanion.trait.FightTraits.bardingBroke(this, source);  /* Point Break */
             if (bardingItem.isEmpty() || bardingItem.getCount() == 0) setBardingItem(net.minecraft.world.item.ItemStack.EMPTY);
-            else playSound(net.minecraft.sounds.SoundEvents.WOLF_ARMOR_DAMAGE);
+            else { playSound(net.minecraft.sounds.SoundEvents.WOLF_ARMOR_DAMAGE); syncBarding(); }
             dev.frosthaven.ranchercompanion.ranch.Ranch.touch(this);
             return;
         }

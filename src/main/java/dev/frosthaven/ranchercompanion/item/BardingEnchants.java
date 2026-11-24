@@ -71,6 +71,7 @@ public final class BardingEnchants {
         if (b.isEmpty() || !b.isDamaged() || level(b, Enchantments.MENDING) <= 0 || orb.getValue() <= 0) return;
         int repair = Math.min(b.getDamageValue(), orb.getValue() * 2);
         b.setDamageValue(b.getDamageValue() - repair);
+        d.syncBarding();
         ((dev.frosthaven.ranchercompanion.mixin.ExperienceOrbAccess) orb).rancher$setValue(orb.getValue() - (repair + 1) / 2);
         Ranch.touch(d);
     }

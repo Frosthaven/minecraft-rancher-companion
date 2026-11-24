@@ -196,6 +196,9 @@ Two craftable items:
   - The rider is drawn as the design page's (client/RiderSeat): hips on the saddle of the body as it is posed each
     frame, turning with it; arms 40 degrees forward and 8 in (the reins), legs 72 forward and 22 out. The pose is set
     after other mods' (Not Enough Animations let the arms hang). A swinging or item-using arm stays the game's.
+  - The barding stack itself (wear, enchantments) is synced to every game (2026-11-24): `bardingItem()` is the real
+    stack on the client too, for other mods' displays (a health bar's durability). Sent only when the stack changes
+    (put on, taken off, worn by a hit, mended), and only to the games that track that drekki; no timer.
   - For other mods' displays, read by reflection on the client: `DrekkiEntity.dashCooldown()` (0 ready, 1 just
     dashed) and `canDash()` (it holds Four Winds).
   - Speed 0.2 as the game's movement attribute (about 8.8 blocks a second; an average horse is 0.225). The Open Road
