@@ -26,6 +26,14 @@ public class BardingItem extends Item {
         return s.transmuteCopy(DrekkiItems.BARDING.get(b.tier).get(), s.getCount());
     }
 
+    /** The one barding for a legacy Fledgling barding item, else null (cheap for every other item: called for every stack
+     *  a dedicated server makes, mixin/LegacyBardingStackMixin). */
+    public static net.minecraft.world.item.Item successor(net.minecraft.world.item.Item item) {
+        if (!(item instanceof BardingItem b)) return null;
+        var legacy = DrekkiItems.LEGACY_FLEDGLING_BARDING.get(b.tier);
+        return legacy != null && legacy.isBound() && legacy.get() == item ? DrekkiItems.BARDING.get(b.tier).get() : null;
+    }
+
     /** a legacy stack in a player's inventory turns into the one barding there */
     @Override
     public void inventoryTick(ItemStack stack, net.minecraft.world.level.Level level, net.minecraft.world.entity.Entity entity, int slot, boolean selected) {

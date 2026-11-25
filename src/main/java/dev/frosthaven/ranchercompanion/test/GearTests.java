@@ -113,8 +113,8 @@ public final class GearTests {
     }
 
     /** a saved Fledgling barding of 0.4.0 to 0.5.x (its old id, still registered: DrekkiItems.LEGACY_FLEDGLING_BARDING)
-     *  loads and works as it is, and becomes the one barding when touched (put on a drekki here), both dye channels and
-     *  its wear kept */
+     *  loads on the server as the one barding (mixin/LegacyBardingStackMixin; this test server is a dedicated server),
+     *  both dye channels and its wear kept, in a chest too; a Mature wears it (the touch conversion is for clients) */
     @GameTest(template = "floor", timeoutTicks = 20)
     public static void anOldFledglingBardingBecomesTheOneBarding(GameTestHelper t) {
         var access = t.getLevel().registryAccess();
@@ -124,7 +124,19 @@ public final class GearTests {
         var tag = (net.minecraft.nbt.CompoundTag) worn.save(access);
         tag.putString("id", "rancher_companion:" + Barding.IRON.fledglingId());   /* as 0.5.x saved it */
         ItemStack loaded = ItemStack.parseOptional(access, tag);
-        t.assertTrue(loaded.is(DrekkiItems.LEGACY_FLEDGLING_BARDING.get(Barding.IRON).get()), "loads under its old id: " + loaded);
+        t.assertTrue(loaded.is(DrekkiItems.BARDING.get(Barding.IRON).get()), "loads as the one iron barding: " + loaded);
+        t.assertTrue(dev.frosthaven.ranchercompanion.item.Dyeing.main(loaded) == 0x3355aa && loaded.getDamageValue() == 20, "dye and wear kept on load: " + loaded.getDamageValue());
+        // a chest saved by 0.5.x: its contents load converted too
+        var pos = t.absolutePos(new net.minecraft.core.BlockPos(1, 1, 1));
+        t.getLevel().setBlock(pos, net.minecraft.world.level.block.Blocks.CHEST.defaultBlockState(), 3);
+        var items = new net.minecraft.nbt.ListTag(); var slot = tag.copy(); slot.putByte("Slot", (byte) 4); items.add(slot);
+        var chestTag = new net.minecraft.nbt.CompoundTag(); chestTag.put("Items", items);
+        t.getLevel().getBlockEntity(pos).loadWithComponents(chestTag, access);
+        ItemStack inChest = ((net.minecraft.world.Container) t.getLevel().getBlockEntity(pos)).getItem(4);
+        t.assertTrue(inChest.is(DrekkiItems.BARDING.get(Barding.IRON).get()) && inChest.getDamageValue() == 20, "a chest's old barding loads as the one barding: " + inChest);
+        // on a dedicated server no stack keeps the old id: one made under it in code is the one barding as well
+        ItemStack made = new ItemStack(DrekkiItems.LEGACY_FLEDGLING_BARDING.get(Barding.IRON).get());
+        t.assertTrue(made.is(DrekkiItems.BARDING.get(Barding.IRON).get()), "made under the old id: " + made);
         ServerPlayer p = LifeTests.player(t);
         DrekkiEntity d = CombatTests.out(t, p, 3, Diet.RAW, Life.Stance.PASSIVE);
         t.assertTrue(DrekkiMenu.fitsBarding(d, loaded), "a Mature wears it too");

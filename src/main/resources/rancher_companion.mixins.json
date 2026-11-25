@@ -8,6 +8,7 @@
     "FishingHookAccess",
     "HoglinSensorMixin",
     "ItemStackMixin",
+    "LegacyBardingStackMixin",
     "PiglinAiMixin",
     "PlayerExhaustionMixin",
     "PowderSnowBlockMixin",

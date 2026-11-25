@@ -342,9 +342,13 @@ Inventory by stage. Items stay in their slots when the drekki grows.
     104/74), rounded at random so the expected cost is exact: it lasts as many hits as Fledgling barding did. Armor points
     go by the wearer's stage (iron: 13 on a Fledgling, 18 on a Mature), as before.
   - The old Fledgling ids stay registered for good as legacy items (`DrekkiItems.LEGACY_FLEDGLING_BARDING`): the same
-    barding (both stages, same name), not in the creative tab, no recipe, hidden from recipe viewers. Saved stacks load
-    and work as they are and become the one barding when touched (put on a drekki, or ticking in a player's
-    inventory), every component kept (both dye channels, enchantments, wear); the damage then counts against the
+    barding (both stages, same name), not in the creative tab, no recipe, hidden from recipe viewers. A dedicated server
+    makes every stack under an old id the one barding as it is made (`mixin/LegacyBardingStackMixin`, the end of
+    ItemStack's main constructor), so every saved copy converts when the server reads it: chests, barrels, backpacks
+    and shulker boxes inside them, item frames, worn by a drekki, the Ranch roster. A client is left alone (a new client
+    on a server one release behind keeps the server's items); there, and in single player, a stack converts when
+    touched (put on a drekki, or ticking in a player's inventory). Every component is kept (both dye channels,
+    enchantments, wear); the damage then counts against the
     Mature's durability, so an old Fledgling barding comes back a little less worn, never more. Not registry aliases: a
     game whose own registry lacks ids the server has is refused ("The server send registries with unknown keys",
     traintest rig 2026-11-25), and a pack update reaches players minutes before the server restarts on it.
