@@ -376,7 +376,7 @@ public final class CombatTests {
         d.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
         d.hurt(d.damageSources().mobAttack(z), 2);
         t.assertTrue(d.getDeltaMovement().x < 0, "bare, a monster's hit pushes it: " + d.getDeltaMovement());
-        d.setBardingItem(GearTests.fledglingBarding(dev.frosthaven.ranchercompanion.item.Barding.IRON));
+        d.setBardingItem(GearTests.barding(dev.frosthaven.ranchercompanion.item.Barding.IRON));
         d.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO); d.invulnerableTime = 0;
         d.hurt(d.damageSources().mobAttack(z), 2);
         t.assertTrue(d.getDeltaMovement().x == 0, "in barding, it does not: " + d.getDeltaMovement());

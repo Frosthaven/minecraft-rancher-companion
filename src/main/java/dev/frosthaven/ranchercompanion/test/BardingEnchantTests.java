@@ -31,7 +31,7 @@ public final class BardingEnchantTests {
     private BardingEnchantTests() {}
 
     private static ItemStack barding(GameTestHelper t, Object... enchants) {
-        ItemStack b = GearTests.fledglingBarding(Barding.DIAMOND);
+        ItemStack b = GearTests.barding(Barding.DIAMOND);
         var reg = t.getLevel().registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
         for (int i = 0; i < enchants.length; i += 2) {
             @SuppressWarnings("unchecked") ResourceKey<Enchantment> key = (ResourceKey<Enchantment>) enchants[i];
@@ -46,12 +46,20 @@ public final class BardingEnchantTests {
         return d;
     }
 
+    /** the wear arithmetic at one durability point per point (a Mature: on a Fledgling each point costs more, see
+     *  GearTests.aFledglingWearsTheBardingFaster) */
+    private static DrekkiEntity mature(GameTestHelper t, ServerPlayer p, ItemStack worn) {
+        DrekkiEntity d = CombatTests.out(t, p, 3, Diet.SEED, Life.Stance.PASSIVE);
+        d.setBardingItem(worn);
+        return d;
+    }
+
     private static Husk husk(GameTestHelper t, int dx, int dz) { return CombatTests.zombie(t, LifeTests.H.offset(dx, 0, dz)); }
 
     @GameTest(template = "floor")
     public static void bardingTakesAChestplatesAndASwordsEnchantments(GameTestHelper t) {
         var reg = t.getLevel().registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
-        ItemStack fledgling = GearTests.fledglingBarding(Barding.IRON), mature = new ItemStack(dev.frosthaven.ranchercompanion.item.DrekkiItems.BARDING.get(Barding.NETHERITE).get());
+        ItemStack fledgling = GearTests.barding(Barding.IRON), mature = new ItemStack(dev.frosthaven.ranchercompanion.item.DrekkiItems.BARDING.get(Barding.NETHERITE).get());
         var yes = java.util.List.of(Enchantments.PROTECTION, Enchantments.FIRE_PROTECTION, Enchantments.BLAST_PROTECTION, Enchantments.PROJECTILE_PROTECTION, Enchantments.THORNS,
             Enchantments.UNBREAKING, Enchantments.MENDING, Enchantments.BINDING_CURSE, Enchantments.VANISHING_CURSE, Enchantments.SHARPNESS, Enchantments.SMITE,
             Enchantments.BANE_OF_ARTHROPODS, Enchantments.KNOCKBACK, Enchantments.FIRE_ASPECT, Enchantments.LOOTING, Enchantments.SWEEPING_EDGE);
@@ -69,7 +77,7 @@ public final class BardingEnchantTests {
     @GameTest(template = "floor")
     public static void theProtectionsCutWhatAHitCostsTheBarding(GameTestHelper t) {
         ServerPlayer p = LifeTests.player(t);
-        DrekkiEntity d = fledgling(t, p, barding(t));
+        DrekkiEntity d = mature(t, p, barding(t));
         Husk z = husk(t, -3, 3);
         d.hurt(d.damageSources().mobAttack(z), 10);
         t.assertTrue(d.bardingItem().getDamageValue() == 10 && d.getHealth() == d.getMaxHealth(), "plain barding: 10 durability for a hit of 10");
@@ -88,7 +96,7 @@ public final class BardingEnchantTests {
     @GameTest(template = "floor")
     public static void thornsUnbreakingMendingAndTheGlint(GameTestHelper t) {
         ServerPlayer p = LifeTests.player(t);
-        DrekkiEntity d = fledgling(t, p, barding(t));
+        DrekkiEntity d = mature(t, p, barding(t));
         t.assertFalse(d.bardingGlint(), "plain barding has no glint");
         Husk z = husk(t, -3, 3);
         d.setBardingItem(barding(t, Enchantments.THORNS, 3));

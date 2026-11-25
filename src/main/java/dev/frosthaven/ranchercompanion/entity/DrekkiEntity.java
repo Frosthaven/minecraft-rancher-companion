@@ -164,6 +164,7 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
 
     /** wears this barding (EMPTY for none); the look follows */
     public void setBardingItem(net.minecraft.world.item.ItemStack s) {
+        s = dev.frosthaven.ranchercompanion.item.BardingItem.current(s);  /* a legacy Fledgling id becomes the one barding */
         bardingItem = s;
         syncBarding();
         if (!level().isClientSide) {
@@ -172,8 +173,9 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
             var armor = getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR);
             if (armor != null) {
                 armor.removeModifier(BARDING_ARMOR);
-                if (s.getItem() instanceof dev.frosthaven.ranchercompanion.item.BardingItem)
-                    armor.addTransientModifier(new net.minecraft.world.entity.ai.attributes.AttributeModifier(BARDING_ARMOR, dev.frosthaven.ranchercompanion.item.Barding.armor(s.getMaxDamage()), net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE));
+                /* by the wearer's stage (one barding for both stages since 0.6.0: the item holds the Mature's durability) */
+                if (s.getItem() instanceof dev.frosthaven.ranchercompanion.item.BardingItem bi)
+                    armor.addTransientModifier(new net.minecraft.world.entity.ai.attributes.AttributeModifier(BARDING_ARMOR, dev.frosthaven.ranchercompanion.item.Barding.armor(bi.tier.durability(stage())), net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE));
             }
         }
         int tier = s.getItem() instanceof dev.frosthaven.ranchercompanion.item.BardingItem b ? b.tier.gearIndex() : 0;
@@ -302,9 +304,11 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
     }
 
     /** grown into a bigger hitbox: out of any wall it now pokes into */
-    /** grown out of its barding (Fledgling barding on a Mature): it goes to its owner, or drops where it stands */
+    /** grown out of its barding (barding it no longer fits; none since 0.6.0, when both stages wear the same barding): it
+     *  goes to its owner, or drops where it stands */
     public void outgrowBarding() {
-        if (bardingItem.isEmpty() || DrekkiMenu.fitsBarding(this, bardingItem)) return;
+        if (bardingItem.isEmpty()) return;
+        if (DrekkiMenu.fitsBarding(this, bardingItem)) { setBardingItem(bardingItem); return; }  /* still worn: its armor points follow the new stage */
         var old = bardingItem;
         setBardingItem(net.minecraft.world.item.ItemStack.EMPTY);
         var p = ownerPlayer();
@@ -620,6 +624,12 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
             boolean[] broke = {false};
             /* its enchantments (item/BardingEnchants): the protections cut what the hit costs it, Thorns hits back */
             int wear = dev.frosthaven.ranchercompanion.item.BardingEnchants.wear(bardingItem, source, amount) + dev.frosthaven.ranchercompanion.item.BardingEnchants.thorns(this, source);
+            if (wear > 0 && bardingItem.getItem() instanceof dev.frosthaven.ranchercompanion.item.BardingItem bi) {
+                /* one barding for both stages: on a Fledgling a point costs Mature/Fledgling durability (Barding.wearScale),
+                   rounded at random so it lasts as many hits as Fledgling barding did */
+                float scaled = wear * bi.tier.wearScale(stage());
+                wear = (int) scaled + (getRandom().nextFloat() < scaled - (int) scaled ? 1 : 0);
+            }
             bardingItem.hurtAndBreak(wear, sl, this, item -> {
                 playSound(net.minecraft.sounds.SoundEvents.WOLF_ARMOR_BREAK);
                 setBardingItem(net.minecraft.world.item.ItemStack.EMPTY);

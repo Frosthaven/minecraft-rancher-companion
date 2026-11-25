@@ -25,20 +25,33 @@ public final class DrekkiItems {
     /** Every item in display order: barding by tier, carriers, crafted hats, trader hats, tonics, egg, then the blocks. */
     public static final List<DeferredItem<? extends Item>> ALL = new ArrayList<>();
 
-    /** Mature barding (the original ids) and Fledgling barding, by tier (spec, Barding: split by stage) */
-    public static final Map<Barding, DeferredItem<BardingItem>> BARDING = new java.util.EnumMap<>(Barding.class),
-        FLEDGLING_BARDING = new java.util.EnumMap<>(Barding.class);
+    /** one barding per tier for Fledglings and Matures (Shane, 2026-11-25; split by stage from 0.4.0 to 0.5.x) */
+    public static final Map<Barding, DeferredItem<BardingItem>> BARDING = new java.util.EnumMap<>(Barding.class);
     static {
-        for (int stage : new int[]{2, 3}) for (Barding tier : Barding.values()) {
+        for (Barding tier : Barding.values()) {
             Item.Properties props = new Item.Properties();
             if (tier == Barding.NETHERITE) props.fireResistant();
-            (stage == 2 ? FLEDGLING_BARDING : BARDING).put(tier, add(ITEMS.registerItem(tier.id(stage), p -> new BardingItem(tier, stage, p), props)));
+            BARDING.put(tier, add(ITEMS.registerItem(tier.id(), p -> new BardingItem(tier, p), props)));
         }
     }
 
-    /** every barding item, both stages */
+    /** The Fledgling barding ids of 0.4.0 to 0.5.x, kept registered for good: the same barding (both stages, same name),
+     *  out of the creative tab, without a recipe and hidden from recipe viewers (#c:hidden_from_recipe_viewers). Saved
+     *  stacks load as these and work as they are; they turn into the one barding when touched (BardingItem.legacy). Not
+     *  registry aliases: a game whose server still has these ids is refused with "unknown keys" when its own registry
+     *  lacks them (traintest rig, 2026-11-25), and a pack update reaches players minutes before the server's restart. */
+    public static final Map<Barding, DeferredItem<BardingItem>> LEGACY_FLEDGLING_BARDING = new java.util.EnumMap<>(Barding.class);
+    static {
+        for (Barding tier : Barding.values()) {
+            Item.Properties props = new Item.Properties();
+            if (tier == Barding.NETHERITE) props.fireResistant();
+            LEGACY_FLEDGLING_BARDING.put(tier, ITEMS.registerItem(tier.fledglingId(), p -> new BardingItem(tier, p), props));
+        }
+    }
+
+    /** every barding item, the legacy ids included (tints, washing) */
     public static java.util.stream.Stream<DeferredItem<BardingItem>> allBarding() {
-        return java.util.stream.Stream.concat(FLEDGLING_BARDING.values().stream(), BARDING.values().stream());
+        return java.util.stream.Stream.concat(BARDING.values().stream(), LEGACY_FLEDGLING_BARDING.values().stream());
     }
 
     /** the bags by Gear.BAGS index (1..6): the satchel, then the saddlebag's tiers (spec, Accessory: bags) */

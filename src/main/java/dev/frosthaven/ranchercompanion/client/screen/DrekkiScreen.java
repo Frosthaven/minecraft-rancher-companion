@@ -78,7 +78,7 @@ public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
         ghost(g, 0, GHOST_HAT, DrekkiMenu.HAT_Y);
         if (menu.gear && d != null) {
             if (ghostBarding == null) {
-                ghostBarding = new net.minecraft.world.item.ItemStack((d.stage() == 2 ? dev.frosthaven.ranchercompanion.item.DrekkiItems.FLEDGLING_BARDING
+                ghostBarding = new net.minecraft.world.item.ItemStack((d.stage() == 2 ? dev.frosthaven.ranchercompanion.item.DrekkiItems.BARDING
                     : dev.frosthaven.ranchercompanion.item.DrekkiItems.BARDING).get(dev.frosthaven.ranchercompanion.item.Barding.IRON).get());
                 ghostBag = new net.minecraft.world.item.ItemStack(dev.frosthaven.ranchercompanion.item.DrekkiItems.BAGS.get(d.stage() == 2 ? 0 : 1).get());
             }

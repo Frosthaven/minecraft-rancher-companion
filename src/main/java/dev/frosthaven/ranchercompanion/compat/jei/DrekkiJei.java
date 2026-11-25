@@ -38,7 +38,7 @@ public final class DrekkiJei implements IModPlugin {
     public void registerRecipes(IRecipeRegistration reg) {
         List<RecipeHolder<CraftingRecipe>> out = new ArrayList<>();
         List<net.minecraft.world.item.Item> items = new ArrayList<>();
-        DrekkiItems.allBarding().forEach(i -> items.add(i.get()));
+        DrekkiItems.BARDING.values().forEach(i -> items.add(i.get()));
         DrekkiItems.BAGS.forEach(i -> { if (i.get() instanceof dev.frosthaven.ranchercompanion.item.BagItem) items.add(i.get()); });
         for (var item : items) {
             String id = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item).getPath();

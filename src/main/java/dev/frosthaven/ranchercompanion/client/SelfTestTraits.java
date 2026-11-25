@@ -642,9 +642,9 @@ final class SelfTestTraits {
         check("gear_armor_points_and_jade", 20, 2, () -> { mc().setScreen(null); look(); }, "this game's armor points for iron Fledgling barding", () -> pup() == null ? "-" : pup().getArmorValue(),
             () -> pup() != null && pup().getArmorValue() == 13);
         check("gear_dye_barding", 5, 0, () -> {}, "barding dyed red left, blue right", () -> {
-                var r = craft(net.minecraft.world.item.crafting.CraftingInput.of(3, 1, java.util.List.of(new ItemStack(Items.RED_DYE), new ItemStack(DrekkiItems.FLEDGLING_BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.IRON).get()), new ItemStack(Items.BLUE_DYE))));
+                var r = craft(net.minecraft.world.item.crafting.CraftingInput.of(3, 1, java.util.List.of(new ItemStack(Items.RED_DYE), new ItemStack(DrekkiItems.BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.IRON).get()), new ItemStack(Items.BLUE_DYE))));
                 return Integer.toHexString(dev.frosthaven.ranchercompanion.item.Dyeing.main(r)) + "/" + Integer.toHexString(dev.frosthaven.ranchercompanion.item.Dyeing.trim(r)); },
-            () -> { var r = craft(net.minecraft.world.item.crafting.CraftingInput.of(3, 1, java.util.List.of(new ItemStack(Items.RED_DYE), new ItemStack(DrekkiItems.FLEDGLING_BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.IRON).get()), new ItemStack(Items.BLUE_DYE))));
+            () -> { var r = craft(net.minecraft.world.item.crafting.CraftingInput.of(3, 1, java.util.List.of(new ItemStack(Items.RED_DYE), new ItemStack(DrekkiItems.BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.IRON).get()), new ItemStack(Items.BLUE_DYE))));
                 return dev.frosthaven.ranchercompanion.item.Dyeing.main(r) >= 0 && dev.frosthaven.ranchercompanion.item.Dyeing.trim(r) >= 0 && dev.frosthaven.ranchercompanion.item.Dyeing.main(r) != dev.frosthaven.ranchercompanion.item.Dyeing.trim(r); });
         check("gear_dye_satchel", 5, 0, () -> {}, "satchel dyed (Sophisticated's recipe when it is installed)", () -> {
                 var r = craft(net.minecraft.world.item.crafting.CraftingInput.of(3, 1, java.util.List.of(new ItemStack(Items.LIME_DYE), new ItemStack(DrekkiItems.BAGS.get(0).get()), new ItemStack(Items.PURPLE_DYE))));
@@ -689,13 +689,13 @@ final class SelfTestTraits {
         /* the 3D barding heaps in the inventory: undyed, dyed two colors, Fledgling and Mature */
         quiet("barding_icons_give", 15, () -> { cmd("gamemode survival"); server(m -> {
             var inv = m.getInventory(); inv.clearContent();
-            ItemStack a = new ItemStack(DrekkiItems.FLEDGLING_BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.IRON).get());
+            ItemStack a = new ItemStack(DrekkiItems.BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.IRON).get());
             ItemStack b = a.copy(); dev.frosthaven.ranchercompanion.item.Dyeing.set(b, 0xb02e26, 0x3c44aa);
             ItemStack c = new ItemStack(DrekkiItems.BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.GOLD).get());
             ItemStack d = new ItemStack(DrekkiItems.BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.NETHERITE).get());
             ItemStack e = new ItemStack(DrekkiItems.BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.DIAMOND).get()); dev.frosthaven.ranchercompanion.item.Dyeing.set(e, 0x80c71f, 0xf9fffe);
-            ItemStack f = new ItemStack(DrekkiItems.FLEDGLING_BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.WOOD).get());
-            ItemStack g = new ItemStack(DrekkiItems.FLEDGLING_BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.LEATHER).get());
+            ItemStack f = new ItemStack(DrekkiItems.BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.WOOD).get());
+            ItemStack g = new ItemStack(DrekkiItems.BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.LEATHER).get());
             ItemStack h = new ItemStack(DrekkiItems.BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.STONE).get());
             ItemStack[] all = {a, b, c, d, e, f, g, h};
             for (int i = 0; i < all.length; i++) { inv.setItem(i, all[i]); inv.setItem(9 + i, all[i].copy()); } }); });
@@ -707,7 +707,7 @@ final class SelfTestTraits {
             var l = m.level(); BlockPos b = o.offset(9, 0, -9);
             for (int x = -2; x <= 2; x++) for (int y = 0; y <= 2; y++) l.setBlockAndUpdate(b.offset(x, y, -1), net.minecraft.world.level.block.Blocks.SPRUCE_PLANKS.defaultBlockState());
             for (int x = -2; x <= 2; x++) for (int z = 0; z <= 3; z++) for (int y = 0; y <= 2; y++) if (!(z == 0 && y == 0)) l.setBlockAndUpdate(b.offset(x, y, z), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
-            ItemStack small = new ItemStack(DrekkiItems.FLEDGLING_BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.IRON).get());
+            ItemStack small = new ItemStack(DrekkiItems.BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.IRON).get());
             ItemStack large = new ItemStack(DrekkiItems.BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.GOLD).get());
             ItemStack smallDyed = small.copy(); dev.frosthaven.ranchercompanion.item.Dyeing.set(smallDyed, 0xb02e26, 0x3c44aa);
             ItemStack largeDyed = new ItemStack(DrekkiItems.BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.DIAMOND).get()); dev.frosthaven.ranchercompanion.item.Dyeing.set(largeDyed, 0x80c71f, 0xf9fffe);
@@ -727,7 +727,7 @@ final class SelfTestTraits {
         if (!net.neoforged.fml.ModList.get().isLoaded("haven_compat")) return;
         check("bleach_dyeables", 10, 3, () -> server(m -> {
                 StringBuilder out = new StringBuilder();
-                for (ItemStack s : java.util.List.of(new ItemStack(DrekkiItems.FLEDGLING_BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.IRON).get()),
+                for (ItemStack s : java.util.List.of(new ItemStack(DrekkiItems.BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.IRON).get()),
                         new ItemStack(DrekkiItems.BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.GOLD).get()), new ItemStack(DrekkiItems.BAGS.get(0).get()),
                         new ItemStack(DrekkiItems.BAGS.get(5).get()))) {
                     if (s.getItem() instanceof dev.frosthaven.ranchercompanion.item.DrekkiBag && dev.frosthaven.ranchercompanion.item.Bags.sophisticated())
@@ -862,7 +862,7 @@ final class SelfTestTraits {
             server(m -> { var d = sd(); if (d == null) return;
                 d.setCustomName(net.minecraft.network.chat.Component.literal("Ember"));
                 d.setGear(3, d.barding(), d.dye());
-                if (d.bardingItem().isEmpty()) d.setBardingItem(new ItemStack(DrekkiItems.FLEDGLING_BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.IRON).get()));
+                if (d.bardingItem().isEmpty()) d.setBardingItem(new ItemStack(DrekkiItems.BARDING.get(dev.frosthaven.ranchercompanion.item.Barding.IRON).get()));
                 m.teleportTo(d.getX() + 3, d.getY(), d.getZ()); }); });
         check("tomb_placed", 20, 3, () -> server(m -> { var d = sd(); if (d == null) return;
                 BlockPos at = d.blockPosition();

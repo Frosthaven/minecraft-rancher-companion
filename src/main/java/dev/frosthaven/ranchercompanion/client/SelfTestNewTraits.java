@@ -78,7 +78,7 @@ final class SelfTestNewTraits {
     }
 
     private static ItemStack wornBarding() {
-        ItemStack b = new ItemStack(DrekkiItems.FLEDGLING_BARDING.get(Barding.IRON).get());
+        ItemStack b = new ItemStack(DrekkiItems.BARDING.get(Barding.IRON).get());
         b.setDamageValue(b.getMaxDamage() - 1);
         return b;
     }
@@ -88,7 +88,7 @@ final class SelfTestNewTraits {
 
     /** diamond barding for the stage, dyed black, with a chestplate's and a sword's enchantments */
     private static ItemStack enchanted(DrekkiEntity d, int stage, boolean bound) {
-        ItemStack b = new ItemStack((stage == 2 ? DrekkiItems.FLEDGLING_BARDING : DrekkiItems.BARDING).get(Barding.DIAMOND).get());
+        ItemStack b = new ItemStack(DrekkiItems.BARDING.get(Barding.DIAMOND).get());
         b.set(net.minecraft.core.component.DataComponents.DYED_COLOR, new net.minecraft.world.item.component.DyedItemColor(0x1D1D21, false));
         var reg = d.level().registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT);
         b.enchant(reg.getOrThrow(net.minecraft.world.item.enchantment.Enchantments.PROTECTION), 4);

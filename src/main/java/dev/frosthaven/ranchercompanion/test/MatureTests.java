@@ -56,13 +56,13 @@ public final class MatureTests {
         d.life.travel = Life.stageTicks(days) - 5;
         t.runAfterDelay(45, () -> {
             t.assertTrue(d.stage() == 2 && d.life.stance == Life.Stance.PASSIVE, "a new Fledgling, Passive: stage " + d.stage() + ", " + d.life.stance);
-            d.setBardingItem(new ItemStack(DrekkiItems.FLEDGLING_BARDING.get(Barding.IRON).get()));
+            d.setBardingItem(new ItemStack(DrekkiItems.BARDING.get(Barding.IRON).get()));
             d.setStance(Life.Stance.REACTIVE);
             d.life.travel = Life.stageTicks(days) * 2 - 5;
             t.runAfterDelay(45, () -> {
                 t.assertTrue(d.stage() == 3, "grown to Mature: stage " + d.stage() + ", travel " + d.life.travel);
                 t.assertTrue(d.getMaxHealth() == 50 && d.getHealth() == 50, "50 health: " + d.getHealth() + " of " + d.getMaxHealth());
-                t.assertTrue(d.bardingItem().isEmpty() && p.getInventory().contains(new ItemStack(DrekkiItems.FLEDGLING_BARDING.get(Barding.IRON).get())), "its Fledgling barding went back to its owner");
+                t.assertTrue(d.bardingItem().is(DrekkiItems.BARDING.get(Barding.IRON).get()), "its barding stays on (one barding for both stages since 0.6.0)");
                 t.assertTrue(d.life.stance == Life.Stance.REACTIVE, "the stance its owner chose stays");
                 t.assertTrue(d.getBbHeight() > 1.6, "a Mature's hitbox: " + d.getBbHeight());
                 d.life.travel = Life.stageTicks(days) * 9;

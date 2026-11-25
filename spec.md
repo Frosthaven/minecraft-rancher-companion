@@ -179,7 +179,8 @@ Two craftable items:
 - Can be mounted and ridden like a horse.
 - **Growth to Mature is on since 0.5.0** (Shane, 2026-11-23; breeding is not). A Fledgling grows up after its 6 days of
   travel. Travel kept counting while growth stopped at Fledgling, so a Fledgling with 12 days or more is a Mature the
-  first time it is loaded on 0.5.0. Its Fledgling barding goes back to its owner; its stance stays.
+  first time it is loaded on 0.5.0. Its Fledgling barding goes back to its owner; its stance stays. (Since 0.6.0 one
+  barding fits both stages, so a growing drekki keeps its barding on.)
 - **A new Fledgling starts Passive** (Shane, 2026-11-23): it does not fight until its owner picks a stance. Fledglings from
   before keep their stance.
 - **Riding as built (0.5.0; Shane, 2026-11-23 where named; the rest Claude's starting numbers, to tune):**
@@ -330,12 +331,24 @@ Inventory by stage. Items stay in their slots when the drekki grows.
     the right stage, or be opened in hand with Sophisticated. A drekki that dies for good leaves its hat, barding and
     bag in its tombstone (see Tombstone).
   - Icons (2026-11-20): the bags' items are their 3D model (the placed bag's model, dyed), not flat icons.
-  - Outgrown barding (Fledgling barding on a drekki that grows to Mature) goes to its owner's inventory, or drops.
+  - Outgrown barding (barding a drekki no longer fits) goes to its owner's inventory, or drops. None since 0.6.0: both
+    stages wear the same barding.
 - Stage 2: an accessory slot and a barding slot. Stage 3: an accessory slot, a saddle slot (needed to ride) and a barding
   slot.
-- Barding is split by stage (2026-11-20): Fledgling barding and Mature barding are separate items in every tier. The
-  existing barding items are the Mature barding (ids kept). Fledgling barding recipe: `M _ M / M L M` (5 material, 1
-  leather; leather barding `L _ L / L L L`); netherite: Fledgling diamond barding in a smithing table, as for Mature.
+- One Drekki Barding per tier for both stages (Shane, 2026-11-25; 0.6.0). From 2026-11-20 to 0.5.x barding was split
+  by stage (Fledgling barding `M _ M / M L M`, Mature barding the original ids and recipes). Now each tier is one item
+  on the Mature's id and recipe, named "<Material> Drekki Barding", and Fledglings and Matures both wear it:
+  - The item holds the Mature's durability. On a Fledgling each point of wear costs Mature/Fledgling durability (iron
+    104/74), rounded at random so the expected cost is exact: it lasts as many hits as Fledgling barding did. Armor points
+    go by the wearer's stage (iron: 13 on a Fledgling, 18 on a Mature), as before.
+  - The old Fledgling ids stay registered for good as legacy items (`DrekkiItems.LEGACY_FLEDGLING_BARDING`): the same
+    barding (both stages, same name), not in the creative tab, no recipe, hidden from recipe viewers. Saved stacks load
+    and work as they are and become the one barding when touched (put on a drekki, or ticking in a player's
+    inventory), every component kept (both dye channels, enchantments, wear); the damage then counts against the
+    Mature's durability, so an old Fledgling barding comes back a little less worn, never more. Not registry aliases: a
+    game whose own registry lacks ids the server has is refused ("The server send registries with unknown keys",
+    traintest rig 2026-11-25), and a pack update reaches players minutes before the server restarts on it.
+  - A drekki that grows up keeps its barding on (its armor points move to the Mature's).
 - Barding works as wolf armor does (2026-11-20): while it holds, damage goes into its durability, one point per point
   of damage, and the drekki takes none; damage in vanilla's `bypasses_wolf_armor` tag still reaches the drekki. It
   breaks when used up and is repaired with its material on an anvil. The armor values above only show in tooltips.

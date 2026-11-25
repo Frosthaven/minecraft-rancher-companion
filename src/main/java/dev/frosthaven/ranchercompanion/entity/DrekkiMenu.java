@@ -86,7 +86,7 @@ public final class DrekkiMenu extends AbstractContainerMenu {
     }
 
     /** barding of the drekki's own stage (spec, Barding: split by stage) */
-    public static boolean fitsBarding(DrekkiEntity d, ItemStack s) { return d != null && s.getItem() instanceof BardingItem b && b.stage == d.stage(); }
+    public static boolean fitsBarding(DrekkiEntity d, ItemStack s) { return d != null && d.stage() >= 2 && s.getItem() instanceof BardingItem; }
 
     /** a bag the drekki is old enough to wear: the satchel from stage 2, a saddlebag from stage 3 */
     public static boolean fitsAccessory(DrekkiEntity d, ItemStack s) {

@@ -135,7 +135,7 @@ public final class NewTraitTests {
     }
 
     private static ItemStack wornBarding() {
-        ItemStack b = GearTests.fledglingBarding(Barding.IRON);
+        ItemStack b = GearTests.barding(Barding.IRON);
         b.setDamageValue(b.getMaxDamage() - 1);
         return b;
     }

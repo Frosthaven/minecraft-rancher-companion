@@ -18,11 +18,15 @@ public enum Barding {
         this.matureDurability = mature;
     }
 
-    /** the Mature barding keeps the original ids; the Fledgling's are prefixed */
-    public String id(int stage) {
-        String base = name().toLowerCase(java.util.Locale.ROOT) + "_barding";
-        return stage == 2 ? "fledgling_" + base : base;
-    }
+    /** one barding per tier for both stages (Shane, 2026-11-25), on the Mature's original id */
+    public String id() { return name().toLowerCase(java.util.Locale.ROOT) + "_barding"; }
+
+    /** the Fledgling barding id of 0.4.0 to 0.5.x, still registered (DrekkiItems.LEGACY_FLEDGLING_BARDING) */
+    public String fledglingId() { return "fledgling_" + id(); }
+
+    /** durability points a point of wear costs on this stage: the item holds the Mature's durability, so on a Fledgling
+     *  each point costs Mature/Fledgling and the barding lasts as many hits as Fledgling barding did (iron: 104/74) */
+    public float wearScale(int stage) { return stage == 2 ? (float) matureDurability / fledglingDurability : 1f; }
 
     public int durability(int stage) { return stage == 2 ? fledglingDurability : matureDurability; }
 

@@ -41,13 +41,13 @@ public final class TombTests {
     public static void aTombstoneHoldsItsGearAndStaysUntilEmptied(GameTestHelper t) {
         ServerPlayer p = LifeTests.player(t);
         DrekkiEntity d = CombatTests.out(t, p, 2, Diet.RAW, Life.Stance.PASSIVE);
-        d.setBardingItem(new ItemStack(DrekkiItems.FLEDGLING_BARDING.get(Barding.IRON).get()));
+        d.setBardingItem(new ItemStack(DrekkiItems.BARDING.get(Barding.IRON).get()));
         d.setAccessory(GearTests.bag(1));
         d.setCustomName(net.minecraft.network.chat.Component.literal("Ember"));
         String name = "Ember";
         TombstoneBlockEntity be = dieForGood(t, d);
         BlockPos pos = be.getBlockPos();
-        t.assertTrue(be.items().getItem(1).is(DrekkiItems.FLEDGLING_BARDING.get(Barding.IRON).get()) && be.items().getItem(2).is(DrekkiItems.BAGS.get(0).get()),
+        t.assertTrue(be.items().getItem(1).is(DrekkiItems.BARDING.get(Barding.IRON).get()) && be.items().getItem(2).is(DrekkiItems.BAGS.get(0).get()),
             "the barding and the satchel are in it");
         t.assertTrue(be.name().equals(name) && be.date().matches("\\d\\d-\\d\\d-\\d{4}"), "name " + be.name() + ", date " + be.date());
         t.assertTrue(Ranch.roster(t.getLevel().getServer()).get(d.drekkiId()) == null, "its record is gone");
@@ -74,7 +74,7 @@ public final class TombTests {
     public static void aGhostWearsNothingAndIsReadOnly(GameTestHelper t) {
         ServerPlayer p = LifeTests.player(t);
         DrekkiEntity d = CombatTests.out(t, p, 2, Diet.RAW, Life.Stance.PASSIVE);
-        d.setBardingItem(new ItemStack(DrekkiItems.FLEDGLING_BARDING.get(Barding.IRON).get()));
+        d.setBardingItem(new ItemStack(DrekkiItems.BARDING.get(Barding.IRON).get()));
         d.setAccessory(GearTests.bag(1));
         BlockPos at = d.blockPosition();
         dev.frosthaven.ranchercompanion.ranch.Death.turnGhost(d);
@@ -84,7 +84,7 @@ public final class TombTests {
         t.assertTrue(d.ghost() && d.isAlive() && d.bardingItem().isEmpty() && d.accessory().isEmpty(), "a living ghost that wears nothing");
         t.assertTrue(be != null && !be.items().getItem(1).isEmpty() && !be.items().getItem(2).isEmpty(), "its barding and bag are in a tombstone");
         var menu = new dev.frosthaven.ranchercompanion.entity.DrekkiMenu(0, p.getInventory(), d);
-        t.assertTrue(menu.locked() && !menu.getSlot(1).mayPlace(new ItemStack(DrekkiItems.FLEDGLING_BARDING.get(Barding.IRON).get()))
+        t.assertTrue(menu.locked() && !menu.getSlot(1).mayPlace(new ItemStack(DrekkiItems.BARDING.get(Barding.IRON).get()))
             && !menu.clickMenuButton(p, Life.Stance.AGGRESSIVE.ordinal()), "its screen is read-only: no gear, no stance");
         /* no mob targets it, and a zombie already after it lets go; only its owner is sent it */
         var zombie = net.minecraft.world.entity.EntityType.ZOMBIE.create(t.getLevel());
@@ -103,7 +103,7 @@ public final class TombTests {
     public static void anEmptiedTombstoneVanishesButAPlacedOneStays(GameTestHelper t) {
         ServerPlayer p = LifeTests.player(t);
         DrekkiEntity d = CombatTests.out(t, p, 2, Diet.RAW, Life.Stance.PASSIVE);
-        d.setBardingItem(new ItemStack(DrekkiItems.FLEDGLING_BARDING.get(Barding.IRON).get()));
+        d.setBardingItem(new ItemStack(DrekkiItems.BARDING.get(Barding.IRON).get()));
         TombstoneBlockEntity be = dieForGood(t, d);
         BlockPos pos = be.getBlockPos();
         ItemStack mined = Block.getDrops(t.getLevel().getBlockState(pos), t.getLevel(), pos, be).get(0);

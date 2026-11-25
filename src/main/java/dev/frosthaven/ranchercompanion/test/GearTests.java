@@ -26,7 +26,7 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 public final class GearTests {
     private GearTests() {}
 
-    static ItemStack fledglingBarding(Barding tier) { return new ItemStack(DrekkiItems.FLEDGLING_BARDING.get(tier).get()); }
+    static ItemStack barding(Barding tier) { return new ItemStack(DrekkiItems.BARDING.get(tier).get()); }
     static ItemStack bag(int kind) { return new ItemStack(DrekkiItems.BAGS.get(kind - 1).get()); }
 
     /** as wolf armor, barding gives armor points too: on when worn, off when removed or broken, never stacked by a reload */
@@ -35,18 +35,18 @@ public final class GearTests {
         ServerPlayer p = LifeTests.player(t);
         DrekkiEntity d = CombatTests.out(t, p, 2, Diet.RAW, Life.Stance.PASSIVE);
         t.assertTrue(d.getArmorValue() == 0, "bare: " + d.getArmorValue());
-        d.setBardingItem(fledglingBarding(Barding.IRON));
+        d.setBardingItem(barding(Barding.IRON));
         t.assertTrue(d.getArmorValue() == 13, "iron on a Fledgling (74 durability): " + d.getArmorValue());
-        d.setBardingItem(fledglingBarding(Barding.WOOD));
+        d.setBardingItem(barding(Barding.WOOD));
         t.assertTrue(d.getArmorValue() == 4, "swapped for wood, not added to it: " + d.getArmorValue());
-        d.setBardingItem(fledglingBarding(Barding.IRON));
+        d.setBardingItem(barding(Barding.IRON));
         d.load(d.saveWithoutId(new net.minecraft.nbt.CompoundTag()));
         d.load(d.saveWithoutId(new net.minecraft.nbt.CompoundTag()));
         t.assertTrue(d.getArmorValue() == 13, "loaded twice, still one modifier: " + d.getArmorValue());
         d.invulnerableTime = 0;
         d.hurt(d.damageSources().generic(), 200);
         t.assertTrue(d.bardingItem().isEmpty() && d.getArmorValue() == 0, "broken, the points go: " + d.getArmorValue());
-        d.setBardingItem(fledglingBarding(Barding.NETHERITE));
+        d.setBardingItem(barding(Barding.NETHERITE));
         t.assertTrue(d.getArmorValue() == 20, "capped at 20: " + d.getArmorValue());
         d.setBardingItem(ItemStack.EMPTY);
         t.assertTrue(d.getArmorValue() == 0, "taken off: " + d.getArmorValue());
@@ -57,8 +57,8 @@ public final class GearTests {
     @GameTest(template = "floor", timeoutTicks = 40)
     public static void bardingSoaksUpDamageUntilItBreaks(GameTestHelper t) {
         ServerPlayer p = LifeTests.player(t);
-        DrekkiEntity d = CombatTests.out(t, p, 2, Diet.RAW, Life.Stance.PASSIVE);
-        d.setBardingItem(fledglingBarding(Barding.IRON));
+        DrekkiEntity d = CombatTests.out(t, p, 3, Diet.RAW, Life.Stance.PASSIVE);  /* a Mature: one point a point (a Fledgling: aFledglingWearsTheBardingFaster) */
+        d.setBardingItem(barding(Barding.IRON));
         float full = d.getHealth();
         d.hurt(d.damageSources().generic(), 10);
         t.assertTrue(d.getHealth() == full && d.bardingItem().getDamageValue() == 10, "the barding took the hit: health " + d.getHealth() + ", wear " + d.bardingItem().getDamageValue());
@@ -66,13 +66,13 @@ public final class GearTests {
         d.hurt(d.damageSources().starve(), 4);
         t.assertTrue(d.getHealth() == full - 4 && d.bardingItem().getDamageValue() == 10, "starving goes through: health " + d.getHealth());
         d.invulnerableTime = 0;
-        d.hurt(d.damageSources().generic(), 70);  /* 74 durability: 10 + 70 breaks it */
+        d.hurt(d.damageSources().generic(), 94);  /* 104 durability: 10 + 94 breaks it */
         t.assertTrue(d.bardingItem().isEmpty() && d.barding() == 0, "it broke and comes off");
         d.invulnerableTime = 0;
         d.hurt(d.damageSources().generic(), 5);
         t.assertTrue(d.getHealth() == full - 9, "now hits land: health " + d.getHealth());
         /* every game sees the barding and its wear (another mod's health bar reads it there) */
-        d.setBardingItem(fledglingBarding(Barding.IRON));
+        d.setBardingItem(barding(Barding.IRON));
         d.invulnerableTime = 0;
         d.hurt(d.damageSources().generic(), 7);
         t.runAfterDelay(8, () -> {
@@ -82,30 +82,78 @@ public final class GearTests {
         });
     }
 
-    /** each slot takes only what fits the stage: barding of its own stage, the satchel from 2, saddlebags from 3 */
+    /** each slot takes only what fits the stage: barding from 2 (one barding for both stages since 0.6.0), the satchel
+     *  from 2, saddlebags from 3 */
     @GameTest(template = "floor", timeoutTicks = 40)
     public static void slotsTakeTheirStage(GameTestHelper t) {
         ServerPlayer p = LifeTests.player(t);
         DrekkiEntity d = CombatTests.out(t, p, 2, Diet.RAW, Life.Stance.PASSIVE);
-        ItemStack mature = new ItemStack(DrekkiItems.BARDING.get(Barding.IRON).get());
-        t.assertTrue(DrekkiMenu.fitsBarding(d, fledglingBarding(Barding.IRON)) && !DrekkiMenu.fitsBarding(d, mature), "a Fledgling wears Fledgling barding only");
+        d.setLook(1, d.line(), d.diet(), d.astral(), d.horn());
+        t.assertTrue(!DrekkiMenu.fitsBarding(d, barding(Barding.IRON)), "a Pup wears no barding");
+        d.setLook(2, d.line(), d.diet(), d.astral(), d.horn());
+        t.assertTrue(DrekkiMenu.fitsBarding(d, barding(Barding.IRON)) && !DrekkiMenu.fitsBarding(d, new ItemStack(Items.IRON_CHESTPLATE)), "a Fledgling wears barding");
         t.assertTrue(DrekkiMenu.fitsAccessory(d, bag(1)) && !DrekkiMenu.fitsAccessory(d, bag(2)) && !DrekkiMenu.fitsAccessory(d, new ItemStack(Items.CHEST)),
             "a Fledgling wears a satchel, not a saddlebag or anything else");
         d.setLook(3, d.line(), d.diet(), d.astral(), d.horn());
-        t.assertTrue(DrekkiMenu.fitsBarding(d, mature) && !DrekkiMenu.fitsBarding(d, fledglingBarding(Barding.IRON)) && DrekkiMenu.fitsAccessory(d, bag(1))
-            && DrekkiMenu.fitsAccessory(d, bag(6)), "a Mature wears Mature barding, a satchel or any saddlebag");
+        t.assertTrue(DrekkiMenu.fitsBarding(d, barding(Barding.IRON)) && DrekkiMenu.fitsAccessory(d, bag(1))
+            && DrekkiMenu.fitsAccessory(d, bag(6)), "a Mature wears the same barding, a satchel or any saddlebag");
         t.succeed();
     }
 
-    /** growing out of Fledgling barding gives it back to its owner */
+    /** growing up keeps the barding on (one barding for both stages since 0.6.0; it went back to the owner before) */
     @GameTest(template = "floor", timeoutTicks = 40)
-    public static void outgrownBardingGoesBackToItsOwner(GameTestHelper t) {
+    public static void growingUpKeepsTheBarding(GameTestHelper t) {
         ServerPlayer p = LifeTests.player(t);
         DrekkiEntity d = CombatTests.out(t, p, 2, Diet.RAW, Life.Stance.PASSIVE);
-        d.setBardingItem(fledglingBarding(Barding.GOLD));
+        d.setBardingItem(barding(Barding.GOLD));
         d.setLook(3, d.line(), d.diet(), d.astral(), d.horn());
         d.outgrowBarding();
-        t.assertTrue(d.bardingItem().isEmpty() && p.getInventory().contains(fledglingBarding(Barding.GOLD)), "the owner has it back");
+        t.assertTrue(d.bardingItem().is(DrekkiItems.BARDING.get(Barding.GOLD).get()) && !p.getInventory().contains(barding(Barding.GOLD)), "still worn, not given back");
+        t.succeed();
+    }
+
+    /** a saved Fledgling barding of 0.4.0 to 0.5.x (its old id, still registered: DrekkiItems.LEGACY_FLEDGLING_BARDING)
+     *  loads and works as it is, and becomes the one barding when touched (put on a drekki here), both dye channels and
+     *  its wear kept */
+    @GameTest(template = "floor", timeoutTicks = 20)
+    public static void anOldFledglingBardingBecomesTheOneBarding(GameTestHelper t) {
+        var access = t.getLevel().registryAccess();
+        ItemStack worn = barding(Barding.IRON);
+        dev.frosthaven.ranchercompanion.item.Dyeing.set(worn, 0x3355aa, 0xcc2211);
+        worn.setDamageValue(20);
+        var tag = (net.minecraft.nbt.CompoundTag) worn.save(access);
+        tag.putString("id", "rancher_companion:" + Barding.IRON.fledglingId());   /* as 0.5.x saved it */
+        ItemStack loaded = ItemStack.parseOptional(access, tag);
+        t.assertTrue(loaded.is(DrekkiItems.LEGACY_FLEDGLING_BARDING.get(Barding.IRON).get()), "loads under its old id: " + loaded);
+        ServerPlayer p = LifeTests.player(t);
+        DrekkiEntity d = CombatTests.out(t, p, 3, Diet.RAW, Life.Stance.PASSIVE);
+        t.assertTrue(DrekkiMenu.fitsBarding(d, loaded), "a Mature wears it too");
+        d.setBardingItem(loaded);
+        ItemStack on = d.bardingItem();
+        t.assertTrue(on.is(DrekkiItems.BARDING.get(Barding.IRON).get()), "worn, it is the one iron barding: " + on);
+        t.assertTrue(dev.frosthaven.ranchercompanion.item.Dyeing.main(on) == 0x3355aa && dev.frosthaven.ranchercompanion.item.Dyeing.trim(on) == 0xcc2211,
+            "both dye channels kept: " + Integer.toHexString(dev.frosthaven.ranchercompanion.item.Dyeing.main(on)) + "/" + Integer.toHexString(dev.frosthaven.ranchercompanion.item.Dyeing.trim(on)));
+        t.assertTrue(on.getDamageValue() == 20 && d.getArmorValue() == 18, "its wear kept (" + on.getDamageValue() + "), a Mature's armor points (" + d.getArmorValue() + ")");
+        t.succeed();
+    }
+
+    /** on a Fledgling the barding (the Mature's durability) wears by Mature/Fledgling a point, so it takes as many hits as
+     *  the Fledgling barding did: iron, 74 points of hits on average break it there and take 104 on a Mature */
+    @GameTest(template = "floor", timeoutTicks = 40)
+    public static void aFledglingWearsTheBardingFaster(GameTestHelper t) {
+        ServerPlayer p = LifeTests.player(t);
+        for (int stage : new int[]{2, 3}) {
+            DrekkiEntity d = CombatTests.out(t, p, stage, Diet.RAW, Life.Stance.PASSIVE);
+            int hits = 0, worn = 0, runs = 40;
+            for (int r = 0; r < runs; r++) {
+                d.setBardingItem(barding(Barding.IRON));
+                while (!d.bardingItem().isEmpty() && hits < 100_000) { d.hurt(d.damageSources().generic(), 1); d.invulnerableTime = 0; hits++; }
+                worn++;
+            }
+            double perBarding = (double) hits / worn, expected = stage == 2 ? Barding.IRON.fledglingDurability : Barding.IRON.matureDurability;
+            t.assertTrue(Math.abs(perBarding - expected) < expected * 0.05, "stage " + stage + ": " + perBarding + " one-point hits a barding, expected about " + expected);
+            d.discard();
+        }
         t.succeed();
     }
 
@@ -171,7 +219,7 @@ public final class GearTests {
         var level = t.getLevel();
         ItemStack red = new ItemStack(Items.RED_DYE), blue = new ItemStack(Items.BLUE_DYE);
         int r = DyeColor.RED.getTextureDiffuseColor() & 0xFFFFFF, b = DyeColor.BLUE.getTextureDiffuseColor() & 0xFFFFFF;
-        ItemStack barding = fledglingBarding(Barding.IRON);
+        ItemStack barding = barding(Barding.IRON);
         ItemStack out = craft(t, CraftingInput.of(3, 1, List.of(red, barding, blue)));
         t.assertTrue(Dyeing.main(out) == r && Dyeing.trim(out) == b, "red left is the main, blue right the trim: " + Integer.toHexString(Dyeing.main(out)) + " " + Integer.toHexString(Dyeing.trim(out)));
         ItemStack again = craft(t, CraftingInput.of(2, 1, List.of(blue, out)));
@@ -201,7 +249,7 @@ public final class GearTests {
     public static void aCauldronWashesBothDyesOff(GameTestHelper t) {
         ServerPlayer p = LifeTests.player(t);
         net.minecraft.core.BlockPos c = t.absolutePos(new net.minecraft.core.BlockPos(1, 2, 1));
-        for (ItemStack s : List.of(fledglingBarding(Barding.IRON), bag(1))) {
+        for (ItemStack s : List.of(barding(Barding.IRON), bag(1))) {
             t.getLevel().setBlock(c, net.minecraft.world.level.block.Blocks.WATER_CAULDRON.defaultBlockState()
                 .setValue(net.minecraft.world.level.block.LayeredCauldronBlock.LEVEL, 3), 3);
             Dyeing.set(s, 0xff0000, 0x0000ff);
