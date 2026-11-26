@@ -102,7 +102,10 @@ class BreedingTest {
         assertEquals(Set.of("1+2"), seen(solar, lunar, true, 9), "the Starlight Tonic: one eye of each");
         assertEquals(Set.of("1"), seen(solar, solar, true, 10), "the tonic on the same astral changes nothing");
         assertEquals(Set.of("1+2"), seen(solarLunar, lunarSolar, false, 11), "two-eyed parents with the same pair: that pair, no tonic");
-        assertEquals(Set.of("1", "2", "3", "5"), seen(solarLunar, aeroDeep, false, 12), "different pairs: one astral, any of theirs");
+        assertEquals(Set.of("1+2", "1+3", "1+5", "2+3", "2+5", "3+5"), seen(solarLunar, aeroDeep, false, 12),
+            "two-eyed parents: a two-eyed child, two different astrals from all of theirs");
+        assertEquals(Set.of("1+2", "1+3", "2+3"), seen(solarLunar, new int[]{2, 3}, false, 16), "a shared astral counts once: never two of one color");
+        assertEquals(Set.of("1", "2", "3"), seen(solarLunar, new int[]{3}, false, 17), "one two-eyed parent: one astral, any of theirs");
         assertEquals(Set.of("1+3", "1+5", "2+3", "2+5"), seen(solarLunar, aeroDeep, true, 13), "different pairs with the tonic: one from each parent");
         Breeding.Rng r = rng(14);
         boolean left = false, right = false;
