@@ -746,14 +746,17 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
   or brought to its owner when it is checked out.
 - Affinity limits on learning (Shane, 2026-11-23; built in 0.5.0), to make breeding matter. An activity trait can be
   learned only by a drekki of a listed astral affinity; the sheet's "Learned by" column holds the list:
-  - All six: Hearty, Patchwork, Training Day, Soft Landing, Balm & Salve, Hook Line & Sinker, Duck & Cover, Night
+  - All six: Hearty, Phoenix Heart, Training Day, Soft Landing, Balm & Salve, Hook Line & Sinker, Duck & Cover, Night
     Watch (phantoms rarely matter, so not a capstone).
   - One (the capstones): Provoke (Solar), Fade (Lunar), Live Wire (Aero), Point Break (Deep), Hide & Seek
     (Underworld; stronger than The Fallen Emperor), Rewind (End).
-  - Two: Stamp Out (Solar, Underworld); Marked (Solar, Aero); Phoenix Heart (Solar, End); Staring Contest (Deep, End; too weak for a capstone);
+  - Two: Stamp Out (Solar, Underworld); Marked (Solar, Aero); Patchwork (Solar, End); Staring Contest (Deep, End; too weak for a capstone);
     Creature Comforts (Solar,
     Lunar); Huddle Up (Lunar, Aero); Web Cutter and Undertow (Lunar, Deep); Cloud Stompers (Aero, End); Barbed Coat
     (Deep, Underworld); The Fallen Emperor (Underworld, End).
+  - Phoenix Heart and Patchwork swapped (Shane, 2026-11-26): players found a death save for two affinities only unfair,
+    so Phoenix Heart is every affinity's and Patchwork (also a second chance, for gear) takes its place for Solar and End.
+    Every affinity's count is unchanged; a drekki keeps a trait it already has.
   - So each affinity learns 12 or 13 of the 25 by itself. Thermostat (Stamp Out + Huddle Up) and a drekki with both
     Provoke and Fade (day and night) come only from a cross-affinity pair.
   - Inherited traits ignore the limit: a child keeps what passes, whatever its affinity. A poly trait widens

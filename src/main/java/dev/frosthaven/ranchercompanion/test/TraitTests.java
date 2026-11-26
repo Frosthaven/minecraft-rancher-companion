@@ -204,7 +204,7 @@ public final class TraitTests {
     public static void learnsDeathActivitiesAndTheCapHolds(GameTestHelper t) {
         ServerPlayer p = LifeTests.player(t);
         DrekkiEntity d = pup(t, p);
-        as(d, dev.frosthaven.ranchercompanion.look.Astral.END);  /* The Fallen Emperor and Phoenix Heart are both the End's to learn */
+        as(d, dev.frosthaven.ranchercompanion.look.Astral.UNDERWORLD);  /* The Fallen Emperor is Underworld's or End's; Phoenix Heart every affinity's (Shane, 2026-11-26) */
         Piglin piglin = t.spawn(EntityType.PIGLIN, LifeTests.H.offset(-3, 0, -3));
         NeoForge.EVENT_BUS.post(new LivingDeathEvent(p, p.damageSources().mobAttack(piglin)));
         t.assertFalse(has(d, Trait.FALLEN_EMPEROR), "dying to a piglin teaches nothing");
@@ -236,6 +236,11 @@ public final class TraitTests {
         /* using up a stack is not a break: the game's item-destroyed event for it teaches nothing */
         for (int i = 0; i < 20; i++) NeoForge.EVENT_BUS.post(new PlayerDestroyItemEvent(p, new ItemStack(Items.DIRT), InteractionHand.MAIN_HAND));
         t.assertFalse(has(d, Trait.PATCHWORK), "Patchwork: a stack used up teaches nothing");
+        /* Patchwork is Solar's and End's only (Shane, 2026-11-26, in Phoenix Heart's place): a Lunar drekki learns nothing from a break */
+        as(d, dev.frosthaven.ranchercompanion.look.Astral.LUNAR);
+        for (int i = 0; i < 30; i++) { ItemStack w = new ItemStack(Items.WOODEN_PICKAXE); w.setDamageValue(w.getMaxDamage() - 1); w.hurtAndBreak(1, t.getLevel(), p, item -> {}); dev.frosthaven.ranchercompanion.trait.Learning.forget(p.getUUID()); }
+        t.assertFalse(has(d, Trait.PATCHWORK), "Patchwork: a Lunar drekki does not learn it");
+        as(d, dev.frosthaven.ranchercompanion.look.Astral.SOLAR);
         until(t, d, Trait.PATCHWORK, 80, () -> {  /* an item worn through */
             ItemStack pick = new ItemStack(Items.WOODEN_PICKAXE);
             pick.setDamageValue(pick.getMaxDamage() - 1);
