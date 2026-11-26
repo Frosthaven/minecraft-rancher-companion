@@ -72,7 +72,40 @@ _HORIZONS = _brew("eE", [
     "....oeEEEEdo....",
 ])
 
+# The Drekki Lotus (spec, Tombstone: the way back): its seeds (soul-dark husks with a cyan glint) and its blossom (layered
+# violet petals, pale tips, a gold heart). The four crop stages are in tools/lotus_textures.py.
+_LOTUS_SEEDS = (_pad([
+    ".....oo.........",
+    "....oSSo........",
+    "....oSHSo...oo..",
+    ".....oSSo..oSSo.",
+    "......oo..oSHSo.",
+    "...........oSSo.",
+    "..oo........oo..",
+    ".oSSo...........",
+    ".oSHSo..........",
+    "..oSSo..........",
+    "...oo...........",
+], 3), {"o": "1a1420", "S": "3e2f4a", "H": "5fe0e0"})
+
+_LOTUS_BLOSSOM = (_pad([
+    ".......oo.......",
+    "......oPPo......",
+    "..oo..oPLPo.oo..",
+    ".oPPo.oPLPooPPo.",
+    ".oPLPooPLPoPLPo.",
+    "..oPLPoPPPoPLo..",
+    "..oPPLPoGoPLPPo.",
+    ".ooPPPPGYGPPPPoo",
+    "oPPDDPPGGGPDDPPo",
+    ".oPDDDPPPPPDDDo.",
+    "..ooDDDDDDDDoo..",
+    "....oooooooo....",
+], 2), {"o": "2a1240", "P": "9b4ff0", "L": "d9b8ff", "D": "5a1fb0", "G": "f2c230", "Y": "fff1b0"})
+
 ICONS = {
+    "drekki_lotus_seeds": _LOTUS_SEEDS,
+    "drekki_lotus_blossom": _LOTUS_BLOSSOM,
     "potion_of_distance": _DISTANCE,
     "potion_of_twilight": _TWILIGHT,
     "potion_of_horizons": _HORIZONS,

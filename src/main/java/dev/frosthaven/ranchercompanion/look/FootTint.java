@@ -14,5 +14,12 @@ public final class FootTint {
     /** snow_ice, plains, dry, forest, taiga, jungle, wet, hills_mountains, water_coast, ocean, cave, nether_forest, nether_barren, end, end_exploration */
     private static final int[] TINTS = {SNOW, GRASS, DESERT, FOREST, FOREST, JUNGLE, SWAMP, MOUNTAINS, OCEAN, OCEAN, UNDERGROUND, NETHER, NETHER, END, END};
 
-    public static int of(int category) { return TINTS[category < 0 || category >= TINTS.length ? PLAINS : category]; }
+    /** dark charcoal, almost black: every drekki's feet, legs, chest patch, tail ring and horn bases (Shane, 2026-11-26:
+     *  "always and forever for now"); the birth biome is still kept, for a later return of the biome tints */
+    public static final int CHARCOAL = 0x26262a;
+
+    public static int of(int category) { return CHARCOAL; }
+
+    /** the biome's own tint (not drawn since 2026-11-26) */
+    public static int biome(int category) { return TINTS[category < 0 || category >= TINTS.length ? PLAINS : category]; }
 }

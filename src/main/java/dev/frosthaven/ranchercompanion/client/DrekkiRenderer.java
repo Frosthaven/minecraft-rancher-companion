@@ -34,11 +34,8 @@ public final class DrekkiRenderer extends MobRenderer<DrekkiEntity, DrekkiModel>
         model = DrekkiModels.get(e);
         DrekkiDebug.drawn(e);
         shadowRadius = Dims.of(e.stage()).shadow * Dims.of(e.stage()).scale;
-        boolean bob = e.ghost();
-        if (bob) { ps.pushPose(); ps.translate(0, 0.12 + Math.sin((e.tickCount + partial) / 20.0 * 1.6) * 0.08, 0); }  /* a ghost floats with a slow bob */
-        super.render(e, yaw, partial, ps, buf, light);
-        if (bob) ps.popPose();
-        if (e.live() && !e.isInvisible()) moodIcon(e, partial, ps, buf, light);
+        super.render(e, yaw, partial, ps, buf, light);  /* a ghost walks on the ground as any drekki (Shane, 2026-11-26) */
+        if (e.live() && !e.isInvisible() && !e.ghost()) moodIcon(e, partial, ps, buf, light);
     }
 
     /** the stage's model scale (Dims.scale), the vanilla hook baby mobs and slimes use: the model and its layers only */
@@ -73,10 +70,6 @@ public final class DrekkiRenderer extends MobRenderer<DrekkiEntity, DrekkiModel>
     protected RenderType getRenderType(DrekkiEntity e, boolean visible, boolean translucent, boolean glowing) {
         return e.lineage().seeThrough() || e.ghost() ? RenderType.entityTranslucent(getTextureLocation(e)) : super.getRenderType(e, visible, translucent, glowing);
     }
-
-    /** a ghost coming back to life shakes, as a curing zombie villager does */
-    @Override
-    protected boolean isShaking(DrekkiEntity e) { return super.isShaking(e) || e.reviving(); }
 
     @Override
     public ResourceLocation getTextureLocation(DrekkiEntity e) {

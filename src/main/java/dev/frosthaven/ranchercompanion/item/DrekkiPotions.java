@@ -41,6 +41,11 @@ public final class DrekkiPotions {
         b.addMix(Potions.AWKWARD, Items.ENDER_PEARL, DISTANCE);
         b.addMix(DISTANCE, Items.POPPED_CHORUS_FRUIT, TWILIGHT);
         b.addMix(TWILIGHT, Items.EMERALD, HORIZONS);
+        /* the breeding tonics, brewed as Horizons is (Shane, 2026-11-26; were crafted): an Awkward Potion and one ingredient */
+        var awkward = net.neoforged.neoforge.common.crafting.DataComponentIngredient.of(false, net.minecraft.core.component.DataComponents.POTION_CONTENTS,
+            new net.minecraft.world.item.alchemy.PotionContents(Potions.AWKWARD), Items.POTION);
+        b.addRecipe(awkward, net.minecraft.world.item.crafting.Ingredient.of(Items.AMETHYST_SHARD), new net.minecraft.world.item.ItemStack(DrekkiItems.TONICS.get(3).get()));  /* Starlight */
+        b.addRecipe(awkward, net.minecraft.world.item.crafting.Ingredient.of(Items.BOOK), new net.minecraft.world.item.ItemStack(DrekkiItems.TONICS.get(1).get()));  /* Heirloom */
     }
 
     /** which of the three a potion item holds: 1 Distance, 2 Twilight, 3 Horizons; 0 for any other stack */

@@ -39,7 +39,7 @@ public final class DrekkiJade implements IWailaPlugin {
         @Override
         public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
             if (accessor.getBlockEntity() instanceof dev.frosthaven.ranchercompanion.block.TombstoneBlockEntity be)
-                dev.frosthaven.ranchercompanion.item.TombstoneItem.lines(be.name(), be.date()).forEach(tooltip::add);
+                dev.frosthaven.ranchercompanion.item.TombstoneItem.lines(be.name(), be.date(), be.message()).forEach(tooltip::add);
         }
 
         @Override

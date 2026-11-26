@@ -57,6 +57,7 @@ public final class BlockClient {
     public static void renderers(EntityRenderersEvent.RegisterRenderers e) {
         e.registerBlockEntityRenderer(DrekkiBlocks.TROUGH_ENTITY.get(), TroughRenderer::new);
         e.registerBlockEntityRenderer(DrekkiBlocks.HATCHERY_ENTITY.get(), EggRenderer::new);
+        e.registerBlockEntityRenderer(DrekkiBlocks.TOMBSTONE_ENTITY.get(), TombLotusRenderer::new);  /* a blossom in it lies on its foot */
     }
 
     /**

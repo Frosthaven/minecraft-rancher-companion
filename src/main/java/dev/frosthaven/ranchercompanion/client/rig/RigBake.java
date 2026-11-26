@@ -64,7 +64,7 @@ public final class RigBake {
         for (Cell c : placed) {
             cellOf.put(c.box, c);
             Node.Box b = c.box;
-            if (b.kind() == 1) paintEye(fur, Astral.glows(rig.look.astral()) ? glow : fur, c);  /* a Dormant eye stays off the glow layer, which a lamp hat may draw */
+            if (b.kind() == 1) paintEye(fur, Astral.glows(rig.look.astral() & 15) ? glow : fur, c);  /* a Dormant eye stays off the glow layer, which a lamp hat may draw */
             else if (b.kind() == 3) { int px0 = abgr(b.color()); fur.fillRect(c.u, c.v, c.w, c.h, px0); glow.fillRect(c.u, c.v, c.w, c.h, px0); }  /* a lamp: full bright through the eye layer */
             else { int kind = b.kind(); int[] tile = kind >= BardingRig.KIND ? tiles.computeIfAbsent(b.color() * 31 + kind, k -> BardingTex.tile(b.color(), kind - BardingRig.KIND)) : tiles.computeIfAbsent(b.color(), RigBake::tile);
                 int ox = (i * 7) & 15, oy = (i * 13) & 15;

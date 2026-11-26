@@ -162,13 +162,9 @@ public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
         ty = text(g, Component.literal(d.lineage().name()), ty, Art.THREAD) + 2;
         /* the astral name in its eye color (Dormant's brown is too dark on the panel: dim instead), its tooltip on hover,
            the same lines as the chat message when it settles */
-        int a = d.astral();
-        Component astral = Component.translatable("screen.rancher_companion.drekki.astral",
-            Component.literal(Astral.NAMES[a]).withColor(a == Astral.DORMANT ? Art.DIM : 0xFF000000 | Astral.iris(a)));
-        spot("astral", x, ty - 1, font.width(astral), 10);  /* the text only, as the mood line */
-        if (Art.in(rx, ry, x, ty - 1, font.width(astral), 10)) tip = dev.frosthaven.ranchercompanion.trait.Tips.astral(a);
-        ty = text(g, astral, ty, Art.THREAD) + 2;
+        ty = astral(g, d, x, ty, rx, ry) + 2;
         ty = text(g, diet, ty, Art.THREAD) + 2;
+        if (d.ghost()) return;  /* a ghost has no mood (Shane, 2026-11-26): no line, no buffs; it shows again after rebirth */
         Life.Band band = d.band();
         Component bandName = Component.translatable("mood.rancher_companion." + band.name().toLowerCase());
         Component mood = Component.translatable("screen.rancher_companion.drekki.mood", "");
@@ -188,11 +184,35 @@ public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
                 Component.translatable("screen.rancher_companion.drekki.pet.ends_in", Tips.time(d.petLeft() * 20L)).withStyle(ChatFormatting.RED));
             ix += 10;
         }
+        if (d.soulflameLeft() > 0) {  /* Soulflame, a debuff: after a reclaim, two bands down for a day */
+            g.blit(SPR, ix, ty - 1, SX + 20, BUFF_Y, 9, 9);
+            spot("soulflame", ix, ty - 1, 9, 9);
+            if (Art.in(rx, ry, ix, ty - 1, 9, 9)) tip = List.of(Component.translatable("screen.rancher_companion.drekki.soulflame").withStyle(ChatFormatting.AQUA),
+                Component.translatable("screen.rancher_companion.drekki.soulflame.desc").withStyle(ChatFormatting.GRAY),
+                Component.translatable("screen.rancher_companion.drekki.pet.ends_in", Tips.time(d.soulflameLeft())).withStyle(ChatFormatting.RED));
+            ix += 10;
+        }
         if (d.kin() > 0) {
             g.blit(SPR, ix, ty - 1, SX + 10, BUFF_Y, 9, 9);
             if (Art.in(rx, ry, ix, ty - 1, 9, 9)) tip = List.of(Component.translatable("screen.rancher_companion.drekki.kin").withStyle(ChatFormatting.GOLD),
                 Component.translatable("screen.rancher_companion.drekki.kin.desc", d.kin(), Math.round(Life.kinBonus(d.kin()))).withStyle(ChatFormatting.GRAY));
         }
+    }
+
+    /** "Astral:" and its eye icon in the eye color, split down the middle for a two-eyed drekki (Shane, 2026-11-26: icons,
+     *  so splits fit the one line); the astral names and what they do on hover. Returns the next line's y */
+    private int astral(GuiGraphics g, DrekkiEntity d, int x, int ty, int rx, int ry) {
+        int a = d.astral(), a2 = d.astral2();
+        Component label = Component.translatable("screen.rancher_companion.drekki.astral", "");
+        g.drawString(font, label, x, ty, Art.THREAD, false);
+        int ix = x + font.width(label);
+        Art.eye(g, ix, ty, a, a2);
+        int w = ix + Art.EYE_W - x;
+        spot("astral", x, ty - 1, w, 10);
+        if (Art.in(rx, ry, x, ty - 1, w, 10)) {
+            tip = dev.frosthaven.ranchercompanion.trait.Tips.astral(a, a2);
+        }
+        return ty + 10;
     }
 
     /** the band's name, effects and reasons (spec, Mood: the hover tooltip) */
@@ -204,6 +224,8 @@ public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
         var owner = d.ownerPlayer();
         if (owner != null && owner.distanceToSqr(d) > 30 * 30) t.add(Component.translatable("screen.rancher_companion.drekki.reason.far").withStyle(ChatFormatting.RED));
         if (d.petLeft() > 0) t.add(Component.translatable("screen.rancher_companion.drekki.reason.pet").withStyle(ChatFormatting.GREEN));
+        if (d.homeLift()) t.add(Component.translatable("screen.rancher_companion.drekki.reason.home").withStyle(ChatFormatting.GREEN));
+        if (d.soulflameLeft() > 0) t.add(Component.translatable("screen.rancher_companion.drekki.reason.soulflame").withStyle(ChatFormatting.RED));
         if (d.kin() > 0) t.add(Component.translatable("screen.rancher_companion.drekki.reason.kin", Math.round(Life.kinBonus(d.kin()))).withStyle(ChatFormatting.GREEN));
         return t;
     }
@@ -308,17 +330,16 @@ public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
 
     /** the three stance buttons at the foot of the info well, whichever tab is open (spec, Combat; design page, UI tab) */
     private void stances(GuiGraphics g, DrekkiEntity d, int rx, int ry) {
+        if (d.ghost()) return;  /* a ghost neither fights nor takes orders: no stance buttons (Shane, 2026-11-26) */
         int y = WELL_BOTTOM - STANCE - 2;
         for (Life.Stance s : Life.Stance.values()) {
             int x = INFO_X + s.ordinal() * (STANCE + 2);
-            boolean on = d.stance() == s, over = Art.in(rx, ry, x, y, STANCE, STANCE), hover = over && !d.ghost();
+            boolean on = d.stance() == s, over = Art.in(rx, ry, x, y, STANCE, STANCE), hover = over;
             spot("stance" + s.ordinal(), x, y, STANCE, STANCE);
             g.blit(SPR, x, y, SX + (hover && !on ? 2 : 0) * STANCE, STANCE_Y, STANCE, STANCE);
             if (on) g.renderOutline(x, y, STANCE, STANCE, Art.ON);  /* the chosen one: a green border, nothing else */
             g.blit(SPR, x + 3, y + 3, SX + s.ordinal() * 8, ICON_Y, 8, 8);
-            if (over) tip = d.ghost() ? List.of(Component.translatable("stance.rancher_companion." + s.name().toLowerCase()).withStyle(ChatFormatting.WHITE),
-                    Component.translatable("screen.rancher_companion.drekki.ghost_stance").withStyle(ChatFormatting.GRAY))
-                : List.of(Component.translatable("stance.rancher_companion." + s.name().toLowerCase()).withStyle(ChatFormatting.WHITE),
+            if (over) tip = List.of(Component.translatable("stance.rancher_companion." + s.name().toLowerCase()).withStyle(ChatFormatting.WHITE),
                     Component.translatable("stance.rancher_companion." + s.name().toLowerCase() + ".desc").withStyle(ChatFormatting.GRAY));
         }
     }
@@ -328,11 +349,12 @@ public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
 
     /** Stay and Follow at the foot of the info well, right aligned, every stage of a checked-out drekki (spec, Stay and follow) */
     private void moves(GuiGraphics g, DrekkiEntity d, int rx, int ry) {
+        if (d.ghost()) return;  /* nor Stay and Follow */
         int y = WELL_BOTTOM - STANCE - 2;
         for (int i = 0; i < 2; i++) {
             int x = moveX(i);
             String key = i == 0 ? "stay" : "follow";
-            boolean on = d.isStaying() == (i == 0), over = Art.in(rx, ry, x, y, STANCE, STANCE), hover = over && !d.ghost();
+            boolean on = d.isStaying() == (i == 0), over = Art.in(rx, ry, x, y, STANCE, STANCE), hover = over;
             spot(key, x, y, STANCE, STANCE);
             g.blit(SPR, x, y, SX + (hover && !on ? 2 : 0) * STANCE, STANCE_Y, STANCE, STANCE);
             if (on) g.renderOutline(x, y, STANCE, STANCE, Art.ON);

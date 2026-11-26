@@ -87,9 +87,17 @@ public final class DrekkiBlocks {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BagBlockEntity>> BAG_ENTITY = BLOCK_ENTITIES.register("drekki_bag",
         () -> BlockEntityType.Builder.of(BagBlockEntity::new, BAG.get()).build(null));
 
+    /** the Drekki Lotus (spec, Tombstone: the way back): planted from its seeds on soul soil; no item of its own */
+    public static final DeferredBlock<LotusCropBlock> LOTUS = BLOCKS.register("drekki_lotus",
+        () -> new LotusCropBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.BEETROOTS).mapColor(net.minecraft.world.level.material.MapColor.COLOR_PURPLE)));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LotusBlockEntity>> LOTUS_ENTITY = BLOCK_ENTITIES.register("drekki_lotus",
+        () -> BlockEntityType.Builder.of(LotusBlockEntity::new, LOTUS.get()).build(null));
+
     /** a drekki's tombstone (spec, Tombstone): a death places it; its item is made in DrekkiItems, outside the tab */
     public static final DeferredBlock<TombstoneBlock> TOMBSTONE = BLOCKS.register("tombstone",
         () -> new TombstoneBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.COBBLED_DEEPSLATE).strength(2f, 3600000f).noOcclusion()
+            .lightLevel(st -> st.getValue(TombstoneBlock.CANDLE) == TombstoneBlock.Candle.LIT ? 3 : 0)  /* a fifth of a torch's 14 (Shane, 2026-11-26) */
             .pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK)));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<TombstoneBlockEntity>> TOMBSTONE_ENTITY = BLOCK_ENTITIES.register("tombstone",
         () -> BlockEntityType.Builder.of(TombstoneBlockEntity::new, TOMBSTONE.get()).build(null));
@@ -114,5 +122,8 @@ public final class DrekkiBlocks {
         /* a trough line is one inventory to pipes, funnels, chutes and hoppers, from any side of any of its troughs */
         modBus.addListener(net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent.class, e -> e.registerBlockEntity(
             net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK, TROUGH_ENTITY.get(), (be, side) -> new TroughLine(be)));
+        /* a tombstone takes a blossom and gives up its gear to automation (TombHandler) */
+        modBus.addListener(net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent.class, e -> e.registerBlockEntity(
+            net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK, TOMBSTONE_ENTITY.get(), (be, side) -> new TombHandler(be)));
     }
 }

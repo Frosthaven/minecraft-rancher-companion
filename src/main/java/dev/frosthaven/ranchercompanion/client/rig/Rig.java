@@ -148,7 +148,7 @@ public final class Rig {
         /* the page's eye is a plane on the head's side; here it is a one pixel thick box half sunk into the head, whole pixels, so only
            its outer face shows (a flat box draws both faces on one plane and they fight). The lid is the same box a little further out */
         for (int s : new int[]{-1, 1}) {
-            head.boxes.add(new Node.Box(1, sn(eh), sn(ew), s * (hwS / 2f), eyeY, eyeZ, Astral.iris(o.astral), 0, 0, 0, 1, s));
+            head.boxes.add(new Node.Box(1, sn(eh), sn(ew), s * (hwS / 2f), eyeY, eyeZ, Astral.iris(eye(o.astral, s)), 0, 0, 0, 1, s));
             Node lid = grp(head, s * (hwS / 2f + 0.35f), eyeY, eyeZ); lid.boxes.add(new Node.Box(1, sn(eh), sn(ew), 0, 0, 0, furD, 0, 0, 0, 2, s)); lids.add(lid);
             cube(head, 1, 0.8, ew + 0.6, s * (hwS / 2f + 0.5f), eyeY + eh / 2 + 0.5, eyeZ, furD2);
         }
@@ -375,4 +375,11 @@ public final class Rig {
 
     /** root forward offset in blocks (the page's root.position.x once it faces +x) */
     public void forward(double x) { root.z = (float) (x * 16); }
+
+    /** the astral of the eye on this side: Look.astral packs a two-eyed drekki's second eye above the first (astral | astral2 << 4);
+     *  the first is the left eye (side -1), the second the right */
+    static int eye(int packed, int side) {
+        int second = packed >> 4;
+        return side > 0 && second != 0 ? second : packed & 15;
+    }
 }

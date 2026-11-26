@@ -31,6 +31,11 @@ public final class Life {
     public long stamp = NEVER;
     /** Recently pet until this epoch millisecond */
     public long petUntil;
+    /** Soulflame (spec, Tombstone: the way back; Shane, 2026-11-26): a reclaimed drekki's mood is two bands down until
+     *  this overworld day time, a Minecraft day after it came back; 0 for none */
+    public long soulflameUntil;
+    public static final long SOULFLAME = DAY;
+    public boolean soulflame(long dayTime) { return soulflameUntil != 0 && dayTime < soulflameUntil; }
     public final List<String> traits = new ArrayList<>();
     /** counted activities started, by trait id */
     public final Map<String, Integer> progress = new HashMap<>();
@@ -159,19 +164,30 @@ public final class Life {
         return Math.max(0, Math.min(100, mood + kinBonus(kin)));
     }
 
-    /** the plain band, then Recently pet lifts it one band for the hour. Thriving is only ever a pet's lift, and only
-     *  from 85 with above half food; a Happy drekki short of that stays Happy (spec, Mood) */
-    public static Band band(double effective, boolean petted, double food) {
+    public static Band band(double effective, boolean petted, double food) { return band(effective, petted, false, food); }
+
+    /** the plain band, then one band up for each lift: Recently pet (the hour) and being in its home terrain (Shane,
+     *  2026-11-26; they stack). Thriving is only ever a lift, and only from 85 with above half food; short of that it
+     *  stays Happy (spec, Mood) */
+    public static Band band(double effective, boolean petted, boolean home, double food) { return band(effective, petted, home, false, food); }
+
+    /** soulflame: two bands down after the lifts, never below Miserable */
+    public static Band band(double effective, boolean petted, boolean home, boolean soulflame, double food) {
+        Band b = lifted(effective, petted, home, food);
+        return soulflame ? Band.values()[Math.max(0, b.ordinal() - 2)] : b;
+    }
+
+    private static Band lifted(double effective, boolean petted, boolean home, double food) {
         Band plain = effective >= Band.HAPPY.from ? Band.HAPPY : effective >= Band.CONTENT.from ? Band.CONTENT
             : effective >= Band.UNEASY.from ? Band.UNEASY : Band.MISERABLE;
-        if (!petted) return plain;
-        if (plain != Band.HAPPY) return Band.values()[plain.ordinal() + 1];
+        int up = plain.ordinal() + (petted ? 1 : 0) + (home ? 1 : 0);
+        if (up < Band.THRIVING.ordinal()) return Band.values()[up];
         return effective >= Band.THRIVING.from && food > FOOD_MAX / 2.0 ? Band.THRIVING : Band.HAPPY;
     }
 
-    /** a one-off activity's chance to teach in a band (spec, Traits and Mood) */
+    /** a one-off activity's chance to teach in a band (spec, Traits and Mood; the top is 65%, Shane, 2026-11-26) */
     public static double oneOffChance(Band b) {
-        return switch (b) { case THRIVING -> 0.75; case HAPPY -> 0.5; case CONTENT -> 0.25; case UNEASY -> 0.125; case MISERABLE -> 0; };
+        return switch (b) { case THRIVING -> 0.65; case HAPPY -> 0.45; case CONTENT -> 0.25; case UNEASY -> 0.12; case MISERABLE -> 0; };
     }
 
     /** each counted activity counts this many times in a band */

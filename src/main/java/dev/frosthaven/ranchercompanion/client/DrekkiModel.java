@@ -22,8 +22,8 @@ public final class DrekkiModel extends EntityModel<DrekkiEntity> {
         tint = e.ghost() ? GHOST : -1;
     }
 
-    /** a ghost: 65% see-through with a faint pale-blue tint (spec, Ghost drekki); set per entity before it draws */
-    static final int GHOST = 0x59CFE4FF;
+    /** a ghost: 65% see-through in its own fur (Shane, 2026-11-26); set per entity before it draws */
+    static final int GHOST = 0x59FFFFFF;
     private int tint = -1;
 
     @Override

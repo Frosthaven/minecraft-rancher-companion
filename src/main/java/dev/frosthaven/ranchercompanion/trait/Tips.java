@@ -37,9 +37,18 @@ public final class Tips {
     }
 
     /** an astral affinity's lines: its name in its eye color, then its home terrain */
-    public static List<Component> astral(int a) {
-        return List.of(Component.literal(Astral.NAMES[a]).withStyle(Style.EMPTY.withColor(Astral.iris(a))),
-            Component.translatable("astral.rancher_companion." + Astral.NAMES[a].toLowerCase() + ".desc").withStyle(ChatFormatting.GRAY));
+    public static List<Component> astral(int a) { return astral(a, 0); }
+
+    /** an astral's name and its home terrain (gray), then what home gives in its own color as the footer (Shane, 2026-11-26);
+     *  a two-eyed drekki: both astrals' names and homes, then the one footer. Dormant has no home and no footer */
+    public static List<Component> astral(int a, int a2) {
+        List<Component> out = new java.util.ArrayList<>();
+        for (int x : a2 == 0 ? new int[]{a} : new int[]{a, a2}) {
+            out.add(Component.literal(Astral.NAMES[x]).withStyle(Style.EMPTY.withColor(Astral.iris(x))));
+            out.add(Component.translatable("astral.rancher_companion." + Astral.NAMES[x].toLowerCase() + ".desc").withStyle(ChatFormatting.GRAY));
+        }
+        if (a != Astral.DORMANT) out.add(Component.translatable("astral.rancher_companion.home_benefits").withStyle(ChatFormatting.GREEN));
+        return out;
     }
 
     /** the lines as one hover text for chat */

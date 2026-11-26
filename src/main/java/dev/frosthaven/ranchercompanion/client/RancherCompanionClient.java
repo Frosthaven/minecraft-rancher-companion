@@ -41,6 +41,7 @@ public final class RancherCompanionClient {
                 e.register(dev.frosthaven.ranchercompanion.block.DrekkiMenus.DREKKI.get(), dev.frosthaven.ranchercompanion.client.screen.DrekkiScreen::new);
                 e.register(dev.frosthaven.ranchercompanion.block.DrekkiMenus.BAG.get(), dev.frosthaven.ranchercompanion.client.screen.BagScreen::new);
                 e.register(dev.frosthaven.ranchercompanion.block.DrekkiMenus.TOMBSTONE.get(), dev.frosthaven.ranchercompanion.client.screen.TombstoneScreen::new);
+                e.register(dev.frosthaven.ranchercompanion.block.DrekkiMenus.HATCHERY.get(), dev.frosthaven.ranchercompanion.client.screen.HatcheryScreen::new);
                 if (dev.frosthaven.ranchercompanion.item.Bags.sophisticated()) dev.frosthaven.ranchercompanion.compat.sophisticated.client.SophBagScreen.register(e);
             });
         /* Ponder's build guides, only with Ponder loaded (it comes with Create); compat/ponder is never touched otherwise */

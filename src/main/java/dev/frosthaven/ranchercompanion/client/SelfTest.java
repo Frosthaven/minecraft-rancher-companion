@@ -44,6 +44,10 @@ public final class SelfTest {
     private static final boolean GEAR = Boolean.getBoolean("rancher_companion.selftest.gear");
     /** with -Drancher_companion.selftest.hearts=true: hatch and check out a pup, then only its screen at each stage (hearts rows, no name tag) */
     private static final boolean HEARTS = Boolean.getBoolean("rancher_companion.selftest.hearts");
+    /** with -Drancher_companion.selftest.breed=true: the hatchery's Roster and Breeding tabs, a pairing and the bred hatch (SelfTestBreed) */
+    private static final boolean BREED = Boolean.getBoolean("rancher_companion.selftest.breed");
+    /** with -Drancher_companion.selftest.rebirth=true: the way back from death (SelfTestRebirth) */
+    private static final boolean REBIRTH = Boolean.getBoolean("rancher_companion.selftest.rebirth");
     /** only the 0.5.0 section: the Potion of Horizons, the nine new traits, the void (SelfTestNewTraits) */
     private static final boolean NEW = Boolean.getBoolean("rancher_companion.selftest.new");
 
@@ -60,6 +64,12 @@ public final class SelfTest {
     private static dev.frosthaven.ranchercompanion.client.rig.Baked beforeReload;
 
     static Minecraft mc() { return Minecraft.getInstance(); }
+
+    /** closes the open screen as Escape does: a container screen tells the server (else the server keeps its menu open) */
+    static void close() {
+        if (mc().player != null && mc().screen instanceof net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?>) mc().player.closeContainer();
+        else mc().setScreen(null);
+    }
 
     static void cmd(String c) {
         Minecraft mc = mc();
@@ -219,20 +229,22 @@ public final class SelfTest {
         quiet("open_day1", 25, () -> { select(8); useOn(hatch, Direction.NORTH); });
         step("egg_tooltip_warm", 15, () -> { if (hs() != null) hover(hs().eggCenter()); }, () -> tooltip("warm"));
         for (String[] d : new String[][]{{"2", "noises"}, {"3", "active"}, {"4", "ready"}}) {
-            quiet("advance_day" + d[0], 30, () -> { cmd("time add 24000"); mc().setScreen(null); });
+            quiet("advance_day" + d[0], 30, () -> { cmd("time add 24000"); close(); });
             quiet("open_day" + d[0], 25, () -> useOn(hatch, Direction.NORTH));
             step("egg_tooltip_" + d[1], 15, () -> { if (hs() != null) hover(hs().eggCenter()); }, () -> tooltip(d[1]));
         }
-        step("hatch_refused_without_roof", 30, () -> { mc().setScreen(null); useOn(hatch, Direction.UP); }, () -> pup() == null);
-        quiet("roof", 20, () -> { mc().setScreen(null); cmd("fill " + at(hatch.offset(-1, 4, -1)) + " " + at(hatch.offset(1, 4, 1)) + " oak_planks"); cmd("time set 1000"); });
-        step("hatch", 40, () -> { mc().setScreen(null); useOn(hatch, Direction.UP); }, () -> pup() != null && pup().stage() == 1 && hs() != null);
+        step("hatch_refused_without_roof", 30, () -> { close(); useOn(hatch, Direction.UP); }, () -> pup() == null);
+        quiet("roof", 20, () -> { close(); cmd("fill " + at(hatch.offset(-1, 4, -1)) + " " + at(hatch.offset(1, 4, 1)) + " oak_planks"); cmd("time set 1000"); });
+        step("hatch", 40, () -> { close(); useOn(hatch, Direction.UP); }, () -> pup() != null && pup().stage() == 1 && hs() != null);
         step("check_out", 30, () -> { if (hs() != null) { hs().press("row0"); hs().press("out"); } }, () -> where(HatcheryView.WITH_YOU));
-        quiet("walk_off", 100, () -> { mc().setScreen(null); cmd("tp @s " + (o.getX() + 7.5) + " " + o.getY() + " " + (o.getZ() + 6.5)); });
+        quiet("walk_off", 100, () -> { close(); cmd("tp @s " + (o.getX() + 7.5) + " " + o.getY() + " " + (o.getZ() + 6.5)); });
         stepUntil("follows", 10, 15, () -> {}, () -> pup() != null && pup().distanceTo(mc().player) < 6);
         if (TRAITS) { SelfTestTraits.build(o); return; }
         if (NEW) { SelfTestTraits.site(o); SelfTestNewTraits.steps(); quiet("new_end", 10, () -> cmd("gamemode creative")); return; }
         if (UI) { SelfTestTraits.ui(); return; }
         if (HEARTS) { SelfTestTraits.hearts(); return; }
+        if (BREED) { SelfTestBreed.steps(hatch); return; }
+        if (REBIRTH) { SelfTestRebirth.steps(hatch); return; }
         if (GEAR) { SelfTestTraits.gear(o); return; }
         quiet("far_away", 80, () -> cmd("tp @s " + (o.getX() + 40.5) + " " + o.getY() + " " + (o.getZ() + 0.5)));
         stepUntil("teleports_to_owner", 10, 15, () -> {}, () -> pup() != null && pup().distanceTo(mc().player) < 6);
@@ -299,15 +311,15 @@ public final class SelfTest {
         step("drekki_traits_tab", 10, () -> clickSpot("tab_traits"), () -> ds() != null && ds().spot("trait1") != null);
         step("drekki_trait_tooltip", 10, () -> hoverSpot("trait1"), () -> ds() != null);
         quiet("details_again", 5, () -> { dev.frosthaven.ranchercompanion.client.screen.DrekkiScreen.testMouse = null; clickSpot("tab_details"); });
-        quiet("close_screen", 10, () -> mc().setScreen(null));
+        quiet("close_screen", 10, () -> close());
         quiet("give_sword", 10, () -> hotbar(5, "iron_sword"));
         step("drekki_screen_with_sword", 25, () -> { select(5); interact("open its screen holding a sword"); },
             () -> mc().screen instanceof dev.frosthaven.ranchercompanion.client.screen.DrekkiScreen);
-        quiet("close_screen2", 10, () -> mc().setScreen(null));
+        quiet("close_screen2", 10, () -> close());
         quiet("give_tag2", 10, () -> { hotbar(2, "name_tag"); mc().options.keyShift.setDown(true); });
         step("easy_anvils_quick_rename", 25, () -> { select(2); mc().gameMode.useItem(mc().player, InteractionHand.MAIN_HAND); },
             () -> { String n = mc().screen == null ? "none" : mc().screen.getClass().getName(); RancherCompanion.LOG.info("[selftest] screen after sneak+use name tag: {}", n); return n.contains("NameTag"); });
-        quiet("close_rename", 10, () -> { mc().options.keyShift.setDown(false); mc().setScreen(null); });
+        quiet("close_rename", 10, () -> { mc().options.keyShift.setDown(false); close(); });
         quiet("give_carrier", 15, () -> { hotbar(3, "rancher_companion:small_drekki_carrier"); near(pup()); });
         step("into_carrier", 20, () -> { select(3); interact("carry"); },
             () -> pup() == null && mc().player.getInventory().getItem(3).has(DrekkiData.CARRIED.get()));
@@ -341,7 +353,7 @@ public final class SelfTest {
         step("fledgling_screen", 25, () -> interact("open its screen"), () -> ds() != null && ds().getMenu().gear && ds().spot("stance0") != null);
         step("stance_tooltip", 10, () -> hoverSpot("stance0"), () -> ds() != null);
         step("stance_aggressive", 15, () -> clickSpot("stance0"), () -> pup().stance() == dev.frosthaven.ranchercompanion.life.Life.Stance.AGGRESSIVE);
-        quiet("close_fledgling", 10, () -> { dev.frosthaven.ranchercompanion.client.screen.DrekkiScreen.testMouse = null; mc().setScreen(null); });
+        quiet("close_fledgling", 10, () -> { dev.frosthaven.ranchercompanion.client.screen.DrekkiScreen.testMouse = null; close(); });
         quiet("miserable", 30, () -> life(d -> { d.life.food = 0; d.life.mood = 5; d.life.petUntil = 0; }));
         step("mood_icon_miserable", 10, SelfTest::lookOver, () -> pup() != null && pup().band() == dev.frosthaven.ranchercompanion.life.Life.Band.MISERABLE);
         step("jade_food", 10, SelfTest::look, () -> pup() != null && pup().food() == 0);
@@ -352,7 +364,7 @@ public final class SelfTest {
         quiet("open_for_check_in", 25, () -> useOn(hatch, Direction.NORTH));
         step("check_in", 30, () -> { if (hs() != null) hs().press("in"); }, () -> where(HatcheryView.HERE) && pup() != null && pup().blockPosition().distManhattan(hatch) <= 5);
         quiet("bedding_and_night", 400, () -> {
-            mc().setScreen(null);
+            close();
             for (int dx = -1; dx <= 1; dx++) cmd("setblock " + at(hatch.offset(dx, 0, 3)) + " rancher_companion:straw_bedding");
             cmd("time set 18000");
         });
@@ -368,12 +380,12 @@ public final class SelfTest {
         step("trough_screen_takes_food", 25, () -> {
             if (mc().screen instanceof TroughScreen t) mc().gameMode.handleInventoryMouseClick(t.getMenu().containerId, 4 + 27 + 4, 0, ClickType.QUICK_MOVE, mc().player);
         }, () -> mc().screen instanceof TroughScreen t && t.getMenu().slots.get(0).getItem().is(net.minecraft.world.item.Items.WHEAT));
-        quiet("trader", 30, () -> { mc().setScreen(null); cmd("summon wandering_trader " + (o.getX() + 0.5) + " " + o.getY() + " " + (o.getZ() - 2.5) + " {NoAI:1b}"); });
+        quiet("trader", 30, () -> { close(); cmd("summon wandering_trader " + (o.getX() + 0.5) + " " + o.getY() + " " + (o.getZ() - 2.5) + " {NoAI:1b}"); });
         step("trader_two_hats_three_each", 25, () -> {
             for (var e : mc().level.entitiesForRendering()) if (e instanceof net.minecraft.world.entity.npc.WanderingTrader w) { select(8); mc().gameMode.interact(mc().player, w, InteractionHand.MAIN_HAND); break; }
         }, () -> mc().screen instanceof MerchantScreen m && m.getMenu().getOffers().stream()
             .filter(of -> DrekkiItems.hatIndex(of.getResult()) > 0 && of.getMaxUses() == 3).count() == 2);
-        step("drekki_hat_subtext", 5, () -> mc().setScreen(null), () -> {
+        step("drekki_hat_subtext", 5, () -> close(), () -> {
             var lines = DrekkiItems.hatStack(5).getTooltipLines(net.minecraft.world.item.Item.TooltipContext.of(mc().level), mc().player, TooltipFlag.NORMAL);
             return lines.size() > 1 && lines.get(1).getString().equals("Drekki Hat");
         });
@@ -394,7 +406,7 @@ public final class SelfTest {
             step("ponder_trough_feeding_mature", 100, () -> {}, null);  /* behind, and the line's end */
             step("ponder_trough_feeding_meal", 110, () -> {}, null);
             step("ponder_trough_feeding_owner", 80, () -> {}, null);
-            quiet("ponder_close", 10, () -> mc().setScreen(null));
+            quiet("ponder_close", 10, () -> close());
         }
         quiet("open_for_release", 25, () -> useOn(hatch, Direction.NORTH));
         quiet("release", 10, () -> { if (hs() != null) { hs().press("row0"); hs().press("release"); } });

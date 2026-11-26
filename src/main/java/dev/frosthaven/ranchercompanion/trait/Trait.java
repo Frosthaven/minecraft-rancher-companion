@@ -15,7 +15,6 @@ public enum Trait {
     PATCHWORK("patchwork", Learn.ONE_OFF, 1, false, 168000, of(Astral.SOLAR, Astral.END), Rarity.RARE),
     STAMP_OUT("stamp_out", Learn.ONE_OFF, 1, false, 2400, of(Astral.SOLAR, Astral.UNDERWORLD), Rarity.UNCOMMON),
     HUDDLE_UP("huddle_up", Learn.ONE_OFF, 1, false, 2400, of(Astral.LUNAR, Astral.AERO), Rarity.UNCOMMON),
-    PHOENIX_HEART("phoenix_heart", Learn.DEATH, 1, false, 0, Trait.ALL, Rarity.EPIC),
     CLOUD_STOMPERS("cloud_stompers", Learn.COUNTED, 10, true, 0, of(Astral.AERO, Astral.END), Rarity.RARE),
     TRAINING_DAY("training_day", Learn.COUNTED, 6, false, 6000, Trait.ALL, Rarity.RARE),
     CREATURE_COMFORTS("creature_comforts", Learn.COUNTED, 5, false, 0, of(Astral.SOLAR, Astral.LUNAR), Rarity.EPIC),
@@ -49,20 +48,23 @@ public enum Trait {
     INVERSE_LUMINANCE("inverse_luminance", Learn.COUNTED, 64, false, 0, of(Astral.DEEP, Astral.UNDERWORLD), Rarity.UNCOMMON),
     DRACONIC_VAMPIRISM("draconic_vampirism", Learn.COUNTED, 10, false, 0, of(Astral.UNDERWORLD, Astral.END), Rarity.EPIC),
     LEAP_OF_FAITH("leap_of_faith", Learn.ONE_OFF, 1, true, 0, of(Astral.AERO, Astral.END), Rarity.RARE),
-    WINGS_OF_HOPE("wings_of_hope", Learn.COUNTED, 10, true, 0, of(Astral.AERO, Astral.END), Rarity.EPIC);
+    WINGS_OF_HOPE("wings_of_hope", Learn.COUNTED, 10, true, 0, of(Astral.AERO, Astral.END), Rarity.EPIC),
+    /** Bakeneko's legendary trait (Shane, 2026-11-26): every Bakeneko hatches with it; never learned */
+    SPIRIT_VEIL("spirit_veil", Learn.BRED, 1, true, 0, Trait.ALL, Rarity.LEGENDARY);
 
     /** Hibernation Plan's id, which the hunger rules read */
     public static final String HIBERNATION_PLAN = "hibernation_plan";
 
     /** a trait's tier, by how much it changes play (spec, Traits: rarity); the color of its name. Legendary is for the
-     *  traits only breeding gives, none of which is in the game yet. */
+     *  traits only breeding gives: a rare line's own trait (Spirit Veil, Bakeneko's). */
     public enum Rarity {
         UNCOMMON(0x5fd17a), RARE(0x5aa9ff), EPIC(0xc77dff), LEGENDARY(0xff9d3c);
         public final int color;
         Rarity(int color) { this.color = color; }
     }
 
-    public enum Learn { COUNTED, ONE_OFF, DEATH }
+    /** BRED: only a line's legendary trait at the hatch gives it, no activity teaches it */
+    public enum Learn { COUNTED, ONE_OFF, DEATH, BRED }
 
     public final String id;
     public final Learn learn;
@@ -94,6 +96,7 @@ public enum Trait {
 
     /** whether a drekki of this affinity can learn it from the activity. An inherited trait does not ask. */
     public boolean learnedBy(int astral) {
+        if (learn == Learn.BRED) return false;  /* a line's legendary trait: never learned */
         return astral == Astral.DORMANT ? affinities == ALL : (affinities & 1 << astral) != 0;
     }
 

@@ -27,6 +27,10 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
     private static final EntityDataAccessor<Integer> DIET = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> ASTRAL = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> HORN = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.INT);
+    /** in its home terrain now: its mood is one band up (the screen's mood reasons) */
+    private static final EntityDataAccessor<Boolean> HOME = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.BOOLEAN);
+    /** the second eye's astral (spec, Breeding: eyes), 0 when both eyes share {@link #ASTRAL} */
+    private static final EntityDataAccessor<Integer> ASTRAL2 = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> HAT = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> BARDING = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> DYE = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.INT);
@@ -51,8 +55,12 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
     private static final EntityDataAccessor<Float> MOOD = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Integer> BAND = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> PET_LEFT = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.INT);
+    /** Soulflame's ticks left (game time; the clock is the overworld's day time), 0 for none */
+    private static final EntityDataAccessor<Integer> SOULFLAME = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> KIN = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> GHOST = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.BOOLEAN);
+    /** a ghost whose tombstone's candle burns: only then does it shed soul-fire flames (Shane, 2026-11-26) */
+    private static final EntityDataAccessor<Boolean> GHOST_FLAME = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Integer> STANCE = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.INT);
     /* Synced values are numbered in the order they are declared, and a game and a server must agree on the numbers.
        Declare a NEW value LAST, after every other one in this class: then a game one release ahead of its server still
@@ -62,8 +70,6 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
     /** 0 checked in, 1 checked out and following, 2 checked out and staying (the drekki screen's Stay and Follow) */
     private static final EntityDataAccessor<Integer> MOVE = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> ACTION = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.INT);
-    /** a ghost shaking back to life (spec, Ghost drekki: revive) */
-    private static final EntityDataAccessor<Boolean> REVIVING = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.BOOLEAN);
     /** the traits tab: learned trait ids and counted progress */
     private static final EntityDataAccessor<CompoundTag> TRAITS = SynchedEntityData.defineId(DrekkiEntity.class, EntityDataSerializers.COMPOUND_TAG);
     /** 0.4.13: its job (spec, Go here: Employed) for the drekki screen: 0 not employed, else its role (Seats.EMPLOYED,
@@ -122,9 +128,9 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder b) {
         super.defineSynchedData(b);
-        b.define(STAGE, 3); b.define(LINE, 0); b.define(DIET, 0); b.define(ASTRAL, 1); b.define(HORN, 0); b.define(HAT, 0); b.define(BARDING, 0); b.define(DYE, -1); b.define(DYE2, -1); b.define(BAG, 0); b.define(BAG_DYE, -1); b.define(BAG_DYE2, -1); b.define(ANIM, 0); b.define(LANE, 0f); b.define(OWNED, false); b.define(PET, 0); b.define(SLEEPING, false); b.define(OWNER, java.util.Optional.empty());
+        b.define(STAGE, 3); b.define(LINE, 0); b.define(DIET, 0); b.define(ASTRAL, 1); b.define(ASTRAL2, 0); b.define(HOME, false); b.define(HORN, 0); b.define(HAT, 0); b.define(BARDING, 0); b.define(DYE, -1); b.define(DYE2, -1); b.define(BAG, 0); b.define(BAG_DYE, -1); b.define(BAG_DYE2, -1); b.define(ANIM, 0); b.define(LANE, 0f); b.define(OWNED, false); b.define(PET, 0); b.define(SLEEPING, false); b.define(OWNER, java.util.Optional.empty());
         b.define(MOVE, 0);
-        b.define(FOOD, 10f); b.define(MOOD, 50f); b.define(BAND, 2); b.define(PET_LEFT, 0); b.define(KIN, 0); b.define(GHOST, false); b.define(STANCE, 1); b.define(ACTION, 0); b.define(REVIVING, false); b.define(TRAITS, new CompoundTag()); b.define(JOB, 0);
+        b.define(FOOD, 10f); b.define(MOOD, 50f); b.define(BAND, 2); b.define(PET_LEFT, 0); b.define(SOULFLAME, 0); b.define(KIN, 0); b.define(GHOST, false); b.define(GHOST_FLAME, false); b.define(STANCE, 1); b.define(ACTION, 0);  b.define(TRAITS, new CompoundTag()); b.define(JOB, 0);
         b.define(BARDING_GLINT, false);
         b.define(SADDLED, false);
         b.define(BIRTH, dev.frosthaven.ranchercompanion.look.FootTint.PLAINS);
@@ -134,7 +140,13 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
     public int stage() { return entityData.get(STAGE); }
     public int line() { return entityData.get(LINE); }
     public int diet() { return entityData.get(DIET); }
+    /** its astral: both eyes, or the first (left) eye of a two-eyed drekki */
     public int astral() { return entityData.get(ASTRAL); }
+    /** a two-eyed drekki's second (right) eye, 0 for one astral; both are its home (spec, Breeding: eyes) */
+    public int astral2() { return entityData.get(ASTRAL2); }
+    public void setAstral2(int a) { entityData.set(ASTRAL2, a == astral() ? 0 : a); }
+    /** one of its astrals: the one, or either eye of a two-eyed drekki */
+    public boolean hasAstral(int a) { return a != dev.frosthaven.ranchercompanion.look.Astral.DORMANT && (a == astral() || a == astral2()); }
     public int horn() { return entityData.get(HORN); }
     /** Gear.HATS index, 0 none */
     public int hat() { return entityData.get(HAT); }
@@ -245,9 +257,18 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
     public float mood() { return entityData.get(MOOD); }
     public dev.frosthaven.ranchercompanion.life.Life.Band band() { return dev.frosthaven.ranchercompanion.life.Life.Band.values()[entityData.get(BAND)]; }
     public int petLeft() { return entityData.get(PET_LEFT); }
+    public int soulflameLeft() { return entityData.get(SOULFLAME); }
+    public boolean homeLift() { return entityData.get(HOME); }
     public int kin() { return entityData.get(KIN); }
     public boolean ghost() { return entityData.get(GHOST); }
-    public boolean reviving() { return entityData.get(REVIVING); }
+
+    /** a ghost and players pass through each other (Shane, 2026-11-26): players do not push it, it does not push them */
+    @Override public void push(net.minecraft.world.entity.Entity by) { if (!(ghost() && by instanceof net.minecraft.world.entity.player.Player)) super.push(by); }
+    @Override protected void doPush(net.minecraft.world.entity.Entity e) { if (!(ghost() && e instanceof net.minecraft.world.entity.player.Player)) super.doPush(e); }
+    /** a screen's stand-in model (never in the world): drawn as a ghost */
+    public void setGhostView(boolean g) { entityData.set(GHOST, g); }
+    public boolean ghostFlame() { return entityData.get(GHOST_FLAME); }
+    public void setGhostFlame(boolean f) { if (entityData.get(GHOST_FLAME) != f) entityData.set(GHOST_FLAME, f); }
     public dev.frosthaven.ranchercompanion.life.Life.Stance stance() { return dev.frosthaven.ranchercompanion.life.Life.Stance.values()[entityData.get(STANCE)]; }
     public CompoundTag traitView() { return entityData.get(TRAITS); }
 
@@ -261,10 +282,16 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
         double eff = dev.frosthaven.ranchercompanion.life.Life.effective(l.mood, kin);
         entityData.set(FOOD, (float) l.food);
         entityData.set(MOOD, (float) eff);
-        entityData.set(BAND, dev.frosthaven.ranchercompanion.life.Life.band(eff, pet, l.food).ordinal());
+        /* home lifts the band one tier, as Recently pet does; a drekki Miserable before that lift has no home (spec, Mood) */
+        boolean home = dev.frosthaven.ranchercompanion.life.Vitals.inHomeTerrain(this)
+            && dev.frosthaven.ranchercompanion.life.Life.band(eff, pet, l.food) != dev.frosthaven.ranchercompanion.life.Life.Band.MISERABLE;
+        long day = dev.frosthaven.ranchercompanion.ranch.Roster.now(getServer());
+        boolean soul = l.soulflame(day);
+        entityData.set(BAND, dev.frosthaven.ranchercompanion.life.Life.band(eff, pet, home, soul, l.food).ordinal());
+        entityData.set(SOULFLAME, soul ? (int) Math.min(Integer.MAX_VALUE, l.soulflameUntil - day) : 0);
+        entityData.set(HOME, home);
         entityData.set(PET_LEFT, pet ? (int) ((l.petUntil - System.currentTimeMillis()) / 1000) : 0);
         entityData.set(KIN, kin);
-        entityData.set(REVIVING, l.ghost && l.cooldowns.containsKey(dev.frosthaven.ranchercompanion.life.Vitals.REVIVE));
         entityData.set(STANCE, l.stance.ordinal());
         CompoundTag v = new CompoundTag();
         net.minecraft.nbt.ListTag t = new net.minecraft.nbt.ListTag();
@@ -341,7 +368,7 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
 
     /** makes it a live drekki of this owner: checked in at a hatchery (home) or checked out (home null) */
     public void bind(java.util.UUID owner, java.util.UUID id, BlockPos home) {
-        this.owner = owner; this.drekkiId = id; this.home = home; this.out = home == null;
+        this.owner = owner; this.drekkiId = id; this.home = home; this.out = home == null; this.tombPen = null;
         entityData.set(MOVE, out ? 1 : 0);
         if (!out && !level().isClientSide) ejectPassengers();  /* checked in, it carries no rider */
         entityData.set(OWNED, true); entityData.set(OWNER, java.util.Optional.of(owner)); setPersistenceRequired();
@@ -361,7 +388,24 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
     /** the pen of its hatchery, or null when the hatchery is not loaded */
     public java.util.Set<Long> pen() {
         if (home == null || !level().isLoaded(home)) return null;
-        return level().getBlockEntity(home) instanceof dev.frosthaven.ranchercompanion.block.HatcheryBlockEntity h ? h.pen(stage()) : null;
+        var be = level().getBlockEntity(home);
+        if (be instanceof dev.frosthaven.ranchercompanion.block.TombstoneBlockEntity) return tombPen();  /* a ghost at its tombstone */
+        return be instanceof dev.frosthaven.ranchercompanion.block.HatcheryBlockEntity h ? h.pen(stage()) : null;
+    }
+
+    private java.util.Set<Long> tombPen;
+
+    /** a summoned ghost's ground: within 3 blocks of its tombstone (spec, Tombstone: the way back) */
+    private java.util.Set<Long> tombPen() {
+        if (tombPen == null) {
+            java.util.Set<Long> s = new java.util.HashSet<>();
+            int r = dev.frosthaven.ranchercompanion.ranch.Ground.ANCHOR;
+            for (int dx = -r; dx <= r; dx++) for (int dz = -r; dz <= r; dz++) for (int dy = -1; dy <= 1; dy++)
+                s.add(dev.frosthaven.ranchercompanion.ranch.Flood.pack(home.getX() + dx, home.getY() + dy, home.getZ() + dz));
+            for (int dy = -1; dy <= 2; dy++) s.remove(dev.frosthaven.ranchercompanion.ranch.Flood.pack(home.getX(), home.getY() + dy, home.getZ()));  /* never on the tombstone itself (Shane, 2026-11-26) */
+            tombPen = s;
+        }
+        return tombPen;
     }
 
     public boolean inPen(BlockPos p) {
@@ -1009,7 +1053,7 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
-        tag.putInt("Stage", stage()); tag.putInt("Line", line()); tag.putInt("Diet", diet()); tag.putInt("Astral", astral());
+        tag.putInt("Stage", stage()); tag.putInt("Line", line()); tag.putInt("Diet", diet()); tag.putInt("Astral", astral()); if (astral2() != 0) tag.putInt("Astral2", astral2());
         tag.putInt("Horn", horn()); tag.putInt("Hat", hat()); tag.putInt("Barding", barding()); tag.putInt("Dye", dye()); tag.putInt("Dye2", dye2()); tag.putInt("Anim", entityData.get(ANIM)); tag.putFloat("Lane", lane());
         tag.put("Life", dev.frosthaven.ranchercompanion.life.LifeTag.save(life));
         if (!bardingItem.isEmpty()) tag.put("BardingItem", bardingItem.save(registryAccess()));
@@ -1026,6 +1070,7 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
 
         caughtUp = false;
         if (tag.contains("Stage")) setLook(tag.getInt("Stage"), tag.getInt("Line"), tag.getInt("Diet"), tag.getInt("Astral"), tag.getInt("Horn"));
+        entityData.set(ASTRAL2, tag.getInt("Astral2"));
         if (tag.contains("Hat")) setGear(tag.getInt("Hat"), tag.getInt("Barding"), tag.getInt("Dye"));
         if (tag.contains("Dye2")) entityData.set(DYE2, tag.getInt("Dye2"));
         /* the showcase's drawn bag, without an item */

@@ -41,8 +41,12 @@ public final class Tombs {
         return p;
     }
 
-    /** the death spot or the nearest free one around and above it, inside the world, on something solid when it can be */
+    /** the death spot or the nearest free one around and above it, inside the world, on something solid when it can be. In
+     *  a liquid (water, lava, any) it rises to the surface first, as the Corpse mod's corpses float up (Shane, 2026-11-26):
+     *  never left at the bottom of a lava lake or the sea */
     static BlockPos spot(ServerLevel level, BlockPos at) {
+        BlockPos surface = surface(level, at);
+        if (surface != null) return surface;
         int y = Math.max(level.getMinBuildHeight() + 1, Math.min(level.getMaxBuildHeight() - 2, at.getY()));
         BlockPos base = new BlockPos(at.getX(), y, at.getZ()), loose = null;
         for (int dy = 0; dy <= 6; dy++)
@@ -56,6 +60,14 @@ public final class Tombs {
                         if (loose == null) loose = p;
                     }
         return loose;
+    }
+
+    /** the topmost liquid block of the column it died in, or null when it did not die in a liquid */
+    static BlockPos surface(ServerLevel level, BlockPos at) {
+        if (level.getFluidState(at).isEmpty()) return null;
+        BlockPos.MutableBlockPos p = at.mutable();
+        while (p.getY() < level.getMaxBuildHeight() - 2 && !level.getFluidState(p.above()).isEmpty()) p.move(Direction.UP);
+        return level.getBlockState(p).canBeReplaced() && level.getBlockEntity(p) == null ? p.immutable() : null;
     }
 
     /** the owner's marker: now when online, else at the next login */

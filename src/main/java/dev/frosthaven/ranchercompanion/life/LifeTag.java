@@ -22,6 +22,7 @@ public final class LifeTag {
         t.putDouble("mood", l.mood);
         t.putLong("stamp", l.stamp);
         t.putLong("petUntil", l.petUntil);
+        if (l.soulflameUntil != 0) t.putLong("soulflame", l.soulflameUntil);
         ListTag tr = new ListTag();
         for (String s : l.traits) tr.add(StringTag.valueOf(s));
         t.put("traits", tr);
@@ -31,7 +32,8 @@ public final class LifeTag {
         if (l.offer != null) t.putString("offer", l.offer);
         t.putBoolean("ghost", l.ghost);
         t.putBoolean("horizons", l.horizons);
-        if (!l.oldCaps) t.putInt("caps", 1);  /* settled under the 2/4/5 caps; absent in a save from before them */
+        if (!l.oldCaps) t.putInt("caps", 1);
+        t.putInt("rev", 2);  /* 2 (0.7): a ghost saved before that came back to life at the update */  /* settled under the 2/4/5 caps; absent in a save from before them */
         CompoundTag cd = new CompoundTag();
         l.cooldowns.forEach(cd::putLong);
         t.put("cooldowns", cd);
@@ -53,13 +55,14 @@ public final class LifeTag {
         l.mood = t.contains("mood") ? t.getDouble("mood") : Life.MOOD_START;
         l.stamp = t.contains("stamp") ? t.getLong("stamp") : Life.NEVER;
         l.petUntil = t.getLong("petUntil");
+        l.soulflameUntil = t.getLong("soulflame");
         l.traits.clear();
-        for (Tag s : t.getList("traits", Tag.TAG_STRING)) l.traits.add(s.getAsString());
+        for (Tag s : t.getList("traits", Tag.TAG_STRING)) if (!s.getAsString().equals("phoenix_heart")) l.traits.add(s.getAsString());  /* removed in 0.7 */
         l.progress.clear();
         CompoundTag pr = t.getCompound("progress");
         for (String k : pr.getAllKeys()) l.progress.put(k, pr.getInt(k));
         l.offer = t.contains("offer") ? t.getString("offer") : null;
-        l.ghost = t.getBoolean("ghost");
+        l.ghost = t.getBoolean("ghost") && t.getInt("rev") >= 2;  /* the update's grace (Shane, 2026-11-26): every ghost from before comes back to life */
         l.horizons = t.getBoolean("horizons");
         l.oldCaps = !t.contains("caps");
         l.cooldowns.clear();

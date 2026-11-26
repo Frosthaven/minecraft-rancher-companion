@@ -70,9 +70,18 @@ public final class DrekkiItems {
     public static final List<DeferredItem<Item>> TRADER_HATS = List.of("crown", "top_hat", "wizard_hat", "pirate_tricorne",
         "jester_cap", "propeller_beanie", "conductor_cap", "stock_keeper_cap", "aviator_cap", "satellite_hat").stream().map(DrekkiItems::single).toList();
 
-    public static final List<DeferredItem<Item>> TONICS = List.of("bloodline_tonic", "heirloom_tonic", "clean_slate_tonic",
+    public static final List<DeferredItem<TonicItem>> TONICS = List.of("bloodline_tonic", "heirloom_tonic", "clean_slate_tonic",
         "starlight_tonic", "purity_tonic", "rarity_tonic").stream()
-        .map(id -> add(ITEMS.registerSimpleItem(id, new Item.Properties().stacksTo(16)))).toList();
+        .map(id -> add(ITEMS.registerItem(id, TonicItem::new, new Item.Properties().stacksTo(16)))).toList();
+
+    /** the way back from death (spec, Tombstone): seeds from the wandering trader, planted on soul soil by a tombstone */
+    public static final DeferredItem<net.minecraft.world.item.ItemNameBlockItem> LOTUS_SEEDS = add(ITEMS.registerItem("drekki_lotus_seeds",
+        p -> new net.minecraft.world.item.ItemNameBlockItem(dev.frosthaven.ranchercompanion.block.DrekkiBlocks.LOTUS.get(), p) {
+            @Override public void appendHoverText(net.minecraft.world.item.ItemStack st, TooltipContext c, java.util.List<net.minecraft.network.chat.Component> lines, net.minecraft.world.item.TooltipFlag f) {
+                lines.add(net.minecraft.network.chat.Component.translatable(getDescriptionId() + ".desc").withStyle(net.minecraft.ChatFormatting.GRAY));  /* "A strange, familiar scent." */
+            }
+        }));
+    public static final DeferredItem<TonicItem> LOTUS_BLOSSOM = add(ITEMS.registerItem("drekki_lotus_blossom", TonicItem::new, new Item.Properties().stacksTo(16)));
 
     public static final DeferredItem<IntriguingEggItem> INTRIGUING_EGG =
         add(ITEMS.registerItem("intriguing_egg", IntriguingEggItem::new, new Item.Properties().stacksTo(1)));

@@ -112,4 +112,19 @@ class LifeTest {
         l.eat(1, 9);                                 /* saturation never passes the shanks */
         assertEquals(4, l.sat, 1e-9);
     }
+
+    @org.junit.jupiter.api.Test
+    void homeLiftsOneBandAndStacksWithAPet() {
+        assertEquals(Band.HAPPY, Life.band(50, false, true, 0), "Content at home: Happy");
+        assertEquals(Band.HAPPY, Life.band(30, true, true, 0), "Uneasy, pet and home: two up");
+        assertEquals(Band.THRIVING, Life.band(85, false, true, 6), "Happy at home with the mood and food for it: Thriving");
+        assertEquals(Band.HAPPY, Life.band(80, true, true, 10), "short of 85: Happy, however many lifts");
+    }
+
+    @org.junit.jupiter.api.Test
+    void soulflameTakesTwoBandsAfterTheLifts() {
+        assertEquals(Band.MISERABLE, Life.band(50, false, false, true, 0), "Content: Miserable");
+        assertEquals(Band.UNEASY, Life.band(50, true, true, true, 0), "Content, pet and home (Thriving short of 85: Happy): Uneasy");
+        assertEquals(Band.MISERABLE, Life.band(10, false, false, true, 0), "never below Miserable");
+    }
 }

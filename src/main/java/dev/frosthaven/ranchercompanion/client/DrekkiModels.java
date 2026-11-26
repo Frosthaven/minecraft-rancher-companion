@@ -20,12 +20,12 @@ public final class DrekkiModels {
     public static DrekkiModel get(DrekkiEntity e) {
         boolean spread = e.anim() == Anim.GLIDE;
         int bard = e.stage() >= 2 ? e.barding() : 0, bag = e.stage() >= 2 ? e.bag() : 0;
-        String key = e.stage() + "_" + e.line() + "_" + e.diet() + "_" + e.astral() + "_" + e.horn() + (spread ? "_s" : "") + "_h" + e.hat() + "_b" + bard
+        String key = e.stage() + "_" + e.line() + "_" + e.diet() + "_" + e.astral() + (e.astral2() != 0 ? "x" + e.astral2() : "") + "_" + e.horn() + (spread ? "_s" : "") + "_h" + e.hat() + "_b" + bard
             + "_d" + Integer.toHexString(e.dye()) + "_" + Integer.toHexString(e.dye2()) + "_g" + bag + "_" + Integer.toHexString(e.bagDye()) + "_" + Integer.toHexString(e.bagDye2()) + (e.saddled() ? "" : "_ns") + "_f" + (e.live() ? e.birth() : dev.frosthaven.ranchercompanion.look.FootTint.PLAINS);
         DrekkiModel m = CACHE.get(key);
         if (m == null || !m.baked.alive()) {  /* new, or its textures released by another mod: baked again */
             dev.frosthaven.ranchercompanion.Debug.log("game: {} model {}", m == null ? "baking" : "baking again (textures were released)", key);
-            m = build(e.stage(), e.lineage(), Diet.of(e.diet()), e.astral(), e.horn(), spread, e.hat(), bard, e.dye(), e.dye2(), bag, e.bagDye(), e.bagDye2(), e.saddled(), e.live() ? e.birth() : dev.frosthaven.ranchercompanion.look.FootTint.PLAINS, key);
+            m = build(e.stage(), e.lineage(), Diet.of(e.diet()), e.astral() | e.astral2() << 4, e.horn(), spread, e.hat(), bard, e.dye(), e.dye2(), bag, e.bagDye(), e.bagDye2(), e.saddled(), e.live() ? e.birth() : dev.frosthaven.ranchercompanion.look.FootTint.PLAINS, key);
             CACHE.put(key, m);
         }
         return m;

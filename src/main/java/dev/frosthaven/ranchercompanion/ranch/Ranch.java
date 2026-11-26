@@ -115,7 +115,7 @@ public final class Ranch {
     }
 
     static void poofAt(DrekkiEntity d) { poof((ServerLevel) d.level(), d.getX(), d.getY(), d.getZ()); }
-    static void say(Player p, String key, Object... args) { msg(p, key, args); }
+    public static void say(Player p, String key, Object... args) { msg(p, key, args); }
 
     private static void poof(ServerLevel level, double x, double y, double z) {
         level.sendParticles(ParticleTypes.POOF, x, y + 0.3, z, 12, 0.25, 0.25, 0.25, 0.02);
@@ -139,6 +139,7 @@ public final class Ranch {
         HatcheryBlockEntity be = hatchery(p, pos);
         if (be == null) return;
         if (be.hasEgg()) { msg(p, "hatchery.has_egg"); return; }
+        if (be.breeding()) { msg(p, "hatchery.breeding"); return; }  /* the nest is kept for the breeding egg */
         be.putEgg(stack);
         stack.consume(1, p);
         p.level().playSound(null, pos, SoundEvents.CHICKEN_EGG, SoundSource.BLOCKS, 0.7f, 0.8f);
@@ -167,21 +168,22 @@ public final class Ranch {
             return;
         }
         BlockPos at = new Ground(level).place(pos, 1);
-        if (be.egg().has(DrekkiData.CARRIED.get())) {  /* a Phoenix egg brings its drekki back (Death) */
-            ItemStack phoenix = be.egg().copy();
-            if (Death.reborn(p, level, pos, at, phoenix)) {
-                be.takeEgg();
-                poof(level, pos.getX() + 0.5, pos.getY() + 0.8, pos.getZ() + 0.5);
-                openHatchery(p, pos);
-            } else msg(p, "hatch.cold");
+        if (be.egg().has(DrekkiData.CARRIED.get())) {  /* a Phoenix egg from before 0.7: its drekki came back at the update */
+            be.takeEgg();
+            msg(p, "hatch.phoenix_gone");
+            refresh(p, pos);
             return;
         }
+        CompoundTag bred = be.egg().get(DrekkiData.BRED.get());
         be.takeEgg();
         /* a trader egg: a random bloodline at its muted tier, random horns, dormant eyes (spec, Egg) */
         DrekkiEntity d = RancherCompanion.DREKKI.get().create(level);
         if (d == null) return;
-        int fam = level.random.nextInt(Lineage.FAMILIES);
-        d.setLook(1, fam * Lineage.TIERS, 0, Astral.DORMANT, level.random.nextInt(5));
+        if (bred != null) Pairing.hatchBred(d, bred, level.random);  /* a bred egg: its parents' child (spec, Breeding) */
+        else {
+            int fam = level.random.nextInt(Lineage.FAMILIES);
+            d.setLook(1, fam * Lineage.TIERS, 0, Astral.DORMANT, level.random.nextInt(5));
+        }
         d.setBirth(dev.frosthaven.ranchercompanion.life.Places.CATEGORIES.indexOf(dev.frosthaven.ranchercompanion.life.Places.category(level, pos)));  /* where the egg hatched: its foot tint for life */
         d.applyStageHealth(true);
         UUID id = UUID.randomUUID();
@@ -192,24 +194,43 @@ public final class Ranch {
         poof(level, pos.getX() + 0.5, pos.getY() + 0.8, pos.getZ() + 0.5);
         level.playSound(null, pos, net.minecraft.sounds.SoundEvents.TURTLE_EGG_HATCH, SoundSource.BLOCKS, 1f, 1.1f);
         msg(p, "hatch.done");
-        openHatchery(p, pos);
+        refresh(p, pos);
     }
 
-    /** the screen's view to a player whose client has the mod's channel (a GameTest's mock player has none) */
+    /** the screen's view to a player whose client has the mod's channel (a GameTest's mock player has none): a refresh
+     *  while its hatchery screen is open, else the screen opens */
     private static void send(ServerPlayer p, HatcheryBlockEntity be) {
-        if (p.connection != null && p.connection.hasChannel(HatcheryView.TYPE)) PacketDistributor.sendToPlayer(p, HatcheryView.of(p, be));
+        if (p.connection == null || !p.connection.hasChannel(HatcheryView.TYPE)) return;
+        HatcheryView v = HatcheryView.of(p, be);
+        if (p.containerMenu instanceof dev.frosthaven.ranchercompanion.block.HatcheryMenu m && m.pos.equals(be.getBlockPos())) PacketDistributor.sendToPlayer(p, v);
+        else dev.frosthaven.ranchercompanion.block.HatcheryMenu.open(p, be.getBlockPos(), v);
     }
 
+    /** a click on the hatchery (or on a drekki that lives there): the screen opens fresh */
     public static void openHatchery(ServerPlayer p, BlockPos pos) {
         HatcheryBlockEntity be = hatchery(p, pos);
-        if (be == null) return;
-        send(p, be);
+        if (be == null || p.connection == null || !p.connection.hasChannel(HatcheryView.TYPE)) return;
+        dev.frosthaven.ranchercompanion.block.HatcheryMenu.open(p, pos, HatcheryView.of(p, be));
+    }
+
+    /** a change made without the player's click (a breeding laid its egg): refresh their screen when it shows this hatchery */
+    public static void refreshFor(ServerPlayer p, BlockPos pos) {
+        if (p.containerMenu instanceof dev.frosthaven.ranchercompanion.block.HatcheryMenu m && m.pos.equals(pos)
+            && p.level().getBlockEntity(pos) instanceof HatcheryBlockEntity be && p.connection != null && p.connection.hasChannel(HatcheryView.TYPE))
+            PacketDistributor.sendToPlayer(p, HatcheryView.of(p, be));
+    }
+
+    /** after a change: the open screen refreshes, else it opens */
+    private static void refresh(ServerPlayer p, BlockPos pos) {
+        HatcheryBlockEntity be = hatchery(p, pos);
+        if (be != null) send(p, be);
     }
 
     /** a broken hatchery: its drekki leave the world and go to No hatchery, kept as data (spec, Checkout) */
     public static void hatcheryBroken(ServerLevel level, BlockPos pos) {
         Roster r = roster(level.getServer());
         GlobalPos home = Roster.at(level, pos);
+        for (Entry e : r.at(home)) if (e.breedUntil != 0) r.endBreeding(e, true);  /* a breeding ends with its hatchery */
         for (Entry e : r.at(home)) {
             DrekkiEntity d = live(e.id);
             if (d != null) { r.snapshot(e, save(d)); poof(level, d.getX(), d.getY(), d.getZ()); d.discard(); }
@@ -232,12 +253,18 @@ public final class Ranch {
 
     // ---- the screen's actions ----
 
-    public enum Action { CHECK_OUT, CHECK_IN, RELEASE, HATCH }
+    public enum Action { CHECK_OUT, CHECK_IN, RELEASE, HATCH, PAIR, CANCEL_PAIR }
 
-    public static void act(ServerPlayer p, BlockPos pos, Action a, UUID id) {
+    public static void act(ServerPlayer p, BlockPos pos, Action a, UUID id) { act(p, pos, a, id, null, ""); }
+
+    public static void act(ServerPlayer p, BlockPos pos, Action a, UUID id, UUID other) { act(p, pos, a, id, other, ""); }
+
+    public static void act(ServerPlayer p, BlockPos pos, Action a, UUID id, UUID other, String trait) {
         HatcheryBlockEntity be = hatchery(p, pos);
         if (be == null) return;
         switch (a) {
+            case PAIR -> Pairing.pair(p, pos, be, id, other, trait);
+            case CANCEL_PAIR -> Pairing.cancel(p, pos, be);
             case CHECK_OUT -> checkOut(p, pos, id);
             case CHECK_IN -> { if (id != null && recall(p, pos, id)) break; checkIn(p, pos); }
             case RELEASE -> release(p, id);
@@ -271,6 +298,10 @@ public final class Ranch {
         if (e == null || !e.owner.equals(p.getUUID())) return;
         if (e.where == Where.HOME && !e.livesAt(home)) { msg(p, "checkout.elsewhere"); return; }
         if (e.where == Where.OUT || e.where == Where.CARRIED) return;
+        long now = Roster.now(p.server);
+        if (e.breeding(now)) { msg(p, "checkout.breeding", label(e.save)); return; }  /* breeding, then resting after it: it stays home */
+        int rest = e.restDays(now);
+        if (rest > 0) { msg(p, "checkout.resting", label(e.save), rest); return; }
         Entry prev = r.out(p.getUUID());
         Ground g = new Ground(level);
         if (prev != null) {  /* a swap: the one out comes home here first (spec, Swaps) */
@@ -407,8 +438,8 @@ public final class Ranch {
         Entry e = roster(ev.getLevel().getServer()).get(d.drekkiId());
         DrekkiEntity other = live(d.drekkiId());
         boolean ok = e != null && (other == null || other == d)
-            && ((e.where == Where.OUT || e.where == Where.WORK) && d.isOut() || e.where == Where.HOME && !d.isOut() && e.home != null
-                && e.home.pos().equals(d.home()) && e.home.dimension().equals(ev.getLevel().dimension()));
+            && ((e.where == Where.OUT || e.where == Where.WORK) && d.isOut() || (e.where == Where.HOME || e.where == Where.TOMB) && !d.isOut() && e.home != null
+                && e.home.pos().equals(d.home()) && e.home.dimension().equals(ev.getLevel().dimension()));  /* TOMB: a risen ghost at its tombstone */
         /* a checked-out copy a chunk loads (not one this class just made): never while its owner is offline, it left
            with them; one told to stay only at its stay spot, an older spot's copy is stale */
         if (ok && other != d && e.where == Where.OUT) {
@@ -463,7 +494,7 @@ public final class Ranch {
 
     /* a checked-out drekki comes back next to its owner on the events that part them: login, respawn, a dimension
        change, leaving spectator mode, and its chunk unloading while the owner is online. keepUp is the net under them */
-    public static void onLogin(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent ev) { if (ev.getEntity() instanceof ServerPlayer p) { bringBack(p); Death.giveEggs(p); Tombs.onLogin(p); } }
+    public static void onLogin(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent ev) { if (ev.getEntity() instanceof ServerPlayer p) { bringBack(p); Tombs.onLogin(p); } }
     public static void onRespawn(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerRespawnEvent ev) { if (ev.getEntity() instanceof ServerPlayer p) bringBack(p); }
     public static void onDimension(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerChangedDimensionEvent ev) { if (ev.getEntity() instanceof ServerPlayer p) follow(p); }
 

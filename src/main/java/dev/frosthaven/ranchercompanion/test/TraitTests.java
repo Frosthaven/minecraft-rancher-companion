@@ -216,10 +216,7 @@ public final class TraitTests {
             m.hurt(m.damageSources().playerAttack(p), 1000);
         }
         t.assertTrue(has(d, Trait.FALLEN_EMPEROR), "The Fallen Emperor at 10 piglin kills");
-        p.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(Items.TOTEM_OF_UNDYING));
         t.runAfterDelay(SPAWN_GUARD, () -> {
-            p.hurt(p.damageSources().generic(), 1000);
-            t.assertTrue(has(d, Trait.PHOENIX_HEART) && p.isAlive(), "Phoenix Heart from a totem");
             give(d, Trait.PATCHWORK);
             int before = d.life.traits.size();
             p.giveExperienceLevels(6);

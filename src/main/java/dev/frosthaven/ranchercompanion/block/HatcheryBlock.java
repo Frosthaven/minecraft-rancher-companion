@@ -107,11 +107,19 @@ public class HatcheryBlock extends HorizontalDirectionalBlock implements EntityB
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
-    /** a Ready egg: teal motes rise from the nest now and then (spec, Hatchery) */
+    /** a Ready egg: teal motes rise from the nest now and then (spec, Hatchery). Breeding: magenta swirls rise from the
+     *  hatchery's base on every side (Shane, 2026-11-26) */
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, net.minecraft.util.RandomSource r) {
-        if (!(level.getBlockEntity(pos) instanceof HatcheryBlockEntity be) || !be.hasEgg()
-            || !dev.frosthaven.ranchercompanion.look.Incubation.ready(be.incubation())) return;
+        if (!(level.getBlockEntity(pos) instanceof HatcheryBlockEntity be)) return;
+        if (be.breeding()) {
+            var magenta = net.minecraft.core.particles.ColorParticleOption.create(net.minecraft.core.particles.ParticleTypes.ENTITY_EFFECT, 0xFFE040C8);
+            for (int i = 0; i < 3; i++) {
+                double a = r.nextDouble() * Math.PI * 2;
+                level.addParticle(magenta, pos.getX() + 0.5 + Math.cos(a) * 0.55, pos.getY() + 0.05 + r.nextDouble() * 0.15, pos.getZ() + 0.5 + Math.sin(a) * 0.55, 0, 0, 0);
+            }
+        }
+        if (!be.hasEgg() || !dev.frosthaven.ranchercompanion.look.Incubation.ready(be.incubation())) return;
         for (int i = 0; i < 2; i++)
             level.addParticle(net.minecraft.core.particles.ParticleTypes.END_ROD, pos.getX() + 0.35 + r.nextDouble() * 0.3, pos.getY() + 1.0,
                 pos.getZ() + 0.35 + r.nextDouble() * 0.3, 0, 0.02 + r.nextDouble() * 0.02, 0);

@@ -1,0 +1,32 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "rancher_companion:drekki_lotus_seeds"
+        }
+      ]
+    },
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "rancher_companion:drekki_lotus_blossom"
+        }
+      ],
+      "conditions": [
+        {
+          "condition": "minecraft:block_state_property",
+          "block": "rancher_companion:drekki_lotus",
+          "properties": {
+            "age": "3"
+          }
+        }
+      ]
+    }
+  ]
+}

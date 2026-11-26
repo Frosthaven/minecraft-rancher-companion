@@ -57,6 +57,20 @@ neoForge {
             jvmArgument '-Drancher_companion.selftest=true'
             jvmArgument '-Drancher_companion.selftest.hearts=true'
         }
+        // the way back from death: tombstone, ghost, lotus, reclaim, Soulflame, Spirit Veil, the Ponder (client/SelfTestRebirth)
+        selfTestRebirth {
+            client()
+            programArguments.addAll '--quickPlaySingleplayer', 'selftest'
+            jvmArgument '-Drancher_companion.selftest=true'
+            jvmArgument '-Drancher_companion.selftest.rebirth=true'
+        }
+        // the hatchery's Roster and Breeding tabs, a pairing and the bred hatch (client/SelfTestBreed)
+        selfTestBreed {
+            client()
+            programArguments.addAll '--quickPlaySingleplayer', 'selftest'
+            jvmArgument '-Drancher_companion.selftest=true'
+            jvmArgument '-Drancher_companion.selftest.breed=true'
+        }
         // barding and bags through the real drekki screen (SelfTestTraits.gear)
         selfTestGear {
             client()
@@ -150,8 +164,12 @@ dependencies {
     compileOnly 'mezz.jei:jei-1.21.1-neoforge-api:19.44.0.403'
     // Ponder 1.0.82, the one Create 6.0.10 (the Haven pack's) bundles: compile only, used only when Ponder is loaded
     compileOnly('net.createmod.ponder:ponder-neoforge:1.0.82+mc1.21.1') { transitive = false }
+    // -PwithPonder: Ponder on the dev run too, so the self test can open the tombstone's Ponder scenes (never published)
+    if (project.hasProperty('withPonder')) localRuntime('net.createmod.ponder:ponder-neoforge:1.0.82+mc1.21.1')
     // Jade 15.10.6+neoforge (the Haven pack's; Modrinth version id eYz2YBGT): compile only, used only when Jade is loaded (compat/jade)
     compileOnly 'maven.modrinth:jade:eYz2YBGT'
+    // -PwithJade: Jade on the dev run too, so the self test can show a tombstone's hover (never published)
+    if (project.hasProperty('withJade')) localRuntime 'maven.modrinth:jade:eYz2YBGT'
     // JourneyMap's API 2.0.0 for 1.21.1 (the API JourneyMap 6.0.2 bundles; it is published only as a snapshot)
     compileOnly 'info.journeymap:journeymap-api-neoforge:2.0.0-1.21.1-SNAPSHOT'
     // Sophisticated Backpacks 3.26.9.2195 and Core 1.5.7.2381 (the Haven pack's; CurseForge file ids 9083940, 9083874):

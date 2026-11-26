@@ -14,11 +14,15 @@ public final class DrekkiNet {
     public static java.util.function.Consumer<DeathMark> onDeathMark = m -> {};
 
     public static void register(RegisterPayloadHandlersEvent e) {
-        var r = e.registrar("1");
+        var r = e.registrar("2");  /* 2: the hatchery action carries a second drekki (pairing), its view the rest and pairing state */
         r.playToClient(HatcheryView.TYPE, HatcheryView.CODEC, (v, ctx) -> ctx.enqueueWork(() -> onView.accept(v)));
         r.playToClient(DeathMark.TYPE, DeathMark.CODEC, (m, ctx) -> ctx.enqueueWork(() -> onDeathMark.accept(m)));
         r.playToServer(HatcheryAction.TYPE, HatcheryAction.CODEC, (a, ctx) -> ctx.enqueueWork(() -> {
-            if (ctx.player() instanceof ServerPlayer p && p.blockPosition().closerThan(a.pos(), 8)) Ranch.act(p, a.pos(), a.kind(), a.id());
+            if (ctx.player() instanceof ServerPlayer p && p.blockPosition().closerThan(a.pos(), 8)) Ranch.act(p, a.pos(), a.kind(), a.id(), a.other(), a.trait());
+        }));
+        /* a decorative tombstone's message, typed in its screen */
+        r.playToServer(TombMessage.TYPE, TombMessage.CODEC, (m, ctx) -> ctx.enqueueWork(() -> {
+            if (ctx.player() instanceof ServerPlayer p) dev.frosthaven.ranchercompanion.block.TombstoneBlockEntity.editMessage(p, m.pos(), m.text());
         }));
         /* the open-backpack key on one's own drekki: its bag, if it wears one and is within reach */
         r.playToServer(OpenBag.TYPE, OpenBag.CODEC, (o, ctx) -> ctx.enqueueWork(() -> {

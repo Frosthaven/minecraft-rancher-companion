@@ -38,6 +38,9 @@ public final class DrekkiData {
         b -> b.persistent(Codec.STRING).networkSynchronized(ByteBufCodecs.STRING_UTF8));
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<String>> TOMB_DATE = COMPONENTS.registerComponentType("tomb_date",
         b -> b.persistent(Codec.STRING).networkSynchronized(ByteBufCodecs.STRING_UTF8));
+    /** a decorative tombstone's message (Shane, 2026-11-26): typed in its screen, shown by Jade and on the item */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<String>> TOMB_MESSAGE = COMPONENTS.registerComponentType("tomb_message",
+        b -> b.persistent(Codec.STRING).networkSynchronized(ByteBufCodecs.STRING_UTF8));
     /** a tombstone's drekki record (its look, life and traits; not its gear, which is in the tombstone), kept for later
      *  and never shown (spec, Tombstone) */
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<net.minecraft.nbt.CompoundTag>> TOMB_DREKKI = COMPONENTS.registerComponentType("tomb_drekki",
@@ -45,4 +48,7 @@ public final class DrekkiData {
     /** what the carrier shows on hover: the drekki's name or bloodline */
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<String>> CARRIED_NAME = COMPONENTS.registerComponentType("carried_name",
         b -> b.persistent(Codec.STRING).networkSynchronized(ByteBufCodecs.STRING_UTF8));
+    /** a bred egg's child (spec, Breeding): its line, horn and inherited traits, and the parents' names for the tooltip */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<net.minecraft.nbt.CompoundTag>> BRED = COMPONENTS.registerComponentType("bred",
+        b -> b.persistent(net.minecraft.nbt.CompoundTag.CODEC).networkSynchronized(ByteBufCodecs.COMPOUND_TAG));
 }

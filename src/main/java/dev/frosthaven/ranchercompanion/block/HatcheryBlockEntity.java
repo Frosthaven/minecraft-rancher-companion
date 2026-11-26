@@ -48,6 +48,26 @@ public class HatcheryBlockEntity extends BlockEntity {
         super(DrekkiBlocks.HATCHERY_ENTITY.get(), pos, state);
     }
 
+    /** a pairing in progress (spec, Breeding: Pairing): its two parents and the overworld day time it started; null when none */
+    private UUID breedA, breedB;
+    private long breedStart;
+
+    public boolean breeding() { return breedA != null; }
+    public UUID breedA() { return breedA; }
+    public UUID breedB() { return breedB; }
+    public long breedStart() { return breedStart; }
+    /** the tonic Pair took from the screen (spec, Breeding: tonics): it acts when the egg is laid, and goes back on a cancel */
+    private ItemStack breedTonic = ItemStack.EMPTY;
+    public ItemStack breedTonic() { return breedTonic; }
+    public void startBreeding(UUID a, UUID b, long now) { breedA = a; breedB = b; breedStart = now; changed(); }
+    /** the Heirloom Tonic's trait for this breeding, "" for none */
+    private String breedKeep = "";
+    public String breedKeep() { return breedKeep; }
+    public void startBreeding(UUID a, UUID b, long now, ItemStack tonic) { startBreeding(a, b, now, tonic, ""); }
+    public void startBreeding(UUID a, UUID b, long now, ItemStack tonic, String keep) { breedTonic = tonic.copy(); breedKeep = keep == null ? "" : keep; startBreeding(a, b, now); }
+    /** ends the breeding; returns the tonic it held (empty for none) */
+    public ItemStack stopBreeding() { ItemStack t = breedTonic; breedTonic = ItemStack.EMPTY; breedKeep = ""; breedA = null; breedB = null; breedStart = 0; changed(); return t; }
+
     public UUID owner() { return owner; }
     public void claim(UUID player) { owner = player; changed(); }
     public Component name() { return name; }
@@ -136,6 +156,7 @@ public class HatcheryBlockEntity extends BlockEntity {
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, HatcheryBlockEntity be) {
         if (be.hasEgg()) be.count();
+        if (be.breeding() && (level.getGameTime() + pos.asLong()) % 20 == 0) dev.frosthaven.ranchercompanion.ranch.Pairing.tick((ServerLevel) level, pos, be);
         if ((level.getGameTime() + pos.asLong()) % SYNC_EVERY == 0) Ranch.syncHatchery((ServerLevel) level, pos);
     }
 
@@ -149,6 +170,9 @@ public class HatcheryBlockEntity extends BlockEntity {
         super.saveAdditional(tag, reg);
         if (owner != null) tag.putUUID("Owner", owner);
         if (name != null) tag.putString("CustomName", Component.Serializer.toJson(name, reg));
+        if (breedA != null) { tag.putUUID("BreedA", breedA); tag.putUUID("BreedB", breedB); tag.putLong("BreedStart", breedStart);
+            if (!breedTonic.isEmpty()) tag.put("BreedTonic", breedTonic.save(reg));
+            if (!breedKeep.isEmpty()) tag.putString("BreedKeep", breedKeep); }
         if (!egg.isEmpty()) { tag.put("Egg", egg.save(reg)); tag.putLong("EggBase", eggBase); tag.putLong("EggSince", eggSince); tag.putLong("EggSinceDay", eggSinceDay); }
     }
 
@@ -158,6 +182,12 @@ public class HatcheryBlockEntity extends BlockEntity {
         owner = tag.hasUUID("Owner") ? tag.getUUID("Owner") : null;
         name = tag.contains("CustomName") ? Component.Serializer.fromJson(tag.getString("CustomName"), reg) : null;
         egg = tag.contains("Egg") ? ItemStack.parseOptional(reg, tag.getCompound("Egg")) : ItemStack.EMPTY;
+        breedA = tag.hasUUID("BreedA") ? tag.getUUID("BreedA") : null;
+        breedB = tag.hasUUID("BreedB") ? tag.getUUID("BreedB") : null;
+        if (breedB == null) breedA = null;
+        breedStart = tag.getLong("BreedStart");
+        breedKeep = tag.getString("BreedKeep");
+        breedTonic = tag.contains("BreedTonic") ? ItemStack.parseOptional(reg, tag.getCompound("BreedTonic")) : ItemStack.EMPTY;
         eggBase = tag.getLong("EggBase"); eggSince = tag.getLong("EggSince"); eggSinceDay = tag.getLong("EggSinceDay");
     }
 

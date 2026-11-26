@@ -250,6 +250,28 @@ public final class MatureTests {
         });
     }
 
+    /** Spirit Veil (Bakeneko's legendary trait): its rider is invisible while riding, and only then */
+    @GameTest(template = "floor", timeoutTicks = 120)
+    public static void spiritVeilHidesItsRiderWhileRiding(GameTestHelper t) {
+        ServerPlayer p = LifeTests.player(t);
+        DrekkiEntity d = mature(t, p, Diet.RAW, Life.Stance.PASSIVE);
+        d.setSaddle(saddle());
+        p.startRiding(d, true);
+        t.runAfterDelay(15, () -> {
+            t.assertFalse(p.hasEffect(net.minecraft.world.effect.MobEffects.INVISIBILITY), "without the trait its rider stays seen");
+            give(d, Trait.SPIRIT_VEIL);
+            t.runAfterDelay(15, () -> {
+                t.assertTrue(p.getVehicle() == d && p.hasEffect(net.minecraft.world.effect.MobEffects.INVISIBILITY), "Spirit Veil: its rider is invisible");
+                p.stopRiding();
+                p.removeEffect(net.minecraft.world.effect.MobEffects.INVISIBILITY);  /* a mock player's effects do not run down: clear it, then see it is not given again */
+                t.runAfterDelay(25, () -> {
+                    t.assertFalse(p.hasEffect(net.minecraft.world.effect.MobEffects.INVISIBILITY), "off its back, the veil is not given again");
+                    t.succeed();
+                });
+            });
+        });
+    }
+
     @GameTest(template = "floor", timeoutTicks = 200)
     public static void theServersRulesForARider(GameTestHelper t) {
         ServerPlayer p = LifeTests.player(t);
@@ -310,7 +332,9 @@ public final class MatureTests {
         d.setBirth(0);
         d.readAdditionalSaveData(tag);
         t.assertTrue(d.birth() == 5, "saved and loaded with it");
-        t.assertTrue(dev.frosthaven.ranchercompanion.look.FootTint.of(5) != dev.frosthaven.ranchercompanion.look.FootTint.of(here), "and a jungle's tint is not this biome's");
+        t.assertTrue(dev.frosthaven.ranchercompanion.look.FootTint.biome(5) != dev.frosthaven.ranchercompanion.look.FootTint.biome(here), "a jungle's own tint is not this biome's");
+        t.assertTrue(dev.frosthaven.ranchercompanion.look.FootTint.of(5) == dev.frosthaven.ranchercompanion.look.FootTint.CHARCOAL
+            && dev.frosthaven.ranchercompanion.look.FootTint.of(here) == dev.frosthaven.ranchercompanion.look.FootTint.CHARCOAL, "but every drekki is drawn charcoal (2026-11-26)");
         /* a save from before 0.5.0 has none: it takes its hatchery's at its next tick, and its record keeps it */
         tag.remove("Birth");
         d.setBirth(7);

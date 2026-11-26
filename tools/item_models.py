@@ -30,6 +30,77 @@ def el(frm, to, tex, tint=None, skip=()):
     return {"from": frm, "to": to, "faces": {d: dict(face) for d in ("north", "south", "east", "west", "up", "down") if d not in skip}}
 
 
+def face_on(e, side, tex):
+    """one face of a cube drawn with another texture"""
+    e["faces"][side]["texture"] = "#" + tex
+    return e
+
+
+# a creeper face, 8x8, engraved on the tombstone's front: the stone's north face shows texture columns 3-13, rows 4-14
+CREEPER = ["........", "........", ".XX..XX.", ".XX..XX.", "...XX...", "..XXXX..", "..XXXX..", "..X..X.."]
+
+
+def tomb_face():
+    """the stone's texture with the creeper face cut into it: dark cuts with a lit lower edge, as an engraving"""
+    im = Image.open(ROOT / "textures/block/tomb_stone.png").convert("RGBA")
+    for y, row in enumerate(CREEPER):
+        for x, ch in enumerate(row):
+            if ch == "X":
+                im.putpixel((4 + x, 3 + y), (0x2b, 0x2e, 0x35, 255))
+            elif y > 0 and CREEPER[y - 1][x] == "X":
+                im.putpixel((4 + x, 3 + y), (0x86, 0x8b, 0x96, 255))  # the cut's lit lower edge
+    im.save(ROOT / "textures/block/tomb_face.png")
+
+
+# the used tombstone's crack (Shane, 2026-11-26, his pick "A", a little steeper): in from the top's right side, down and
+# to the left at a slant for half the stone, then on the same way at a flatter slant down to the base. Per pixel row of
+# the front: the model x columns it covers (north-facing model); then across the plinth's top and down its front
+CRACK = {14: [10], 13: [10], 12: [9], 11: [9], 10: [8], 9: [8], 8: [7], 7: [7], 6: [6], 5: [6], 4: [5], 3: [4],
+         2: [4], 1: [3], 0: [2, 3]}
+CRACK_TOP = [(4, 6), (4, 5), (3, 4), (4, 10), (3, 11)]  # (x, z) cells on the plinth's top: front of the stone, then behind it
+CRACK_CREST = [(10, 6), (10, 7), (10, 8), (10, 9)]  # (x, z) cells across the top of the stone: it runs through, front to back
+DARK, LIT = (0x4c, 0x50, 0x59, 255), (0x80, 0x85, 0x90, 255)  # a lighter cut (Shane, 2026-11-26: not so dark)
+
+
+def tomb_cracks():
+    """cracked copies of the textures, one per face it crosses: a north face reads texture column 15 - x and row 15 - y, a
+    south face column x and row 15 - y, a top face column x and row z. Each cut has a lit pixel beside it, as an edge
+    catching light"""
+    tex_dir = ROOT / "textures/block"
+
+    def paint(base, out, cuts):
+        im = Image.open(tex_dir / f"tomb_{base}.png").convert("RGBA")
+        for u, v in cuts:
+            im.putpixel((u, v), DARK)
+        for u, v in cuts:
+            if u + 1 < 16 and (u + 1, v) not in cuts:
+                im.putpixel((u + 1, v), LIT)
+        im.save(tex_dir / f"tomb_{out}.png")
+
+    front = lambda rows: {(15 - x, 15 - y) for y in rows for x in CRACK[y]}
+    back = lambda rows: {(x, 15 - y) for y in rows for x in CRACK[y]}
+    paint("face", "face_cracked", front(range(2, 12)))
+    paint("stone", "stone_cracked", front(range(12, 15)))
+    paint("plinth", "plinth_cracked", front(range(0, 2)) | set(CRACK_TOP))
+    paint("stone", "stone_back_cracked", back(range(2, 15)))
+    paint("stone", "stone_top_cracked", set(CRACK_CREST))
+    paint("plinth", "plinth_back_cracked", back(range(0, 2)))
+
+
+def tomb_blockstate():
+    """facing x candle x cracked (a used one's candle is whole again: unlit or lit)"""
+    v = {}
+    for facing, y in (("north", 0), ("east", 90), ("south", 180), ("west", 270)):
+        for candle in ("unlit", "lit", "melted"):
+            for cracked in ("false", "true"):
+                model = {"unlit": "tombstone", "lit": "tombstone_lit", "melted": "tombstone_melted"}[candle] + ("_cracked" if cracked == "true" else "")
+                e = {"model": f"rancher_companion:block/{model}"}
+                if y:
+                    e["y"] = y
+                v[f"candle={candle},cracked={cracked},facing={facing}"] = e
+    json.dump({"variants": v}, open(ROOT / "blockstates/tombstone.json", "w"), indent=2)
+
+
 def display(scale):
     return {
         "gui": {"rotation": [30, 225, 0], "translation": [0, 2, 0], "scale": [scale * 0.625] * 3},
@@ -92,26 +163,40 @@ def carrier(large):
             "display": display(0.9 if large else 1.1)}
 
 
-def tombstone():
+def tombstone(candle="unlit", cracked=False):
     """a drekki's headstone (spec, Tombstone), facing north: a plinth, the stone with a stepped round top, a drekki's
-    horned head carved on its face (a dark inlay 0.25 px proud of it, so no face shares the stone's plane), a name
-    line, and a small amethyst-purple crystal at its foot"""
+    a creeper face engraved in its front's texture (Shane, 2026-11-26: no extra cubes), and a purple candle at its foot (Shane, 2026-11-26): unlit; lit with a soul-fire flame while a Drekki Lotus
+    Blossom's day runs (full bright; the block gives light 10, a soul torch's); melted down, unlit, once the day is done"""
     els = [
         el([1, 0, 4], [15, 2, 12], "plinth"),
-        el([3, 2, 6.5], [13, 12, 9.5], "stone", skip=("down",)),
+        face_on(el([3, 2, 6.5], [13, 12, 9.5], "stone", skip=("down",)), "north", "face"),  # the creeper face is painted on
         el([4, 12, 6.5], [12, 14, 9.5], "stone", skip=("down",)),
         el([5.5, 14, 6.5], [10.5, 15, 9.5], "stone", skip=("down",)),
-        # the carving: head, snout, two swept horns, the name line
-        el([6.5, 7, 6.25], [9.5, 9.5, 6.5], "carve", skip=("south",)),
-        el([7.25, 6, 6.25], [8.75, 7, 6.5], "carve", skip=("south",)),
-        el([5.75, 9.5, 6.25], [6.75, 11.5, 6.5], "carve", skip=("south",)),
-        el([9.25, 9.5, 6.25], [10.25, 11.5, 6.5], "carve", skip=("south",)),
-        el([5, 3.5, 6.25], [11, 4.5, 6.5], "carve", skip=("south",)),
-        # the crystal at the foot, front right
-        el([11.5, 2, 4.75], [12.75, 4.5, 6], "crystal", skip=("down",)),
-        el([12.75, 2, 5.25], [13.5, 3.25, 6], "crystal", skip=("down",)),
     ]
-    t = {k: f"rancher_companion:block/tomb_{k}" for k in ("plinth", "stone", "carve", "crystal")}
+    if cracked:  # a used tombstone: one crack right through it (Shane, 2026-11-26), painted on each face it crosses (tomb_cracks)
+        face_on(face_on(face_on(els[0], "north", "plinth_cracked"), "up", "plinth_cracked"), "south", "plinth_back_cracked")
+        face_on(face_on(els[1], "north", "face_cracked"), "south", "stone_back_cracked")
+        face_on(face_on(els[2], "north", "stone_cracked"), "south", "stone_back_cracked")
+        face_on(face_on(face_on(els[3], "north", "stone_cracked"), "south", "stone_back_cracked"), "up", "stone_top_cracked")
+    els += [
+    ]
+    # the candle at the foot, front right
+    if candle == "melted":
+        els.append(el([11, 2, 4], [13.75, 2.5, 6.5], "crystal", skip=("down",)))       # the wax pooled on the plinth
+        els.append(el([11.5, 2.5, 4.5], [13, 3.5, 6], "crystal", skip=("down",)))      # a stub
+        els.append(el([12, 3.5, 5], [12.5, 4, 5.5], "carve", skip=("down",)))          # the burnt wick
+    else:
+        els.append(el([11.5, 2, 4.5], [13, 5.5, 6], "crystal", skip=("down",)))
+        els.append(el([12, 5.5, 5], [12.5, 6.25, 5.5], "carve", skip=("down",)))
+        if candle == "lit":
+            f = el([11.85, 6.25, 4.85], [12.65, 7.5, 5.65], "flame")
+            f["shade"] = False
+            f["neoforge_data"] = {"block_light": 15, "sky_light": 15}               # the flame glows
+            els.append(f)
+    t = {k: f"rancher_companion:block/tomb_{k}" for k in ("plinth", "stone", "face", "carve", "crystal", "flame")}
+    if cracked:
+        t.update({k: f"rancher_companion:block/tomb_{k}" for k in ("plinth_cracked", "stone_cracked", "face_cracked", "stone_back_cracked",
+                                                                   "stone_top_cracked", "plinth_back_cracked")})
     return {"parent": "minecraft:block/block", "textures": {"particle": t["stone"], **t}, "elements": els, "display": display(1.0)}
 
 
@@ -204,6 +289,11 @@ def main():
     for name, large in (("small_drekki_carrier", False), ("large_drekki_carrier", True)):
         json.dump(carrier(large), open(ROOT / f"models/item/{name}.json", "w"), indent=2)
     json.dump(tombstone(), open(ROOT / "models/block/tombstone.json", "w"), indent=2)
+    json.dump(tombstone("lit"), open(ROOT / "models/block/tombstone_lit.json", "w"), indent=2)
+    json.dump(tombstone("melted"), open(ROOT / "models/block/tombstone_melted.json", "w"), indent=2)
+    for c, suffix in (("unlit", ""), ("lit", "_lit"), ("melted", "_melted")):
+        json.dump(tombstone(c, cracked=True), open(ROOT / f"models/block/tombstone{suffix}_cracked.json", "w"), indent=2)
+    tomb_blockstate()
     for mature in (False, True):
         json.dump(barding(mature), open(ROOT / f"models/item/barding_{'mature' if mature else 'fledgling'}.json", "w"), indent=2)
     for tier in barding_materials():
@@ -215,8 +305,11 @@ def main():
     tex("barding_buckle", (0xd8, 0xb0, 0x40), 10, 16, grain=False, folder="item")
     tex("tomb_plinth", (0x41, 0x45, 0x4e), 7, 10)
     tex("tomb_stone", (0x6a, 0x6f, 0x7a), 9, 11)
+    tomb_face()
+    tomb_cracks()
     tex("tomb_carve", (0x2b, 0x2e, 0x35), 4, 12, grain=False)
     tex("tomb_crystal", (0xb0, 0x5c, 0xd0), 14, 13, grain=False)
+    tex("tomb_flame", (0x60, 0xe8, 0xf0), 10, 17, grain=False)  # soul fire
     tex("bag_leather", (225, 225, 225), 10, 1)
     tex("bag_trim", (225, 225, 225), 8, 2)
     tex("bag_metal", (235, 235, 235), 6, 3, grain=False)

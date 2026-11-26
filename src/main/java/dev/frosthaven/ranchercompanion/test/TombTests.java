@@ -36,9 +36,45 @@ public final class TombTests {
         throw new net.minecraft.gametest.framework.GameTestAssertException("no tombstone around " + at);
     }
 
+    /** a death in a liquid: its tombstone rises to the surface, as the Corpse mod's corpses float up (Shane, 2026-11-26) */
+    @GameTest(template = "floor", timeoutTicks = 20)
+    public static void aTombstoneInALiquidRisesToTheSurface(GameTestHelper t) {
+        for (var liquid : new net.minecraft.world.level.block.Block[]{net.minecraft.world.level.block.Blocks.WATER, net.minecraft.world.level.block.Blocks.LAVA}) {
+            int x = liquid == net.minecraft.world.level.block.Blocks.WATER ? 2 : 6;
+            for (int y = 1; y <= 5; y++) t.setBlock(new BlockPos(x, y, 3), liquid);
+            BlockPos at = t.absolutePos(new BlockPos(x, 1, 3));
+            BlockPos got = dev.frosthaven.ranchercompanion.ranch.Tombs.place(t.getLevel(), at, net.minecraft.core.Direction.NORTH, "Ember", java.util.List.of(), new net.minecraft.nbt.CompoundTag());
+            t.assertTrue(got != null && got.equals(t.absolutePos(new BlockPos(x, 5, 3))), liquid + ": at the surface, not the bottom: " + got);
+        }
+        t.succeed();
+    }
+
+    /** mined by a player: what it holds and the tombstone itself go into their inventory, nothing where it stood */
+    @GameTest(template = "floor", timeoutTicks = 40)
+    public static void aMinedTombstoneGoesToTheMinersInventory(GameTestHelper t) {
+        ServerPlayer owner = LifeTests.player(t);
+        DrekkiEntity d = CombatTests.out(t, owner, 2, Diet.RAW, Life.Stance.PASSIVE);
+        /* the miner: a fake player in survival (the game test's mock player is always creative, and creative mining drops nothing) */
+        ServerPlayer p = net.neoforged.neoforge.common.util.FakePlayerFactory.get(t.getLevel(), new com.mojang.authlib.GameProfile(java.util.UUID.randomUUID(), "Miner"));
+        p.gameMode.changeGameModeForPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        d.setBardingItem(new ItemStack(DrekkiItems.BARDING.get(Barding.IRON).get()));
+        TombstoneBlockEntity be = dieForGood(t, d);
+        BlockPos pos = be.getBlockPos();
+        p.moveTo(net.minecraft.world.phys.Vec3.atCenterOf(pos.east(2)));
+        p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new ItemStack(net.minecraft.world.item.Items.DIAMOND_PICKAXE));
+        p.gameMode.destroyBlock(pos);
+        t.assertTrue(t.getLevel().getBlockState(pos).isAir(), "mined");
+        t.assertTrue(p.getInventory().countItem(DrekkiItems.BARDING.get(Barding.IRON).get()) == 1, "its barding in the miner's inventory");
+        t.assertTrue(p.getInventory().countItem(DrekkiBlocks.TOMBSTONE.get().asItem()) == 1, "the tombstone too: inventory " + p.getInventory().items.stream().filter(x -> !x.isEmpty()).toList()
+            + ", harvest " + p.hasCorrectToolForDrops(DrekkiBlocks.TOMBSTONE.get().defaultBlockState()) + ", creative " + p.isCreative());
+        t.assertTrue(t.getLevel().getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, new net.minecraft.world.phys.AABB(pos).inflate(1.5)).isEmpty(),
+            "nothing dropped where it stood");
+        t.succeed();
+    }
+
     /** its tombstone holds its barding and bag, carries its name and the date, and cannot be mined while full */
     @GameTest(template = "floor", timeoutTicks = 40)
-    public static void aTombstoneHoldsItsGearAndStaysUntilEmptied(GameTestHelper t) {
+    public static void aTombstoneHoldsItsGearAndMinesAtAnyTime(GameTestHelper t) {
         ServerPlayer p = LifeTests.player(t);
         DrekkiEntity d = CombatTests.out(t, p, 2, Diet.RAW, Life.Stance.PASSIVE);
         d.setBardingItem(new ItemStack(DrekkiItems.BARDING.get(Barding.IRON).get()));
@@ -56,15 +92,15 @@ public final class TombTests {
             && !rec.contains("BardingItem") && !rec.contains("Accessory"), "the tombstone keeps its look and life, not its worn items: " + rec.getAllKeys());
         t.assertFalse(be.getUpdateTag(t.getLevel().registryAccess()).contains("Drekki"), "the record is not sent to clients");
         var state = t.getLevel().getBlockState(pos);
-        t.assertTrue(state.getDestroyProgress(p, t.getLevel(), pos) == 0, "it cannot be mined while it holds gear");
-        t.assertFalse(state.onDestroyedByPlayer(t.getLevel(), pos, p, true, t.getLevel().getFluidState(pos)), "nor broken in creative");
-        be.items().clearContent();
-        t.assertTrue(state.getDestroyProgress(p, t.getLevel(), pos) > 0, "empty, it mines");
+        t.assertTrue(state.getDestroyProgress(p, t.getLevel(), pos) > 0, "it mines at any time (0.7): what it holds drops");
         /* mined empty: itself, with the name and date */
         var drops = Block.getDrops(state, t.getLevel(), pos, be);
         t.assertTrue(drops.size() == 1 && name.equals(drops.get(0).get(DrekkiData.TOMB_NAME.get())) && be.date().equals(drops.get(0).get(DrekkiData.TOMB_DATE.get())),
             "it drops itself with the name and date: " + drops);
         t.assertTrue(rec.equals(drops.get(0).get(DrekkiData.TOMB_DREKKI.get())), "and with the drekki's record");
+        t.getLevel().destroyBlock(pos, false);
+        t.assertTrue(!t.getLevel().getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, new net.minecraft.world.phys.AABB(pos).inflate(2),
+            ie -> ie.getItem().is(DrekkiItems.BARDING.get(Barding.IRON).get())).isEmpty(), "mined holding gear: the gear drops");
         t.succeed();
     }
 
@@ -99,8 +135,8 @@ public final class TombTests {
     }
 
     /** a death's tombstone vanishes once emptied, as the Corpse mod's corpses; one a player places stays */
-    @GameTest(template = "floor", timeoutTicks = TombstoneBlockEntity.VANISH * 2 + 60)
-    public static void anEmptiedTombstoneVanishesButAPlacedOneStays(GameTestHelper t) {
+    @GameTest(template = "floor", timeoutTicks = TombstoneBlockEntity.VANISH * 3 + 80)
+    public static void anEmptiedTombstoneStaysWhileItKeepsItsDrekki(GameTestHelper t) {
         ServerPlayer p = LifeTests.player(t);
         DrekkiEntity d = CombatTests.out(t, p, 2, Diet.RAW, Life.Stance.PASSIVE);
         d.setBardingItem(new ItemStack(DrekkiItems.BARDING.get(Barding.IRON).get()));
@@ -121,8 +157,13 @@ public final class TombTests {
         });
         final BlockPos kept = placed;
         t.runAfterDelay(TombstoneBlockEntity.VANISH / 2 + TombstoneBlockEntity.VANISH + 10, () -> {
-            t.assertTrue(t.getLevel().getBlockState(pos).is(Blocks.AIR), "emptied, it vanished");
+            /* since 0.7 its record is the way back: emptied of gear, it stays while it keeps its drekki */
+            t.assertTrue(t.getLevel().getBlockState(pos).is(DrekkiBlocks.TOMBSTONE.get()), "emptied, it stays: it keeps its drekki");
             t.assertTrue(t.getLevel().getBlockState(kept).is(DrekkiBlocks.TOMBSTONE.get()), "the placed one stays");
+            be.clearRecord();  /* its drekki came back: an inert tombstone, decoration, which stays */
+        });
+        t.runAfterDelay(TombstoneBlockEntity.VANISH / 2 + 2 * TombstoneBlockEntity.VANISH + 20, () -> {
+            t.assertTrue(t.getLevel().getBlockState(pos).is(DrekkiBlocks.TOMBSTONE.get()), "inert after its drekki came back: it stays");
             t.succeed();
         });
     }

@@ -125,14 +125,14 @@ public final class DrekkiGoals {
 
         @Override
         public boolean canUse() {
-            if (d.isOut() || d.home() == null || !night() || d.pen() == null) return false;
+            if (d.ghost() || d.isOut() || d.home() == null || !night() || d.pen() == null) return false;  /* a ghost never sleeps (Shane, 2026-11-26) */
             Set<Long> beds = d.bedding();
             bed = beds != null && !beds.isEmpty() ? pick(d, beds) : null;
             return true;
         }
 
         @Override
-        public boolean canContinueToUse() { return !d.isOut() && night() && d.getLastHurtByMob() == null; }
+        public boolean canContinueToUse() { return !d.ghost() && !d.isOut() && night() && d.getLastHurtByMob() == null; }
 
         @Override
         public void start() {

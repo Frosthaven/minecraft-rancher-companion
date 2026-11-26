@@ -1,0 +1,338 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "rancher_companion:block/tomb_stone",
+    "plinth": "rancher_companion:block/tomb_plinth",
+    "stone": "rancher_companion:block/tomb_stone",
+    "face": "rancher_companion:block/tomb_face",
+    "carve": "rancher_companion:block/tomb_carve",
+    "crystal": "rancher_companion:block/tomb_crystal",
+    "flame": "rancher_companion:block/tomb_flame",
+    "plinth_cracked": "rancher_companion:block/tomb_plinth_cracked",
+    "stone_cracked": "rancher_companion:block/tomb_stone_cracked",
+    "face_cracked": "rancher_companion:block/tomb_face_cracked",
+    "stone_back_cracked": "rancher_companion:block/tomb_stone_back_cracked",
+    "stone_top_cracked": "rancher_companion:block/tomb_stone_top_cracked",
+    "plinth_back_cracked": "rancher_companion:block/tomb_plinth_back_cracked"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        0,
+        4
+      ],
+      "to": [
+        15,
+        2,
+        12
+      ],
+      "faces": {
+        "north": {
+          "texture": "#plinth_cracked"
+        },
+        "south": {
+          "texture": "#plinth_back_cracked"
+        },
+        "east": {
+          "texture": "#plinth"
+        },
+        "west": {
+          "texture": "#plinth"
+        },
+        "up": {
+          "texture": "#plinth_cracked"
+        },
+        "down": {
+          "texture": "#plinth"
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        2,
+        6.5
+      ],
+      "to": [
+        13,
+        12,
+        9.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#face_cracked"
+        },
+        "south": {
+          "texture": "#stone_back_cracked"
+        },
+        "east": {
+          "texture": "#stone"
+        },
+        "west": {
+          "texture": "#stone"
+        },
+        "up": {
+          "texture": "#stone"
+        }
+      }
+    },
+    {
+      "from": [
+        4,
+        12,
+        6.5
+      ],
+      "to": [
+        12,
+        14,
+        9.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#stone_cracked"
+        },
+        "south": {
+          "texture": "#stone_back_cracked"
+        },
+        "east": {
+          "texture": "#stone"
+        },
+        "west": {
+          "texture": "#stone"
+        },
+        "up": {
+          "texture": "#stone"
+        }
+      }
+    },
+    {
+      "from": [
+        5.5,
+        14,
+        6.5
+      ],
+      "to": [
+        10.5,
+        15,
+        9.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#stone_cracked"
+        },
+        "south": {
+          "texture": "#stone_back_cracked"
+        },
+        "east": {
+          "texture": "#stone"
+        },
+        "west": {
+          "texture": "#stone"
+        },
+        "up": {
+          "texture": "#stone_top_cracked"
+        }
+      }
+    },
+    {
+      "from": [
+        11.5,
+        2,
+        4.5
+      ],
+      "to": [
+        13,
+        5.5,
+        6
+      ],
+      "faces": {
+        "north": {
+          "texture": "#crystal"
+        },
+        "south": {
+          "texture": "#crystal"
+        },
+        "east": {
+          "texture": "#crystal"
+        },
+        "west": {
+          "texture": "#crystal"
+        },
+        "up": {
+          "texture": "#crystal"
+        }
+      }
+    },
+    {
+      "from": [
+        12,
+        5.5,
+        5
+      ],
+      "to": [
+        12.5,
+        6.25,
+        5.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#carve"
+        },
+        "south": {
+          "texture": "#carve"
+        },
+        "east": {
+          "texture": "#carve"
+        },
+        "west": {
+          "texture": "#carve"
+        },
+        "up": {
+          "texture": "#carve"
+        }
+      }
+    },
+    {
+      "from": [
+        11.85,
+        6.25,
+        4.85
+      ],
+      "to": [
+        12.65,
+        7.5,
+        5.65
+      ],
+      "faces": {
+        "north": {
+          "texture": "#flame"
+        },
+        "south": {
+          "texture": "#flame"
+        },
+        "east": {
+          "texture": "#flame"
+        },
+        "west": {
+          "texture": "#flame"
+        },
+        "up": {
+          "texture": "#flame"
+        },
+        "down": {
+          "texture": "#flame"
+        }
+      },
+      "shade": false,
+      "neoforge_data": {
+        "block_light": 15,
+        "sky_light": 15
+      }
+    }
+  ],
+  "display": {
+    "gui": {
+      "rotation": [
+        30,
+        225,
+        0
+      ],
+      "translation": [
+        0,
+        2,
+        0
+      ],
+      "scale": [
+        0.625,
+        0.625,
+        0.625
+      ]
+    },
+    "ground": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        3,
+        0
+      ],
+      "scale": [
+        0.4,
+        0.4,
+        0.4
+      ]
+    },
+    "fixed": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        2,
+        0
+      ],
+      "scale": [
+        0.6,
+        0.6,
+        0.6
+      ]
+    },
+    "thirdperson_righthand": {
+      "rotation": [
+        75,
+        45,
+        0
+      ],
+      "translation": [
+        0,
+        2.5,
+        0
+      ],
+      "scale": [
+        0.45,
+        0.45,
+        0.45
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        0,
+        45,
+        0
+      ],
+      "translation": [
+        0,
+        2,
+        0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    "firstperson_lefthand": {
+      "rotation": [
+        0,
+        225,
+        0
+      ],
+      "translation": [
+        0,
+        2,
+        0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    }
+  }
+}

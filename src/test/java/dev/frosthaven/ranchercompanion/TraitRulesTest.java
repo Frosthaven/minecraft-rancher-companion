@@ -48,7 +48,7 @@ class TraitRulesTest {
     }
 
     @Test
-    void eachAffinityLearnsNineteenOrTwentyOfFortyAndOneCapstoneOfItsOwn() {
+    void eachAffinityLearnsEighteenOrNineteenAndOneCapstoneOfItsOwn() {
         int[] astrals = {Astral.SOLAR, Astral.LUNAR, Astral.AERO, Astral.UNDERWORLD, Astral.DEEP, Astral.END};
         for (int a : astrals) {
             int learnable = 0, capstones = 0;
@@ -57,14 +57,14 @@ class TraitRulesTest {
                 learnable++;
                 if (Integer.bitCount(t.affinities) == 1) capstones++;
             }
-            assertTrue(learnable == 19 || learnable == 20, Astral.NAMES[a] + " learns " + learnable);
+            assertTrue(learnable == 18 || learnable == 19, Astral.NAMES[a] + " learns " + learnable);  /* Phoenix Heart (every affinity's) gone in 0.7 */
             assertEquals(1, capstones, Astral.NAMES[a]);
         }
     }
 
     @Test
     void aDormantPupLearnsOnlyWhatEveryAffinityCan() {
-        for (Trait t : Trait.values()) assertEquals(Integer.bitCount(t.affinities) == 6, t.learnedBy(Astral.DORMANT), t.id);
+        for (Trait t : Trait.values()) if (t.learn != Trait.Learn.BRED) assertEquals(Integer.bitCount(t.affinities) == 6, t.learnedBy(Astral.DORMANT), t.id);
     }
 
     @Test
@@ -77,14 +77,15 @@ class TraitRulesTest {
     }
 
     @Test
-    void thereAreFortyTraitsAndEveryCapstoneIsEpic() {
-        assertEquals(40, Trait.values().length);
+    void thereAreThirtyNineLearnedTraitsAndEveryCapstoneIsEpic() {
+        assertEquals(40, Trait.values().length, "39 learned (Phoenix Heart gone in 0.7), and Spirit Veil (bred)");
         int epic = 0, rare = 0, uncommon = 0;
         for (Trait t : Trait.values()) {
+            if (t.learn == Trait.Learn.BRED) { assertEquals(Trait.Rarity.LEGENDARY, t.rarity, t.id + ": a bred trait is Legendary"); continue; }
             if (Integer.bitCount(t.affinities) == 1) assertEquals(Trait.Rarity.EPIC, t.rarity, t.id);
             switch (t.rarity) { case EPIC -> epic++; case RARE -> rare++; case UNCOMMON -> uncommon++; default -> throw new AssertionError(t.id + " is Legendary: that tier is for bred traits"); }
         }
-        assertEquals(11, epic);
+        assertEquals(10, epic);
         assertEquals(10, rare);
         assertEquals(19, uncommon);
     }

@@ -22,8 +22,21 @@ import net.minecraft.world.level.saveddata.SavedData;
 public final class Roster extends SavedData {
     /** HOME: lives at its hatchery; OUT: checked out, with its owner; CARRIED: checked out, in a carrier; NONE: no hatchery,
      *  data only; WORK: employed in a Create role (a conductor, a stock keeper), on its seat and no longer with its owner
-     *  (spec, Go here: Employed) */
-    public enum Where { HOME, OUT, CARRIED, NONE, WORK }
+     *  (spec, Go here: Employed); TOMB: a ghost summoned at its tombstone (home: the tombstone), within 3 blocks of it */
+    public enum Where { HOME, OUT, CARRIED, NONE, WORK, TOMB }
+
+    public static final long DAY = 24000, REST = 3 * DAY;
+
+    /** the clock rest is counted on: the overworld's day time, which a night slept through or /time add moves on */
+    public static long now(MinecraftServer server) { return server.overworld().getDayTime(); }
+
+    public void rest(Entry e, long now) { e.restUntil = now + REST; setDirty(); }
+
+    /** a pairing starts: a day of breeding, then the 3-day rest, both on the clock so they hold while the hatchery is unloaded */
+    public void startBreeding(Entry e, long now) { e.breedUntil = now + DAY; e.restUntil = now + DAY + REST; setDirty(); }
+
+    /** a breeding ends: laid (the rest stays) or cancelled (no rest) */
+    public void endBreeding(Entry e, boolean cancelled) { e.breedUntil = 0; if (cancelled) e.restUntil = 0; setDirty(); }
 
     public static final class Entry {
         public final UUID id, owner;
@@ -34,9 +47,6 @@ public final class Roster extends SavedData {
         public UUID carry;
         /** the hatchery it last lived at, kept while it is out: its kin are the drekki of the same one (spec, Mood: Kinship) */
         public GlobalPos base;
-        /** Phoenix Heart: 0 none, EGG_OWED (its egg waits for the owner), EGG_GIVEN (the egg is out; a hatchery brings it back) */
-        public int phoenix;
-        public static final int EGG_OWED = 1, EGG_GIVEN = 2;
         /** OUT and told to stay: where it stays; null while it follows (spec, Stay and follow). WORK: where it last was */
         public GlobalPos stay;
         /** WORK: its job (Seats.CONDUCTOR, STOCK_KEEPER, or EMPLOYED when not known); 0 otherwise */
@@ -44,6 +54,19 @@ public final class Roster extends SavedData {
         /** WORK on a train: the train (Create's id), so a recall gives its owner the train's schedule back even when the
          *  drekki is not loaded (Seats.returnTools); null otherwise */
         public UUID workplace;
+        /** after a pairing: the overworld day time its 3-day rest ends (spec, Pairing); 0 when not resting */
+        public long restUntil;
+        /** pairing at its hatchery until this overworld day time (a day; spec, Breeding: Pairing): it stays home and cannot
+         *  pair again; 0 when not breeding */
+        public long breedUntil;
+
+        public boolean breeding(long now) { return breedUntil != 0 && now < breedUntil; }
+
+        /** whole days of rest left, rounded up (0: not resting). Never more than a full rest: a clock set back adds nothing */
+        public int restDays(long now) {
+            long left = Math.min(restUntil - now, REST);
+            return left <= 0 ? 0 : (int) ((left + DAY - 1) / DAY);
+        }
 
         Entry(UUID id, UUID owner, CompoundTag save, Where where, GlobalPos home) {
             this.id = id; this.owner = owner; this.save = save; this.where = where; this.home = home; this.base = home;
@@ -53,6 +76,23 @@ public final class Roster extends SavedData {
     }
 
     private final Map<UUID, Entry> byId = new LinkedHashMap<>();
+    /** every coat (fur line, a bit per Lineage index) each owner has ever had, kept after a release (spec, Breeding:
+     *  the child's preview shows only coats its owner has had, and the muted ones) */
+    private final Map<UUID, Long> coats = new java.util.HashMap<>();
+
+    private void coat(Entry e) {
+        int line = e.save.getInt("Line");
+        if (line < 0 || line >= 64) return;
+        long had = coats.getOrDefault(e.owner, 0L), now = had | 1L << line;
+        if (now != had) { coats.put(e.owner, now); setDirty(); }
+    }
+
+    /** the coats this owner has had: recorded ones and those of the drekki they own now */
+    public long coats(UUID owner) {
+        long c = coats.getOrDefault(owner, 0L);
+        for (Entry e : byId.values()) if (e.owner.equals(owner)) { int l = e.save.getInt("Line"); if (l >= 0 && l < 64) c |= 1L << l; }
+        return c;
+    }
     /** each owner's checked-out drekki (OUT or CARRIED; one at most), kept in step by add, remove and move */
     private final Map<UUID, Entry> outByOwner = new java.util.HashMap<>();
 
@@ -98,6 +138,7 @@ public final class Roster extends SavedData {
         base(e, home);
         byId.put(id, e);
         index(e);
+        coat(e);
         setDirty();
         return e;
     }
@@ -122,7 +163,7 @@ public final class Roster extends SavedData {
     /** sets a drekki's base hatchery (tests, and moves that keep the record) */
     public void setBase(Entry e, GlobalPos to) { base(e, to); setDirty(); }
 
-    public void snapshot(Entry e, CompoundTag save) { e.save = save; setDirty(); }
+    public void snapshot(Entry e, CompoundTag save) { e.save = save; coat(e); setDirty(); }
 
     public void stay(Entry e, GlobalPos at) { e.stay = at; setDirty(); }
 
@@ -139,9 +180,11 @@ public final class Roster extends SavedData {
             Where where = Where.valueOf(c.getString("where"));
             Entry e = new Entry(c.getUUID("id"), c.getUUID("owner"), c.getCompound("save"), where, home);
             if (c.hasUUID("carry")) e.carry = c.getUUID("carry");
-            e.phoenix = c.getInt("phoenix");
+            /* "phoenix" (a Phoenix egg owed or out) went with Phoenix Heart in 0.7: that drekki is back, as data at No hatchery */
             e.role = where == Where.WORK ? Math.max(1, c.getInt("role")) : 0;  /* employed before 0.4.13 kept no role */
             if (where == Where.WORK && c.hasUUID("workplace")) e.workplace = c.getUUID("workplace");
+            e.restUntil = c.getLong("restUntil");
+            e.breedUntil = c.getLong("breedUntil");
             if (c.contains("stay")) e.stay = GlobalPos.CODEC.parse(NbtOps.INSTANCE, c.get("stay")).result().orElse(null);
             GlobalPos base = c.contains("base") ? GlobalPos.CODEC.parse(NbtOps.INSTANCE, c.get("base")).result().orElse(home) : home;
             e.base = null;
@@ -149,6 +192,8 @@ public final class Roster extends SavedData {
             r.byId.put(e.id, e);
             r.index(e);
         }
+        CompoundTag c = tag.getCompound("coats");
+        for (String k : c.getAllKeys()) try { r.coats.put(UUID.fromString(k), c.getLong(k)); } catch (IllegalArgumentException ignored) {}
         return r;
     }
 
@@ -159,15 +204,19 @@ public final class Roster extends SavedData {
             CompoundTag c = new CompoundTag();
             c.putUUID("id", e.id); c.putUUID("owner", e.owner); c.put("save", e.save); c.putString("where", e.where.name());
             if (e.carry != null) c.putUUID("carry", e.carry);
-            if (e.phoenix != 0) c.putInt("phoenix", e.phoenix);
             if (e.role != 0) c.putInt("role", e.role);
             if (e.workplace != null) c.putUUID("workplace", e.workplace);
+            if (e.restUntil != 0) c.putLong("restUntil", e.restUntil);
+            if (e.breedUntil != 0) c.putLong("breedUntil", e.breedUntil);
             if (e.home != null) GlobalPos.CODEC.encodeStart(NbtOps.INSTANCE, e.home).result().ifPresent(h -> c.put("home", h));
             if (e.stay != null) GlobalPos.CODEC.encodeStart(NbtOps.INSTANCE, e.stay).result().ifPresent(h -> c.put("stay", h));
             if (e.base != null) GlobalPos.CODEC.encodeStart(NbtOps.INSTANCE, e.base).result().ifPresent(h -> c.put("base", h));
             list.add(c);
         }
         tag.put("drekki", list);
+        CompoundTag c = new CompoundTag();
+        coats.forEach((owner, bits) -> c.putLong(owner.toString(), bits));
+        tag.put("coats", c);
         return tag;
     }
 

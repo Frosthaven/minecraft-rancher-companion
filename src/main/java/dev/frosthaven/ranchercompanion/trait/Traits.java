@@ -61,7 +61,7 @@ public final class Traits {
     public static void activity(Player p, Trait t, double range) {
         DrekkiEntity d = learner(p, range);
         if (d == null || d.life.traits.contains(t.id) || t.id.equals(d.life.offer) || full(d)) return;
-        if (!t.learnedBy(d.astral())) return;  /* not its affinity's to learn: no count, no roll, no message */
+        if (!t.learnedBy(d.astral()) && !(d.astral2() != 0 && t.learnedBy(d.astral2()))) return;  /* a two-eyed drekki learns as either astral */  /* not its affinity's to learn: no count, no roll, no message */
         Life.Band band = d.band();
         switch (t.learn) {
             case COUNTED -> {
@@ -71,6 +71,7 @@ public final class Traits {
             }
             case ONE_OFF -> { if (d.getRandom().nextDouble() < Life.oneOffChance(band)) offer(d, t); }
             case DEATH -> offer(d, t);
+            case BRED -> {}  /* never learned: a line gives it at the hatch */
         }
     }
 

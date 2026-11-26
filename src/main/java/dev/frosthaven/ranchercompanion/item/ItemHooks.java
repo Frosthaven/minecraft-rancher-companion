@@ -44,13 +44,20 @@ public final class ItemHooks {
      * one yet; one use, so each trader sells one egg. Works with the trade_rebalance feature flag too.
      */
     static void addTraderEgg(net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.EntityInteract event) {
-        if (!event.getLevel().isClientSide && event.getTarget() instanceof net.minecraft.world.entity.npc.WanderingTrader trader) { ensureEgg(trader); ensureHats(trader); }
+        if (!event.getLevel().isClientSide && event.getTarget() instanceof net.minecraft.world.entity.npc.WanderingTrader trader) { ensureEgg(trader); ensureHats(trader); ensureLotus(trader); }
     }
 
     /**
      * One egg per trader per visit: the offer has one use, and it is added only when the trader holds no egg offer at all,
      * a sold-out one included (wandering traders never restock), so a trader never sells a second. It goes first in the list.
      */
+    /** Drekki Lotus Seeds: every trader carries 5 (Shane, 2026-11-26), one emerald each (spec, Tombstone: the way back) */
+    public static void ensureLotus(net.minecraft.world.entity.npc.WanderingTrader trader) {
+        var offers = trader.getOffers();
+        for (MerchantOffer o : offers) if (o.getResult().is(DrekkiItems.LOTUS_SEEDS.get())) return;
+        offers.add(new MerchantOffer(new ItemCost(Items.EMERALD, 1), new ItemStack(DrekkiItems.LOTUS_SEEDS.get()), 5, 1, 0.05f));
+    }
+
     public static void ensureEgg(net.minecraft.world.entity.npc.WanderingTrader trader) {
         var offers = trader.getOffers();
         for (MerchantOffer o : offers) if (o.getResult().is(DrekkiItems.INTRIGUING_EGG.get())) return;

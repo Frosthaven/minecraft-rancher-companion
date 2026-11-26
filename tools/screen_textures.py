@@ -5,7 +5,7 @@ a body of dithered material, sunk wells framed by a bevel, and tab-shaped button
 leather, the body dark oak, the frame worn steel, the wells dark leather, and the text thread.
 
 Run: uv run --with pillow python -I tools/screen_textures.py
-Writes assets/rancher_companion/textures/gui/{hatchery,trough,tombstone,drekki,drekki_gear,drekki_sprites}.png (256x256 sheets). The Java screens use the same
+Writes assets/rancher_companion/textures/gui/{hatchery,hatchery_breed,hatchery_sprites,trough,tombstone,drekki,drekki_gear,drekki_sprites}.png (256x256 sheets). The Java screens use the same
 numbers (HatcheryScreen, TroughScreen): change both together.
 """
 from pathlib import Path
@@ -139,32 +139,105 @@ def sprites(s):
     s.button(144, 220, 6, 15, STEEL[2], STEEL[3], STEEL[0])
 
 
-# ---- the hatchery: 232 x 170 ----
+# ---- the hatchery (spec, Checkout: Roster; Breeding: Pairing): 232 wide; the top part 144 high with two tabs (Roster,
+# Breeding: one sheet each), the player's inventory below it, vanilla's 176 wide, centered (the drekki screen's part, so
+# Dark Mode Everywhere shades its greys alike). HatcheryScreen and HatcheryMenu use the same numbers. ----
+HW, HTOP = 232, 144
+
+
+def inventory(s, W, top):
+    """the player's inventory hanging from a top part's bottom edge: its own steel frame, vanilla's 176 wide, centered"""
+    IX, H = (W - 176) // 2, top + 92
+    py = top - 3
+    s.rect(IX, py, 176, H - py, STEEL[1])
+    s.frame(IX, py, 176, H - py, rivets=False)
+    for x in range(IX + 3, IX + 173):     # the join: one steel rule across, no frame between the parts
+        for y in range(py, py + 3):
+            s.put(x, y, STEEL[1])
+        s.put(x, py, STEEL[0]); s.put(x, py + 1, STEEL[2])
+    for r in range(3):
+        for c in range(9):
+            s.slot(IX + 7 + c * 18, top + 8 + r * 18)
+    for c in range(9):
+        s.slot(IX + 7 + c * 18, top + 66)
+
+
+def hatchery_top(s):
+    s.wood(0, 0, HW, HTOP)
+    s.leather(3, 3, HW - 6, 14)           # header band: the title and the tabs
+    s.frame(0, 0, HW, HTOP)
+    for x in range(3, HW - 3):            # a steel rule under the band
+        s.put(x, 17, STEEL[0]); s.put(x, 18, STEEL[2])
+
+
 def hatchery():
     s = Sheet()
-    W, H = 232, 170
-    s.wood(0, 0, W, H)
-    s.leather(3, 3, W - 6, 18)          # header band: the title
-    s.frame(0, 0, W, H)
-    for x in range(3, W - 3):            # a steel rule under the band
-        s.put(x, 21, STEEL[0]); s.put(x, 22, STEEL[2])
+    hatchery_top(s)
     # the nest well, left: an egg slot on a bed of straw
-    s.well(9, 29, 62, 96)
-    s.straw(12, 56, 56, 14)
-    s.slot(31, 46)
-    # the roster well, right: four rows of 24 px and a scroll track
-    s.well(77, 29, 146, 100)
-    for y in range(31, 127):
+    s.well(9, 22, 62, 98)
+    s.straw(27, 49, 26, 14)               # a bed of straw a little wider than the egg's slot (Shane, 2026-11-26)
+    s.slot(31, 39)
+    # the roster well, right: four rows of 21 px and a scroll track
+    s.well(77, 22, 146, 98)
+    for y in range(24, 118):
         s.put(219, y, WELL[0]); s.put(220, y, WELL[0])
-    # the action bar: a steel strip with the buttons over it
-    s.rect(3, 134, W - 6, 33, STEEL[1])
-    for x in range(3, W - 3):
-        s.put(x, 134, STEEL[0]); s.put(x, 135, STEEL[2])
-    for x in range(6, W - 6, 4):         # tread plate dither
-        for y in range(139, 164, 4):
-            s.put(x + (y // 4) % 2 * 2, y, STEEL[2])
-    sprites(s)
+    inventory(s, HW, HTOP)
     s.save("hatchery")
+
+
+def hatchery_breed():
+    s = Sheet()
+    hatchery_top(s)
+    s.well(9, 22, 54, 72)                 # the two parents, side by side
+    s.well(67, 22, 54, 72)
+    s.slot(9, 100)                        # the tonic
+    s.well(125, 22, 98, 98)               # the child's preview, or the parent picker (its scroll track drawn while it scrolls)
+    inventory(s, HW, HTOP)
+    s.save("hatchery_breed")
+
+
+# the child preview's "?" (a coat its owner never had): 28 x 28 at QMARK on hatchery_sprites, the screens' own parts: a sunk
+# well in a worn steel frame and the question mark in the glow teal of unknown and magic states, with a dark drop shadow
+QMARK = (156, 220)
+Q_GLYPH = ['..GGGGGG..',
+           '.GHHHHHHG.',
+           'GHH....GHG',
+           'GG.....GHG',
+           '.......GHG',
+           '......GHG.',
+           '.....GHG..',
+           '....GHG...',
+           '....GHG...',
+           '....GGG...',
+           '..........',
+           '....GHG...',
+           '....GGG...']
+
+
+def qmark(s, x0, y0):
+    s.rect(x0, y0, 28, 28, STEEL[1])                     # the steel frame, lit from the top left
+    for i in range(28):
+        s.put(x0 + i, y0, STEEL[3]); s.put(x0, y0 + i, STEEL[3])
+        s.put(x0 + i, y0 + 27, STEEL[0]); s.put(x0 + 27, y0 + i, STEEL[0])
+    s.put(x0 + 27, y0, STEEL[2]); s.put(x0, y0 + 27, STEEL[2])
+    s.well(x0 + 2, y0 + 2, 24, 24)                       # the sunk well
+    gx, gy = x0 + 9, y0 + 7
+    pal = {'G': "3f9e92", 'H': GLOW}
+    for y, row in enumerate(Q_GLYPH):                    # the shadow, one down and right
+        for x, ch in enumerate(row):
+            if ch != '.':
+                s.put(gx + x + 1, gy + y + 1, WELL[0])
+    for y, row in enumerate(Q_GLYPH):
+        for x, ch in enumerate(row):
+            if ch != '.':
+                s.put(gx + x, gy + y, pal[ch])
+
+
+def hatchery_sprites():
+    s = Sheet()
+    sprites(s)
+    qmark(s, *QMARK)
+    s.save("hatchery_sprites")
 
 
 # ---- the trough: 176 x 166, vanilla's container size, the player's inventory below ----
@@ -190,26 +263,25 @@ def trough():
     s.save("trough")
 
 
-# ---- the tombstone: the trough's frame, the gear's well (hat, barding, accessory) and the date under it ----
+# ---- the tombstone (spec, Tombstone; the way back): the trough's frame, the gear's well (hat, barding, bag, saddle; a
+# Drekki Lotus Blossom goes in a free one) and the date under it, room for the blossom's meter or Reclaim (drawn by the
+# screen), then the player's inventory. TombstoneMenu and TombstoneScreen use the same numbers. 176 x 200 ----
+TOMB_TOP = 108
+
+
 def tombstone():
     s = Sheet()
-    W, H = 176, 166
-    s.wood(0, 0, W, H)
+    W = 176
+    s.wood(0, 0, W, TOMB_TOP)
     s.leather(3, 3, W - 6, 14)
-    s.frame(0, 0, W, H)
+    s.frame(0, 0, W, TOMB_TOP)
     for x in range(3, W - 3):
         s.put(x, 17, STEEL[0]); s.put(x, 18, STEEL[2])
-    s.well(46, 27, 4 * 18 + 14, 32)      # the gear's well (TombstoneMenu SLOT_X 53 = 52 + 1): hat, barding, bag, saddle
+    s.well(46, 24, 4 * 18 + 14, 32)      # the gear's well (TombstoneMenu SLOT_X 53 = 52 + 1)
     for i in range(4):
-        s.slot(52 + i * 18, 33)
-    s.rect(3, 73, W - 6, 90, STEEL[1])
-    for x in range(3, W - 3):
-        s.put(x, 73, STEEL[0]); s.put(x, 74, STEEL[2])
-    for r in range(3):
-        for c in range(9):
-            s.slot(7 + c * 18, 83 + r * 18)
-    for c in range(9):
-        s.slot(7 + c * 18, 141)
+        s.slot(52 + i * 18, 30)
+    # the blossom's meter and Reclaim are drawn by the screen, on the wood, only while they apply
+    inventory(s, W, TOMB_TOP)
     s.save("tombstone")
 
 
@@ -234,11 +306,13 @@ MOVE_ICONS = {  # 8 x 8, after the stance icons: Stay (a paw planted), Follow (f
     "recall": (['..W.....', '.WW.....', 'WWWWWW..', '.WW...W.', '..W...W.', '......W.', '..WWWW..', '........'],
                {'W': 'e0e4ea'}),  # Recall from job: an arrow turning back (0.4.13)
 }
-BUFF_ICONS = {  # 9 x 9: Recently pet (a heart with a hand's warmth), Kinship (two drekki heads side by side)
+BUFF_ICONS = {  # 9 x 9: Recently pet (a heart with a hand's warmth), Kinship (two drekki heads side by side), Soulflame (a cyan soul flame)
     "pet": (['.RR...RR.', 'RPPR.RPPR', 'RPWPRPPPR', 'RPPPPPPPR', '.RPPPPPR.', '..RPPPR..', '...RPR...', '....R....', '.........'],
             {'R': '6e1e2e', 'P': 'e0607a', 'W': 'ffd0d8'}),
     "kin": (['.........', '.HH...HH.', 'HAAH.HAAH', 'HAEH.HAEH', 'HAAAHAAAH', '.HAAHAAH.', '..HH.HH..', '.........', '.........'],
             {'H': '2b2e35', 'A': 'c9a45a', 'E': '7ff0dc'}),
+    "soulflame": (['....F....', '...FC....', '...FCF...', '..FCCF.F.', '..FCWCFF.', '.FCWWCCF.', '.FCWWWCF.', '..FCCCF..', '...FFF...'],
+                  {'F': '1e6e78', 'C': '40e0e8', 'W': 'd8ffff'}),
 }
 # drekki_sprites (64 x 80):
 TAB_W, TAB_H, SX = 40, 12, 0                    # tabs: normal y 0, selected y 12, hover y 24
@@ -312,6 +386,8 @@ def drekki_sheet_sprites():
 
 if __name__ == "__main__":
     hatchery()
+    hatchery_breed()
+    hatchery_sprites()
     trough()
     tombstone()
     drekki(False)

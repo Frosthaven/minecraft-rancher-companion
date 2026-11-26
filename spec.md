@@ -188,7 +188,7 @@ Two craftable items:
     drekki shows a saddle only when it wears one, and only a saddled Mature is ridden. A tombstone holds it in a fourth
     slot. Taking the saddle off under a rider puts the rider down.
   - Mounting (Shane): its owner's click on a saddled Mature mounts it, with an empty hand or any item, but for an item
-    with a use of its own on a drekki (a hat, a carrier, a name tag, a lead, food, the Potion of Horizons, a train
+    with a use of its own on a drekki (a hat, a carrier, a name tag, a lead, food, the Drekki Potion of Horizons, a train
     schedule). An unsaddled one opens its screen as before. The screen of a saddled one: the inventory key while
     riding, as a horse, or a sneak click with an item in hand. Sneak dismounts. Only the owner rides. A ghost and an
     employed drekki are not ridden; taking a job puts its rider down. Only a checked-out drekki is ridden (Shane,
@@ -245,7 +245,7 @@ Right click the drekki at any stage to open its screen. It shows the drekki's in
 shown at a time, with the stance buttons (stage 2 and 3) at the foot of that column, level with the hearts and food, so they stay put
 whichever tab is open. Details: the health hearts and food shanks on top, then bloodline, astral, diet, biome and the mood band (its name in its color; the value, effects
 and reasons such as "Hungry: -2 a minute" in a hover tooltip). Traits: two columns of five (the most a drekki carries:
-9 slots and Naturally Gifted), each with a hover tooltip saying what it does, the negative marked, sleeping traits
+9 slots and Naturally Gifted), each with a hover tooltip saying what it does, the negative marked, inherited traits
 named. Stance buttons: three icons (a sword for Aggressive, a shield for Reactive, a white flag for Passive), each with a
 tooltip naming the stance and what it does. Then the pack from stage 2
 (nothing in its place at stage 1). No learning progress is shown. The screen is vanilla's container width.
@@ -285,9 +285,9 @@ The screen shows:
 - Biome affinity
 - Bloodline and purity tier (for example Slate, vivid), or the rare line's name
 - A traits tab:
-  - Slots: one icon per slot, 2/4/5 by stage (one more with the Potion of Horizons), filled first, the negative marked. Hover shows the trait's tooltip.
+  - Slots: one icon per slot, 2/4/5 by stage (one more with the Drekki Potion of Horizons), filled first, the negative marked. Hover shows the trait's tooltip.
   - Naturally Gifted, when it has it, beside the slots as a free trait.
-  - Sleeping: inherited traits waiting for a slot; they wake at random at each stage-up.
+  - Inherited traits are active from the hatch, past the cap too (no sleeping traits since 2026-11-26).
   - Learning: a progress bar for each counted activity the drekki has started (for example 3/5 phantoms). One-off
     triggers stay hidden until learned.
 
@@ -493,7 +493,7 @@ Each affinity changes in real time until it locks in. After lock-in it is perman
 |----------|------------------------------|----------------------|---------------------|--------------------------------------------|
 | Astral   | Where stage 1 travel happens | Dormant, then Solar, Lunar, Aero, Underworld, Deep, End | 50% through stage 1 | Eye color |
 | Diet     | What the drekki eats         | Carnivore raw or cooked, Herbivore seed or root | Start of stage 2 | Talons, wings, tail plumage |
-| Biome    | Where the egg hatches (since 0.5.0; was time spent in each biome) | 15 biome categories | At the hatch | Foot tint |
+| Biome    | Where the egg hatches (since 0.5.0; was time spent in each biome) | 15 biome categories | At the hatch | Nothing since 2026-11-26: feet, legs, chest patch, tail ring and horn bases are dark charcoal on every drekki ("always and forever for now"); the biome is still kept |
 
 ### Astral affinity
 
@@ -518,7 +518,8 @@ Each affinity changes in real time until it locks in. After lock-in it is perman
   are lit from the hatch. They are never Dormant. Children of mixed bloodlines hatch Dormant and lock by travel,
   like a trader egg: mixing rerolls the astral as it rerolls the color.
 - Home terrain: the place that locked the affinity, by the same six tests. While the drekki is in its home terrain
-  it regenerates 1 health every 10 s, its mood rises, and the cooldowns of its abilities are
+  it regenerates 1 health every 10 s, its mood is one band up (a lift like Recently pet, stacking with it; Shane,
+  2026-11-26), and the cooldowns of its abilities are
   halved. The abilities are listed under Combat. Outside its home terrain nothing is lost.
 
 ### Diet affinity
@@ -686,7 +687,7 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
 - Biome traits work everywhere once learned, not only in their biome.
 - Rarity (Shane, 2026-11-23, not built): every trait has a color tier by how much it changes play. Claude ranked
   them; Shane set every capstone to epic. The sheet's Rarity column holds the list.
-  - Epic, purple (11): Phoenix Heart, Wings of Hope, Rewind, Lava Walker, Creature Comforts, Draconic Vampirism,
+  - Epic, purple (10): Wings of Hope, Rewind, Lava Walker, Creature Comforts, Draconic Vampirism,
     and the other capstones Provoke, Fade, Live Wire, Point Break, Hide & Seek.
   - Rare, blue (10): Leap of Faith, Ocean Walker, Training Day, Hearty, Patchwork, Balm & Salve, Four Winds, Cloud
     Stompers, Soft Landing, Undertow.
@@ -694,7 +695,7 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
     Staring Contest, Web Cutter, Natural Repellant, Hoglin Ward, Predator's Eye, Inverse Luminance, Hibernation
     Plan, The Open Road, Homes & Gardens, Downstream, Frost Strider, Hook Line & Sinker.
   - Legendary, orange (Shane): every trait that only breeding gives. Today's list: Surface Tension, Thermostat,
-    Triage, Launch Protocol, Polyphasic Solaris, Polystratic Caelum, Polyplanar Eschaton, Polytria Opus.
+    Triage, Launch Protocol. (The four poly traits were scrapped 2026-11-26 for two-eyed drekki.)
   - Where the color shows (Claude's design, on Shane's "lets solve the color"; not built):
     - A trait's name is in its tier color everywhere it is named: its row on the traits tab, the title of its
       tooltip, the [Trait] link in chat. Its bullet takes the same color.
@@ -703,14 +704,14 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
     - An offer no longer turns the name gold (gold and Legendary's orange are too close, and the tier would be
       hidden): the name keeps its tier color, the bullet becomes a gold "!" and the yes and no buttons stay. In
       chat the offer's link keeps the tier color and the sentence says it wants to learn it.
-    - A sleeping trait: its tier color at half strength, in italics. A free slot stays dim grey.
+    - A free slot stays dim grey.
     - Colors, to tune on the screen: Uncommon `5fd17a`, Rare `5aa9ff`, Epic `c77dff`, Legendary `ff9d3c`.
 - 0.5.0 as built (2026-11-23), where the code settles what the text above left open:
   - The update from 3/6/9 runs when a drekki's record is next loaded (its save has no "caps" mark), not as one walk
     over the roster; the result is the same, and a drekki hatched later is never marked.
   - A negative trait as an extra: no negative trait is in the game yet, so nothing counts them today.
   - The potion's slot is the last slot row on the traits tab, filled or free; the emerald is the game's own item icon.
-    The two potions on the way to it read "A step toward the Potion of Horizons"; none of the three shows "No Effects".
+    The two potions on the way to it read "A step toward the Drekki Potion of Horizons"; none of the three shows "No Effects".
     The bottle comes back empty into the owner's hand. The icons are a wrap of the game's potion model
     (`client/PotionModels`), not a replaced model file, so a resource pack's potion art still shows for other potions.
   - Provoke counts a hit that deals damage on the ordered mob, a different mob each time; the hold is checked twice a
@@ -746,7 +747,7 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
   or brought to its owner when it is checked out.
 - Affinity limits on learning (Shane, 2026-11-23; built in 0.5.0), to make breeding matter. An activity trait can be
   learned only by a drekki of a listed astral affinity; the sheet's "Learned by" column holds the list:
-  - All six: Hearty, Phoenix Heart, Training Day, Soft Landing, Balm & Salve, Hook Line & Sinker, Duck & Cover, Night
+  - All six: Hearty, Training Day, Soft Landing, Balm & Salve, Hook Line & Sinker, Duck & Cover, Night
     Watch (phantoms rarely matter, so not a capstone).
   - One (the capstones): Provoke (Solar), Fade (Lunar), Live Wire (Aero), Point Break (Deep), Hide & Seek
     (Underworld; stronger than The Fallen Emperor), Rewind (End).
@@ -757,17 +758,19 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
   - Phoenix Heart and Patchwork swapped (Shane, 2026-11-26): players found a death save for two affinities only unfair,
     so Phoenix Heart is every affinity's and Patchwork (also a second chance, for gear) takes its place for Solar and End.
     Every affinity's count is unchanged; a drekki keeps a trait it already has.
+  - Phoenix Heart removed (Shane, 2026-11-26): the tombstone and the Drekki Lotus are the way back now (see Tombstone).
+    Every drekki that had it loses it on its next load (life tag revision 2).
   - So each affinity learns 12 or 13 of the 25 by itself. Thermostat (Stamp Out + Huddle Up) and a drekki with both
     Provoke and Fade (day and night) come only from a cross-affinity pair.
-  - Inherited traits ignore the limit: a child keeps what passes, whatever its affinity. A poly trait widens
-    learning as it widens the home terrain (Polyphasic Solaris learns as Solar and as Lunar, and so on). A Dormant
+  - Inherited traits ignore the limit: a child keeps what passes, whatever its affinity. A two-eyed drekki learns
+    as either of its astrals. A Dormant
     pup learns only the all-six traits. A drekki keeps the traits it had before this rule.
   - For a drekki of another affinity the activity is not a learning event at all: nothing counts, no roll, no
     message.
   - Biome traits have no affinity limit; the biome is their gate.
 - Caps (Shane, 2026-11-23; built in 0.5.0; was 3/6/9): 2 traits at stage 1, 4 at stage 2, 5 at stage 3. A negative trait
   never takes a slot (Shane, 2026-11-23; it took one before): it is held as an extra, beside the slots.
-  - Potion of Horizons: "Permanently unlocks an extra trait slot when fed to a drekki." Fed by hand, once per
+  - Drekki Potion of Horizons: "Permanently unlocks an extra trait slot when fed to a drekki." Fed by hand, once per
     drekki, so 3/5/6. Brewed, not crafted (Shane, 2026-11-23; the 3x3 crafting recipe is dropped): Awkward
     Potion + ender pearl, then + popped chorus fruit, then + emerald. It is a registered potion type so the pack's
     other brewing methods can make it (Create's basin, Ars Nouveau's cauldron and jars, Iron's Spellbooks'
@@ -778,26 +781,22 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
     shine `ffffff`, sparkle `fff4b0`; six liquid rows under the neck):
     - Potion of Distance: cork; all ender-pearl teal (`2a9a86`, shade `125e52` to the lower right).
     - Potion of Twilight: cork; three rows of popped-chorus purple (`b48ad0`, shade `8a62a8`) over three of teal.
-    - Potion of Horizons (Shane's pick): an emerald stopper (`7df5a8`, `17c95c`); two rows of purple, one pale
+    - Drekki Potion of Horizons (Shane's pick): an emerald stopper (`7df5a8`, `17c95c`); two rows of purple, one pale
       horizon row (`e6fff4`), two rows of teal, and the bottom row of the glass in emerald (`7df5a8`, `17c95c`,
       shade `0a8a3a`).
     A potion type draws as the game's potion bottle tinted in one color, so these icons need their own item model
     rule; a resource pack that restyles potions could override it, and the splash and lingering versions keep the
     tinted bottle unless drawn too. Fallback: the standard bottle in three tints (teal, purple, emerald green).
   - On the drekki screen's traits tab (Shane, 2026-11-23): the slot the potion unlocked has an emerald icon to
-    its left where the other traits have a bullet. Hovering the emerald shows "Unlocked by a Potion of Horizons".
+    its left where the other traits have a bullet. Hovering the emerald shows "Unlocked by a Drekki Potion of Horizons".
     A drekki that has not had the potion shows no extra slot. The yes/no is saved with the drekki's record.
-  - Open, for a later patch (Shane, 2026-11-23): what happens to inherited traits beyond a child's slots, as a new
-    pup (2, or 3 with the potion) and as a maxed Mature (5, or 6). Today's text lets the extras sleep and wake at a
-    stage-up, with at most 6 kept; that needs a decision before breeding launches.
+  - Inherited traits beyond a child's slots (decided 2026-11-26): it keeps them all, active (see Inherited traits).
   - At the update, an existing drekki that holds more traits than the new cap for its stage is marked as having
     taken the potion and keeps what it has: a pup with 3 and a Fledgling with 5 fit exactly; a Fledgling with 6
     is one over until it matures and then sits on the final 6. No Mature and no bred drekki exist in the launched
     pack, so nothing can be further over. A drekki at or under the new cap is not marked and can take the potion.
-- Sleeping traits: a child keeps every inherited trait that passes, up to 6 (the final cap with the potion; was 9), but only as many as its stage cap are
-  active. The rest sleep. Each stage-up wakes random sleeping traits into the new slots. Sleeping traits come first:
-  a learned trait only takes a slot no sleeping trait is waiting for, so a richly bred drekki may have no room to
-  learn.
+- Inherited traits (decided 2026-11-26, replaces sleeping traits): a child keeps every inherited trait that passes, up
+  to 5, all active, past its stage's cap too. It learns a new trait only while it holds fewer than its cap.
 - Offers (decided 2026-11-19): a finished activity does not teach at once. Its owner alone gets "<name> wants to learn
   [<trait>]"; the link has the trait's tooltip, and a click opens the drekki screen on its Traits tab, only while the
   drekki is checked out, out of its carrier and within 10 blocks. The offer sits in its first free slot in gold, with a
@@ -810,7 +809,7 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
   do. An unnamed drekki is "Your drekki" to
   its owner and "<owner>'s drekki" to everyone else.
 - At the cap a drekki learns nothing new: activities count nothing, no offer is made, and nothing is said in chat.
-- Inheritance: each parent passes each of its traits, positive or negative, at 33% (up to 6 kept; see Sleeping traits). A trait
+- Inheritance: each parent passes each of its traits, positive or negative, at 33% (up to 5 kept; see Inherited traits). A trait
   both parents hold passes at 56% (1 - 0.67^2). Combos form from the traits that pass, and a combo replaces its
   parts: the child never holds a combo and one of its parts, and does not learn a part later that a held combo covers.
   An inherited biome positive is extra to the one that travel gives.
@@ -824,12 +823,9 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
   Naturally Gifted adult has no negative. A drekki that already has a negative gets only its biome's positive at
   lock-in. A trader egg is not bred, so it never has Naturally Gifted and always gains its biome's negative.
 - Each biome category has a positive and a negative trait (see Negative biome traits).
-- Poly traits (breeding) add a second astral home terrain: Polyphasic Solaris (Solar and Lunar), Polystratic Caelum
-  (Aero and Deep), Polyplanar Eschaton (Underworld and End). Polytria Opus, from the full set, makes every terrain home.
-- Poly eyes: a drekki with a poly home trait has a different astral color in each eye. The pair is drawn at random
-  from the poly pairs it qualifies for (Solaris: Solar and Lunar; Caelum: Aero and Deep; Eschaton: Underworld and
-  End; Opus qualifies for all three), and the side each color goes on is random. It is set at the hatch and never
-  changes.
+- Two-eyed drekki (replaces the four poly traits, scrapped; Shane, 2026-11-26): a drekki can have a different astral in each eye, from breeding (see First breeding pass: eyes). Both
+  astrals are its home terrain and both count for what it can learn. Which eye gets which color is random at the hatch
+  and never changes.
   There are no astral penalties to remove.
 - Trait details decided 2026-11-04 (the sheet holds the full wording):
   - Ocean Walker and Lava Walker: the drekki always stays on top and cannot dive.
@@ -918,8 +914,6 @@ row is on the review page listed in `artifacts.md`. Rules, decided 2026-11-04:
     not employed). A drekki told to Stay counts, one inside a carrier does not.
     Tooltip (proposed): "Saves its owner from the void, returning them to safe ground."
   - Hibernation Plan slows both the player's hunger and the drekki's (see Hunger).
-  - Phoenix Heart works on every death and the trait is kept. The egg goes to the owner's inventory when they are
-    online with room, otherwise it is held and given on their next login or at the hatchery. It is never dropped.
 
 Effect numbers, written into the sheet's rows (starting points, to tune in testing). `snowy_beach` is in Snow & Ice only:
 
@@ -1141,20 +1135,21 @@ effect, in bands.
 
 | Mood | Band | Effects |
 |------|------|---------|
-| 85-100, Recently pet and above half food | Thriving | One-off activities teach at 75%; each counted activity counts double |
-| 75-100 | Happy | One-off activities teach at 50% (double) |
+| 85-100, a lift (Recently pet or home) and above half food | Thriving | One-off activities teach at 65% (the top; was 75% before 2026-11-26); each counted activity counts double |
+| 75-100 | Happy | One-off activities teach at 45% (was 50% before 2026-11-26) |
 | 50-74 | Content | Normal (one-off activities teach at 25%) |
-| 25-49 | Uneasy | No home or Hearty regeneration; one-off activities teach at 12.5% |
+| 25-49 | Uneasy | No home or Hearty regeneration; one-off activities teach at 12% (whole numbers, Shane, 2026-11-26) |
 | 0-24 | Miserable | No home or Hearty regeneration, no one-off learning, 25% slower, no home terrain bonus |
 
-- Rises: +1 a minute in its home terrain, +5 each time it eats, +3 for each hostile mob killed within 10 blocks
+- Rises: +5 each time it eats, +3 for each hostile mob killed within 10 blocks
   of it (by it or by a player).
 - Falls: -2 a minute while hungry, -1 for each 2 health it loses, -1 a minute while checked out and more than
   30 blocks from its owner.
 - Recently pet (decided 2026-11-18, changed 2026-11-20): petting gives a buff for 1 hour of real time (72,000 ticks)
   that lifts the band one step (Miserable to Uneasy, Uneasy to Content, Content to Happy); petting again resets it.
-  Happy goes to Thriving only from 85 with above half food, else it stays Happy; without the buff a drekki is never
-  Thriving, so only active care reaches it. The mood value itself does not change. It shows as a buff icon on the
+  Happy goes to Thriving only from 85 with above half food, else it stays Happy; without a lift a drekki is never
+  Thriving. Being in its home terrain is a second lift of one band, stacking with this one (2026-11-26; it replaced
+  +1 mood a minute at home); the mood tooltip names it ("In its home terrain"). The mood value itself does not change. It shows as a buff icon on the
   drekki screen. (Was +10 mood, which often left the band where it was.)
 - Kinship (decided 2026-11-18): +25/9 mood (about 2.8) for each other drekki whose home is the same hatchery, checked
   out or not, up to 9 others (+25). With 9 kin its mood never falls below 25, so it is never Miserable. A buff icon
@@ -1244,7 +1239,49 @@ Breeding two drekki gives an egg whose color is purer than the parents'.
 - Pure colors proposed per bloodline: Moss to green, Slate to sapphire, Rose to crimson, Sand to gold, Ash to
   silver, Clay to ember, Lavender to violet, Teal to teal, Soot to onyx with a cool glint.
 
+### First breeding pass (built, decided with Shane 2026-11-26)
+
+These rules replace the ones below where they differ; rare lines and tonics come later.
+
+- The hatchery screen has two tabs, Roster and Breeding, over the player's inventory (the drekki screen's steel part,
+  so Dark Mode Everywhere shades it alike).
+- Breeding tab: two parent wells side by side. A click on one lists, in the right well, the drekki that may pair:
+  Mature, living at this hatchery, not breeding or resting, not a ghost, not the other parent. Unfit drekki are not listed. Hunger
+  does not matter. Under the parents: the tonic slot (it takes nothing until the tonics exist). The right well shows
+  the child's preview: its pup model and line (a mixed pairing cycles every bloodline), horns, "Eyes: Dormant", the
+  traits that may pass (each one's odds on hover).
+- Pair needs an empty nest and the hatchery under its cap (20/20 refuses). Pair starts breeding (Shane, 2026-11-26):
+  one Minecraft day, shown as a bar on the wood beside Cancel, no text, a few pixels filled from the start; Cancel (in Pair's place)
+  ends it with no egg and no rest. While breeding, both parents read "Breeding" in the roster, stay home (no check out,
+  no other pairing), and the nest is kept for their egg (an egg cannot be put in).
+- When the day is out, the rolls are made and kept on the egg (`rancher_companion:bred`: line, horn, traits, parents'
+  names; tooltip "Bred from <A> and <B>"), the egg goes into the nest and incubates 3 days like any egg, and both
+  parents rest 3 in-game days. The roster shows "Resting 3d", 2d, 1d in place of where it is; a resting drekki cannot
+  pair and cannot be checked out.
+- All of it runs on the clock (overworld day time: a slept night counts), not on loaded chunks: each parent's record
+  holds "breeding until" and "resting until" from the start, so its status is right while its hatchery is unloaded;
+  a hatchery that was unloaded when the day ran out lays the egg as it loads, already incubated for the time since.
+  Incubation itself already counted unloaded time (the larger of game ticks and day time since the last count).
+- Fur: the same bloodline gives that bloodline one tier above the lower parent (pure stays pure). Mixed bloodlines
+  give a random one of the nine bloodlines at one tier below the lower parent, never below muted. Only the 36
+  bloodline colors exist; no new hues.
+- Horns: same bloodline, the parents' shared horn or one of the two; mixed, random.
+- Eyes (Shane, 2026-11-26; replaces "always Dormant" from earlier the same day): lit from the hatch, never Dormant. Each
+  parent's astral set is its astral, or both astrals of a two-eyed drekki (which eye is which does not matter). The same
+  set on both parents: the child gets it (two two-eyed parents with the same pair give that pair, no tonic needed).
+  Different: one of the parents' astrals at random. The Drekki Tonic of Starlight (brewed: Awkward Potion + amethyst shard;
+  in the tonic slot, taken at Pair, given back on Cancel) gives one eye of each instead when they differ. The preview's
+  "Eyes:" shows each possible result as an eye icon ("/" between choices), the names on hover. The drekki screen's
+  Details tab reads "Astral:" and the eye icon (9 x 7, the iris color with a darker rim and pupil); a two-eyed drekki's
+  icon is split down the pupil, one half per astral, so every pair fits the one line; the names and effects on hover.
+- Traits: every trait a parent holds (awake or sleeping) passes at 33%, 56% when both hold it; at most 5 are kept, a
+  random 5 of those that passed. No negatives and no breeding-only traits in this pass. The child keeps every one it
+  inherits, past its stage's cap too (Shane, 2026-11-26; no sleeping traits): its free slots are its cap less what it
+  holds, so a pup born with 5 learns nothing until it holds fewer than its cap.
+
 ### Pairing and tonics
+
+Names (Shane, 2026-11-26): a potion used on a drekki is "Drekki Potion of ...", a tonic "Drekki Tonic of ...".
 
 Decided 2026-11-04. Recipes are proposals.
 
@@ -1256,12 +1293,12 @@ Decided 2026-11-04. Recipes are proposals.
 
 | Tonic | Recipe | Effect |
 |-------|--------|--------|
-| Bloodline Tonic | glass bottle, golden apple, honey bottle | Positive traits pass at 50% instead of 33% |
-| Heirloom Tonic | glass bottle, book, emerald | Pick one positive trait from either parent; it always passes. It still forms combos, and sleeps past the cap like any other passed trait |
-| Clean Slate Tonic | glass bottle, milk bucket, sugar | Halves the negative odds: each negative passes at about 16%, and a clean pair's breeding-only roll drops to about 16% |
-| Starlight Tonic | glass bottle, amethyst shard, glow berries | Pick which parent's astral the child takes, also for mixed bloodlines (whose child would otherwise hatch Dormant) |
-| Purity Tonic | glass bottle, glow ink sac, diamond | The purity step is +2 tiers instead of +1, so pure takes two generations |
-| Rarity Tonic | glass bottle, nether star, echo shard | A rare or ultra rare line takes on the first try (ultra rare is otherwise 1 in 16) |
+| Drekki Tonic of Bloodline | glass bottle, golden apple, honey bottle | Positive traits pass at 50% instead of 33% |
+| Drekki Tonic of Heirloom | brewed: Awkward Potion + book (2026-11-26; was crafted) | Pick one positive trait from either parent; it always passes. It still forms combos, and is kept past the cap like any other passed trait |
+| Drekki Tonic of Clean Slate | glass bottle, milk bucket, sugar | Halves the negative odds: each negative passes at about 16%, and a clean pair's breeding-only roll drops to about 16% |
+| Drekki Tonic of Starlight | brewed: Awkward Potion + amethyst shard (2026-11-26; was crafted) | Parents of different astrals give a child with one eye of each (two-eyed parents with the same pair pass it on without a tonic) |
+| Drekki Tonic of Purity | glass bottle, glow ink sac, diamond | The purity step is +2 tiers instead of +1, so pure takes two generations |
+| Drekki Tonic of Rarity | glass bottle, nether star, echo shard | A rare or ultra rare line takes on the first try (ultra rare is otherwise 1 in 16) |
 
 ### Rare lines (proposal)
 
@@ -1313,7 +1350,7 @@ hatchery; the geode is a feature, not a structure, so it is checked by its block
 ### Ultra rare lines (proposal)
 
 Rule (decided 2026-11-05): every ultra rare line is a cross of two rare-line parents of different bloodlines, plus
-its own place. Bakeneko is the one exception: a ghost drekki and any other drekki, no place. The design page shows
+its own place. Bakeneko is the one exception: a ghost drekki and any other drekki, no place, every time (2026-11-26). The design page shows
 every ultra rare line's parents to all except Bakeneko's (a one-off); the place and the look stay behind the password.
 
 Look rule (decided 2026-11-05): rare lines are single-tone, pure colors: body and trim are one color (the trim is the
@@ -1322,13 +1359,13 @@ wing arms (the bones that join the wing) take the body color and the wing's larg
 (a carnivore's membranes and shanks, a herbivore's feathers), so the two tones show at every diet. The harder line
 looks the harder.
 
-The same rules as the rare lines, but the egg takes only one time in sixteen (the Rarity Tonic guarantees it) Listed from easiest to find without knowing the recipe to hardest:
+The same rules as the rare lines, but the egg takes only one time in sixteen (the Drekki Tonic of Rarity guarantees it) Listed from easiest to find without knowing the recipe to hardest:
 
 - Tome (deep lapis-blue body, vivid enchanting-glint violet trim, violet glint, enchanting glyphs drift up off it): Brew
   and Amethyst parents. The egg hatches within 4 blocks of an enchanting table with all 15 bookshelves.
 - Bakeneko (pale white body, charcoal-gray trim like a cat spirit, trails white wisps; a steady 35% see-through, less than
-  a ghost's 65%, without the ghost's blue tint; its rider stays solid): a ghost drekki and any
-  other drekki, paired. One egg in sixteen takes; the Rarity Tonic guarantees it. No place rule.
+  a ghost's 65%, without the ghost's blue tint): a ghost drekki (risen at its tombstone) and any other drekki, paired.
+  Always takes (2026-11-26), no place rule. Legendary trait: Spirit Veil, its rider is invisible while riding.
 - Vault (deep burnished-copper body, vivid verdigris-green trim, warm copper glint, sheds tiny copper and gold flecks): Railwright
   and Prospector parents. The egg hatches inside trial chambers.
 - Deep (deep navy body, vivid electric-blue trim, slow blue motes drift around it like light in the deep): Drowned and
@@ -1353,54 +1390,97 @@ The same rules as the rare lines, but the egg takes only one time in sixteen (th
 
 Decided 2026-11-20 (the pack has the Corpse mod; this mod does not depend on it):
 
-- A drekki that dies for good (no ghost, no Phoenix Heart), or turns into a ghost, leaves a Drekki Tombstone where it fell,
-  holding its worn gear: hat, barding and accessory (the bag keeps what it holds). Wearing nothing, it leaves none (the
-  marker still shows where). The spot is the death spot or the nearest free one around
-  and above it, on solid ground when it can be; with no free spot the gear drops as before.
-- Model: a headstone of our own on a plinth, a stepped round top, a drekki's horned head carved on its face, a name line
-  and a small purple crystal at its foot. Its item is the same 3D model.
-- Right-click opens it in the mod's screen style (the trough's frame): "Here lies <name>", its three gear slots (take only)
-  and "Died <date>". Anyone may take the gear (as the pack's corpses).
-- It cannot be mined while it holds anything. Mined empty (pickaxe), it drops itself with the drekki's name and the real
-  date it died (MM-dd-yyyy) on its tooltip; placed again it keeps them, and Jade's hover shows them.
-- It keeps the drekki's record as it fell (2026-11-20): look (stage, bloodline, diet, astral, horn, hat, barding tier
-  and dyes), life (traits, learning, mood, stats) and name, without the worn items (those are in the tombstone). Kept
-  for a later mechanic and never shown: not in a tooltip, not sent to clients with the placed block; a mined tombstone
-  item carries it and gives it back when placed.
-- A death's tombstone vanishes 30 s (600 ticks) after it is emptied, the Corpse mod's default for an empty corpse; one
-  a player places stays.
+- Every drekki that dies leaves a Drekki Tombstone where it fell (2026-11-26: always, no ghost roll), holding its worn
+  gear: hat, barding, bag (the bag keeps what it holds) and saddle. The spot is the death spot or the nearest free one
+  around and above it, on solid ground when it can be; with no free spot the gear drops as before. A death in a liquid
+  (water, lava, any) puts it at the liquid's surface, as the Corpse mod's corpses float up (2026-11-26): never left at
+  the bottom of a lava lake or the sea. A block takes no lava damage.
+- A player mining it gets what it holds and the tombstone itself in their inventory, the rest at their feet, never
+  where it stood (2026-11-26).
+- Model: a headstone of our own on a plinth, a stepped round top, a creeper face engraved in its front's texture (no extra
+  cubes; Shane, 2026-11-26) and a purple candle at its foot. Its item is the same 3D model.
+- Right-click opens it in the mod's screen style: "Here lies <name>", its four gear slots and "Died <date>". Anyone may
+  take the gear (as the pack's corpses).
+- It keeps the drekki's record as it fell: look, life, traits and name, without the worn items. Never shown and never
+  sent to clients; a mined tombstone item carries it and gives it back when placed.
+- Mining is allowed at any time (2026-11-26): what it holds drops, the item keeps the name, date and record (tooltip and
+  Jade show the name and date), and a running day is lost. A tombstone with a record never vanishes; an empty one
+  without a record vanishes 30 s (600 ticks) after it is emptied, the Corpse mod's default.
+- Automation (Shane, 2026-11-26): the tombstone is an item inventory to pipes, funnels, chutes and hoppers. They may
+  push in a Drekki Lotus Blossom (it raises the ghost, as the owner's hand does; the candle still needs lighting) and pull out the
+  gear. They never take the blossom out, never add a second one, and an inert tombstone takes none.
 - Map marker: with JourneyMap installed, the owner gets a death waypoint where the tombstone stands, JourneyMap's death
-  X in magenta ("<name> died"), like the player's own red one. An owner who is away gets it at the next login.
+  X in magenta ("<name> died"). An owner who is away gets it at the next login.
+
+The way back (Shane, 2026-11-26; replaces Phoenix Heart and the ghost roll):
+
+- Every rebirth function (the ghost, the candle, its day, Reclaim, and so the ghost's pairing) works only while the
+  tombstone stands on soul soil; anywhere else it is decoration. With a blossom in and no soul soil the screen says "It
+  must stand on soul soil." Soul soil taken away lays the ghost to rest and puts the candle out; put back, the ghost
+  rises again.
+
+- A Drekki Lotus Blossom in one of the tombstone's gear slots (one blossom; by hand only its owner, or by automation):
+  - the drekki's ghost rises by the tombstone and stays within 3 blocks of it; a hatchery within 24 blocks lists it
+    for breeding (see Ghost drekki);
+  - the blossom's own 3D model lies small on the plinth's front lip, at an angle (front left; the candle is front right);
+  - the screen says "The candle is ready to be lit." under the slots.
+- The owner uses flint and steel on the tombstone (Shane, 2026-11-26): the candle lights and one Minecraft day starts
+  on the clock (overworld day time, so it runs while the chunk is unloaded). It uses one point of the flint and steel's
+  durability and sets no fire. Without a blossom, by another player, or with the candle already lit it does nothing
+  (an action bar line says why).
+  - the candle at its foot burns with soul fire: a real light source (light 3, a fifth of a torch, decorative or not), with cyan particles;
+  - the screen shows the progress bar (no text).
+- Taking the blossom out puts the candle out, stops the day and lays the ghost to rest; putting it back raises the
+  ghost again, and the candle needs lighting again.
+- Its owner can put the candle out with sneak + empty hand: the day stops (the ghost stays while the blossom is in) and
+  the ghost's pairing at a hatchery, if any, is cancelled (its tonic back). Lighting it again starts a new day.
+- Key hints (haven-create-ui-ux): "Pay Respects" with flint and steel while the candle is unlit; "Put out candle" on
+  sneak + empty hand while it burns.
+- When the day is done the candle is mostly melted and unlit, and the screen shows "Summon fallen drekki" (owner only; named Reclaim in the code).
+  Reclaim uses up the blossom and brings the drekki back alive at its owner's side, travelling with them, at full
+  health; the ghost leaves the world, and a harmless lightning bolt (no damage, no fire) strikes the tombstone. It is
+  refused while the owner already has a drekki out, and while its ghost is breeding.
+- While its ghost is breeding, the blossom stays in the tombstone and Reclaim waits ("Its ghost is breeding. Wait for
+  the egg, or cancel at the hatchery."), so no pairing is lost. Mining the tombstone still works: the pairing ends with
+  no egg and its tonic drops at the hatchery.
+- Resurrection Fatigue (named Soulflame in the code; Shane, 2026-11-26): a reclaimed drekki's mood is two bands lower for one Minecraft day (on the clock), shown as a debuff icon
+  next to the mood with a tooltip and the time left.
+- The tombstone is then inert: decoration only, no record, no name, no date; it cannot be used for a rebirth again. It is
+  cracked (Shane, 2026-11-26): one continuous crack from the top on one side, down the stone's front to the other side,
+  across the plinth's top and down its front, and right through to the back. Its candle is whole again: anyone may light
+  it with flint and steel (a light source, light 3; no cyan, no day) and put it out with sneak + empty hand. Mined, its
+  item places it cracked again.
+- One-time grace (life tag revision 2): every ghost and Phoenix egg that existed before this change comes back to life.
+
+Drekki Lotus:
+
+- Drekki Lotus Seeds: the wandering trader carries 5 (1 emerald each). They plant only on soul soil.
+- The crop grows only in front of a drekki tombstone or behind it, not at its sides (Shane, 2026-11-26).
+  Growth runs on the clock, so it grows while unloaded: one day from seed to bloom (three stages). Bone meal does nothing.
+- Seeds' tooltip: "A strange, familiar scent." The blossom's: "I could decorate the tombstone with this..."
+- A grown crop is a small 3D lotus (pads, a stem, a cup of pointed purple petals). A harvest always gives one seed back,
+  and a purple Drekki Lotus Blossom too when it was grown.
+- JEI has an information page for the tombstone, the seeds and the blossom (no recipes); Ponder has a collection of
+  three scenes on the tombstone: the ghost and the candle, growing the lotus, and the reclaim.
 
 ### Ghost drekki
 
-Decided 2026-11-05:
+Decided 2026-11-05, revised 2026-11-26:
 
-- When a drekki dies, there is a 33% chance (raised from 15% on 2026-11-20) it turns into a ghost drekki instead of
-  being lost.
-- A ghost is like a normal drekki, but it cannot use abilities (so it has no cooldowns), cannot be mounted, and
-  gives no area traits to players near it.
-- It can still be checked in and out, and it can breed.
-- Revised 2026-11-20: a ghost wears nothing and is mostly hands-off. Turning into a ghost puts its hat, barding and bag
-  in a tombstone where it died, with the owner's death marker (see Tombstone). Its screen opens read-only (traits,
-  health, stance shown; gear slots and stance locked, "A ghost does not fight." on the stance buttons). It follows its
-  owner and takes name tags; no petting, hats, hand feeding or carrier-free changes of gear, and it never fights. It
-  does not get hungry or eat (troughs, pack meals), so its food stays where it was until it is revived. Carriers, check
-  in and out, breeding and the revive steps work as before.
-- Only its owner ever sees a ghost (2026-11-20): the server sends it to its owner alone, so other players never see,
-  hear or touch it; the soul leaving it is the owner's alone too. Revived, everyone sees it again. No mob targets a
-  ghost, and a mob already after it lets go.
-- A ghost cannot die again (2026-11-20): nothing hurts it (fire, lava, falls, drowning, players). Only /kill removes it,
-  gone for good; one that falls out of the world comes back to its owner (when out with them) or home.
-- Traits: it keeps every trait, but none work while it is a ghost, and it cannot learn new ones. They all return
-  on revive, and they pass in breeding as usual.
-- Revive, like curing a zombie villager: hit it with a splash potion of Weakness, then give it a golden apple. It
-  shakes and turns back into a normal drekki after 3 minutes. The apple is used up; it is not food for any diet.
-- Look: its own fur and eyes, 65% see-through (more than a Bakeneko) with a faint pale-blue tint and a slow bob, with small
-  soul-fire particles drifting off it.
-- Phoenix Heart always wins: a Phoenix Heart drekki returns as its egg, and no ghost roll happens.
-- Pairing a ghost with any other drekki gives a Bakeneko child one time in sixteen (see Ultra rare lines). Tonics
-  work as usual, so the Rarity Tonic guarantees it.
+- A ghost exists only while a Drekki Lotus Blossom burns at its tombstone (see Tombstone). It stays within 3 blocks of
+  the tombstone, the roster holds it there, and it goes back to rest when the blossom comes out or the drekki is
+  reclaimed.
+- It cannot be ridden, fights nothing, uses no abilities and gives no area traits. It wears nothing; nothing hurts it.
+  Its screen shows no stance, Stay or Follow buttons and no mood (2026-11-26). It never sleeps, and never walks onto
+  its tombstone.
+- It keeps its own fur, see-through (65%). It sheds soul-fire particles only while its tombstone's candle burns.
+- It has no mood (Shane, 2026-11-26): no mood bubble, no mood line on its screen, and its mood neither rises nor falls.
+  In a pairing it adds no mood score: only the living parent's counts. Reclaimed, it has its mood again. It walks on the ground with the normal wander AI
+  (no float; Shane, 2026-11-26).
+- A ghost pairs only if it died Mature.
+- No other way back: the old Weakness and golden apple revive is gone.
+- Breeding: a ghost at a tombstone within 24 blocks of a hatchery can pair (see Breeding). A ghost parent always gives a
+  Bakeneko child, with Bakeneko's legendary trait, Spirit Veil.
 
 Other ways in, for later: a rare Peculiar Egg from the wandering trader that is already pure; a biome capstone
 trait that unlocks a line; a named egg as an easter egg.
@@ -1589,7 +1669,7 @@ each in a pattern:
 **Removed for now (Shane, 2026-11-23): "lets remove all negatives for now".** No drekki gets a negative trait: not its
 biome's at lock-in, not a passed one, not the breeding-only roll. The list and rules below are kept as written for a
 later decision, and are not to be built. Until then these have nothing to do, and need a decision when negatives come
-back or are dropped for good: Naturally Gifted (the free trait that blocks a biome's negative), the Clean Slate Tonic
+back or are dropped for good: Naturally Gifted (the free trait that blocks a biome's negative), the Drekki Tonic of Clean Slate
 (it only halves negative odds), "a negative is an extra beside the slots", and what Live Wire's text says about
 Storm-skittish. The sheet's Negative Trait column is emptied; this section is the record.
 
@@ -1655,7 +1735,7 @@ Decided 2026-11-05:
   by adding it to a tag.
 - Other developers must be able to code their own activity traits, affinities, biome traits (positive and
   negative) and rare line colors, through NeoForge custom registries and events:
-  - Registries: `rancher_companion:trait` (activity, biome positive and negative, breed and poly traits),
+  - Registries: `rancher_companion:trait` (activity, biome positive and negative, breed traits),
     `rancher_companion:affinity` and `rancher_companion:rare_line` (colors, sheen, particles, parents). A mod
     registers its own entries with a `DeferredRegister`, the NeoForge way.
   - Our own content registers through the same registries, so the API stays complete.
@@ -1698,7 +1778,7 @@ Decided 2026-11-05:
   - An enchantment from another mod that fits a chestplate or a sword can be put on barding and does nothing there.
   - Unbreaking and the protections make barding last longer, so Point Break (the blast when it breaks) comes less often.
 - Effect numbers for every trait and ability.
-- Poly eyes: one color per eye on the design page and in the rig's eye sheet.
+- Two-eyed drekki: one color per eye on the design page (built in the mod 2026-11-26).
 - Railwright, Idol, Ruin, Sakura, Brew, Summit, Prospector, Prismarine, Vault, Tome, Deep and Bastion: their travel passives and
   abilities (see Breed traits).
 - Ghost drekki: port the design page's ghost look (65% see-through, pale-blue tint, bob, soul fire) to the mod.
@@ -1775,9 +1855,8 @@ Pups grow, eat, feel and learn; growth stops at stage 2 (Fledgling) until a late
   powder snow too.
 - Stage 2 (Fledgling): the large carrier's recipe, a 9-slot pack, the three stances (see Combat) with its diet's
   basic attack: Bite 4 damage, Elemental ball 3 (starting numbers, to tune). It takes damage.
-- Death (stage 2 on): a red chat line to the owner. A 15% chance it returns as a ghost drekki (see Ghost drekki); a
-  ghost still grows, never fights in this release (whatever its stance), and has the spec's look and revive. A ghost
-  that dies is gone for good, as is a drekki whose roll fails. Phoenix Heart wins over both.
+- Death (stage 2 on): a red chat line to the owner and a tombstone where it fell (see Tombstone). No ghost roll and no
+  Phoenix Heart since 2026-11-26.
 - Ponder: the trough scenes show the spots (front, back, ends), owner-only troughs and diet planning (keep diets
   apart to steer a hatchling).
 - Drekki screen (as built): the name over two tabs, Details and Traits (the name only since 2026-11-20: no stage, no ghost tag). Details: hearts (ten to a row), ten
@@ -1788,7 +1867,7 @@ Pups grow, eat, feel and learn; growth stops at stage 2 (Fledgling) until a late
   top is 220 wide so trait names fit Minecraft's font on one line; the pack and the inventory keep vanilla's 176, centered, and the pack row (9) over the inventory.
   A ghost's stage reads "Fledgling, ghost".
 - Hand feeding: its owner right-clicks it with food it eats while it has room for it or is hurt; otherwise the screen opens.
-  Petting with sneak + empty hand also starts Recently pet. A ghost under Weakness takes a golden apple.
+  Petting with sneak + empty hand also starts Recently pet.
 - Undertow reaches 10 blocks across at any depth (fixed 2026-11-18): a drekki stays at the surface while its owner
   dives, so a 10-block reach in all directions missed a dive deeper than about 10 blocks below it. It starts at the
   player's first drowning damage, not at 2 air bubbles (decided 2026-11-18: it gives Water Breathing, so it waits

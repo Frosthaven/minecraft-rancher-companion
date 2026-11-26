@@ -3,7 +3,7 @@
 schematic step by step, so the positions here and in DrekkiPonder must agree.
 
 Run: uv run --with nbtlib python -I tools/ponder_scenes.py
-Writes assets/rancher_companion/ponder/{hatchery/stable,trough/line,trough/diets,trough/feeding}.nbt, and the scenes'
+Writes assets/rancher_companion/ponder/{hatchery/stable,trough/line,trough/diets,trough/feeding,tombstone/rebirth,whistle/commands}.nbt, and the scenes'
 texts into en_us.json: Ponder shows only translated text, keyed <mod>.ponder.<scene>.header and .text_<n> in the order
 the scene registers them, so they are read from DrekkiPonder.java's scene.title(...) and .text("...") calls in order.
 """
@@ -120,6 +120,28 @@ def feeding():
     s.save("trough/feeding")
 
 
+def rebirth():
+    """the tombstone and its lotus: a grass plate (Shane, 2026-11-26), the tombstone at (3, 1, 3) facing west (toward Ponder's camera; Shane,
+    2026-11-26) on soul soil, soul soil under the lotus in front of it at (2, 1, 3) (a lotus grows only in front of a
+    tombstone or behind it)"""
+    s = Schematic(7, 2, 7, floor="minecraft:grass_block")
+    s.set(2, 0, 3, "minecraft:soul_soil")
+    s.set(3, 0, 3, "minecraft:soul_soil")  # the tombstone on soul soil: its rebirth works only there
+    s.set(3, 1, 3, f"{NS}:tombstone", facing="west")
+    s.set(2, 1, 3, f"{NS}:drekki_lotus", age=0)
+    s.save("tombstone/rebirth")
+
+
+def whistle():
+    """the whistle's commands and Create jobs: a grass plate, a plain Create seat at (6, 1, 5), and a seat at (6, 1, 1)
+    beside a Stock Ticker at (7, 1, 1) (a job seat: the stock keeper's)"""
+    s = Schematic(9, 2, 7, floor="minecraft:grass_block")
+    s.set(6, 1, 5, "create:white_seat")
+    s.set(6, 1, 1, "create:brown_seat")
+    s.set(7, 1, 1, "create:stock_ticker")
+    s.save("whistle/commands")
+
+
 def lang():
     src = (Path(__file__).resolve().parent.parent / "src/main/java/dev/frosthaven/ranchercompanion/compat/ponder/DrekkiPonder.java").read_text()
     p = Path(__file__).resolve().parent.parent / "src/main/resources/assets/rancher_companion/lang/en_us.json"
@@ -143,3 +165,5 @@ if __name__ == "__main__":
     line()
     diets()
     feeding()
+    rebirth()
+    whistle()

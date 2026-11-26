@@ -77,6 +77,14 @@ public record Lineage(int index, String name, int fur, int trim, int sheenHex, f
 
     public static String familyName(int fam) { return FAMILY[fam][0]; }
 
+    /** the Bakeneko line's index: every pairing with a ghost parent gives it (spec, Breeding) */
+    public static final int BAKENEKO = indexOf("Bakeneko");
+
+    private static int indexOf(String name) {
+        for (int i = 0; i < SPECIAL.length; i++) if (SPECIAL[i][0].equals(name)) return BLOODLINES + i;
+        throw new IllegalStateException(name);
+    }
+
     /** Bakeneko is the one see-through line: a steady 35% see-through (its barding stays solid). */
     public boolean seeThrough() { return "Bakeneko".equals(name); }
 

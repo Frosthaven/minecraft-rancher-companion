@@ -57,7 +57,6 @@ public final class Vitals {
         if (l.stamp == Life.NEVER || dt > LIVE_GAP) { resume(d); return; }
         if (dt <= 0) return;
         l.stamp = now;
-        reviveTick(d, now);
         boolean travelling = d.isOut();
         /* a ghost does not get hungry, nor does an employed drekki: it stays on its seat (spec, Go here: Employed) */
         if (!l.ghost && !dev.frosthaven.ranchercompanion.ranch.Ranch.employed(d)) l.spend(Life.drain(dt, hungerRate(d, travelling)));
@@ -96,36 +95,13 @@ public final class Vitals {
     public static void ownHeal(DrekkiEntity d, float amount) { d.selfHeal = true; d.heal(amount); d.selfHeal = false; }
 
     /** in its astral home terrain, which Miserable takes away (spec, Mood) */
+    /** its astral (either eye's) is the astral of where it stands, mood aside */
+    public static boolean inHomeTerrain(DrekkiEntity d) {
+        return d.astral() != Astral.DORMANT && d.hasAstral(Places.astral(d.level(), d.blockPosition()));
+    }
+
     public static boolean atHome(DrekkiEntity d) {
-        return d.astral() != Astral.DORMANT && d.band() != Life.Band.MISERABLE && Places.astral(d.level(), d.blockPosition()) == d.astral();
-    }
-
-    // ---- a ghost's revive (spec, Ghost drekki: like curing a zombie villager) ----
-
-    public static final String REVIVE = "revive";
-
-    /** a ghost under Weakness given a golden apple: it shakes for 3 minutes, then is a normal drekki again */
-    public static boolean startRevive(DrekkiEntity d) {
-        if (!d.life.ghost || d.life.cooldowns.containsKey(REVIVE) || !d.hasEffect(net.minecraft.world.effect.MobEffects.WEAKNESS)) return false;
-        d.life.cooldowns.put(REVIVE, now(d) + 3600);
-        d.removeEffect(net.minecraft.world.effect.MobEffects.WEAKNESS);
-        d.playSound(SoundEvents.ZOMBIE_VILLAGER_CURE, 1f, 1.2f);
-        d.syncLife();
-        return true;
-    }
-
-    private static void reviveTick(DrekkiEntity d, long now) {
-        Long at = d.life.cooldowns.get(REVIVE);
-        if (at == null || at > now) return;
-        d.life.cooldowns.remove(REVIVE);
-        d.life.ghost = false;
-        d.syncLife();
-        d.ghostChanged();  /* other players see it again */
-        d.setHealth(d.getMaxHealth());
-        Ranch.touch(d);
-        burst(d, 0xFFF3B0);
-        d.playSound(SoundEvents.ZOMBIE_VILLAGER_CONVERTED, 1f, 1.2f);
-        tell(d, Component.translatable("message.rancher_companion.revived", who(d)));
+        return d.astral() != Astral.DORMANT && d.band() != Life.Band.MISERABLE && d.hasAstral(Places.astral(d.level(), d.blockPosition()));  /* a two-eyed drekki: both are home */
     }
 
     // ---- growth ----
@@ -232,9 +208,9 @@ public final class Vitals {
 
     private static void mood(DrekkiEntity d, long dt) {
         Life l = d.life;
+        if (l.ghost) return;  /* a ghost has no mood: it neither rises nor falls */
         double minutes = dt / 1200.0;
         if (l.hungry()) l.addMood(-2 * minutes);
-        if (atHome(d)) l.addMood(minutes);
         Player owner = d.ownerPlayer();
         if (d.isOut() && (owner == null || owner.level() != d.level() || owner.distanceToSqr(d) > 30 * 30)) l.addMood(-minutes);
     }

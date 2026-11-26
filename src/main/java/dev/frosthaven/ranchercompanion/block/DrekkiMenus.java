@@ -8,7 +8,7 @@ import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
-/** The mod's container screens: the trough and the drekki. (The hatchery screen has no inventory; it is a packet-driven screen.) */
+/** The mod's container screens: the trough, the drekki, its bag, the tombstone and the hatchery. */
 public final class DrekkiMenus {
     private DrekkiMenus() {}
 
@@ -28,7 +28,11 @@ public final class DrekkiMenus {
 
     /** a drekki's tombstone (spec, Tombstone) */
     public static final DeferredHolder<MenuType<?>, MenuType<TombstoneMenu>> TOMBSTONE = MENUS.register("tombstone",
-        () -> IMenuTypeExtension.create((id, inv, buf) -> new TombstoneMenu(id, inv, buf.readBlockPos())));
+        () -> IMenuTypeExtension.create((id, inv, buf) -> new TombstoneMenu(id, inv, buf.readBlockPos(), buf.readBoolean())));
+
+    /** the hatchery (spec, Checkout: Roster; Breeding): the player's inventory and the tonic slot; the rest comes as HatcheryView */
+    public static final DeferredHolder<MenuType<?>, MenuType<HatcheryMenu>> HATCHERY = MENUS.register("hatchery",
+        () -> IMenuTypeExtension.create(HatcheryMenu::client));
 
     public static void register(IEventBus modBus) { MENUS.register(modBus); }
 }

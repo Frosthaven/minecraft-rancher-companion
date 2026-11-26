@@ -105,6 +105,9 @@ public final class Riding {
             d.rideY = d.getY();
         }
         if (holds(d, Trait.WINGS_OF_HOPE)) ((dev.frosthaven.ranchercompanion.mixin.VehicleFloatAccess) rider.connection).rancher$setVehicleFloat(0);
+        /* Spirit Veil (Bakeneko): its rider is invisible while riding; refreshed each half second, it runs out 2 s after */
+        if (d.tickCount % 10 == 0 && holds(d, Trait.SPIRIT_VEIL))
+            rider.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, 40, 0, false, true, true));  /* the full effect: its swirls show too (Shane, 2026-11-26) */
         /* Predator's Eye: hostile mobs within 24 blocks glow through walls */
         if (d.tickCount % 10 == 0 && holds(d, Trait.PREDATORS_EYE))
             for (LivingEntity m : d.level().getEntitiesOfClass(LivingEntity.class, d.getBoundingBox().inflate(24), e -> e instanceof Enemy && e.isAlive() && e.distanceToSqr(d) <= 24 * 24))

@@ -50,7 +50,6 @@ public final class Learning {
         });
         /* Patchwork is learned in Effects.patch, where an item breaks from wear: the game's item-destroyed event also
            fires when the last item of a stack is used up (a block placed, food eaten), which is not a break */
-        bus.addListener(LivingUseTotemEvent.class, e -> { if (e.getEntity() instanceof ServerPlayer p) Traits.activity(p, Trait.PHOENIX_HEART); });
         bus.addListener(LivingFallEvent.class, e -> {
             if (e.getEntity() instanceof ServerPlayer p && e.getDistance() > 1.5f) bounce(p);
         });

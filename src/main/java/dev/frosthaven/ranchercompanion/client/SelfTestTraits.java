@@ -451,11 +451,6 @@ final class SelfTestTraits {
             after(5, () -> cmd("effect give " + id + " instant_health 1 0")); });
         check("hearty_max_health", 10, 3, () -> {}, "max health", () -> sd() == null ? -1 : sd().getMaxHealth(), () -> sd() != null && sd().getMaxHealth() == (sd().stage() >= 3 ? 56 : 36));  /* 6 over its stage's: a run that grew it up before this has a Mature */
 
-        fresh("totem");
-        quiet("totem_survival", 20, () -> cmd("gamemode survival"));  /* the 0.5.0 section before this ends in creative, where no totem pops */
-        learn(Trait.PHOENIX_HEART, 3, 2, () -> { cmd("item replace entity @s weapon.offhand with totem_of_undying"); cmd("damage @s 100 minecraft:generic"); });
-        quiet("phoenix_death", 40, () -> { server(m -> m.setHealth(20)); cmd("kill " + id); });
-        check("phoenix_heart_egg", 20, 5, () -> {}, "egg in inventory", SelfTestTraits::egg, SelfTestTraits::egg);
         quiet("traits_end", 10, () -> cmd("gamemode creative"));
         /* a learned message's trait link in chat, hovered: the same lines as the screen, wrapped the same way */
         quiet("chat_open", 20, () -> mc().setScreen(new net.minecraft.client.gui.screens.ChatScreen("")));
@@ -898,7 +893,8 @@ final class SelfTestTraits {
         /* the ghost's screen: read-only (spec, Ghost drekki) */
         quiet("ghost_near", 15, () -> { hotbar(7, "rancher_companion:fledgling_iron_barding"); emptyHand(); near(pup()); });
         step("ghost_screen", 25, () -> interact("open its screen"), () -> ds() != null && ds().getMenu().locked());
-        step("ghost_stance_locked", 15, () -> hoverSpot("stance0"), () -> ds() != null && ds().getMenu().locked());
+        step("ghost_no_orders", 15, () -> {}, () -> ds() != null && ds().getMenu().locked()  /* no stance, Stay or Follow buttons on a ghost */
+            && ds().spot("stance0") == null && ds().spot("stay") == null && ds().spot("follow") == null);
         check("ghost_gear_locked", 10, 0, () -> { click(3 + 27 + 7, 0); click(1, 0); click(3 + 27 + 7, 0); }, "the barding slot after a click with a barding on the cursor",
             () -> mc().player.containerMenu.getSlot(1).getItem(), () -> mc().player.containerMenu.getSlot(1).getItem().isEmpty());
         quiet("ghost_close", 10, () -> { dev.frosthaven.ranchercompanion.client.screen.DrekkiScreen.testMouse = null; mc().setScreen(null); });

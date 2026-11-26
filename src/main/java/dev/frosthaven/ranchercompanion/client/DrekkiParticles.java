@@ -80,7 +80,7 @@ public final class DrekkiParticles {
         float yaw = e.yBodyRot;
         Ctx c = new Ctx(e, e.getX(), e.getY(), e.getZ(), Layout.forward(yaw), Layout.right(yaw), e.lane() > 0 && a.speed != 0 ? a.speedAt(stage, t) : 0);
         sparkle(c, e.lineage(), stage, t);
-        if (e.ghost() && R.nextDouble() < 0.25)  /* a ghost sheds small soul-fire flames */
+        if (e.ghost() && e.ghostFlame() && R.nextDouble() < 0.25)  /* a ghost sheds small soul-fire flames while its candle burns */
             e.level().addParticle(net.minecraft.core.particles.ParticleTypes.SOUL_FIRE_FLAME, e.getRandomX(0.6), e.getRandomY(), e.getRandomZ(0.6), 0, 0.02, 0);
         double lastF = e.lastF; Vector3f m = a == Anim.SLEEP || a == Anim.FEED || a == Anim.BREATH ? mouth(e) : null;  /* posed once a tick */
         for (int fr = 0; fr < 3; fr++) {

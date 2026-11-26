@@ -1,18 +1,93 @@
 {
   "variants": {
-    "facing=north": {
+    "candle=unlit,cracked=false,facing=north": {
       "model": "rancher_companion:block/tombstone"
     },
-    "facing=east": {
+    "candle=unlit,cracked=true,facing=north": {
+      "model": "rancher_companion:block/tombstone_cracked"
+    },
+    "candle=lit,cracked=false,facing=north": {
+      "model": "rancher_companion:block/tombstone_lit"
+    },
+    "candle=lit,cracked=true,facing=north": {
+      "model": "rancher_companion:block/tombstone_lit_cracked"
+    },
+    "candle=melted,cracked=false,facing=north": {
+      "model": "rancher_companion:block/tombstone_melted"
+    },
+    "candle=melted,cracked=true,facing=north": {
+      "model": "rancher_companion:block/tombstone_melted_cracked"
+    },
+    "candle=unlit,cracked=false,facing=east": {
       "model": "rancher_companion:block/tombstone",
       "y": 90
     },
-    "facing=south": {
+    "candle=unlit,cracked=true,facing=east": {
+      "model": "rancher_companion:block/tombstone_cracked",
+      "y": 90
+    },
+    "candle=lit,cracked=false,facing=east": {
+      "model": "rancher_companion:block/tombstone_lit",
+      "y": 90
+    },
+    "candle=lit,cracked=true,facing=east": {
+      "model": "rancher_companion:block/tombstone_lit_cracked",
+      "y": 90
+    },
+    "candle=melted,cracked=false,facing=east": {
+      "model": "rancher_companion:block/tombstone_melted",
+      "y": 90
+    },
+    "candle=melted,cracked=true,facing=east": {
+      "model": "rancher_companion:block/tombstone_melted_cracked",
+      "y": 90
+    },
+    "candle=unlit,cracked=false,facing=south": {
       "model": "rancher_companion:block/tombstone",
       "y": 180
     },
-    "facing=west": {
+    "candle=unlit,cracked=true,facing=south": {
+      "model": "rancher_companion:block/tombstone_cracked",
+      "y": 180
+    },
+    "candle=lit,cracked=false,facing=south": {
+      "model": "rancher_companion:block/tombstone_lit",
+      "y": 180
+    },
+    "candle=lit,cracked=true,facing=south": {
+      "model": "rancher_companion:block/tombstone_lit_cracked",
+      "y": 180
+    },
+    "candle=melted,cracked=false,facing=south": {
+      "model": "rancher_companion:block/tombstone_melted",
+      "y": 180
+    },
+    "candle=melted,cracked=true,facing=south": {
+      "model": "rancher_companion:block/tombstone_melted_cracked",
+      "y": 180
+    },
+    "candle=unlit,cracked=false,facing=west": {
       "model": "rancher_companion:block/tombstone",
+      "y": 270
+    },
+    "candle=unlit,cracked=true,facing=west": {
+      "model": "rancher_companion:block/tombstone_cracked",
+      "y": 270
+    },
+    "candle=lit,cracked=false,facing=west": {
+      "model": "rancher_companion:block/tombstone_lit",
+      "y": 270
+    },
+    "candle=lit,cracked=true,facing=west": {
+      "model": "rancher_companion:block/tombstone_lit_cracked",
+      "y": 270
+    },
+    "candle=melted,cracked=false,facing=west": {
+      "model": "rancher_companion:block/tombstone_melted",
+      "y": 270
+    },
+    "candle=melted,cracked=true,facing=west": {
+      "model": "rancher_companion:block/tombstone_melted_cracked",
       "y": 270
     }
   }

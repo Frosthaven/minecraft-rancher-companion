@@ -56,11 +56,6 @@ public final class DrekkiInteract {
             if (!d.level().isClientSide) dev.frosthaven.ranchercompanion.item.DrekkiPotions.feed(d, player, stack);
             return InteractionResult.sidedSuccess(d.level().isClientSide);
         }
-        /* a ghost under Weakness takes a golden apple and starts to come back (spec, Ghost drekki) */
-        if (mine && stack.is(Items.GOLDEN_APPLE) && d.ghost()) {
-            if (!d.level().isClientSide && dev.frosthaven.ranchercompanion.life.Vitals.startRevive(d)) stack.consume(1, player);
-            return InteractionResult.sidedSuccess(d.level().isClientSide);
-        }
         /* hand feeding (spec, Hunger: the player's hand at any time): its owner, with food it eats, while it has any room.
            (while its shank bar is not full). Food it will not take now says why on the action bar instead of opening the screen */
         if (mine && hand == InteractionHand.MAIN_HAND && !d.ghost() && !handFeeds(d, stack) && foodDiet(d, stack) != null) {

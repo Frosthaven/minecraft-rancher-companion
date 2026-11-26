@@ -56,6 +56,259 @@ public final class DrekkiPonder implements PonderPlugin {
             .addStoryBoard("trough/line", DrekkiPonder::line)
             .addStoryBoard("trough/diets", DrekkiPonder::diets)
             .addStoryBoard("trough/feeding", DrekkiPonder::feeding);
+        /* the way back from death: the same three scenes on the tombstone, the seeds and the blossom */
+        helper.forComponents(DrekkiBlocks.TOMBSTONE.getId(), dev.frosthaven.ranchercompanion.item.DrekkiItems.LOTUS_SEEDS.getId(),
+                dev.frosthaven.ranchercompanion.item.DrekkiItems.LOTUS_BLOSSOM.getId())
+            .addStoryBoard("tombstone/rebirth", DrekkiPonder::tombGhost)
+            .addStoryBoard("tombstone/rebirth", DrekkiPonder::lotus)
+            .addStoryBoard("tombstone/rebirth", DrekkiPonder::reclaim);
+        /* the whistle: its commands, and hiring for Create's jobs (Shane, 2026-11-26) */
+        helper.forComponents(dev.frosthaven.ranchercompanion.item.DrekkiItems.WHISTLE.getId())
+            .addStoryBoard("whistle/commands", DrekkiPonder::whistleCommands)
+            .addStoryBoard("whistle/commands", DrekkiPonder::whistleJobs);
+    }
+
+    // ---- the way back from death (spec, Tombstone: the way back): three scenes, on the tombstone, the seeds and the blossom ----
+
+    /* tools/ponder_scenes.py rebirth(): the tombstone at (3, 1, 3) facing west (toward the camera) on soul soil; soul soil at
+       (2, 0, 3) under the lotus in front of it at (2, 1, 3) */
+    /** the camera turn that brings the west-facing tombstone's face straight toward the viewer */
+    private static final float TOMB_ZOOM = 1.6f;
+    private static final float TOMB_TURN = -45f;  /* +45 turned it side-on (seen in game, 2026-11-26) */
+    private static final int[] TOMB = {3, 1, 3}, CROP = {2, 1, 3}, SOIL = {2, 0, 3};
+
+    private static net.createmod.ponder.api.element.ElementLink<net.createmod.ponder.api.element.EntityElement> drekki(SceneBuilder scene, boolean ghost) {
+        return scene.world().createEntity(level -> {
+            DrekkiEntity d = RancherCompanion.DREKKI.get().create(level);
+            d.setLook(3, 2 * 4 + 2, 2, Astral.SOLAR, 1);
+            d.setGhostView(ghost);
+            d.moveTo(1.5, 1, 2.5, -60, 0);
+            d.setYBodyRot(-60); d.setYHeadRot(-60); d.yBodyRotO = -60; d.yHeadRotO = -60;
+            return d;
+        });
+    }
+
+    // ---- the whistle (spec, Go here): its commands, and hiring for Create's jobs ----
+
+    private static ItemStack whistleStack() { return new ItemStack(dev.frosthaven.ranchercompanion.item.DrekkiItems.WHISTLE.get()); }
+
+    /** a Mature drekki standing at x, y, z, facing yaw */
+    private static net.createmod.ponder.api.element.ElementLink<net.createmod.ponder.api.element.EntityElement> drekkiAt(SceneBuilder scene, double x, double y, double z, float yaw) {
+        return scene.world().createEntity(level -> {
+            DrekkiEntity d = RancherCompanion.DREKKI.get().create(level);
+            d.setLook(3, 2 * 4 + 2, 2, Astral.SOLAR, 1);
+            d.moveTo(x, y, z, yaw, 0);
+            d.setYBodyRot(yaw); d.setYHeadRot(yaw); d.yBodyRotO = yaw; d.yHeadRotO = yaw;
+            return d;
+        });
+    }
+
+    /** walks it to x, z in a few steps (Ponder moves an entity by setting its place) */
+    private static void walk(SceneBuilder scene, net.createmod.ponder.api.element.ElementLink<net.createmod.ponder.api.element.EntityElement> d, double x, double y, double z, int steps) {
+        for (int i = 1; i <= steps; i++) {
+            final int k = i;
+            scene.world().modifyEntity(d, e -> {
+                double fx = e.getX() + (x - e.getX()) / (steps - k + 1), fz = e.getZ() + (z - e.getZ()) / (steps - k + 1);
+                float yaw = (float) Math.toDegrees(Math.atan2(-(x - e.getX()), z - e.getZ()));
+                e.moveTo(fx, y, fz, yaw, 0);
+                if (e instanceof DrekkiEntity de) { de.setYBodyRot(yaw); de.setYHeadRot(yaw); }
+            });
+            scene.idle(4);
+        }
+    }
+
+    static void whistleCommands(SceneBuilder scene, SceneBuildingUtil util) {
+        scene.title("whistle_commands", "Commanding your drekki");
+        scene.configureBasePlate(0, 0, 9);
+        scene.showBasePlate();
+        scene.idle(15);
+        var d = drekkiAt(scene, 2.5, 1, 3.5, -90);
+        scene.idle(10);
+        scene.overlay().showControls(util.vector().of(2.5, 3.2, 3.5), Pointing.DOWN, 50).rightClick().withItem(whistleStack());
+        scene.idle(10);
+        scene.overlay().showText(80).text("Use the Drekki Whistle: your drekki stays where it is, or follows you again")
+            .pointAt(util.vector().of(2.5, 2.5, 3.5)).placeNearTarget().attachKeyFrame();
+        scene.idle(90);
+        BlockPos spot = util.grid().at(6, 0, 3);
+        scene.overlay().showControls(util.vector().topOf(spot), Pointing.DOWN, 50).rightClick().whileSneaking().withItem(whistleStack());
+        scene.idle(10);
+        scene.overlay().showText(90).text("Sneak and use it on a block, up to 64 blocks away: it walks there, at most 15 blocks")
+            .pointAt(util.vector().topOf(spot)).placeNearTarget().attachKeyFrame();
+        walk(scene, d, 6.5, 1, 3.5, 8);
+        scene.idle(60);
+        scene.overlay().showText(80).text("There it holds the spot for 2 seconds, then follows you again, unless you tell it to stay")
+            .pointAt(util.vector().of(6.5, 2.5, 3.5)).placeNearTarget();
+        scene.idle(90);
+        var zombie = scene.world().createEntity(level -> {
+            var z = net.minecraft.world.entity.EntityType.ZOMBIE.create(level);
+            z.moveTo(3.5, 1, 1.5, 90, 0);
+            z.setYHeadRot(90); z.setYBodyRot(90);
+            return z;
+        });
+        scene.idle(15);
+        scene.overlay().showControls(util.vector().of(3.5, 3, 1.5), Pointing.DOWN, 50).rightClick().whileSneaking().withItem(whistleStack());
+        scene.idle(10);
+        scene.overlay().showText(90).text("Sneak and use it on a hostile mob: your drekki attacks it, whatever its stance. A pup is too young to fight")
+            .pointAt(util.vector().of(3.5, 2, 1.5)).placeNearTarget().attachKeyFrame();
+        walk(scene, d, 4.6, 1, 1.5, 6);
+        scene.idle(20);
+        scene.world().modifyEntity(zombie, net.minecraft.world.entity.Entity::discard);
+        scene.effects().emitParticles(util.vector().of(3.5, 1.5, 1.5), scene.effects().simpleParticleEmitter(net.minecraft.core.particles.ParticleTypes.POOF, util.vector().of(0, 0.05, 0)), 6, 2);
+        scene.idle(70);
+        scene.markAsFinished();
+    }
+
+    static void whistleJobs(SceneBuilder scene, SceneBuildingUtil util) {
+        scene.title("whistle_jobs", "Hiring for Create jobs");
+        scene.configureBasePlate(0, 0, 9);
+        scene.showBasePlate();
+        scene.idle(10);
+        BlockPos seat = util.grid().at(6, 1, 5), job = util.grid().at(6, 1, 1), ticker = util.grid().at(7, 1, 1);
+        scene.world().showSection(util.select().position(seat), Direction.DOWN);
+        scene.world().showSection(util.select().position(job).add(util.select().position(ticker)), Direction.DOWN);
+        scene.idle(15);
+        var d = drekkiAt(scene, 2.5, 1, 3.5, -90);
+        scene.idle(10);
+        scene.overlay().showControls(util.vector().topOf(seat), Pointing.DOWN, 50).rightClick().whileSneaking().withItem(whistleStack());
+        scene.idle(10);
+        scene.overlay().showText(80).text("Sneak and use the whistle on a Create seat: your drekki sits on it")
+            .pointAt(util.vector().topOf(seat)).placeNearTarget().attachKeyFrame();
+        walk(scene, d, 6.5, 1.3, 5.5, 8);
+        scene.idle(70);
+        scene.overlay().showControls(util.vector().topOf(job), Pointing.DOWN, 50).rightClick().whileSneaking().withItem(whistleStack());
+        scene.idle(10);
+        walk(scene, d, 6.5, 1.3, 1.5, 8);
+        scene.overlay().showText(100).text("On a train's seat, or a seat beside a Stock Ticker, it is hired: a Conductor or a Stock keeper")
+            .pointAt(util.vector().topOf(job)).placeNearTarget().attachKeyFrame();
+        scene.idle(110);
+        scene.overlay().showText(110).text("At work it stays on while you are away, keeps Passive, and its food bar holds: no hunger at work. You can check out another drekki meanwhile")
+            .pointAt(util.vector().of(6.5, 2.6, 1.5)).placeNearTarget();
+        scene.idle(120);
+        scene.overlay().showText(100).text("Recall it from its screen, or check it in at its hatchery: it follows you again, and gets hungry again")
+            .pointAt(util.vector().of(6.5, 2.6, 1.5)).placeNearTarget().attachKeyFrame();
+        scene.idle(110);
+        scene.markAsFinished();
+    }
+
+    static void tombGhost(SceneBuilder scene, SceneBuildingUtil util) {
+        scene.title("tomb_ghost", "A fallen drekki's tombstone");
+        scene.configureBasePlate(0, 0, 7);
+        scene.showBasePlate();
+        scene.rotateCameraY(TOMB_TURN);  /* the tombstone's face toward the viewer (Shane, 2026-11-26) */
+        scene.scaleSceneView(TOMB_ZOOM);  /* closer in: the tombstone is one small block on the plate */
+        scene.idle(25);  /* the turn and zoom play out first: text pinned to the tombstone would slide while the view turns */
+        scene.idle(10);
+        BlockPos tomb = util.grid().at(TOMB[0], TOMB[1], TOMB[2]);
+        scene.world().showSection(util.select().position(tomb), Direction.DOWN);
+        scene.idle(15);
+        scene.idle(20);  /* the Ponder screen finishes opening first */
+        scene.overlay().showText(80).text("When a drekki dies, it leaves a tombstone with its gear, and the tombstone keeps the drekki")
+            .pointAt(util.vector().topOf(tomb)).attachKeyFrame();  /* not placeNearTarget: it flipped side to side while the screen opened */
+        scene.idle(90);
+        scene.overlay().showText(70).text("Anyone can take the gear, but only its owner can bring the drekki back")
+            .pointAt(util.vector().topOf(tomb)).placeNearTarget();
+        scene.idle(80);
+        scene.overlay().showText(70).text("Mined, the tombstone keeps its drekki: placed again, it can still bring it back")
+            .pointAt(util.vector().topOf(tomb)).placeNearTarget();
+        scene.idle(80);
+        scene.overlay().showOutlineWithText(util.select().position(tomb.below()), 80).colored(PonderPalette.BLUE)
+            .text("Its way back works only while it stands on soul soil. Anywhere else it is a decoration").placeNearTarget().attachKeyFrame();
+        scene.idle(90);
+        scene.markAsFinished();
+    }
+
+    static void lotus(SceneBuilder scene, SceneBuildingUtil util) {
+        scene.title("lotus", "Growing the Drekki Lotus");
+        scene.configureBasePlate(0, 0, 7);
+        scene.showBasePlate();
+        scene.rotateCameraY(TOMB_TURN);  /* the tombstone's face toward the viewer (Shane, 2026-11-26) */
+        scene.scaleSceneView(TOMB_ZOOM);  /* closer in: the tombstone is one small block on the plate */
+        scene.idle(25);  /* the turn and zoom play out first: text pinned to the tombstone would slide while the view turns */
+        scene.idle(10);
+        BlockPos tomb = util.grid().at(TOMB[0], TOMB[1], TOMB[2]), crop = util.grid().at(CROP[0], CROP[1], CROP[2]), soil = util.grid().at(SOIL[0], SOIL[1], SOIL[2]);
+        scene.world().showSection(util.select().position(tomb), Direction.DOWN);
+        scene.idle(15);
+        scene.overlay().showOutlineWithText(util.select().position(soil), 80).colored(PonderPalette.BLUE)
+            .text("Drekki Lotus Seeds, sold by the wandering trader, plant only on soul soil").placeNearTarget().attachKeyFrame();
+        scene.idle(30);
+        scene.world().showSection(util.select().position(crop), Direction.DOWN);
+        scene.idle(60);
+        scene.overlay().showText(80).text("It grows only in front of a drekki tombstone or behind it, not at its sides")
+            .pointAt(util.vector().centerOf(crop)).placeNearTarget().attachKeyFrame();
+        for (int age = 1; age <= 3; age++) {
+            scene.idle(25);
+            final int a = age;
+            scene.world().modifyBlock(crop, st -> st.setValue(dev.frosthaven.ranchercompanion.block.LotusCropBlock.AGE, a), false);
+        }
+        scene.idle(20);
+        scene.overlay().showText(70).text("Grown, it gives a Drekki Lotus Blossom").pointAt(util.vector().centerOf(crop)).placeNearTarget().attachKeyFrame();
+        scene.idle(40);
+        scene.world().destroyBlock(crop);
+        scene.world().createItemEntity(util.vector().centerOf(crop), util.vector().of(0, 0.2, 0), new ItemStack(dev.frosthaven.ranchercompanion.item.DrekkiItems.LOTUS_BLOSSOM.get()));
+        scene.idle(50);
+        scene.markAsFinished();
+    }
+
+    static void reclaim(SceneBuilder scene, SceneBuildingUtil util) {
+        scene.title("reclaim", "Summoning a fallen drekki");
+        scene.configureBasePlate(0, 0, 7);
+        scene.showBasePlate();
+        scene.rotateCameraY(TOMB_TURN);  /* the tombstone's face toward the viewer (Shane, 2026-11-26) */
+        scene.scaleSceneView(TOMB_ZOOM);  /* closer in: the tombstone is one small block on the plate */
+        scene.idle(25);  /* the turn and zoom play out first: text pinned to the tombstone would slide while the view turns */
+        scene.idle(10);
+        BlockPos tomb = util.grid().at(TOMB[0], TOMB[1], TOMB[2]);
+        scene.world().showSection(util.select().position(tomb), Direction.DOWN);
+        scene.idle(15);
+        scene.overlay().showControls(util.vector().topOf(tomb), Pointing.DOWN, 50).rightClick()
+            .withItem(new ItemStack(dev.frosthaven.ranchercompanion.item.DrekkiItems.LOTUS_BLOSSOM.get()));
+        scene.idle(10);
+        scene.world().modifyBlockEntityNBT(util.select().position(tomb), dev.frosthaven.ranchercompanion.block.TombstoneBlockEntity.class,
+            nbt -> nbt.merge(items(new ItemStack(dev.frosthaven.ranchercompanion.item.DrekkiItems.LOTUS_BLOSSOM.get()))));  /* it lies on the tombstone's foot */
+        var ghost = drekki(scene, true);
+        scene.overlay().showText(90).text("A blossom in one of the tombstone's slots raises its ghost. Its owner lights the candle with flint and steel")
+            .pointAt(util.vector().topOf(tomb)).placeNearTarget().attachKeyFrame();
+        scene.idle(60);
+        scene.overlay().showControls(util.vector().topOf(tomb), Pointing.DOWN, 40).rightClick()
+            .withItem(new ItemStack(net.minecraft.world.item.Items.FLINT_AND_STEEL));
+        scene.idle(10);
+        scene.world().modifyBlock(tomb, st -> st.setValue(dev.frosthaven.ranchercompanion.block.TombstoneBlock.CANDLE, dev.frosthaven.ranchercompanion.block.TombstoneBlock.Candle.LIT), false);
+        var cyan = net.minecraft.core.particles.ColorParticleOption.create(net.minecraft.core.particles.ParticleTypes.ENTITY_EFFECT, 0xFF40E0E8);
+        scene.effects().emitParticles(util.vector().of(3.5, 1.1, 3.5), scene.effects().simpleParticleEmitter(cyan, util.vector().of(0, 0.02, 0)), 2, 90);
+        scene.idle(50);
+        scene.overlay().showOutlineWithText(util.select().fromTo(0, 1, 0, 6, 1, 6), 80).colored(PonderPalette.WHITE)
+            .text("Mature ghosts may be able to sense kin at a nearby hatchery.")
+            .placeNearTarget();  /* a hint, no more (Shane, 2026-11-26) */
+        scene.idle(90);
+        scene.overlay().showText(70).text("The candle burns for one day. Taking the blossom out or putting the candle out resets the process: it can be done again")
+            .pointAt(util.vector().topOf(tomb)).placeNearTarget();
+        scene.idle(80);
+        scene.world().modifyBlock(tomb, st -> st.setValue(dev.frosthaven.ranchercompanion.block.TombstoneBlock.CANDLE, dev.frosthaven.ranchercompanion.block.TombstoneBlock.Candle.MELTED), false);
+        scene.overlay().showText(60).text("The day done, the candle has melted down").pointAt(util.vector().topOf(tomb)).placeNearTarget().attachKeyFrame();
+        scene.idle(70);
+        scene.world().modifyEntity(ghost, net.minecraft.world.entity.Entity::discard);
+        scene.world().modifyBlockEntityNBT(util.select().position(tomb), dev.frosthaven.ranchercompanion.block.TombstoneBlockEntity.class,
+            nbt -> nbt.put("Items", new ListTag()));  /* the blossom is used up */
+        drekki(scene, false);
+        scene.effects().emitParticles(util.vector().of(1.5, 1.5, 2.5), scene.effects().simpleParticleEmitter(net.minecraft.core.particles.ParticleTypes.END_ROD, util.vector().of(0, 0.05, 0)), 6, 3);
+        scene.overlay().showText(90).text("Then its owner presses Summon fallen drekki: it is alive again, at their side. The blossom is used up")
+            .pointAt(util.vector().of(1.5, 2.2, 2.5)).placeNearTarget().attachKeyFrame();
+        scene.idle(100);
+        scene.overlay().showText(80).text("Back from death, it carries Resurrection Fatigue for a day: its mood is two bands lower")
+            .pointAt(util.vector().of(1.5, 2.2, 2.5)).placeNearTarget();
+        scene.idle(90);
+        /* used: the tombstone cracks and stays as decoration (Shane, 2026-11-26) */
+        scene.world().modifyBlock(tomb, st -> st.setValue(dev.frosthaven.ranchercompanion.block.TombstoneBlock.CRACKED, true)
+            .setValue(dev.frosthaven.ranchercompanion.block.TombstoneBlock.CANDLE, dev.frosthaven.ranchercompanion.block.TombstoneBlock.Candle.UNLIT), false);
+        scene.overlay().showText(90).text("Its work done, the tombstone cracks. It stays as decoration: a low light with a short message of your own")
+            .pointAt(util.vector().topOf(tomb)).placeNearTarget().attachKeyFrame();
+        scene.idle(50);
+        scene.overlay().showControls(util.vector().topOf(tomb), Pointing.DOWN, 40).rightClick()
+            .withItem(new ItemStack(net.minecraft.world.item.Items.FLINT_AND_STEEL));
+        scene.idle(10);
+        scene.world().modifyBlock(tomb, st -> st.setValue(dev.frosthaven.ranchercompanion.block.TombstoneBlock.CANDLE, dev.frosthaven.ranchercompanion.block.TombstoneBlock.Candle.LIT), false);
+        scene.idle(60);
+        scene.markAsFinished();
     }
 
     /** a stage 1 (or bigger) drekki standing at a spot, facing a yaw */

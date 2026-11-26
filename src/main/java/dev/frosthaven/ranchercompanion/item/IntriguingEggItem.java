@@ -19,8 +19,11 @@ public final class IntriguingEggItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> lines, TooltipFlag flag) {
+        net.minecraft.nbt.CompoundTag bred = stack.get(DrekkiData.BRED.get());
+        if (bred != null) lines.add(Component.translatable(getDescriptionId() + ".bred", bred.getString("A"), bred.getString("B")).withStyle(ChatFormatting.GOLD));
         Long t = stack.get(DrekkiData.INCUBATION.get());
         if (t == null) {
+            if (bred != null) return;
             lines.add(Component.translatable(getDescriptionId() + ".tooltip").withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
             return;
         }

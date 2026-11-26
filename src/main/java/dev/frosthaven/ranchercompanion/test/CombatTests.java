@@ -236,28 +236,6 @@ public final class CombatTests {
         });
     }
 
-    @GameTest(template = "floor", timeoutTicks = 200)
-    public static void phoenixHeartTurnsIntoItsEggAndBack(GameTestHelper t) {
-        ServerPlayer p = LifeTests.player(t);
-        DrekkiEntity d = out(t, p, 2, Diet.SEED, Life.Stance.PASSIVE);
-        Roster r = Ranch.roster(t.getLevel().getServer());
-        Roster.Entry e = r.of(p.getUUID()).get(0);
-        d.life.traits.add(Trait.PHOENIX_HEART.id);
-        d.hurt(d.damageSources().generic(), 1000);
-        t.runAfterDelay(2, () -> {
-            t.assertTrue(r.get(e.id) != null && e.phoenix == Roster.Entry.EGG_GIVEN && e.where == Roster.Where.NONE, "kept, its egg given: " + e.phoenix + " " + e.where);
-            ItemStack egg = null;
-            for (ItemStack s : p.getInventory().items) if (s.has(DrekkiData.CARRIED.get())) egg = s;
-            t.assertTrue(egg != null, "the Phoenix egg is in the owner's inventory");
-            egg.set(DrekkiData.INCUBATION.get(), dev.frosthaven.ranchercompanion.look.Incubation.READY + 1);  /* skip the 4 days */
-            BlockPos h = t.absolutePos(LifeTests.H);
-            Ranch.putEgg(p, h, egg);
-            Ranch.hatch(p, h);
-            t.assertTrue(e.where == Roster.Where.HOME && e.phoenix == 0, "back at the hatchery: " + e.where);
-            t.succeed();
-        });
-    }
-
     @GameTest(template = "floor", timeoutTicks = 100)
     public static void aGhostOnlyGoesByKill(GameTestHelper t) {
         ServerPlayer p = LifeTests.player(t);
@@ -280,21 +258,6 @@ public final class CombatTests {
         });
     }
 
-    @GameTest(template = "floor", timeoutTicks = 100)
-    public static void aGhostRevivesWithWeaknessAndAGoldenApple(GameTestHelper t) {
-        ServerPlayer p = LifeTests.player(t);
-        DrekkiEntity d = out(t, p, 2, Diet.RAW, Life.Stance.PASSIVE);
-        d.life.ghost = true;
-        d.syncLife();
-        p.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.GOLDEN_APPLE));
-        p.interactOn(d, InteractionHand.MAIN_HAND);
-        t.assertTrue(!d.reviving() && p.getMainHandItem().getCount() == 1, "no Weakness: the apple is not taken");
-        d.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 600));
-        p.interactOn(d, InteractionHand.MAIN_HAND);
-        t.assertTrue(d.reviving() && p.getMainHandItem().isEmpty(), "Weakness, then the apple: it shakes");
-        d.life.cooldowns.put(Vitals.REVIVE, Vitals.now(d));  /* skip the 3 minutes */
-        t.succeedWhen(() -> t.assertTrue(!d.life.ghost && !d.reviving(), "it is a normal drekki again"));
-    }
 
     /** the catch-up teleport never lands it in or beside lava: with no safe spot by the owner it stays put; with Fire
      *  Resistance lava is no danger, so it may */

@@ -62,20 +62,34 @@ public final class GoHereTests {
         });
     }
 
+    /** the walkway runs past the test's own loaded area: its chunks are kept ticking while the test runs (else the drekki
+     *  freezes where it crosses into one that is not, and the test fails now and then, by where it lands) */
+    private static void walkwayTicks(GameTestHelper t) {
+        var level = t.getLevel();
+        java.util.Set<net.minecraft.world.level.ChunkPos> forced = new java.util.HashSet<>();
+        for (int x = 0; x <= 46; x += 4) forced.add(new net.minecraft.world.level.ChunkPos(t.absolutePos(new BlockPos(x, 20, 1))));
+        forced.add(new net.minecraft.world.level.ChunkPos(t.absolutePos(new BlockPos(46, 20, 1))));
+        for (var c : forced) level.setChunkForced(c.x, c.z, true);
+        /* left forced: the game test server ends with the run */
+    }
+
     @GameTest(template = "floor", timeoutTicks = 500)
     public static void itWalksAtMost15Blocks(GameTestHelper t) {
         ServerPlayer p = LifeTests.player(t);
         DrekkiEntity d = CombatTests.out(t, p, 2, Diet.RAW, Life.Stance.PASSIVE);
         /* a long walkway 20 blocks above the floor, clear of the tests around this one */
         for (int x = 0; x <= 46; x++) for (int z = 0; z <= 2; z++) t.setBlock(new BlockPos(x, 20, z), Blocks.STONE);
+        walkwayTicks(t);
         Vec3[] from = new Vec3[1];
         t.runAfterDelay(5, () -> {  /* it is placed after the first tick */
             d.moveTo(Vec3.atBottomCenterOf(t.absolutePos(new BlockPos(1, 21, 1))));
             d.setDeltaMovement(Vec3.ZERO);
             from[0] = d.position();
             GoHere.sendTo(d, t.absolutePos(new BlockPos(45, 21, 1)));
+            int sent = d.tickCount;
             t.succeedWhen(() -> {
-                t.assertTrue(d.goHere == null && d.held(), "it stopped and holds: goHere " + d.goHere + " at " + d.position());
+                t.assertTrue(d.goHere == null && d.held(), "it stopped and holds: goHere " + d.goHere + " at " + d.position() + " after " + (d.tickCount - sent)
+                    + " ticks, walked " + Math.hypot(d.getX() - from[0].x, d.getZ() - from[0].z) + ", on ground " + d.onGround() + ", goals " + d.goalSelector.getAvailableGoals().stream().filter(g -> g.isRunning()).map(g -> g.getGoal().getClass().getSimpleName()).toList());
                 double went = Math.hypot(d.getX() - from[0].x, d.getZ() - from[0].z);
                 t.assertTrue(went > 10 && went < 17 && d.getY() > from[0].y - 1, "about 15 blocks along the walkway, not 44: " + went + " at y " + d.getY());
             });
@@ -88,6 +102,7 @@ public final class GoHereTests {
         DrekkiEntity d = CombatTests.out(t, p, 1, Diet.RAW, Life.Stance.PASSIVE);
         /* a long walkway 20 blocks above the floor, clear of the tests around this one */
         for (int x = 0; x <= 46; x++) for (int z = 0; z <= 2; z++) t.setBlock(new BlockPos(x, 20, z), Blocks.STONE);
+        walkwayTicks(t);
         Vec3[] from = new Vec3[1];
         t.runAfterDelay(5, () -> {  /* it is placed after the first tick */
             d.moveTo(Vec3.atBottomCenterOf(t.absolutePos(new BlockPos(1, 21, 1))));

@@ -54,6 +54,10 @@ public final class DrekkiJei implements IModPlugin {
                 }
         }
         reg.addRecipes(RecipeTypes.CRAFTING, out);
+        /* the way back from death (spec, Tombstone): no recipes, an info page each; the tombstone's Ponder walks through it */
+        reg.addItemStackInfo(new ItemStack(DrekkiItems.TOMBSTONE.get()), net.minecraft.network.chat.Component.translatable("jei.rancher_companion.tombstone"));
+        reg.addItemStackInfo(new ItemStack(DrekkiItems.LOTUS_SEEDS.get()), net.minecraft.network.chat.Component.translatable("jei.rancher_companion.lotus_seeds"));
+        reg.addItemStackInfo(new ItemStack(DrekkiItems.LOTUS_BLOSSOM.get()), net.minecraft.network.chat.Component.translatable("jei.rancher_companion.lotus_blossom"));
     }
 
     /** the self test's check: how many of these JEI holds once it runs */
