@@ -411,4 +411,24 @@ public final class CombatTests {
         t.assertTrue(d.hurt(src.mobAttack(z), 2) && d.getHealth() < health, "a monster still hurts it");
         t.succeed();
     }
+
+    /** a drekki shows its effects as swirl particles like a wolf or a player (Shane, 2026-11-26): vanilla's effect particle
+     *  list, which every client draws around the mob, carries the effect's colour once it is applied */
+    @GameTest(template = "floor", timeoutTicks = 60)
+    public static void effectsShowAsSwirlParticles(GameTestHelper t) {
+        ServerPlayer p = LifeTests.player(t);
+        DrekkiEntity d = out(t, p, 2, Diet.SEED, Life.Stance.REACTIVE);
+        d.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.POISON, 200));
+        t.runAfterDelay(5, () -> {
+            try {
+                var f = net.minecraft.world.entity.LivingEntity.class.getDeclaredField("DATA_EFFECT_PARTICLES");
+                f.setAccessible(true);
+                @SuppressWarnings("unchecked")
+                var key = (net.minecraft.network.syncher.EntityDataAccessor<java.util.List<net.minecraft.core.particles.ParticleOptions>>) f.get(null);
+                var list = d.getEntityData().get(key);
+                t.assertTrue(!list.isEmpty(), "the drekki's synced effect particles are empty: no swirls would show");
+            } catch (ReflectiveOperationException e) { throw new RuntimeException(e); }
+            t.succeed();
+        });
+    }
 }
