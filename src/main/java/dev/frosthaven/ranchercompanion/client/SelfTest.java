@@ -48,6 +48,8 @@ public final class SelfTest {
     private static final boolean BREED = Boolean.getBoolean("rancher_companion.selftest.breed");
     /** with -Drancher_companion.selftest.rebirth=true: the way back from death (SelfTestRebirth) */
     private static final boolean REBIRTH = Boolean.getBoolean("rancher_companion.selftest.rebirth");
+    /** with -Drancher_companion.selftest.basin=true (and Create in run/mods): the tonics brewed in Create's Basin (SelfTestBasin) */
+    private static final boolean BASIN = Boolean.getBoolean("rancher_companion.selftest.basin");
     /** only the 0.5.0 section: the Potion of Horizons, the nine new traits, the void (SelfTestNewTraits) */
     private static final boolean NEW = Boolean.getBoolean("rancher_companion.selftest.new");
 
@@ -245,6 +247,7 @@ public final class SelfTest {
         if (HEARTS) { SelfTestTraits.hearts(); return; }
         if (BREED) { SelfTestBreed.steps(hatch); return; }
         if (REBIRTH) { SelfTestRebirth.steps(hatch); return; }
+        if (BASIN) { SelfTestBasin.steps(hatch); return; }
         if (GEAR) { SelfTestTraits.gear(o); return; }
         quiet("far_away", 80, () -> cmd("tp @s " + (o.getX() + 40.5) + " " + o.getY() + " " + (o.getZ() + 0.5)));
         stepUntil("teleports_to_owner", 10, 15, () -> {}, () -> pup() != null && pup().distanceTo(mc().player) < 6);

@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "rancher_companion:block/starlight_tonic"
+    }
+  }
+}

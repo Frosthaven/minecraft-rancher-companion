@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "rancher_companion:starlight_tonic",
+      "required": false
+    },
+    {
+      "id": "rancher_companion:heirloom_tonic",
+      "required": false
+    }
+  ]
+}

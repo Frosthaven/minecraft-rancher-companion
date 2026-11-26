@@ -29,6 +29,7 @@ public final class RancherCompanionClient {
             modBus.addListener(RegisterColorHandlersEvent.Block.class, dev.frosthaven.ranchercompanion.compat.sophisticated.client.SophColors::blocks);
         modBus.addListener(RegisterColorHandlersEvent.Item.class, BlockClient::itemColors);
         modBus.addListener(EntityRenderersEvent.RegisterRenderers.class, BlockClient::renderers);
+        TonicFluidsClient.register(modBus);
         NeoForge.EVENT_BUS.addListener(ClientTickEvent.Post.class, DrekkiParticles::tick);
         NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.client.event.RenderPlayerEvent.Pre.class, RiderSeat::onRender);
         NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.entity.player.ItemTooltipEvent.class, ItemSubtext::onTooltip);

@@ -34,6 +34,9 @@ public final class HatcheryMenu extends AbstractContainerMenu {
     /** the first view (client); the screen keeps the newer ones */
     public final HatcheryView view;
     public boolean breeding;
+    /** a pairing runs at this hatchery: the tonic slot is shut (Shane, 2026-11-26). The server reads the hatchery; the
+     *  screen sets it from each view it gets. */
+    public boolean pairing;
     private final SimpleContainer tonic = new SimpleContainer(1);
 
     public HatcheryMenu(int id, Inventory inv, BlockPos pos, HatcheryView view) {
@@ -41,9 +44,9 @@ public final class HatcheryMenu extends AbstractContainerMenu {
         this.pos = pos;
         this.view = view;
         addSlot(new Slot(tonic, 0, TONIC_X, TONIC_Y) {
-            @Override public boolean mayPlace(ItemStack s) { return s.is(TONICS); }
+            @Override public boolean mayPlace(ItemStack s) { return s.is(TONICS) && !pairing(inv.player); }
             @Override public int getMaxStackSize() { return 1; }
-            @Override public boolean isActive() { return breeding; }
+            @Override public boolean isActive() { return breeding && !pairing(inv.player); }
         });
         for (int r = 0; r < 3; r++)
             for (int c = 0; c < 9; c++) addSlot(new Slot(inv, 9 + r * 9 + c, INV_X + c * 18, INV_Y + r * 18));
@@ -59,6 +62,11 @@ public final class HatcheryMenu extends AbstractContainerMenu {
     public static void open(ServerPlayer p, BlockPos pos, HatcheryView view) {
         p.openMenu(new SimpleMenuProvider((id, inv, pl) -> new HatcheryMenu(id, inv, pos, null), view.title()),
             buf -> HatcheryView.CODEC.encode(buf, view));
+    }
+
+    private boolean pairing(Player p) {
+        if (p.level().isClientSide) return pairing;
+        return p.level().getBlockEntity(pos) instanceof HatcheryBlockEntity be && be.breedA() != null;
     }
 
     /** Pair takes the tonic: the hatchery holds it while they breed */
@@ -79,7 +87,7 @@ public final class HatcheryMenu extends AbstractContainerMenu {
         if (!s.hasItem()) return ItemStack.EMPTY;
         ItemStack st = s.getItem(), before = st.copy();
         if (index == TONIC) { if (!moveItemStackTo(st, INV, slots.size(), true)) return ItemStack.EMPTY; }
-        else if (!breeding || !st.is(TONICS) || !moveItemStackTo(st, TONIC, TONIC + 1, false)) return ItemStack.EMPTY;
+        else if (!breeding || pairing(p) || !st.is(TONICS) || !moveItemStackTo(st, TONIC, TONIC + 1, false)) return ItemStack.EMPTY;
         if (st.isEmpty()) s.setByPlayer(ItemStack.EMPTY); else s.setChanged();
         return before;
     }

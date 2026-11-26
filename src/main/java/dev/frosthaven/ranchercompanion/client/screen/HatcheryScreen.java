@@ -50,6 +50,7 @@ public final class HatcheryScreen extends AbstractContainerScreen<HatcheryMenu> 
     public HatcheryScreen(HatcheryMenu menu, Inventory inv, Component title) {
         super(menu, inv, title);
         this.view = menu.view;
+        menu.pairing = view != null && view.breeding();
         imageWidth = HatcheryMenu.W;
         imageHeight = HatcheryMenu.H;
         inventoryLabelY = 10000;  /* the steel panel needs no label */
@@ -63,6 +64,7 @@ public final class HatcheryScreen extends AbstractContainerScreen<HatcheryMenu> 
 
     private void update(HatcheryView v) {
         view = v;
+        menu.pairing = v.breeding();
         confirming = false;
         if (selected != null && row(selected) == null) selected = null;
         scroll = Math.max(0, Math.min(scroll, Math.max(0, v.rows().size() - ROWS)));

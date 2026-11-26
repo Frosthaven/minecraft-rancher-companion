@@ -64,6 +64,13 @@ neoForge {
             jvmArgument '-Drancher_companion.selftest=true'
             jvmArgument '-Drancher_companion.selftest.rebirth=true'
         }
+        // the tonics brewed in Create's Basin (client/SelfTestBasin; put Create's jar in run/mods first)
+        selfTestBasin {
+            client()
+            programArguments.addAll '--quickPlaySingleplayer', 'selftest'
+            jvmArgument '-Drancher_companion.selftest=true'
+            jvmArgument '-Drancher_companion.selftest.basin=true'
+        }
         // the hatchery's Roster and Breeding tabs, a pairing and the bred hatch (client/SelfTestBreed)
         selfTestBreed {
             client()

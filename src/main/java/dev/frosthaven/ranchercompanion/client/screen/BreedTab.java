@@ -105,7 +105,7 @@ final class BreedTab {
         gearButton(g, mx, my);
         g.drawString(font, Component.translatable("screen.rancher_companion.breed.tonic"), L + TEXT_X, T + 101, Art.THREAD, false);
         g.drawString(font, Component.translatable("screen.rancher_companion.breed.optional"), L + TEXT_X, T + 111, Art.DIM, false);
-        if (s.getMenu().tonic().isEmpty() && Art.in(mx, my, L + 9, T + 100, 18, 18)) s.tip = List.of(Component.translatable("screen.rancher_companion.breed.no_tonics"));
+        if (!s.view.breeding() && s.getMenu().tonic().isEmpty() && Art.in(mx, my, L + 9, T + 100, 18, 18)) s.tip = List.of(Component.translatable("screen.rancher_companion.breed.no_tonics"));
         if (picking == 3) traitPicker(g, font, mx, my); else if (picking != 0) picker(g, font, mx, my); else preview(g, font, mx, my);
         if (s.view.breeding()) { breedingBar(g, font, mx, my); return; }
         Component why = pairWhy();

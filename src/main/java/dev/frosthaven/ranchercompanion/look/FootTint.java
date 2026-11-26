@@ -16,7 +16,7 @@ public final class FootTint {
 
     /** dark charcoal, almost black: every drekki's feet, legs, chest patch, tail ring and horn bases (Shane, 2026-11-26:
      *  "always and forever for now"); the birth biome is still kept, for a later return of the biome tints */
-    public static final int CHARCOAL = 0x26262a;
+    public static final int CHARCOAL = 0x101012;  /* darker still: it blends with the fur (Shane, 2026-11-26) */
 
     public static int of(int category) { return CHARCOAL; }
 

@@ -1268,9 +1268,15 @@ These rules replace the ones below where they differ; rare lines and tonics come
 - Horns: same bloodline, the parents' shared horn or one of the two; mixed, random.
 - Eyes (Shane, 2026-11-26; replaces "always Dormant" from earlier the same day): lit from the hatch, never Dormant. Each
   parent's astral set is its astral, or both astrals of a two-eyed drekki (which eye is which does not matter). The same
-  set on both parents: the child gets it (two two-eyed parents with the same pair give that pair, no tonic needed).
-  Different: one of the parents' astrals at random. The Drekki Tonic of Starlight (brewed: Awkward Potion + amethyst shard;
-  in the tonic slot, taken at Pair, given back on Cancel) gives one eye of each instead when they differ. The preview's
+  set on both parents: the child gets it. Two two-eyed parents give a two-eyed child: two different astrals drawn at
+  random from both parents' astrals together (Shane, 2026-11-26; the same pair on both gives that pair). Otherwise
+  different sets give one of the parents' astrals at random. The Drekki Tonic of Starlight (brewed: Awkward Potion + amethyst shard;
+  in the tonic slot, taken at Pair, given back on Cancel) gives one eye of each instead when they differ. The tonic slot
+  is shut while a pairing runs at the hatchery (Shane, 2026-11-26).
+- Tonics with Create (Shane, 2026-11-26): a heated Basin brews 1000 mB of Starlight or Heirloom fluid from 1000 mB of
+  Awkward potion fluid and the ingredient; a Spout bottles 250 mB, an Item Drain empties a bottle. The Potion of
+  Horizons is its own fluid too (mixin/CreatePotionFluidMixin: Create's brewing and Item Drain give it), so the three
+  flow in the world (no bucket) with Create's potion fluid textures, each tinted the color of its icon's liquid. The preview's
   "Eyes:" shows each possible result as an eye icon ("/" between choices), the names on hover. The drekki screen's
   Details tab reads "Astral:" and the eye icon (9 x 7, the iris color with a darker rim and pupil); a two-eyed drekki's
   icon is split down the pupil, one half per astral, so every pair fits the one line; the names and effects on hover.

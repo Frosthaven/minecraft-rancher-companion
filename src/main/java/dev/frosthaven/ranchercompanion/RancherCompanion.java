@@ -40,6 +40,7 @@ public final class RancherCompanion {
         DrekkiSounds.SOUNDS.register(modBus);
         DrekkiItems.register(modBus);
         dev.frosthaven.ranchercompanion.item.DrekkiPotions.register(modBus);
+        dev.frosthaven.ranchercompanion.item.TonicFluids.register(modBus);  /* the tonics as fluids, for Create's Basin and Spout */
         NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.brewing.RegisterBrewingRecipesEvent.class, dev.frosthaven.ranchercompanion.item.DrekkiPotions::brewing);
         dev.frosthaven.ranchercompanion.item.DrekkiRecipes.register(modBus);
         if (dev.frosthaven.ranchercompanion.item.Bags.sophisticated()) {

@@ -15,7 +15,9 @@ import java.util.Map;
  * <li>Eyes (astral; Shane, 2026-11-26): each parent's astral set is its one astral, or the two of a two-eyed drekki. The
  *     same set on both parents gives the child that set (a two-eyed pair passes both). Otherwise the child takes one
  *     astral, one of the parents' at random; with the Starlight Tonic ({@code twin}) it takes one of each parent's, one
- *     per eye, when they differ. Lit from the hatch, never Dormant; which eye gets which color is random.</li>
+ *     per eye, when they differ. Two parents that both have two different eyes give a child with two different eyes:
+ *     two astrals drawn at random from the parents' astrals together (Shane, 2026-11-26). Lit from the hatch, never
+ *     Dormant; which eye gets which color is random.</li>
  * <li>Traits (Shane, 2026-11-26): up to {@link #KEEP}. The child's line's legendary trait first, when it has one (Spirit
  *     Veil for a Bakeneko), then the Heirloom Tonic's trait; then the pool, a copy of each trait per parent that holds it,
  *     shuffled and rolled one by one at 1/3 plus the pair's mood score (the average of both parents': Miserable -10
@@ -49,6 +51,11 @@ public final class Breeding {
 
     /** the child's eyes: one astral, or two (one per eye, sides at random) */
     public static int[] eyes(int[] a, int[] b, boolean twin, Rng rng) {
+        if (a.length == 2 && b.length == 2 && !twin) {  /* both odd-eyed: two different astrals from the parents' together */
+            List<Integer> pool = pool(a, b);
+            int x = pool.remove(rng.below(pool.size()));
+            return new int[]{x, pool.get(rng.below(pool.size()))};
+        }
         if (sameSet(a, b)) return a.length == 2 && rng.below(2) == 1 ? new int[]{a[1], a[0]} : a.clone();
         if (twin) {
             List<int[]> pairs = new ArrayList<>();
@@ -62,9 +69,21 @@ public final class Breeding {
         return new int[]{rng.below(2) == 0 ? x : y};
     }
 
+    /** both parents' astrals, each once */
+    private static List<Integer> pool(int[] a, int[] b) {
+        List<Integer> pool = new ArrayList<>();
+        for (int[] s : new int[][]{a, b}) for (int x : s) if (!pool.contains(x)) pool.add(x);
+        return pool;
+    }
+
     /** the eyes a pairing may give, for the preview: each possible set once (one astral, or a pair in either order once) */
     public static List<int[]> possibleEyes(int[] a, int[] b, boolean twin) {
         List<int[]> out = new ArrayList<>();
+        if (a.length == 2 && b.length == 2 && !twin) {
+            List<Integer> pool = pool(a, b);
+            for (int i = 0; i < pool.size(); i++) for (int j = i + 1; j < pool.size(); j++) out.add(new int[]{pool.get(i), pool.get(j)});
+            return out;
+        }
         if (sameSet(a, b)) { out.add(a.clone()); return out; }
         if (twin) {
             for (int x : a) for (int y : b) if (x != y && out.stream().noneMatch(p -> sameSet(p, new int[]{x, y}))) out.add(new int[]{x, y});
