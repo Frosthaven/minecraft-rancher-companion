@@ -216,7 +216,10 @@ public final class HatcheryScreen extends Screen {
         if (d == null) return;
         d.tickCount = (int) (mc.level.getGameTime() % 100000);
         float k = r.stage() == 1 ? 26 : r.stage() == 2 ? 17 : 11;  /* stage 2 and 3 models are at 75% (Dims.scale) */
-        InventoryScreen.renderEntityInInventoryFollowsAngle(g, x, y, x + 20, y + 20, (int) k, 0.0625f, 0.6f, -0.2f, d);
+        dev.frosthaven.ranchercompanion.client.DrekkiRenderer.inScreen = true;
+        try {
+            InventoryScreen.renderEntityInInventoryFollowsAngle(g, x, y, x + 20, y + 20, (int) k, 0.0625f, 0.6f, -0.2f, d);
+        } finally { dev.frosthaven.ranchercompanion.client.DrekkiRenderer.inScreen = false; }
     }
 
     private void confirm(GuiGraphics g, int mx, int my, Row sel) {

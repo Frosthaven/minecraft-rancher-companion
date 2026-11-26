@@ -477,6 +477,27 @@ final class SelfTestTraits {
     }
 
     /** the trait screen with one trait recharging (no tooltip over the list), and a learned message's link hovered in chat */
+    /** the drekki screen at each stage, named, so the hearts rows and the model (no name tag over it) can be seen:
+     *  pup 10, Fledgling, Mature 25, Mature with Hearty 28, Mature with Health Boost over 30 (the close-up rows) */
+    static void hearts() {
+        Object[][] cases = {{"pup", 1, false, false}, {"fledgling", 2, false, false}, {"mature", 3, false, false},
+            {"mature_hearty", 3, true, false}, {"mature_boost", 3, true, true}};
+        for (Object[] c : cases) {
+            String n = (String) c[0]; int stage = (Integer) c[1]; boolean hearty = (Boolean) c[2], boost = (Boolean) c[3];
+            quiet("hearts_" + n + "_set", 30, () -> { mc().setScreen(null); life(d -> {
+                d.setCustomName(Component.literal("Ashford"));
+                d.life.traits.clear(); if (hearty) d.life.traits.add("hearty");
+                d.setLook(stage, d.line(), d.diet(), d.astral(), d.horn());
+                if (boost) d.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.HEALTH_BOOST, 12000, 1));
+                else d.removeEffect(net.minecraft.world.effect.MobEffects.HEALTH_BOOST);
+                d.applyStageHealth(true); d.setHealth(d.getMaxHealth()); }); });
+            quiet("hearts_" + n + "_near", 15, () -> { emptyHand(); near(pup()); });
+            step("hearts_" + n, 25, () -> { dev.frosthaven.ranchercompanion.client.screen.DrekkiScreen.testMouse = new int[]{2, 2}; interact("open its screen"); }, () -> ds() != null);
+            quiet("hearts_" + n + "_hold", 120, () -> {});   /* 6 s on screen for the watcher */
+        }
+        quiet("hearts_close", 10, () -> { dev.frosthaven.ranchercompanion.client.screen.DrekkiScreen.testMouse = null; mc().setScreen(null); });
+    }
+
     static void ui() {
         quiet("ui_traits", 20, () -> life(d -> { d.life.traits.clear(); d.life.traits.add("undertow"); d.life.traits.add("patchwork"); d.life.traits.add("hook_line_sinker");
             d.life.cooldowns.put("undertow", Vitals.now(d) + 1500); }));

@@ -88,7 +88,10 @@ public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
         }
         if (d == null) return;
         int k = d.stage() == 1 ? 42 : d.stage() == 2 ? 35 : 21;  /* the frame as before: the model is at 75% from stage 2 (Dims.scale) */
-        InventoryScreen.renderEntityInInventoryFollowsMouse(g, leftPos + 29, topPos + 23, leftPos + 79, topPos + 121, k, 0.0625f, mx, my, d);
+        dev.frosthaven.ranchercompanion.client.DrekkiRenderer.inScreen = true;
+        try {
+            InventoryScreen.renderEntityInInventoryFollowsMouse(g, leftPos + 29, topPos + 23, leftPos + 79, topPos + 121, k, 0.0625f, mx, my, d);
+        } finally { dev.frosthaven.ranchercompanion.client.DrekkiRenderer.inScreen = false; }
     }
 
     private void ghost(GuiGraphics g, int slot, net.minecraft.world.item.ItemStack item, int sy) {
@@ -133,9 +136,13 @@ public final class DrekkiScreen extends AbstractContainerScreen<DrekkiMenu> {
         int x = INFO_X, y = 26;
         int hearts = (int) Math.ceil(d.getMaxHealth() / 2), full = (int) d.getHealth() / 2;
         boolean half = ((int) Math.ceil(d.getHealth())) % 2 == 1;
-        int perRow = hearts > 20 ? 13 : 10;  /* vanilla's ten to a row; a Mature's 25 take 13 so they stay two rows over the text */
-        for (int i = 0; i < hearts; i++) {  /* vanilla's HUD: 8 px apart */
-            int hx = x + (i % perRow) * 8, hy = y + (i / perRow) * 9;
+        /* vanilla's ten to a row; past 20, two even rows (a Mature's 25 take 13, Hearty's 28 take 14), so they stay two rows
+           over the text (Hearty's 28 made three at 13 a row and pushed the mood line onto the buttons); past 30 (Health Boost)
+           the hearts of a row move closer than vanilla's 8 px so the row still fits the panel */
+        int perRow = hearts > 20 ? (hearts + 1) / 2 : 10;
+        int dx = perRow <= 15 ? 8 : Math.max(2, (INFO_W - 9) / (perRow - 1));
+        for (int i = 0; i < hearts; i++) {
+            int hx = x + (i % perRow) * dx, hy = y + (i / perRow) * 9;
             g.blitSprite(EMPTY, hx, hy, 9, 9);
             if (i < full) g.blitSprite(HEART, hx, hy, 9, 9);
             else if (i == full && half) g.blitSprite(HALF, hx, hy, 9, 9);

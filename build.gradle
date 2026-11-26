@@ -50,6 +50,13 @@ neoForge {
             jvmArgument '-Drancher_companion.selftest=true'
             jvmArgument '-Drancher_companion.selftest.new=true'
         }
+        // the drekki screen at each stage: hearts rows and the model without a name tag (SelfTestTraits.hearts)
+        selfTestHearts {
+            client()
+            programArguments.addAll '--quickPlaySingleplayer', 'selftest'
+            jvmArgument '-Drancher_companion.selftest=true'
+            jvmArgument '-Drancher_companion.selftest.hearts=true'
+        }
         // barding and bags through the real drekki screen (SelfTestTraits.gear)
         selfTestGear {
             client()

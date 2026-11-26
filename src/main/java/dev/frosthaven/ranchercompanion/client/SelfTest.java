@@ -42,6 +42,8 @@ public final class SelfTest {
     /** with -Drancher_companion.selftest.ui=true: hatch and check out a pup, then only the trait screen and chat shots */
     private static final boolean UI = Boolean.getBoolean("rancher_companion.selftest.ui");
     private static final boolean GEAR = Boolean.getBoolean("rancher_companion.selftest.gear");
+    /** with -Drancher_companion.selftest.hearts=true: hatch and check out a pup, then only its screen at each stage (hearts rows, no name tag) */
+    private static final boolean HEARTS = Boolean.getBoolean("rancher_companion.selftest.hearts");
     /** only the 0.5.0 section: the Potion of Horizons, the nine new traits, the void (SelfTestNewTraits) */
     private static final boolean NEW = Boolean.getBoolean("rancher_companion.selftest.new");
 
@@ -230,6 +232,7 @@ public final class SelfTest {
         if (TRAITS) { SelfTestTraits.build(o); return; }
         if (NEW) { SelfTestTraits.site(o); SelfTestNewTraits.steps(); quiet("new_end", 10, () -> cmd("gamemode creative")); return; }
         if (UI) { SelfTestTraits.ui(); return; }
+        if (HEARTS) { SelfTestTraits.hearts(); return; }
         if (GEAR) { SelfTestTraits.gear(o); return; }
         quiet("far_away", 80, () -> cmd("tp @s " + (o.getX() + 40.5) + " " + o.getY() + " " + (o.getZ() + 0.5)));
         stepUntil("teleports_to_owner", 10, 15, () -> {}, () -> pup() != null && pup().distanceTo(mc().player) < 6);

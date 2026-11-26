@@ -16,6 +16,12 @@ import net.minecraft.resources.ResourceLocation;
 
 /** Picks the baked model for the drekki's look, and draws the locked eyes full bright over it. */
 public final class DrekkiRenderer extends MobRenderer<DrekkiEntity, DrekkiModel> {
+    /** true while a screen draws a drekki model (its own screen, the hatchery rows): no name tag over the model there */
+    public static boolean inScreen;
+
+    @Override
+    protected boolean shouldShowName(DrekkiEntity d) { return !inScreen && super.shouldShowName(d); }
+
     public DrekkiRenderer(EntityRendererProvider.Context ctx) {
         super(ctx, DrekkiModels.fallback(), 0.9f);
         addLayer(new Glow(this));
