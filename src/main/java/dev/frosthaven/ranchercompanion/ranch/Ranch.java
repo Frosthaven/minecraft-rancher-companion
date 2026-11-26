@@ -114,6 +114,9 @@ public final class Ranch {
         level.addFreshEntity(d);
     }
 
+    static void poofAt(DrekkiEntity d) { poof((ServerLevel) d.level(), d.getX(), d.getY(), d.getZ()); }
+    static void say(Player p, String key, Object... args) { msg(p, key, args); }
+
     private static void poof(ServerLevel level, double x, double y, double z) {
         level.sendParticles(ParticleTypes.POOF, x, y + 0.3, z, 12, 0.25, 0.25, 0.25, 0.02);
         level.playSound(null, x, y, z, SoundEvents.CHICKEN_EGG, SoundSource.NEUTRAL, 0.8f, 1.2f);
@@ -455,6 +458,7 @@ public final class Ranch {
         if (d != null) { r.snapshot(out, save(d)); d.discard(); }
         STAYS.remove(p.getUUID());
         ARRIVALS.remove(p.getUUID());
+        Aboard.forget(p.getUUID());
     }
 
     /* a checked-out drekki comes back next to its owner on the events that part them: login, respawn, a dimension
@@ -514,6 +518,7 @@ public final class Ranch {
         if (out == null || out.where != Where.OUT) return;
         DrekkiEntity d = live(out.id);
         if (d == null || d.level() == p.level() || out.stay != null) return;
+        if (Aboard.on(p)) { roster(p.server).snapshot(out, save(d)); d.discard(); return; }  /* through a portal on a train: data until the ride's end */
         /* it leaves the level it was in now, and waits as data for a spot its owner walks over here (arrive) */
         roster(p.server).snapshot(out, save(d));
         d.discard();
@@ -540,7 +545,7 @@ public final class Ranch {
         if (p == null) return true;
         Entry out = roster(s).out(id);
         if (out == null || out.where != Where.OUT || out.stay != null || live(out.id) != null || !p.isAlive() || p.isSpectator()
-            || p.level().dimension() != a.level || now - a.tick > ARRIVE_WAIT) {
+            || p.level().dimension() != a.level || now - a.tick > ARRIVE_WAIT || Aboard.on(p)) {
             later(s, () -> bringBack(p));  /* the old way, whatever still applies */
             return true;
         }
@@ -565,7 +570,7 @@ public final class Ranch {
 
     /** runs r after the current work: server.execute runs at once when called on the server thread, which is too soon
      *  in an unload or before a game mode applies; tell always queues */
-    private static void later(MinecraftServer s, Runnable r) { s.tell(new net.minecraft.server.TickTask(s.getTickCount(), r)); }
+    static void later(MinecraftServer s, Runnable r) { s.tell(new net.minecraft.server.TickTask(s.getTickCount(), r)); }
 
     /** the owner's checked-out drekki (not in a carrier) beside them: kept when near, moved when far in the same level,
      *  otherwise saved and spawned again next to them */
@@ -577,6 +582,7 @@ public final class Ranch {
         if (out == null || out.where != Where.OUT) return;
         if (out.stay != null) { STAYS.put(p.getUUID(), out.stay); place(p.server, out); return; }  /* told to stay: at its spot, not with them */
         if (ARRIVALS.containsKey(p.getUUID())) return;  /* it waits for a spot its owner walks over */
+        if (Aboard.on(p)) return;  /* riding a Create contraption: it waits for the ride's end (Aboard) */
         DrekkiEntity d = live(out.id);
         if (d != null && d.level() == p.level()) {
             if (d.distanceTo(p) > dev.frosthaven.ranchercompanion.entity.DrekkiGoals.CATCH_UP && d.goHere == null && !d.held() && d.ordered == null) d.teleportNear(p);  /* sent off by Go here: not pulled back meanwhile */
@@ -607,6 +613,7 @@ public final class Ranch {
     public static void keepUp(ServerPlayer p) {
         Entry out = roster(p.server).out(p.getUUID());
         if (out == null || out.where != Where.OUT || out.stay != null || ARRIVALS.containsKey(p.getUUID())) return;
+        if (Aboard.hold(p, roster(p.server), out)) return;  /* riding a Create contraption: it waits for the ride's end */
         DrekkiEntity d = live(out.id);
         if (d != null && d.level() == p.level() && d.distanceToSqr(p) <= LOST * LOST) return;
         bringBack(p);

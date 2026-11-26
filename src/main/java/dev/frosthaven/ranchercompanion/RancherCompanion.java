@@ -52,6 +52,7 @@ public final class RancherCompanion {
         NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.entity.EntityJoinLevelEvent.class, Ranch::onJoin);
         NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent.class, Ranch::onLeave);
         NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerLoggedOutEvent.class, Ranch::onLogout);
+        NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.entity.EntityMountEvent.class, dev.frosthaven.ranchercompanion.ranch.Aboard::onMount);
         NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerLoggedInEvent.class, Ranch::onLogin);
         NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerRespawnEvent.class, Ranch::onRespawn);
         NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerChangedDimensionEvent.class, Ranch::onDimension);

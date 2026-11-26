@@ -145,6 +145,7 @@
   "message.rancher_companion.not_yours": "This drekki belongs to %s.",
   "message.rancher_companion.stay.on": "%s is staying",
   "message.rancher_companion.stay.off": "%s is following you",
+  "message.rancher_companion.aboard": "%s waits until you get off",
   "message.rancher_companion.stay.none": "No drekki is out with you",
   "message.rancher_companion.gohere.going": "%s is on its way there",
   "message.rancher_companion.gohere.attack": "%s goes for it",

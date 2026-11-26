@@ -415,6 +415,11 @@ A checked-out drekki follows its owner (the default) or stays. Every stage, pups
   leaves the world as any checked-out drekki does, and at login it is back at the same spot, still staying. A copy a
   chunk loads while the owner is offline, or away from the stay spot, is refused. Checking it in, carrying it or checking
   it out again makes it follow.
+- **On a train** (Shane, 2026-11-25; built in 0.6.1). While its owner rides a Create contraption (a train carriage, a
+  contraption cart), a following drekki waits until the ride is over: it leaves with a poof and the message "<name>
+  waits until you get off", and comes back next to its owner within a second of getting off. Before, it ran beside the
+  train and the train kept hitting it. Not for a drekki that stays, sits on a seat (also a train seat it was sent to by
+  Go here), is on its way somewhere by Go here, or attacks.
 
 ### Go here (decided 2026-11-22)
 

@@ -67,6 +67,8 @@ hatching, the roster, check in and out, the small carrier, petting, names, the t
   shots of the gear on a Fledgling and a Mature. Run it in the pack too: with Sophisticated Backpacks the bags are its
   backpacks (compat/sophisticated).
 - `entity/GoHere` (the whistle's sneak use: walk or summon to the looked-at block or seat, then stay; spec, Go here),
+  `ranch/Aboard` (an owner riding a Create contraption: the follower is data until the ride's end; keepUp, bringBack,
+  follow and arrive ask it; Create reached by class name; the traintest rig's `--aboard` run tests it),
   `ranch/Seats` (seats it can be sent to; none without Create) and `compat/create/` (Create's seats, the Employed job
   seats, and `client/JobHatLayer`: Create's job hats on the drekki's crown, reached by method handles since they return a
   Flywheel type). Employed drekki are `Roster.Where.WORK`: not the owner's checked-out one, kept while the owner is offline.
