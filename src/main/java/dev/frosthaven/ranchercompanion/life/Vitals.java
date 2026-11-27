@@ -107,6 +107,9 @@ public final class Vitals {
     // ---- growth ----
 
     private static void grow(DrekkiEntity d, long dt) {
+        /* an employed drekki is at work on its seat, not travelling: no travel time, so no growth and no astral
+           kindling (Shane, 2026-11-26: a train driver's eyes kindled), as it gets no hunger */
+        if (dev.frosthaven.ranchercompanion.ranch.Ranch.employed(d)) return;
         Life l = d.life;
         double days = DrekkiConfig.STAGE_DAYS.get();
         l.travel += dt;
@@ -209,6 +212,9 @@ public final class Vitals {
     private static void mood(DrekkiEntity d, long dt) {
         Life l = d.life;
         if (l.ghost) return;  /* a ghost has no mood: it neither rises nor falls */
+        /* an employed drekki is at work, away from its owner by design: no mood drain (Shane, 2026-11-26: a train
+           driver sat Miserable); what lifts mood still does */
+        if (dev.frosthaven.ranchercompanion.ranch.Ranch.employed(d)) return;
         double minutes = dt / 1200.0;
         if (l.hungry()) l.addMood(-2 * minutes);
         Player owner = d.ownerPlayer();

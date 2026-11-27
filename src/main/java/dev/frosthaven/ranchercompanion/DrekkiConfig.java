@@ -51,7 +51,7 @@ public final class DrekkiConfig {
             "follow the convention tags; anything the lists already named keeps its diet.").define("crops_by_seed_tags", true);
         b.pop();
         b.comment("Growth (spec, Growth release): travel time a drekki needs per stage, in game days (24000 ticks).",
-            "Travel counts while it is checked out and out of its carrier.").push("growth");
+            "Travel counts while it is checked out, out of its carrier and not employed.").push("growth");
         STAGE_DAYS = b.defineInRange("days_per_stage", 6.0, 0.01, 1000.0);
         b.pop();
         b.comment("Hunger (spec, Hunger): shanks lost per game day, out of ten, while the drekki is live (its chunk ticking).",

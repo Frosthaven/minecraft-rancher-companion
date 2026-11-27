@@ -137,7 +137,9 @@ In game the stages are named, never numbered (decided 2026-11-17): stage 1 is a 
 stage 3 **Mature**. The spec keeps the numbers.
 
 The drekki grows with travel time. Travel is elective: travel time counts whenever the drekki is out in the world,
-and the player decides by carrying it or letting it out. Time in a carrier counts for nothing.
+and the player decides by carrying it or letting it out. Time in a carrier counts for nothing, and so does time at
+work: an employed drekki gains no travel time, so it does not grow and its astral does not kindle (decided
+2026-11-26: a train driver's eyes kindled on the line).
 
 ### Carriers
 
@@ -483,7 +485,13 @@ Sneak and use the Drekki Whistle while looking at a block (up to 64 blocks away)
   whichever level that carriage is now, before the lost-seat rule sends it home. Seated, a wall does not hurt it (an
   adult's head reaches past a carriage's roof into a tunnel).
 - **No hunger at work** (decided 2026-11-22): an employed drekki's food bar holds while it is employed, since it never
-  leaves its seat to eat. It drains again once it is recalled or loses its seat.
+  leaves its seat to eat. It drains again once it is recalled or loses its seat. Its travel time holds the same way
+  (see Growth).
+- **Back on its seat** (decided 2026-11-26): an employed drekki off its train seat (dropped at a portal) sits on that
+  seat again; when that seat is not known (after a server restart) or gone (the train assembled again), it takes a
+  free conductor seat of the nearest train carriage within 8 blocks. With neither it goes home after 2 seconds.
+- **No mood drain at work** (decided 2026-11-26): an employed drekki's mood does not fall (not for hunger, not for being
+  away from its owner, which a train driver always is: one sat Miserable at 0.7). What lifts mood still counts.
 
 ## Affinities
 
@@ -1025,6 +1033,9 @@ Decided 2026-11-04. A player has one drekki checked out at a time; the rest are 
 - Breaking a hatchery (revised 2026-11-16): its drekki go to "No hatchery": kept as data with the owner, never lost,
   out of the world. From any hatchery screen the owner moves them to a hatchery or checks one out, at any time. The checked-out drekki is not affected: it is tied to
   no hatchery while out and checks in at any. An egg inside drops as its item and keeps its incubation progress.
+  A hatchery taken away without breaking (Carry On picks a block up with its contents; decided 2026-11-26) counts the
+  same: when its owner opens any hatchery screen, drekki filed at a loaded spot with no hatchery there go to "No
+  hatchery".
   Proposal: only the owner can break a hatchery.
 - On logout, the checked-out drekki is saved with the player and appears beside them on the next login. It is never
   left in the world while its owner is offline.

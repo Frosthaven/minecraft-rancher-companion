@@ -238,6 +238,27 @@ public final class Ranch {
         r.orphan(home);
     }
 
+    /**
+     * The player's drekki filed at a hatchery (home or base) whose block is gone are handled as if it broke: to "No
+     * hatchery" (Shane, 2026-11-26: Carry On picked a hatchery up without breaking it; its drekki stayed "At Drekki
+     * Hatchery" at the old spot and the moved hatchery showed 0/20). Only loaded spots are checked: an unloaded one waits.
+     */
+    public static void lostHatcheries(ServerPlayer p) {
+        Roster r = roster(p.server);
+        java.util.Set<GlobalPos> gone = new java.util.HashSet<>();
+        for (Entry e : r.of(p.getUUID()))
+            for (GlobalPos g : new GlobalPos[] {e.where == Roster.Where.HOME ? e.home : null, e.base}) {
+                if (g == null || gone.contains(g)) continue;
+                ServerLevel level = p.server.getLevel(g.dimension());
+                if (level == null || !level.isLoaded(g.pos())) continue;
+                if (!(level.getBlockState(g.pos()).getBlock() instanceof dev.frosthaven.ranchercompanion.block.HatcheryBlock)) gone.add(g);
+            }
+        for (GlobalPos g : gone) {
+            RancherCompanion.LOG.info("[hatchery] the hatchery at {} {} is gone: its drekki go to No hatchery", g.dimension().location(), g.pos().toShortString());
+            hatcheryBroken(p.server.getLevel(g.dimension()), g.pos());
+        }
+    }
+
     /** every few seconds: put back any of this hatchery's drekki that are missing (spec, Spawning) */
     public static void syncHatchery(ServerLevel level, BlockPos pos) {
         Roster r = roster(level.getServer());

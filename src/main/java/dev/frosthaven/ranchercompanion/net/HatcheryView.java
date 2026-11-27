@@ -79,6 +79,7 @@ public record HatcheryView(BlockPos pos, Component title, boolean named, ItemSta
     }
 
     public static HatcheryView of(ServerPlayer p, HatcheryBlockEntity be) {
+        Ranch.lostHatcheries(p);  /* a hatchery moved without breaking (Carry On) left its drekki filed there */
         var home = Roster.at(p.level(), be.getBlockPos());
         Roster r = Ranch.roster(p.server);
         long now = Roster.now(p.server);

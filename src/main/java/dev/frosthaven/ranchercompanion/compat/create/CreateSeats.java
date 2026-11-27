@@ -66,6 +66,40 @@ final class CreateSeats implements Seats {
      */
     @Override
     public boolean reseat(Mob mob) {
+        return remembered(mob) || nearestConductorSeat(mob);
+    }
+
+    /** how far a dropped employed drekki looks for a conductor seat when its own is not known */
+    static final double NEAR_SEAT = 8;
+
+    /**
+     * Its seat is not remembered (kept in memory only: none after a server restart) or no longer there (the train was
+     * taken apart and assembled again, a new train): a free conductor seat of the nearest train carriage within
+     * {@value #NEAR_SEAT} blocks (Shane, 2026-11-26: George Benjamini stood beside his train, employed, after the
+     * Courier was rebuilt). Without one it goes home as before (Ranch.workTick).
+     */
+    private static boolean nearestConductorSeat(Mob mob) {
+        if (!(mob.level() instanceof ServerLevel level)) return false;
+        com.simibubi.create.content.trains.entity.CarriageContraptionEntity best = null; BlockPos bestSeat = null; int bestIndex = -1;
+        double bestD = NEAR_SEAT * NEAR_SEAT;
+        for (var ce : level.getEntitiesOfClass(com.simibubi.create.content.trains.entity.CarriageContraptionEntity.class, mob.getBoundingBox().inflate(NEAR_SEAT))) {
+            if (!(ce.getContraption() instanceof com.simibubi.create.content.trains.entity.CarriageContraption cc)) continue;
+            for (BlockPos sp : cc.conductorSeats.keySet()) {
+                int index = cc.getSeats().indexOf(sp);
+                if (index < 0 || cc.getSeatMapping().containsValue(index)) continue;
+                double dd = ce.toGlobalVector(Vec3.atBottomCenterOf(sp), 1).distanceToSqr(mob.position());
+                if (dd < bestD) { bestD = dd; best = ce; bestSeat = sp; bestIndex = index; }
+            }
+        }
+        if (best == null) return false;
+        boolean sat = new OnContraption(best, bestSeat, bestIndex).sit(mob);
+        if (sat) dev.frosthaven.ranchercompanion.RancherCompanion.LOG.info("[seats] {} took the free conductor seat of the nearest carriage ({} blocks): its own seat was not known",
+            mob.getName().getString(), String.format("%.1f", Math.sqrt(bestD)));
+        return sat;
+    }
+
+    /** its remembered train seat (Create keeps trains in every level), moved across a portal first when needed */
+    private static boolean remembered(Mob mob) {
         TrainSeat ts = TRAIN_SEATS.get(mob.getUUID());
         if (ts == null || mob.getServer() == null) return false;
         var train = com.simibubi.create.Create.RAILWAYS.trains.get(ts.train);
