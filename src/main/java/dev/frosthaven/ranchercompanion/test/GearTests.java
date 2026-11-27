@@ -249,6 +249,15 @@ public final class GearTests {
         t.succeed();
     }
 
+    /** two wheat side by side make 3 Straw Bedding, with or without Farmer's Delight (its straw is the other recipe) */
+    @GameTest(template = "floor", timeoutTicks = 20)
+    public static void twoWheatMakeStrawBedding(GameTestHelper t) {
+        ItemStack w = new ItemStack(Items.WHEAT);
+        ItemStack out = craft(t, CraftingInput.of(2, 1, List.of(w, w)));
+        t.assertTrue(out.is(dev.frosthaven.ranchercompanion.block.DrekkiBlocks.STRAW_BEDDING.get().asItem()) && out.getCount() == 3, "two wheat made " + out);
+        t.succeed();
+    }
+
     static ItemStack craft(GameTestHelper t, CraftingInput in) {
         var level = t.getLevel();
         var hit = level.getRecipeManager().getRecipeFor(RecipeType.CRAFTING, in, level);

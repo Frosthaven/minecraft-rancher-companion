@@ -383,7 +383,6 @@ def shaped(name, pattern, key, result, count=1, cat="building", when=None):
 
 
 FD = [{"type": "neoforge:mod_loaded", "modid": "farmersdelight"}]
-NO_FD = [{"type": "neoforge:not", "value": FD[0]}]
 
 
 def shapeless(name, ingredients, result, count=1, group=None, components=None):
@@ -416,9 +415,9 @@ def recipes():
     shaped("rancher_shingles_stairs", ["S  ", "SS ", "SSS"], {"S": f"{NS}:rancher_shingles"}, "rancher_shingles_stairs", 4)
     cutting("rancher_shingles_slab_from_stonecutting", f"{NS}:rancher_shingles", "rancher_shingles_slab", 2)
     cutting("rancher_shingles_stairs_from_stonecutting", f"{NS}:rancher_shingles", "rancher_shingles_stairs", 1)
-    # Farmer's Delight's straw when it is loaded (two side by side: its rope is two stacked); wheat only without it
+    # Farmer's Delight's straw when it is loaded (two side by side: its rope is two stacked), and wheat always
     shaped("straw_bedding", ["SS"], {"S": "farmersdelight:straw"}, "straw_bedding", 3, when=FD)
-    shaped("straw_bedding_from_wheat", ["WW"], {"W": "minecraft:wheat"}, "straw_bedding", 3, when=NO_FD)
+    shaped("straw_bedding_from_wheat", ["WW"], {"W": "minecraft:wheat"}, "straw_bedding", 3)
     shaped("rancher_fence", ["PSP", "PSP"], {"P": f"{NS}:rancher_planks", "S": "minecraft:stick"}, "rancher_fence", 3)
     shaped("rancher_fence_gate", ["SPS", "SPS"], {"P": f"{NS}:rancher_planks", "S": "minecraft:stick"}, "rancher_fence_gate")
     shaped("tufted_leather", ["LNL", "NWN", "LNL"], {"L": "minecraft:leather", "N": N, "W": "#minecraft:wool"}, "tufted_leather", 4)
@@ -440,7 +439,7 @@ def tags():
     axe = ["hatchery", "trough", "rancher_planks", "rancher_planks_slab", "rancher_planks_stairs", "rancher_beam", "rancher_beam_slab",
            "rancher_fence", "rancher_fence_gate"]
     tag("block", ("minecraft", "mineable/axe"), axe)
-    tag("block", ("minecraft", "mineable/pickaxe"), ["rancher_shingles", "rancher_shingles_slab", "rancher_shingles_stairs"])
+    tag("block", ("minecraft", "mineable/pickaxe"), ["rancher_shingles", "rancher_shingles_slab", "rancher_shingles_stairs", "tombstone"])
     tag("block", ("minecraft", "mineable/hoe"), ["straw_bedding"])
     slabs_wood, stairs_wood = ["rancher_planks_slab", "rancher_beam_slab"], ["rancher_planks_stairs"]
     leather = ["tufted_leather"] + [f"{d}_tufted_leather" for d in DYES]

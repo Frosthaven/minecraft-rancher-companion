@@ -93,8 +93,8 @@ Proposal 2026-11-16 (design page, Blocks tab, Decor). Optional decoration in the
 | Straw Bedding | Floor cover | 1 px layer, like a carpet | Loose straw; no collision box, so no ceiling |
 | Rancher Fence | Pens, stall fronts, corner posts | Fence, fence gate | Beam posts with a dark steel cap, plank rails; joins neighbours like any fence, so a stack is a bare pole |
 
-Straw Bedding's recipe: two Farmer's Delight straw side by side make 3 (its rope is two straw stacked, so no clash).
-Without Farmer's Delight, two wheat side by side, so plain NeoForge can still make it. Checked against vanilla and
+Straw Bedding's recipe: two Farmer's Delight straw side by side make 3 (its rope is two straw stacked, so no clash),
+and two wheat side by side make 3 too, with or without Farmer's Delight (Shane, 2026-11-27). Checked against vanilla and
 every Haven pack mod: no recipe of ours matches another recipe's grid.
 
 Open: the other recipes (a draft on the page), and whether bedding does anything for checked-in drekki.
