@@ -928,7 +928,12 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
     public float flapAmt(float partial) { return mid(flapWas, flapAmt, partial); }
     /** ticks in the air */
     public int airTicks() { return airSeen; }
+    /** the highest point of this time in the air (its height on the ground) */
+    private double airTop;
+    /** blocks below the highest point of this time in the air */
+    public double drop() { return airTop - getY(); }
     private void airTick() {
+        airTop = onGround() || isInLiquid() ? getY() : Math.max(airTop, getY());
         airWas = airAmt; riseWas = riseAvg; glideWas = glideAmt; flapWas = flapAmt;
         boolean air = airSeen >= 2 && !isInLiquid() && isVehicle();  /* a step down is a tick in the air: no pose for it */
         riseAvg += ((float) (getY() - yo) - riseAvg) * 0.35f;

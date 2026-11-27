@@ -143,6 +143,32 @@ public final class Feeding {
         return ItemStack.EMPTY;
     }
 
+    /** an employed drekki's meal from its hatchery's troughs, wherever it works (its seat is its post): the first trough
+     *  of its owner's that holds its food, while the hatchery is loaded (Shane, 2026-11-27) */
+    public static ItemStack fromHome(DrekkiEntity d) {
+        var s = d.getServer();
+        var e = s == null || d.drekkiId() == null ? null : dev.frosthaven.ranchercompanion.ranch.Ranch.roster(s).get(d.drekkiId());
+        if (e == null || e.base == null) return ItemStack.EMPTY;
+        net.minecraft.server.level.ServerLevel level = s.getLevel(e.base.dimension());
+        if (level == null || !level.isLoaded(e.base.pos())
+            || !(level.getBlockEntity(e.base.pos()) instanceof dev.frosthaven.ranchercompanion.block.HatcheryBlockEntity be)) return ItemStack.EMPTY;
+        for (BlockPos p : be.troughs()) {
+            if (!(level.getBlockEntity(p) instanceof TroughBlockEntity tb) || !java.util.Objects.equals(tb.owner(), d.owner())) continue;
+            int diet = level.getBlockState(p).getValue(TroughBlock.DIET);
+            if (diet == 0 || d.stage() > 1 && diet - 1 != d.diet()) continue;
+            for (BlockPos q : TroughBlock.line(level, p))
+                if (level.getBlockEntity(q) instanceof TroughBlockEntity t) {
+                    var c = t.container();
+                    for (int i = 0; i < TroughBlockEntity.SLOTS; i++) if (Vitals.eats(d, c.getItem(i))) {
+                        ItemStack one = c.removeItem(i, 1);
+                        TroughBlock.contentsChangedAt(level, q);
+                        return one;
+                    }
+                }
+        }
+        return ItemStack.EMPTY;
+    }
+
     public static void forget(UUID drekki) { UNREACHABLE.remove(drekki); CLAIMS.values().removeIf(c -> c.by.equals(drekki)); }
 
     public static void clear() { CLAIMS.clear(); UNREACHABLE.clear(); }

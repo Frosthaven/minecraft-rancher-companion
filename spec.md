@@ -484,14 +484,17 @@ Sneak and use the Drekki Whistle while looking at a block (up to 64 blocks away)
   player across and the carriage's old entity is retired first). It is put back on its own seat of its train, in
   whichever level that carriage is now, before the lost-seat rule sends it home. Seated, a wall does not hurt it (an
   adult's head reaches past a carriage's roof into a tunnel).
-- **No hunger at work** (decided 2026-11-22): an employed drekki's food bar holds while it is employed, since it never
-  leaves its seat to eat. It drains again once it is recalled or loses its seat. Its travel time holds the same way
-  (see Growth).
+- **Hunger at work** (revised 2026-11-27, was "no hunger at work" from 2026-11-22): an employed drekki gets hungry at
+  the rate it would at home and eats as a drekki at home does, without leaving its seat: from its bag, else from its
+  owner's troughs at its hatchery (its base) while that hatchery is loaded, with a meal's +5 mood. A driver that never
+  ate never got a meal's mood and sat Miserable (Shane, 2026-11-27). Its travel time still holds (see Growth).
 - **Back on its seat** (decided 2026-11-26): an employed drekki off its train seat (dropped at a portal) sits on that
   seat again; when that seat is not known (after a server restart) or gone (the train assembled again), it takes a
   free conductor seat of the nearest train carriage within 8 blocks. With neither it goes home after 2 seconds.
-- **No mood drain at work** (decided 2026-11-26): an employed drekki's mood does not fall (not for hunger, not for being
-  away from its owner, which a train driver always is: one sat Miserable at 0.7). What lifts mood still counts.
+- **Mood at work** (decided 2026-11-26, revised 2026-11-27): an employed drekki's mood does not fall for being away from
+  its owner, which a train driver always is. Otherwise mood runs as at home: hungry drains it, meals, petting and kills
+  lift it. It keeps its hatchery's kinship; one employed before kinship existed (0.7.0) had no base and no kin: the
+  roster gives such a drekki its owner's hatchery (the one most of their checked-in drekki live at) when it loads.
 
 ## Affinities
 

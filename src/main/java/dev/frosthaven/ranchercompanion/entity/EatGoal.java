@@ -54,6 +54,7 @@ final class EatGoal extends Goal {
 
     private void packMeal() {
         ItemStack food = Feeding.fromPack(d);
+        if (food.isEmpty() && Ranch.employed(d)) food = Feeding.fromHome(d);  /* at work: its bag, then its hatchery's troughs */
         if (food.isEmpty()) return;
         Vitals.eat(d, food, true);
         d.act(dev.frosthaven.ranchercompanion.look.Anim.FEED, SNACK);

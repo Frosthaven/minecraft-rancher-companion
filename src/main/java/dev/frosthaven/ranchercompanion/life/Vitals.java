@@ -57,9 +57,11 @@ public final class Vitals {
         if (l.stamp == Life.NEVER || dt > LIVE_GAP) { resume(d); return; }
         if (dt <= 0) return;
         l.stamp = now;
-        boolean travelling = d.isOut();
-        /* a ghost does not get hungry, nor does an employed drekki: it stays on its seat (spec, Go here: Employed) */
-        if (!l.ghost && !dev.frosthaven.ranchercompanion.ranch.Ranch.employed(d)) l.spend(Life.drain(dt, hungerRate(d, travelling)));
+        boolean employed = dev.frosthaven.ranchercompanion.ranch.Ranch.employed(d);
+        boolean travelling = d.isOut() && !employed;  /* at work on its seat it is not travelling (spec, Go here: Employed) */
+        /* a ghost does not get hungry. An employed drekki does, at the rate it would at home, and eats from its bag or its
+           hatchery's troughs (EatGoal.homeMeal; Shane, 2026-11-27: a driver that never ate never got a meal's mood) */
+        if (!l.ghost) l.spend(Life.drain(dt, hungerRate(d, travelling)));
         if (travelling) grow(d, dt);
         mood(d, dt);
         d.syncLife();
@@ -212,11 +214,11 @@ public final class Vitals {
     private static void mood(DrekkiEntity d, long dt) {
         Life l = d.life;
         if (l.ghost) return;  /* a ghost has no mood: it neither rises nor falls */
-        /* an employed drekki is at work, away from its owner by design: no mood drain (Shane, 2026-11-26: a train
-           driver sat Miserable); what lifts mood still does */
-        if (dev.frosthaven.ranchercompanion.ranch.Ranch.employed(d)) return;
         double minutes = dt / 1200.0;
         if (l.hungry()) l.addMood(-2 * minutes);
+        /* an employed drekki is away from its owner by design: no drain for that (Shane, 2026-11-26: a train driver sat
+           Miserable). Otherwise its mood runs as at home: hunger, meals, petting, kills (Shane, 2026-11-27) */
+        if (dev.frosthaven.ranchercompanion.ranch.Ranch.employed(d)) return;
         Player owner = d.ownerPlayer();
         if (d.isOut() && (owner == null || owner.level() != d.level() || owner.distanceToSqr(d) > 30 * 30)) l.addMood(-minutes);
     }

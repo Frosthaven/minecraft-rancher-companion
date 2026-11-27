@@ -181,10 +181,10 @@ public final class DrekkiPonder implements PonderPlugin {
         scene.overlay().showText(100).text("On a train's seat, or a seat beside a Stock Ticker, it is hired: a Conductor or a Stock keeper")
             .pointAt(util.vector().topOf(job)).placeNearTarget().attachKeyFrame();
         scene.idle(110);
-        scene.overlay().showText(110).text("At work it stays on while you are away, keeps Passive, and its food bar holds: no hunger at work. You can check out another drekki meanwhile")
+        scene.overlay().showText(110).text("At work it stays on while you are away and keeps Passive. When hungry it eats from its bag, then from its hatchery's troughs. You can check out another drekki meanwhile")
             .pointAt(util.vector().of(6.5, 2.6, 1.5)).placeNearTarget();
         scene.idle(120);
-        scene.overlay().showText(100).text("Recall it from its screen, or check it in at its hatchery: it follows you again, and gets hungry again")
+        scene.overlay().showText(100).text("Recall it from its screen, or check it in at its hatchery: it follows you again")
             .pointAt(util.vector().of(6.5, 2.6, 1.5)).placeNearTarget().attachKeyFrame();
         scene.idle(110);
         scene.markAsFinished();

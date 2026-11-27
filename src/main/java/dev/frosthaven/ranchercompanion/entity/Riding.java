@@ -85,6 +85,11 @@ public final class Riding {
         return d.airSeen > 8 && (rise > -0.3 && holds(d, Trait.WINGS_OF_HOPE) || rise < 0.05 && holds(d, Trait.LEAP_OF_FAITH));
     }
 
+    /** a glide's wind and calls: only a long drop sounds (Shane, 2026-11-27: every short hop with Leap of Faith blew the
+     *  wind); Wings of Hope's flight keeps them, it is a glide at any height */
+    public static final double LONG_DROP = 4;
+    public static boolean glideSounds(DrekkiEntity d) { return holds(d, Trait.WINGS_OF_HOPE) || d.drop() >= LONG_DROP; }
+
     /** the loop of a ridden drekki (its sounds and particles; its pose in the air is DrekkiAnimations.rideAir), from what
      *  every game sees of it: its speed, the ground, its rise or fall (smoothed). In the air it is never a walk or a
      *  run, whatever its rise: level flight between wingbeats once fell through to the run (2026-11-24) */

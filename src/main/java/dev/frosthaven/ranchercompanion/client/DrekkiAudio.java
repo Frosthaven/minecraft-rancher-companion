@@ -100,7 +100,8 @@ public final class DrekkiAudio {
                 if (at(a, b, 2.2, 0.42)) X(L, d, DrekkiSounds.STEP_HEAVY, "step_heavy", 0.75 * v, p * 1.1); }
             case FALL -> { double f = Anim.loop(b, 2.6); bed(d, DrekkiSounds.LOOP_WIND, "loop_wind", f < 0.36 ? 0.1 * (f / 0.36) : 0);
                 if (at(a, b, 2.6, 0.36)) { X(L, d, DrekkiSounds.STEP_HEAVY, "step_heavy", v, p); X(L, d, DrekkiSounds.YELP, "yelp", v, p); } }
-            case GLIDE -> { bed(d, DrekkiSounds.LOOP_WIND, "loop_wind", 0.175); if (flip(a, b, 1.6)) X(L, d, DrekkiSounds.WHOOSH_ROCK, "whoosh_rock", v, p);
+            case GLIDE -> { if (!dev.frosthaven.ranchercompanion.entity.Riding.glideSounds(d)) break;  /* a short drop is quiet */
+                bed(d, DrekkiSounds.LOOP_WIND, "loop_wind", 0.175); if (flip(a, b, 1.6)) X(L, d, DrekkiSounds.WHOOSH_ROCK, "whoosh_rock", v, p);
                 if (count(a, b, 3.5)) X(L, d, DrekkiSounds.CALL, "call", v, p); }
             case SLEEP -> { double sa = ease((d.sleepTime(a) - 0.6) / 1.8), sb = ease((d.sleepTime(b) - 0.6) / 1.8);
                 if (sa < 0.5 && sb >= 0.5) X(L, d, DrekkiSounds.STEP_LIGHT, "step_light", 0.83 * v, 0.8 * p);

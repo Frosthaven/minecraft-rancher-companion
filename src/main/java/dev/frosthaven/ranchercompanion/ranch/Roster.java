@@ -172,7 +172,7 @@ public final class Roster extends SavedData {
         for (Entry e : byId.values()) { if (e.livesAt(home)) { e.where = Where.NONE; e.home = null; setDirty(); } if (home.equals(e.base)) base(e, null); }
     }
 
-    private static Roster load(CompoundTag tag, HolderLookup.Provider reg) {
+    public static Roster load(CompoundTag tag, HolderLookup.Provider reg) {
         Roster r = new Roster();
         for (Tag t : tag.getList("drekki", Tag.TAG_COMPOUND)) {
             CompoundTag c = (CompoundTag) t;
@@ -191,6 +191,15 @@ public final class Roster extends SavedData {
             r.base(e, base);
             r.byId.put(e.id, e);
             r.index(e);
+        }
+        /* a drekki employed or checked out before kinship (0.7.0) kept no base: its owner's hatchery, the one most of
+           their checked-in drekki live at (a train driver had no kin at all, Shane, 2026-11-27) */
+        for (Entry e : r.byId.values()) {
+            if (e.base != null || e.where == Where.HOME || e.where == Where.TOMB) continue;
+            Map<GlobalPos, Integer> homes = new java.util.HashMap<>();
+            for (Entry o : r.byId.values()) if (o.owner.equals(e.owner) && o.where == Where.HOME && o.home != null) homes.merge(o.home, 1, Integer::sum);
+            homes.entrySet().stream().max(Map.Entry.comparingByValue()).ifPresent(h -> r.base(e, h.getKey()));
+            if (e.base != null) r.setDirty();
         }
         CompoundTag c = tag.getCompound("coats");
         for (String k : c.getAllKeys()) try { r.coats.put(UUID.fromString(k), c.getLong(k)); } catch (IllegalArgumentException ignored) {}

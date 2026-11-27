@@ -395,7 +395,7 @@ final class SelfTestRebirth {
             quiet("rb_whistle_wait6", 130, () -> {});
             step("rb_whistle_hired", 10, () -> {}, () -> true);  /* a Stock keeper */
             quiet("rb_whistle_wait7", 110, () -> {});
-            step("rb_whistle_hunger", 10, () -> {}, () -> true);  /* no hunger at work */
+            step("rb_whistle_hunger", 10, () -> {}, () -> true);
             quiet("rb_whistle_wait8", 120, () -> {});
             step("rb_whistle_recall", 10, () -> {}, () -> true);  /* recall */
             quiet("rb_whistle_hold", 60, () -> {});

@@ -18,7 +18,7 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 /**
  * An employed drekki at work (Shane, 2026-11-26: a train driver's eyes kindled and it sat Miserable): no travel time,
- * so no growth or kindling, and no mood drain. A hatchery taken away without breaking (Carry On) lets its drekki go
+ * so no growth or kindling, and no mood drain for being away; it gets hungry and eats from home (2026-11-27). A hatchery taken away without breaking (Carry On) lets its drekki go
  * to "No hatchery" the next time its owner opens a hatchery screen.
  */
 @GameTestHolder(RancherCompanion.ID)
@@ -26,27 +26,52 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 public final class WorkTests {
     private WorkTests() {}
 
-    @GameTest(template = "floor", timeoutTicks = 200)
-    public static void anEmployedDrekkiNeitherGrowsNorSours(GameTestHelper t) {
+    /** no travel time and no drain for being away from its owner; hungry, it eats from its hatchery's trough from its
+     *  seat, and the meal lifts its mood (Shane, 2026-11-27: mood at work runs as at home) */
+    @GameTest(template = "floor", timeoutTicks = 400)
+    public static void anEmployedDrekkiEatsFromHomeAndDoesNotGrow(GameTestHelper t) {
         BlockPos h = LifeTests.stable(t);
         ServerPlayer p = LifeTests.player(t);
         DrekkiEntity d = LifeTests.hatchOne(t, p, h);
+        LifeTests.trough(t, p, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.CARROT, 16));
         Roster r = Ranch.roster(t.getLevel().getServer());
         Roster.Entry e = r.of(p.getUUID()).get(0);
         Ranch.act(p, h, Ranch.Action.CHECK_OUT, e.id);
         r.move(e, Roster.Where.WORK, null);  /* on a job seat: employed */
+        d.setStaying(true); d.setJob(1);  /* as Ranch.employ leaves it: staying, with its role */
+        t.assertTrue(e.base != null, "it keeps its hatchery's kinship at work");
         long travel = Life.stageTicks(7) - 30;  /* a few ticks short of growing up, as a travelling drekki */
         d.life.travel = travel;
         d.life.mood = 50;
-        d.life.food = 0;  /* hungry: a drekki not at work would lose mood for it */
+        d.life.food = 0;  /* hungry */
+        d.getNavigation().stop();
         p.teleportTo(p.serverLevel(), p.getX() + 200, p.getY(), p.getZ(), 0, 0);  /* and its owner far away */
-        t.runAfterDelay(150, () -> {
+        t.succeedWhen(() -> {
             t.assertTrue(Ranch.employed(d), "still employed");
             t.assertTrue(d.life.travel == travel && d.stage() == 1, "no travel time at work: " + d.life.travel + " (was " + travel + "), stage " + d.stage());
-            t.assertTrue(d.life.mood >= 50, "no mood drain at work: " + d.life.mood);
+            t.assertTrue(d.life.food > 0, "it ate from its hatchery's trough: food " + d.life.food);
+            t.assertTrue(d.life.mood > 52, "the meal lifted its mood, and being away did not drain it: " + d.life.mood);
             r.remove(e.id);
-            t.succeed();
         });
+    }
+
+    /** a drekki employed before kinship had no base: the roster gives it its owner's hatchery when it loads */
+    @GameTest(template = "floor", timeoutTicks = 40)
+    public static void aDriverWithoutABaseGetsItsOwnersHatchery(GameTestHelper t) {
+        BlockPos h = LifeTests.stable(t);
+        ServerPlayer p = LifeTests.player(t);
+        LifeTests.hatchOne(t, p, h);
+        Roster r = Ranch.roster(t.getLevel().getServer());
+        var home = Roster.at(t.getLevel(), h);
+        Roster.Entry driver = r.add(java.util.UUID.randomUUID(), p.getUUID(), new net.minecraft.nbt.CompoundTag(), Roster.Where.WORK, null);
+        r.setBase(driver, null);
+        var reg = t.getLevel().registryAccess();
+        Roster back = Roster.load(r.save(new net.minecraft.nbt.CompoundTag(), reg), reg);
+        Roster.Entry loaded = back.get(driver.id);
+        t.assertTrue(loaded != null && home.equals(loaded.base), "its owner's hatchery: " + (loaded == null ? "missing" : loaded.base));
+        t.assertTrue(back.kin(loaded) >= 1, "with its kin: " + back.kin(loaded));
+        for (Roster.Entry x : r.of(p.getUUID())) r.remove(x.id);
+        t.succeed();
     }
 
     @GameTest(template = "floor", timeoutTicks = 100)
