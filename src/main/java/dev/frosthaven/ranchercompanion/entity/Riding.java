@@ -78,9 +78,11 @@ public final class Riding {
     /** a dash leaves the ground for about this many ticks; in the air longer, its speed is flight */
     static final int DASH_AIR = 14;
 
-    /** in the air on its wings: more than 8 ticks up, not dropping fast, with Wings of Hope (rising too) or Leap of Faith */
+    /** in the air on its wings: more than 8 ticks up, with Wings of Hope (rising too; not dropping fast) or Leap of Faith
+     *  (any drop: the slow fall catches it). A Leap of Faith drop once read as a fall until the slow fall caught it, so a
+     *  slow fall went glide, fall, glide, with the fall's landing thud and yelp in mid-air (2026-11-27) */
     static boolean glides(DrekkiEntity d, double rise) {
-        return d.airSeen > 8 && rise > -0.3 && (holds(d, Trait.WINGS_OF_HOPE) || rise < 0.05 && holds(d, Trait.LEAP_OF_FAITH));
+        return d.airSeen > 8 && (rise > -0.3 && holds(d, Trait.WINGS_OF_HOPE) || rise < 0.05 && holds(d, Trait.LEAP_OF_FAITH));
     }
 
     /** the loop of a ridden drekki (its sounds and particles; its pose in the air is DrekkiAnimations.rideAir), from what

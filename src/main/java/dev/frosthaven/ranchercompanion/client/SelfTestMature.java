@@ -84,6 +84,22 @@ final class SelfTestMature {
         quiet(name + "_stop", 20, () -> { keys(false, false, false); server(m -> m.stopRiding()); clearMobs(); });
     }
 
+    private static float loudest; private static int airFlips; private static dev.frosthaven.ranchercompanion.look.Anim airWas;
+    /** watches the drekki's loop and its loop sounds for some ticks: the loudest bed, and how often it changed between glide and fall */
+    private static void watchAir(int ticks) {
+        loudest = 0; airFlips = 0; airWas = null;
+        for (int i = 1; i <= ticks; i++) after(i, () -> {
+            DrekkiEntity d = pup();
+            if (d == null) return;
+            loudest = Math.max(loudest, DrekkiAudio.loopVolume(d));
+            var a = d.anim();
+            if (a == dev.frosthaven.ranchercompanion.look.Anim.GLIDE || a == dev.frosthaven.ranchercompanion.look.Anim.FALL) {
+                if (airWas != null && airWas != a) airFlips++;
+                airWas = a;
+            }
+        });
+    }
+
     /** samples the drekki's height and speed for some ticks: its peak, its fastest and its slowest fall */
     private static void sample(int ticks) {
         DrekkiEntity c = pup();
@@ -382,9 +398,15 @@ final class SelfTestMature {
         /* Leap of Faith: the same fall, slow and safe */
         quiet("leap", 35, () -> { give(Trait.WINGS_OF_HOPE, Trait.LEAP_OF_FAITH); server(m -> m.setHealth(20)); rideAt(o.getX() + 0.5, ground, o.getZ() - 8.5); });
         quiet("up_again", 110, () -> keys(false, false, true));
-        quiet("let_go_again", 40, () -> { keys(false, false, false); after(25, () -> sample(12)); });
+        quiet("let_go_again", 40, () -> { keys(false, false, false); watchAir(200); after(25, () -> sample(12)); });
         step("leap_of_faith_falls_slowly", 2, () -> {}, () -> riding() && !pup().onGround() && slowest > -0.25);
         stepUntil("and_lands_unhurt", 40, 20, () -> {}, () -> pup() != null && pup().onGround() && me() != null && me().getHealth() == 20);
+        /* the glide's wind: heard in the air, silent a second after landing (it once played on until the drekki unloaded), and
+           the slow fall's loop does not flip between glide and fall (each flip plays the fall's yelp or the glide's call) */
+        quiet("landed", 30, () -> {});
+        check("the_slow_fall_has_its_wind", 2, 0, () -> {}, "loudest loop in the air", () -> String.format("%.3f", loudest), () -> loudest > 0.01);
+        check("the_wind_stops_after_landing", 2, 0, () -> {}, "loop volume on the ground", () -> String.format("%.4f", DrekkiAudio.loopVolume(pup())), () -> pup() != null && pup().onGround() && DrekkiAudio.loopVolume(pup()) < 0.005);
+        check("the_slow_fall_keeps_one_loop", 2, 0, () -> {}, "glide-fall changes", () -> airFlips, () -> airFlips <= 1);
         /* water: Ocean Walker walks on it; without it the rider is put off */
         quiet("pond", 30, () -> { cmd("gamemode creative"); cmd("fill " + at(o.offset(6, -3, -10)) + " " + at(o.offset(60, -1, -6)) + " water"); give(Trait.OCEAN_WALKER); });
         quiet("to_the_pond", 30, () -> rideAt(o.getX() + 2.5, ground, o.getZ() - 7.5));

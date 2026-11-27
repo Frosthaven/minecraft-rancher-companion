@@ -37,7 +37,8 @@ public final class DrekkiAudio {
 
     private record Pending(DrekkiEntity d, DeferredHolder<SoundEvent, SoundEvent> ev, float vol, float pitch, int ticks) {}
     private static final List<Pending> QUEUE = new ArrayList<>();
-    private static final Map<Integer, Bed> BEDS = new HashMap<>();
+    /** one bed per drekki and loop sound ("<entity id>:<sound>"): the wind and the hiss once shared one, so a breath after a glide hissed with the wind */
+    private static final Map<String, Bed> BEDS = new HashMap<>();
 
     public static void tick(ClientTickEvent.Post e) {
         Minecraft mc = Minecraft.getInstance();
@@ -46,6 +47,9 @@ public final class DrekkiAudio {
         for (Iterator<Pending> it = QUEUE.iterator(); it.hasNext(); ) { Pending q = it.next(); if (q.ticks <= 0) { emit(mc.level, q.d, q.ev, q.vol, q.pitch); it.remove(); } }
         for (int i = 0; i < QUEUE.size(); i++) { Pending q = QUEUE.get(i); QUEUE.set(i, new Pending(q.d, q.ev, q.vol, q.pitch, q.ticks - 1)); }
         for (Entity en : mc.level.entitiesForRendering()) if (en instanceof DrekkiEntity d) d.trackSpeed();
+        /* a bed the score does not set this tick falls silent: the glide's wind once played on after landing (the score skips
+           an idle drekki and a walk never sets the wind), until the drekki unloaded (2026-11-27) */
+        for (Bed b : BEDS.values()) b.target = 0;
         for (Entity en : mc.level.entitiesForRendering())
             if (en instanceof DrekkiEntity d && d.anim() != Anim.IDLE && d.distanceToSqr(mc.gameRenderer.getMainCamera().getPosition()) < 32 * 32) score(mc.level, d);
         BEDS.values().removeIf(b -> b.isStopped());
@@ -135,9 +139,17 @@ public final class DrekkiAudio {
 
     /* ---- looping beds: one per drekki at its own pitch (the page does not pitch them), its volume following the score ---- */
     private static void bed(DrekkiEntity d, DeferredHolder<SoundEvent, SoundEvent> ev, String name, double level) {
-        Bed bd = BEDS.get(d.getId());
-        if (bd == null || bd.isStopped()) { if (level <= 0.001) return; bd = new Bed(d, ev.get()); BEDS.put(d.getId(), bd); Minecraft.getInstance().getSoundManager().play(bd); }
+        String key = d.getId() + ":" + name;
+        Bed bd = BEDS.get(key);
+        if (bd == null || bd.isStopped()) { if (level <= 0.001) return; bd = new Bed(d, ev.get()); BEDS.put(key, bd); Minecraft.getInstance().getSoundManager().play(bd); }
         bd.target = (float) Math.min(1, level * DrekkiSounds.GAIN.get(name) * MASTER);
+    }
+
+    /** the loudest loop this drekki plays now (self-tests: nothing after a landing) */
+    static float loopVolume(DrekkiEntity d) {
+        float v = 0; String pre = d.getId() + ":";
+        for (var e : BEDS.entrySet()) if (e.getKey().startsWith(pre) && !e.getValue().isStopped()) v = Math.max(v, e.getValue().getVolume());
+        return v;
     }
 
     private static final class Bed extends AbstractTickableSoundInstance {
