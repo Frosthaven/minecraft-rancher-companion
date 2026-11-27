@@ -997,7 +997,7 @@ Decided 2026-11-04. A player has one drekki checked out at a time; the rest are 
   is checked in here by the Placement rule, pulled back from wherever it is (its rider is dismounted first); the new
   one comes out by the same rule and follows the player. Pack, saddle, barding and hat stay with each. With no room
   for either within 3 blocks nothing changes ("No room around the hatchery"): never two out, never none by accident.
-- Checked-in drekki live at their hatchery and wander within 25 blocks of it. They are placed by the Placement rule below
+- Checked-in drekki live at their hatchery and wander within 50 blocks of it. They are placed by the Placement rule below
   (within 3 blocks of the hatchery), so a fenced pen around it holds them.
 - Spawning (proposal 2026-11-16): the owner's roster (saved data: each drekki's whole record and its hatchery) is the
   source of truth. Checked-in drekki are real entities while their hatchery's chunk is loaded; they save and unload
@@ -1005,12 +1005,12 @@ Decided 2026-11-04. A player has one drekki checked out at a time; the rest are 
   against the drekki around it: a missing one (pushed out of range, removed by a command) is placed again from its
   record (see Placement), and a duplicate of the same drekki is removed.
 - Wandering (proposal 2026-11-16, stricter than MineColonies' citizens): each checked-in drekki is leashed to its
-  hatchery, 25 blocks out at most, and never goes more than 3 blocks from an anchor block: a dirt path, Straw
-  Bedding, or the hatchery itself. The area it may use is every spot within 3 blocks of an anchor, inside the 25-block leash. Anchors chain
+  hatchery, 50 blocks out at most (25 until 2026-11-27), and never goes more than 3 blocks from an anchor block: a dirt path, Straw
+  Bedding, or the hatchery itself. The area it may use is every spot within 3 blocks of an anchor, inside the 50-block leash. Anchors chain
   (revised 2026-11-17): an anchor counts when it lies within 3 blocks of an anchor that counts, starting from the
   hatchery; nothing else (no walk, no fence check) decides the area. So players draw the stable with paths and bedding; with none, a drekki keeps to
   3 blocks around the hatchery. Stage 1 the same (decided 2026-11-17, after two corrections): anchors chain, so a
-  hatchling that reaches bedding may go on to a path within 3 blocks of it, and so on, inside the 25-block leash; with
+  hatchling that reaches bedding may go on to a path within 3 blocks of it, and so on, inside the 50-block leash; with
   no anchors it keeps to 3 blocks around the hatchery. Bedding draws it: most of its strolls end on bedding, and at
   night it walks to a bedding spot and sleeps until morning (the sleep loop); with no bedding in reach it sleeps by the
   hatchery. Its pathfinding treats spots outside the area as blocked, and one found outside (after

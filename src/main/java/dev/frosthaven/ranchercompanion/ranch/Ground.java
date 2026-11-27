@@ -17,7 +17,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  */
 public final class Ground implements Flood.Grid {
     /** how far a placement may reach from the hatchery, and how far up or down a pen may run */
-    public static final int PLACE = 3, ANCHOR = 3, PEN_UP = 6, LEASH = 25;
+    public static final int PLACE = 3, ANCHOR = 3, PEN_UP = 6, LEASH = 50;
 
     private final Level level;
     private final BlockPos.MutableBlockPos m = new BlockPos.MutableBlockPos();
@@ -77,10 +77,14 @@ public final class Ground implements Flood.Grid {
         List<long[]> anchors = new ArrayList<>();
         anchors.add(new long[]{h.getX(), h.getY(), h.getZ()});
         int r = reach;
-        for (int dx = -r; dx <= r; dx++) for (int dz = -r; dz <= r; dz++) for (int dy = -PEN_UP; dy <= PEN_UP; dy++) {
-            int x = h.getX() + dx, y = h.getY() + dy, z = h.getZ() + dz;
-            BlockState s = level.getBlockState(m.set(x, y, z));
-            if (s.is(DrekkiBlocks.STRAW_BEDDING.get()) || s.is(Blocks.DIRT_PATH)) anchors.add(new long[]{x, s.is(Blocks.DIRT_PATH) ? y + 1 : y, z});
+        /* only loaded columns: a read in an unloaded chunk loads it, and the leash reaches 4 chunks out */
+        for (int dx = -r; dx <= r; dx++) for (int dz = -r; dz <= r; dz++) {
+            if (!level.isLoaded(m.set(h.getX() + dx, h.getY(), h.getZ() + dz))) continue;
+            for (int dy = -PEN_UP; dy <= PEN_UP; dy++) {
+                int x = h.getX() + dx, y = h.getY() + dy, z = h.getZ() + dz;
+                BlockState s = level.getBlockState(m.set(x, y, z));
+                if (s.is(DrekkiBlocks.STRAW_BEDDING.get()) || s.is(Blocks.DIRT_PATH)) anchors.add(new long[]{x, s.is(Blocks.DIRT_PATH) ? y + 1 : y, z});
+            }
         }
         /* anchors chain: one counts when it lies within 3 blocks of an anchor that already counts, starting at the hatchery */
         List<long[]> joined = new ArrayList<>(List.of(anchors.get(0)));
