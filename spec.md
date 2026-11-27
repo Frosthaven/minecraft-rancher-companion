@@ -136,10 +136,11 @@ hatchery screen also shows which conditions currently pass, so a player can line
 In game the stages are named, never numbered (decided 2026-11-17): stage 1 is a **Pup**, stage 2 a **Fledgling**,
 stage 3 **Mature**. The spec keeps the numbers.
 
-The drekki grows with travel time. Travel is elective: travel time counts whenever the drekki is out in the world,
-and the player decides by carrying it or letting it out. Time in a carrier counts for nothing, and so does time at
-work: an employed drekki gains no travel time, so it does not grow and its astral does not kindle (decided
-2026-11-26: a train driver's eyes kindled on the line).
+The drekki grows with travel time: time out in the world with its owner. Time in a carrier counts for nothing, a ghost
+does not age, and by default neither does a drekki at work or at its hatchery (decided 2026-11-26 for work; server
+config `age_at_work` and `age_at_home`, both off, added 2026-11-27: on, that time ages it too; time at work then also
+shapes its astral and biome as travel does, time at the stable never does, see Affinities, and a pup raised at home
+kindles to the sky it is under at the half-stage mark).
 
 ### Carriers
 
@@ -487,7 +488,7 @@ Sneak and use the Drekki Whistle while looking at a block (up to 64 blocks away)
 - **Hunger at work** (revised 2026-11-27, was "no hunger at work" from 2026-11-22): an employed drekki gets hungry at
   the rate it would at home and eats as a drekki at home does, without leaving its seat: from its bag, else from its
   owner's troughs at its hatchery (its base) while that hatchery is loaded, with a meal's +5 mood. A driver that never
-  ate never got a meal's mood and sat Miserable (Shane, 2026-11-27). Its travel time still holds (see Growth).
+  ate never got a meal's mood and sat Miserable (Shane, 2026-11-27). At work it does not age by default (server config `age_at_work`, see Growth).
 - **Back on its seat** (decided 2026-11-26): an employed drekki off its train seat (dropped at a portal) sits on that
   seat again; when that seat is not known (after a server restart) or gone (the train assembled again), it takes a
   free conductor seat of the nearest train carriage within 8 blocks. With neither it goes home after 2 seconds.
@@ -1043,12 +1044,22 @@ Decided 2026-11-04. A player has one drekki checked out at a time; the rest are 
 - On logout, the checked-out drekki is saved with the player and appears beside them on the next login. It is never
   left in the world while its owner is offline.
 
+## Sleep
+
+- Bedtime (decided 2026-11-27, Shane): night, except for a drekki whose first eye is Lunar, Underworld or Deep: those
+  are nocturnal, asleep by day and about at night. An odd-eyed drekki follows its first eye; a Dormant pup sleeps at
+  night. In a level without day and night (the Nether, the End) no bedtime comes (Astral.restTime).
+- Bedding (2026-11-27): each drekki claims a free Straw Bedding block and lies down on that block, not beside it (a path
+  stops a block short, so it takes the last step itself). It prefers a block with no taken neighbour, so drekki spread
+  out. A block it cannot get onto in about 3 s is given up for the night and another free one tried; with none free it
+  sleeps where it stands, and wakes for a block that comes free and that it can reach (entity/Beds).
+
 ## Trails
 
 Decided 2026-11-27 (Shane): Drekki Footprints, a path a drekki at a hatchery follows away from its pen.
 
 - **The block:** Drekki Footprints, 1 px flat like a carpet, no collision box, clear but for two clawed prints (the right
-  foot a stride ahead). It faces the way its placer faces. Recipe: dirt and a feather, shapeless, make 4 (no other
+  foot a stride ahead). It faces the way its placer faces. Recipe: dirt and a feather, shapeless, make 16 (4 until 2026-11-27) (no other
   two-item recipe in the Haven pack uses them, checked 2026-11-27). It breaks like a carpet when the block under it goes.
 - **The graph:** each level keeps its prints and its Straw Bedding as saved data (trail/Trails), told by the blocks when
   placed or removed and checked against each chunk that loads, so a trail is known where no chunk is loaded (as
@@ -1058,11 +1069,11 @@ Decided 2026-11-27 (Shane): Drekki Footprints, a path a drekki at a hatchery fol
 - **Who walks:** Fledglings and Matures that live at a hatchery (not pups, not ghosts), by day, with their food bar at
   half or more: now and then, in place of a stroll, from a print inside their wander area (the pen).
 - **The walk:** stretches of up to 5 prints, a block to one side at times, a pause now and then, so it follows the trail
-  loosely within 1 to 2 blocks (its paths may use only spots within 2 blocks of a print). At a fork it takes a branch at
+  loosely (its paths may use only spots within 3 blocks of a print, an anchor's reach; 2 until 2026-11-27). At a fork it takes a branch at
   random; at a trail's end it turns and walks the whole way back; a trail joined end to start is a loop. Back at the
   trail's start the walk ends and the pen's goals take over. No limit on length.
-- **Night:** a walker turns for home and sleeps on the first Straw Bedding within 3 blocks of the trail on the way;
-  with none, it walks home.
+- **Night** (its bedtime, see Sleep): a walker turns for home and sleeps on the first free Straw Bedding within 3
+  blocks of the trail on the way; with none, it walks home.
 - **Unloaded ground** (as Create's trains): where the next print does not tick, the drekki is saved to the roster and
   removed, and its walk goes on as a record (trail/TrailWalks), print to print at 2 blocks a second, owner online or
   not. Where the record's print ticks again, the drekki appears there. The hatchery does not put a walking drekki back

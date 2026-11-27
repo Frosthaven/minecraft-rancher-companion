@@ -26,6 +26,9 @@ public final class TrailWalk extends Goal {
     /** the stretch under way: each print with the walk's place after it ({node, prev, dir}) */
     private final java.util.List<long[]> plan = new java.util.ArrayList<>();
     private int pause, stuck, tries, wait;
+    /** tonight's bedding block by the trail (claimed), and the steps spent getting onto it */
+    private BlockPos rest;
+    private final int[] bedTries = {0};
 
     public TrailWalk(DrekkiEntity d) { this.d = d; setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK, Flag.JUMP)); }
 
@@ -41,7 +44,7 @@ public final class TrailWalk extends Goal {
         TrailWalks.Walk w = walk();
         if (w != null) return true;  /* a walk under way: this entity carries it on (it came back into ticking ground) */
         if (d.stage() < 2) return false;  /* Fledglings and Matures walk trails; a pup keeps to its pen (Shane, 2026-11-27) */
-        if (d.level().isNight() || d.isSleepingLoop() || d.life.food < Life.FOOD_MAX / 2 || d.getTarget() != null) return false;
+        if (d.restTime() || d.isSleepingLoop() || d.life.food < Life.FOOD_MAX / 2 || d.getTarget() != null) return false;
         if (d.getRandom().nextInt(adjustedTickDelay(START)) != 0) return false;
         BlockPos head = trailhead();
         if (head == null) return false;
@@ -80,8 +83,9 @@ public final class TrailWalk extends Goal {
     public void stop() {
         d.getNavigation().stop();
         target = null; plan.clear();
+        rest = null; dev.frosthaven.ranchercompanion.entity.Beds.release(d);
         /* the walk ended (or it left the hatchery's roster): awake, and the pen's goals take over */
-        if (walk() == null && d.isSleepingLoop() && !d.level().isNight()) d.setSleepingLoop(false);
+        if (walk() == null && d.isSleepingLoop() && !d.restTime()) d.setSleepingLoop(false);
     }
 
     @Override
@@ -89,10 +93,11 @@ public final class TrailWalk extends Goal {
         TrailWalks.Walk w = walk();
         if (w == null) return;
         Trails tr = Trails.get(level());
-        boolean night = d.level().isNight();
+        boolean night = d.restTime();   /* its night: day for a nocturnal one */
         if (w.asleep) {
             if (night) return;
             w.asleep = false; d.setSleepingLoop(false); walks().changed();
+            rest = null; dev.frosthaven.ranchercompanion.entity.Beds.release(d);
         }
         if (!tr.isPrint(w.node)) {  /* its print was broken: pick the trail up nearby, or end the walk */
             BlockPos p = tr.nearestPrint(d.blockPosition(), 2);
@@ -190,13 +195,20 @@ public final class TrailWalk extends Goal {
         w.turn(); walks().changed();
     }
 
-    private void sleepOn(TrailWalks.Walk w, BlockPos bed) {
-        if (d.blockPosition().equals(bed) || d.getNavigation().isDone() && d.blockPosition().distSqr(bed) <= 2) {
-            d.getNavigation().stop(); d.setSleepingLoop(true); w.asleep = true; walks().changed(); return;
+    /** the night's rest stop: onto a free bedding block within 3 blocks of the trail (claimed, Beds), not beside it;
+     *  one it cannot step onto is given up for another, and with none free it sleeps by the trail */
+    private void sleepOn(TrailWalks.Walk w, BlockPos near) {
+        if (rest == null) { rest = freeRest(w, null); bedTries[0] = 0; }
+        if (rest == null) { d.getNavigation().stop(); d.setSleepingLoop(true); w.asleep = true; walks().changed(); return; }
+        switch (dev.frosthaven.ranchercompanion.entity.Beds.approach(d, rest, bedTries)) {
+            case ON -> { d.getNavigation().stop(); d.setSleepingLoop(true); w.asleep = true; walks().changed(); }
+            case STUCK -> { rest = freeRest(w, rest); bedTries[0] = 0; }
+            case GOING -> { }
         }
-        if (d.getNavigation().isDone() && !d.getNavigation().moveTo(bed.getX() + 0.5, bed.getY(), bed.getZ() + 0.5, 0.8)) {
-            d.setSleepingLoop(true); w.asleep = true; walks().changed();  /* it cannot reach the bedding: it sleeps by the trail */
-        }
+    }
+
+    private BlockPos freeRest(TrailWalks.Walk w, BlockPos not) {
+        return dev.frosthaven.ranchercompanion.entity.Beds.pick(d, Trails.get(level()).restsNear(w.node), not == null ? java.util.Set.of() : java.util.Set.of(not));
     }
 
     private void end() { walks().end(d.drekkiId()); plan.clear(); target = null; }

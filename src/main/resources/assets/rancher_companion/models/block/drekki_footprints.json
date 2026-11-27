@@ -1,6 +1,6 @@
 {
  "parent": "minecraft:block/block",
- "render_type": "minecraft:cutout",
+ "render_type": "minecraft:translucent",
  "textures": {
   "prints": "rancher_companion:block/drekki_footprints",
   "particle": "rancher_companion:block/drekki_footprints"

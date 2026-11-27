@@ -274,4 +274,61 @@ public final class LifeTests {
         t.runAfterDelay(5, () -> { for (int dx = -1; dx <= 1; dx++) t.setBlock(H.offset(dx, 0, 3), DrekkiBlocks.STRAW_BEDDING.get()); });
         t.succeedWhen(() -> t.assertTrue(d.bedding() != null && d.bedding().size() == 3, "bedding found: " + (d.bedding() == null ? -1 : d.bedding().size())));
     }
+
+    /** at night two drekki lie on two bedding blocks, each on its own block, not beside them (Shane, 2026-11-27) */
+    @GameTest(template = "floor", timeoutTicks = 600, batch = "beds_by_night")
+    public static void twoDrekkiEachLieOnTheirOwnBedding(GameTestHelper t) {
+        BlockPos h = stable(t);
+        ServerPlayer p = player(t);
+        DrekkiEntity a = hatchOne(t, p, h);
+        Ranch.putEgg(p, h, CreativeEggItem.egg(4));
+        Ranch.hatch(p, h);
+        List<DrekkiEntity> mine = t.getLevel().getEntitiesOfClass(DrekkiEntity.class, new AABB(h).inflate(20), d -> p.getUUID().equals(d.owner()));
+        t.assertTrue(mine.size() == 2, "two drekki: " + mine.size());
+        /* a row of four: two drekki spread out onto the ends' side, never side by side (b1 x 2, b2 x 4: one block apart at least) */
+        BlockPos b1 = H.offset(-3, 0, 3), b2 = H.offset(3, 0, 3);
+        for (int dx = -3; dx <= 3; dx++) if (dx == -3 || dx == -2 || dx == 2 || dx == 3) t.setBlock(H.offset(dx, 0, 3), DrekkiBlocks.STRAW_BEDDING.get());
+        t.getLevel().setDayTime(14000);
+        t.runAfterDelay(590, () -> t.getLevel().setDayTime(1000));   /* morning again even when it fails: later batches need the day */
+        BlockPos a1 = t.absolutePos(b1), a2 = t.absolutePos(b2);
+        t.succeedWhen(() -> {
+            for (DrekkiEntity d : mine) t.assertTrue(d.isSleepingLoop(), "asleep: " + d.blockPosition());
+            java.util.List<BlockPos> on = new java.util.ArrayList<>();
+            for (DrekkiEntity d : mine) on.add(d.blockPosition());
+            for (BlockPos o : on) t.assertTrue(t.getLevel().getBlockState(o).is(DrekkiBlocks.STRAW_BEDDING.get()), "on bedding: " + on);
+            t.assertTrue(Math.abs(on.get(0).getX() - on.get(1).getX()) > 1 || Math.abs(on.get(0).getZ() - on.get(1).getZ()) > 1, "spread out, not side by side: " + on);
+            t.getLevel().setDayTime(1000);
+            for (DrekkiEntity d : mine) Ranch.roster(t.getLevel().getServer()).remove(d.drekkiId());
+        });
+    }
+
+    /** Lunar, Underworld and Deep first eyes are nocturnal: a Lunar drekki sleeps by day while a Solar one is awake, and at
+     *  night the other way round (Shane, 2026-11-27) */
+    @GameTest(template = "floor", timeoutTicks = 800, batch = "bedtime")
+    public static void aLunarDrekkiSleepsByDay(GameTestHelper t) {
+        BlockPos h = stable(t);
+        ServerPlayer p = player(t);
+        hatchOne(t, p, h);
+        Ranch.putEgg(p, h, CreativeEggItem.egg(4));
+        Ranch.hatch(p, h);
+        List<DrekkiEntity> mine = t.getLevel().getEntitiesOfClass(DrekkiEntity.class, new AABB(h).inflate(20), d -> p.getUUID().equals(d.owner()));
+        t.assertTrue(mine.size() == 2, "two drekki: " + mine.size());
+        DrekkiEntity lunar = mine.get(0), solar = mine.get(1);
+        lunar.setLook(2, lunar.line(), lunar.diet(), dev.frosthaven.ranchercompanion.look.Astral.LUNAR, lunar.horn());
+        solar.setLook(2, solar.line(), solar.diet(), dev.frosthaven.ranchercompanion.look.Astral.SOLAR, solar.horn());
+        t.getLevel().setDayTime(1000);
+        boolean[] dayOk = {false};
+        t.runAfterDelay(300, () -> {
+            t.assertTrue(lunar.isSleepingLoop() && !solar.isSleepingLoop(), "by day the Lunar one sleeps, the Solar one is awake: " + lunar.isSleepingLoop() + ", " + solar.isSleepingLoop());
+            dayOk[0] = true;
+            t.getLevel().setDayTime(14000);
+        });
+        t.runAfterDelay(790, () -> t.getLevel().setDayTime(1000));
+        t.succeedWhen(() -> {
+            t.assertTrue(dayOk[0], "the day check first");
+            t.assertTrue(!lunar.isSleepingLoop() && solar.isSleepingLoop(), "at night the Solar one sleeps, the Lunar one is awake: " + lunar.isSleepingLoop() + ", " + solar.isSleepingLoop());
+            t.getLevel().setDayTime(1000);
+            for (DrekkiEntity d : mine) Ranch.roster(t.getLevel().getServer()).remove(d.drekkiId());
+        });
+    }
 }

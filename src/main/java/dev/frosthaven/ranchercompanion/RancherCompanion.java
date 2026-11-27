@@ -73,6 +73,7 @@ public final class RancherCompanion {
         NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGH, net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.EntityInteractSpecific.class, dev.frosthaven.ranchercompanion.entity.DrekkiInteract::onEntityInteractSpecific);
         NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.server.ServerStoppedEvent.class, Ranch::onStopped);
         NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.server.ServerStoppedEvent.class, e -> dev.frosthaven.ranchercompanion.life.Feeding.clear());
+        NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.server.ServerStoppedEvent.class, e -> dev.frosthaven.ranchercompanion.entity.Beds.clear());
         dev.frosthaven.ranchercompanion.life.LifeEvents.register(NeoForge.EVENT_BUS);
         dev.frosthaven.ranchercompanion.entity.FriendlyFire.register(NeoForge.EVENT_BUS);
         dev.frosthaven.ranchercompanion.trait.Learning.register(NeoForge.EVENT_BUS);

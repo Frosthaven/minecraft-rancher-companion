@@ -185,7 +185,8 @@ def footprint():
     """Drekki Footprints: clear but for two pressed paw prints, the right foot a stride ahead of the left. The texture's top
     is the way the prints walk (the block's facing). A print: a three-lobed heel pad, three toes and a claw tip on each."""
     im = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
-    EARTH = [(42, 30, 22, 215), (66, 48, 34, 190), (92, 70, 50, 120)]  # deep, pressed, rim
+    # deep, pressed, rim; at half their first opacity (Shane, 2026-11-27: 50% translucent; the model is translucent)
+    EARTH = [(42, 30, 22, 108), (66, 48, 34, 95), (92, 70, 50, 60)]
     PRINT = [  # 7 wide, 8 tall: c claw, t toe, r pad rim, p heel pad
         "c..c..c",
         "t..t..t",

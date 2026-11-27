@@ -410,7 +410,7 @@ public final class DrekkiPonder implements PonderPlugin {
         scene.world().showSection(inside, Direction.DOWN);
         scene.idle(10);
         scene.overlay().chaseBoundingBoxOutline(PonderPalette.GREEN, "anchor", new AABB(1, 1, 1, 10, 1.1, 10), 100);  /* bedding x 4..6, z 4..6 */
-        scene.overlay().showText(90).text("Straw Bedding is an anchor too: the area grows 3 blocks around it. Drekki like to rest on it, and sleep there at night")
+        scene.overlay().showText(90).text("Straw Bedding is an anchor too: the area grows 3 blocks around it. Drekki like to rest on it, and sleep there: at night, or by day for Lunar, Underworld and Deep eyes")
             .pointAt(util.vector().topOf(5, 0, 4)).placeNearTarget();
         scene.idle(100);
         Selection path = util.select().fromTo(0, 0, 1, 4, 0, 1).add(util.select().fromTo(5, 0, 0, 5, 0, 2));
@@ -450,7 +450,7 @@ public final class DrekkiPonder implements PonderPlugin {
         scene.world().showSection(util.select().fromTo(8, 1, 4, 11, 1, 4), Direction.DOWN);
         scene.world().showSection(util.select().fromTo(8, 1, 5, 8, 1, 7), Direction.DOWN);
         scene.idle(15);
-        scene.overlay().showText(100).text("A Fledgling or Mature that lives at the hatchery sometimes takes a trail that starts near it, and keeps a block or two from the prints as it goes. A trail can be as long as you like")
+        scene.overlay().showText(100).text("A Fledgling or Mature that lives at the hatchery sometimes takes a trail that starts near it, and keeps within 3 blocks of the prints as it goes. A trail can be as long as you like")
             .pointAt(util.vector().topOf(3, 0, 4)).placeNearTarget().attachKeyFrame();
         scene.idle(40);
         var d = scene.world().createEntity(level -> {
@@ -474,7 +474,7 @@ public final class DrekkiPonder implements PonderPlugin {
         walk(scene, d, 8.6, 1, 6.6, 4);
         scene.world().showSection(util.select().position(10, 1, 7), Direction.DOWN);
         scene.idle(15);
-        scene.overlay().showText(100).text("At night it heads for home and sleeps on Straw Bedding within 3 blocks of the trail on the way. With none on the way, it walks home")
+        scene.overlay().showText(100).text("At its bedtime (night, or day for Lunar, Underworld and Deep eyes) it heads for home and sleeps on free Straw Bedding within 3 blocks of the trail. With none on the way, it walks home")
             .pointAt(util.vector().topOf(10, 0, 7)).placeNearTarget().attachKeyFrame();
         scene.idle(30);
         walk(scene, d, 10.5, 1, 7.5, 4);

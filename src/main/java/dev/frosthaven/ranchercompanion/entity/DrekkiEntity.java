@@ -146,6 +146,8 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
     public int astral2() { return entityData.get(ASTRAL2); }
     public void setAstral2(int a) { entityData.set(ASTRAL2, a == astral() ? 0 : a); }
     /** one of its astrals: the one, or either eye of a two-eyed drekki */
+    /** its time to sleep: night, or day for a nocturnal first eye (Astral.restTime) */
+    public boolean restTime() { return dev.frosthaven.ranchercompanion.look.Astral.restTime(astral(), level()); }
     public boolean hasAstral(int a) { return a != dev.frosthaven.ranchercompanion.look.Astral.DORMANT && (a == astral() || a == astral2()); }
     public int horn() { return entityData.get(HORN); }
     /** Gear.HATS index, 0 none */

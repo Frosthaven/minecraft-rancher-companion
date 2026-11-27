@@ -120,6 +120,17 @@ public final class Trails extends SavedData {
         return best;
     }
 
+    /** every Straw Bedding within 3 blocks of this print (the night's rest stop) */
+    public java.util.List<BlockPos> restsNear(long node) {
+        int x = BlockPos.getX(node), y = BlockPos.getY(node), z = BlockPos.getZ(node);
+        java.util.List<BlockPos> out = new java.util.ArrayList<>();
+        for (int dx = -REST; dx <= REST; dx++) for (int dz = -REST; dz <= REST; dz++) for (int dy = -1; dy <= 1; dy++) {
+            long q = BlockPos.asLong(x + dx, y + dy, z + dz);
+            if (beds.contains(q)) out.add(BlockPos.of(q));
+        }
+        return out;
+    }
+
     /** the print nearest to a spot within 2 blocks (a trail picked up again after a fight or a broken print), or null */
     public BlockPos nearestPrint(BlockPos at, int r) {
         BlockPos best = null; double bd = Double.MAX_VALUE;

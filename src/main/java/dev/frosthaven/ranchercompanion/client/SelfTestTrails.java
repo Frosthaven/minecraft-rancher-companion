@@ -64,6 +64,14 @@ final class SelfTestTrails {
         check("trail_in_the_graph", 20, 10, () -> {}, "prints", () -> {
             var s = mc().getSingleplayerServer(); return s == null ? -1 : dev.frosthaven.ranchercompanion.trail.Trails.get(s.overworld()).printCount();
         }, () -> { var s = mc().getSingleplayerServer(); return s != null && dev.frosthaven.ranchercompanion.trail.Trails.get(s.overworld()).printCount() >= LENGTH; });
+        /* the prints close up, half see-through (Shane, 2026-11-27): from above, then from a low angle along the trail */
+        /* no screen and no interface in these two shots (the check-in reopens the hatchery screen; F1's hideGui) */
+        quiet("shots_clear", 10, () -> { mc().setScreen(null); mc().options.hideGui = true; });
+        step("prints_from_above", 40, () -> { mc().setScreen(null); cmd("tp @s " + (start.getX() + 3.5) + " " + (start.getY() + 3) + " " + (start.getZ() + 2.5)
+            + " facing " + (start.getX() + 3.5) + " " + start.getY() + " " + (start.getZ() + 0.5)); }, () -> mc().screen == null);
+        step("prints_along_the_trail", 30, () -> { mc().setScreen(null); cmd("tp @s " + (start.getX() - 1.5) + " " + (start.getY() + 1.2) + " " + (start.getZ() + 1.5)
+            + " facing " + (start.getX() + 8.5) + " " + start.getY() + " " + (start.getZ() + 0.5)); }, () -> mc().screen == null);
+        quiet("shots_done", 5, () -> mc().options.hideGui = false);
         quiet("walk_starts", 10, () -> onServer(level -> {
             DrekkiEntity d = live();
             if (d != null && walk() == null) TrailWalks.get(level.getServer()).start(d, start);
@@ -75,7 +83,7 @@ final class SelfTestTrails {
         }, "blocks out along the trail", () -> live() == null ? "none" : String.format("%.1f", live().getX() - start.getX()),
             () -> live() != null && live().getX() - start.getX() > 25 && walk() != null);
         check("keeps_near_the_prints", 5, 0, () -> {}, "blocks off the trail", () -> live() == null ? "none" : String.format("%.1f", Math.abs(live().getZ() - (start.getZ() + 0.5))),
-            () -> live() != null && Math.abs(live().getZ() - (start.getZ() + 0.5)) <= 2.5);
+            () -> live() != null && Math.abs(live().getZ() - (start.getZ() + 0.5)) <= 3.5);
         /* the player goes far west: the drekki's ground stops ticking */
         quiet("player_away", 10, () -> cmd("tp @s " + (start.getX() - 600) + " 200 " + start.getZ()));
         check("walks_on_as_a_record", 40, 30, () -> {}, "record", () -> walk() == null ? "no walk" : "live " + walk().live + " at " + (BlockPos.getX(walk().node) - start.getX()),

@@ -36,7 +36,10 @@ public final class TrailTests {
     }
 
     /** these tests run in their own batch: other tests set the shared world's time, and a walk turns home at night */
-    private static void day(GameTestHelper t) { t.getLevel().setDayTime(1000); }
+    private static void day(GameTestHelper t) {
+        t.getLevel().setDayTime(1000);
+        t.onEachTick(() -> { if (t.getLevel().getDayTime() % 24000 > 11000) t.getLevel().setDayTime(1000); });  /* kept: another batch's night may linger */
+    }
 
     private static long at(GameTestHelper t, int x, int z) { return t.absolutePos(new BlockPos(x, 1, z)).asLong(); }
 
@@ -77,7 +80,7 @@ public final class TrailTests {
             TrailWalks.Walk w = new TrailWalks.Walk(UUID.randomUUID(), t.getLevel().dimension(), at(t, 2, 10));
             TrailWalks walks = TrailWalks.get(t.getLevel().getServer());
             int far = 2, steps = 0;
-            while (walks.walk(t.getLevel(), w) && steps++ < 100) far = Math.max(far, BlockPos.getX(w.node) - t.absolutePos(BlockPos.ZERO).getX());
+            while (walks.walk(t.getLevel(), w, false) && steps++ < 100) far = Math.max(far, BlockPos.getX(w.node) - t.absolutePos(BlockPos.ZERO).getX());
             t.assertTrue(steps < 100, "the walk ends");
             t.assertTrue(far == 20, "it reached the trail's end: x " + far);
             t.assertTrue(BlockPos.getX(w.node) - t.absolutePos(BlockPos.ZERO).getX() == 2, "and ended back at the start: x " + (BlockPos.getX(w.node) - t.absolutePos(BlockPos.ZERO).getX()));

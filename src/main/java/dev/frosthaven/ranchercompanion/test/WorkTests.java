@@ -17,8 +17,8 @@ import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 /**
- * An employed drekki at work (Shane, 2026-11-26: a train driver's eyes kindled and it sat Miserable): no travel time,
- * so no growth or kindling, and no mood drain for being away; it gets hungry and eats from home (2026-11-27). A hatchery taken away without breaking (Carry On) lets its drekki go
+ * An employed drekki at work: no mood drain for being away (2026-11-26); it gets hungry and eats from home, and by
+ * default it does not age (server config age_at_work; age_at_home for the stable, 2026-11-27). A hatchery taken away without breaking (Carry On) lets its drekki go
  * to "No hatchery" the next time its owner opens a hatchery screen.
  */
 @GameTestHolder(RancherCompanion.ID)
@@ -26,8 +26,8 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 public final class WorkTests {
     private WorkTests() {}
 
-    /** no travel time and no drain for being away from its owner; hungry, it eats from its hatchery's trough from its
-     *  seat, and the meal lifts its mood (Shane, 2026-11-27: mood at work runs as at home) */
+    /** no travel time by default and no drain for being away from its owner; hungry, it eats from its hatchery's trough
+     *  from its seat, and the meal lifts its mood (Shane, 2026-11-27) */
     @GameTest(template = "floor", timeoutTicks = 400)
     public static void anEmployedDrekkiEatsFromHomeAndDoesNotGrow(GameTestHelper t) {
         BlockPos h = LifeTests.stable(t);
@@ -51,6 +51,27 @@ public final class WorkTests {
             t.assertTrue(d.life.travel == travel && d.stage() == 1, "no travel time at work: " + d.life.travel + " (was " + travel + "), stage " + d.stage());
             t.assertTrue(d.life.food > 0, "it ate from its hatchery's trough: food " + d.life.food);
             t.assertTrue(d.life.mood > 52, "the meal lifted its mood, and being away did not drain it: " + d.life.mood);
+            r.remove(e.id);
+        });
+    }
+
+    /** a drekki at its hatchery does not age by default; with age_at_home on it does (Shane, 2026-11-27) */
+    @GameTest(template = "floor", timeoutTicks = 300)
+    public static void aDrekkiAtItsHatcheryAgesOnlyWhenSet(GameTestHelper t) {
+        BlockPos h = LifeTests.stable(t);
+        ServerPlayer p = LifeTests.player(t);
+        DrekkiEntity d = LifeTests.hatchOne(t, p, h);
+        Roster r = Ranch.roster(t.getLevel().getServer());
+        Roster.Entry e = r.of(p.getUUID()).get(0);
+        long time = Life.stageTicks(dev.frosthaven.ranchercompanion.DrekkiConfig.STAGE_DAYS.get()) - 30;
+        d.life.travel = time;
+        t.runAfterDelay(100, () -> {
+            t.assertTrue(d.life.travel == time && d.stage() == 1, "no aging at home by default: " + d.life.travel + ", stage " + d.stage());
+            dev.frosthaven.ranchercompanion.DrekkiConfig.AGE_AT_HOME.set(true);
+        });
+        t.succeedWhen(() -> {
+            t.assertTrue(d.stage() == 2, "with age_at_home it grew up at home: stage " + d.stage());
+            dev.frosthaven.ranchercompanion.DrekkiConfig.AGE_AT_HOME.set(false);
             r.remove(e.id);
         });
     }

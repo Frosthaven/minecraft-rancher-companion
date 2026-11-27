@@ -116,18 +116,30 @@ public final class DrekkiGoals {
     static final class Sleep extends Goal {
         private final DrekkiEntity d;
         private BlockPos bed;
-        private int settle, recheck, retry, tries;
-        private static final int MAX_TRIES = 10;
+        private int settle, recheck;
+        private final int[] tries = {0};
+        /** bedding it could not get onto tonight: never picked again before morning (an unreachable block would wake it
+         *  all night) */
+        private final Set<BlockPos> gaveUp = new java.util.HashSet<>();
 
         Sleep(DrekkiEntity d) { this.d = d; setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK, Flag.JUMP)); }
 
-        private boolean night() { return d.level().isNight(); }
+        private boolean night() { return d.restTime(); }   /* night, or day for Lunar, Underworld and Deep eyes */
+
+        /** a free bedding block of its pen, claimed (Beds), or null */
+        private BlockPos freeBed() {
+            Set<Long> beds = d.bedding();
+            if (beds == null || beds.isEmpty()) return null;
+            java.util.List<BlockPos> list = new java.util.ArrayList<>();
+            for (long p : beds) list.add(new BlockPos(dev.frosthaven.ranchercompanion.ranch.Flood.x(p), dev.frosthaven.ranchercompanion.ranch.Flood.y(p), dev.frosthaven.ranchercompanion.ranch.Flood.z(p)));
+            return Beds.pick(d, list, gaveUp);
+        }
 
         @Override
         public boolean canUse() {
             if (d.ghost() || d.isOut() || d.home() == null || !night() || d.pen() == null || dev.frosthaven.ranchercompanion.trail.TrailWalks.walking(d)) return false;  /* a ghost never sleeps (Shane, 2026-11-26) */
-            Set<Long> beds = d.bedding();
-            bed = beds != null && !beds.isEmpty() ? pick(d, beds) : null;
+            gaveUp.clear();
+            bed = freeBed();
             return true;
         }
 
@@ -135,48 +147,37 @@ public final class DrekkiGoals {
         public boolean canContinueToUse() { return !d.ghost() && !d.isOut() && night() && d.getLastHurtByMob() == null; }
 
         @Override
-        public void start() {
-            settle = 0;
-            tries = 0;
-            if (bed != null) goBed();
-        }
+        public void start() { settle = 0; tries[0] = 0; recheck = 0; }
+
+        /* every tick: the last step onto the bedding sets the move control's target, which lasts one tick */
+        @Override
+        public boolean requiresUpdateEveryTick() { return true; }
 
         @Override
         public void tick() {
-            /* about every 5 s (goals tick every other tick): a drekki not lying on bedding gets up and goes to some when its pen
-               has bedding it can walk to (laid after it settled, or a walk that failed). Bedding it cannot reach leaves it
-               asleep where it is: waking it to try again would loop sleep and stand all night */
-            if ((bed == null || !d.blockPosition().equals(bed)) && d.getNavigation().isDone() && ++recheck % 50 == 0) {
-                Set<Long> beds = d.bedding();
-                if (beds != null && !beds.isEmpty() && !beds.contains(dev.frosthaven.ranchercompanion.ranch.Flood.pack(d.getBlockX(), d.getBlockY(), d.getBlockZ()))) {
-                    BlockPos to = pick(d, beds);
-                    var path = d.getNavigation().createPath(to, 0);
-                    if (path != null && path.canReach()) {
-                        bed = to;
-                        d.setSleepingLoop(false);
-                        settle = 0; tries = 0;
-                        d.getNavigation().moveTo(path, 0.8);
-                        return;
-                    }
-                }
+            /* asleep off bedding (none was free): about every 5 s it looks again, and gets up for a block that came free */
+            if (bed == null && ++recheck % 100 == 0) {
+                BlockPos to = freeBed();
+                var path = to == null ? null : d.getNavigation().createPath(to, 0);
+                if (path != null && path.canReach()) { bed = to; tries[0] = 0; settle = 0; d.setSleepingLoop(false); }
+                else if (to != null) { gaveUp.add(to); Beds.release(d); }
             }
             if (d.isSleepingLoop()) return;
-            boolean near = bed == null || d.blockPosition().equals(bed);
-            /* no path yet (a mob in the air gets none, as right after a hatch or a check-in): try again for a while
-               before settling where it stands */
-            if (!near && d.getNavigation().isDone() && tries < MAX_TRIES) {
-                if (++retry % 10 == 0) { tries++; goBed(); }
+            if (bed != null) {
+                /* onto its own free bedding block, not beside it (Shane, 2026-11-27: they slept a block short); one it
+                   cannot step onto in about 3 s is given up for another free block, or it sleeps where it stands */
+                switch (Beds.approach(d, bed, tries)) {
+                    case ON -> { if (++settle > 10) { d.getNavigation().stop(); d.setSleepingLoop(true); } }
+                    case STUCK -> { gaveUp.add(bed); bed = freeBed(); tries[0] = 0; }
+                    case GOING -> { }
+                }
                 return;
             }
-            boolean there = near || d.getNavigation().isDone();
-            if (there && ++settle > 10) { d.getNavigation().stop(); d.setSleepingLoop(true); }
+            if (d.getNavigation().isDone() && ++settle > 10) d.setSleepingLoop(true);
         }
 
-        /** a path that ends on the bed itself (moveTo's own accuracy stops a block short) */
-        private void goBed() { d.getNavigation().moveTo(d.getNavigation().createPath(bed, 0), 0.8); }
-
         @Override
-        public void stop() { d.setSleepingLoop(false); bed = null; }
+        public void stop() { d.setSleepingLoop(false); bed = null; Beds.release(d); }
     }
 
     /** ground navigation whose paths never leave a checked-in drekki's pen */
@@ -203,8 +204,9 @@ public final class DrekkiGoals {
         public PathType getPathTypeOfMob(PathfindingContext ctx, int x, int y, int z, Mob mob) {
             if (mob instanceof DrekkiEntity d && !d.isOut() && d.pen() != null && d.inPen(new BlockPos(x, y, z)) == false
                 && (dev.frosthaven.ranchercompanion.trail.TrailWalks.walking(d)
-                    /* out on a trail: within 2 blocks of a footprint, so it keeps near the trail (spec, Trails) */
-                    ? dev.frosthaven.ranchercompanion.trail.Trails.get((net.minecraft.server.level.ServerLevel) d.level()).nearestPrint(new BlockPos(x, y, z), 2) == null
+                    /* out on a trail: within 3 blocks of a footprint (an anchor's reach, as the hatchery, bedding and dirt
+                       paths; 2 until 2026-11-27), so it keeps near the trail (spec, Trails) */
+                    ? dev.frosthaven.ranchercompanion.trail.Trails.get((net.minecraft.server.level.ServerLevel) d.level()).nearestPrint(new BlockPos(x, y, z), dev.frosthaven.ranchercompanion.ranch.Ground.ANCHOR) == null
                     : d.inPen(d.blockPosition())))
                 return PathType.BLOCKED;
             return super.getPathTypeOfMob(ctx, x, y, z, mob);

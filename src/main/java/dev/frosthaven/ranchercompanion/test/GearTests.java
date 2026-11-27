@@ -258,6 +258,14 @@ public final class GearTests {
         t.succeed();
     }
 
+    /** dirt and a feather make 16 Drekki Footprints (Shane, 2026-11-27) */
+    @GameTest(template = "floor", timeoutTicks = 20)
+    public static void dirtAndAFeatherMakeSixteenFootprints(GameTestHelper t) {
+        ItemStack out = craft(t, CraftingInput.of(2, 1, List.of(new ItemStack(Items.DIRT), new ItemStack(Items.FEATHER))));
+        t.assertTrue(out.is(dev.frosthaven.ranchercompanion.block.DrekkiBlocks.FOOTPRINT.get().asItem()) && out.getCount() == 16, "dirt and a feather made " + out);
+        t.succeed();
+    }
+
     static ItemStack craft(GameTestHelper t, CraftingInput in) {
         var level = t.getLevel();
         var hit = level.getRecipeManager().getRecipeFor(RecipeType.CRAFTING, in, level);

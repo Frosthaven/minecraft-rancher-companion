@@ -103,7 +103,7 @@ public final class TrailWalks extends SavedData {
             }
             ServerLevel level = s.getLevel(w.dim);
             if (level == null) { t.end(w.id); continue; }
-            if (!t.walk(level, w)) { t.end(w.id); continue; }
+            if (!t.walk(level, w, dev.frosthaven.ranchercompanion.look.Astral.nocturnal(e.save.getInt("Astral")))) { t.end(w.id); continue; }
             t.setDirty();
             if (level.isPositionEntityTicking(w.at()) && Ranch.liveOf(w.id) == null) {
                 w.live = true;  /* before it joins: the join check lets this copy in */
@@ -113,7 +113,7 @@ public final class TrailWalks extends SavedData {
     }
 
     /** one second of a record's walk; false: the walk is over */
-    public boolean walk(ServerLevel level, Walk w) {
+    public boolean walk(ServerLevel level, Walk w, boolean nocturnal) {
         Trails tr = Trails.get(level);
         RandomSource rnd = level.random;
         if (!tr.isPrint(w.node)) {  /* its print was broken: the nearest one, or home */
@@ -121,7 +121,7 @@ public final class TrailWalks extends SavedData {
             if (p == null) return false;
             w.node = p.asLong(); w.prev = Long.MIN_VALUE;
         }
-        boolean night = level.isNight();
+        boolean night = nocturnal ? level.isDay() : level.isNight();   /* its night: day for a nocturnal one */
         if (w.asleep) { if (night) return true; w.asleep = false; }
         if (night && w.dir == 1) w.turn();  /* night: homeward, to the first rest stop */
         if (night && tr.restNear(w.node) != null) { w.asleep = true; return true; }

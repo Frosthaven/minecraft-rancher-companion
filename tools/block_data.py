@@ -282,8 +282,8 @@ def decor():
     put(A / "models/block/straw_bedding.json", {"parent": "minecraft:block/carpet", "textures": {"wool": t("straw_bedding")}})
     put(A / "blockstates/straw_bedding.json", {"variants": {"": {"model": f"{NS}:block/straw_bedding"}}})
 
-    # Drekki Footprints: a 1 px plate, cutout (clear but for the prints), turned to its facing (the texture's top walks north)
-    put(A / "models/block/drekki_footprints.json", {"parent": "minecraft:block/block", "render_type": "minecraft:cutout",
+    # Drekki Footprints: a 1 px plate, translucent (clear but for the prints, which are half see-through), turned to its facing (the texture's top walks north)
+    put(A / "models/block/drekki_footprints.json", {"parent": "minecraft:block/block", "render_type": "minecraft:translucent",
         "textures": {"prints": t("drekki_footprints"), "particle": t("drekki_footprints")},
         "elements": [{"from": [0, 0, 0], "to": [16, 0.25, 16], "faces": {
             "up": {"uv": [0, 0, 16, 16], "texture": "#prints"},
@@ -430,7 +430,7 @@ def recipes():
     shaped("straw_bedding", ["SS"], {"S": "farmersdelight:straw"}, "straw_bedding", 3, when=FD)
     shaped("straw_bedding_from_wheat", ["WW"], {"W": "minecraft:wheat"}, "straw_bedding", 3)
     # dirt and a feather: no other two-item recipe in the Haven pack (checked 2026-11-27)
-    shapeless("drekki_footprints", ["minecraft:dirt", "minecraft:feather"], "drekki_footprints", 4)
+    shapeless("drekki_footprints", ["minecraft:dirt", "minecraft:feather"], "drekki_footprints", 16)
     shaped("rancher_fence", ["PSP", "PSP"], {"P": f"{NS}:rancher_planks", "S": "minecraft:stick"}, "rancher_fence", 3)
     shaped("rancher_fence_gate", ["SPS", "SPS"], {"P": f"{NS}:rancher_planks", "S": "minecraft:stick"}, "rancher_fence_gate")
     shaped("tufted_leather", ["LNL", "NWN", "LNL"], {"L": "minecraft:leather", "N": N, "W": "#minecraft:wool"}, "tufted_leather", 4)

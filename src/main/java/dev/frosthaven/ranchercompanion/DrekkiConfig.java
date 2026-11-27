@@ -16,6 +16,7 @@ public final class DrekkiConfig {
     public static final ModConfigSpec.BooleanValue CROPS_BY_SEEDS;
     public static final ModConfigSpec.DoubleValue STAGE_DAYS, HUNGER_PER_DAY, TRAVEL_HUNGER_PER_DAY;
     public static final ModConfigSpec.IntValue CONFIG_VERSION;
+    public static final ModConfigSpec.BooleanValue AGE_AT_WORK, AGE_AT_HOME;
     /** the defaults' version: a file below it has each value still at an older default moved to the new one (upgrade) */
     public static final int VERSION = 1;
 
@@ -58,6 +59,10 @@ public final class DrekkiConfig {
         b.comment("Growth (spec, Growth release): travel time a drekki needs per stage, in game days (24000 ticks).",
             "Travel counts while it is checked out, out of its carrier and not employed.").push("growth");
         STAGE_DAYS = b.defineInRange("days_per_stage", 6.0, 0.01, 1000.0);
+        AGE_AT_WORK = b.comment("Whether a drekki at work (a Create job seat) ages too. Off: it ages only while out with its owner.")
+            .define("age_at_work", false);
+        AGE_AT_HOME = b.comment("Whether a drekki at its hatchery ages too. Off: it ages only while out with its owner.")
+            .define("age_at_home", false);
         b.pop();
         b.comment("Hunger (spec, Hunger): shanks lost per game day, out of ten, while the drekki is live (its chunk ticking).",
             "Saturation is spent first. Travelling (checked out) drains at its own rate. A food gives its own nutrition",

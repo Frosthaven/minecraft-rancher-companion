@@ -62,7 +62,11 @@ public final class Vitals {
         /* a ghost does not get hungry. An employed drekki does, at the rate it would at home, and eats from its bag or its
            hatchery's troughs (EatGoal.homeMeal; Shane, 2026-11-27: a driver that never ate never got a meal's mood) */
         if (!l.ghost) l.spend(Life.drain(dt, hungerRate(d, travelling)));
-        if (travelling) grow(d, dt);
+        /* it ages while out with its owner; at work and at its hatchery only where the server config says so (age_at_work,
+           age_at_home: off by default, Shane, 2026-11-27). Time at work counts as time out (its eyes and biome); time at
+           the stable shapes nothing (spec, Affinities). A ghost does not age */
+        boolean ages = travelling || employed && DrekkiConfig.AGE_AT_WORK.get() || !d.isOut() && !employed && DrekkiConfig.AGE_AT_HOME.get();
+        if (!l.ghost && ages) grow(d, dt, travelling || employed);
         mood(d, dt);
         d.syncLife();
         effects(d, dt);
@@ -108,19 +112,16 @@ public final class Vitals {
 
     // ---- growth ----
 
-    private static void grow(DrekkiEntity d, long dt) {
-        /* an employed drekki is at work on its seat, not travelling: no travel time, so no growth and no astral
-           kindling (Shane, 2026-11-26: a train driver's eyes kindled), as it gets no hunger */
-        if (dev.frosthaven.ranchercompanion.ranch.Ranch.employed(d)) return;
+    private static void grow(DrekkiEntity d, long dt, boolean out) {
         Life l = d.life;
         double days = DrekkiConfig.STAGE_DAYS.get();
         l.travel += dt;
         var pos = d.blockPosition();
         if (d.stage() == 1 && d.astral() == Astral.DORMANT && !l.ghost) {
-            l.astral[Places.astral(d.level(), pos)] += dt;
-            if (l.travel >= Life.stageTicks(days) / 2) lockAstral(d);
+            if (out) l.astral[Places.astral(d.level(), pos)] += dt;
+            if (l.travel >= Life.stageTicks(days) / 2) lockAstral(d);  /* none counted (raised at home): the sky it is under */
         }
-        if (d.stage() == 2) l.biome.merge(Places.category(d.level(), pos), dt, Long::sum);
+        if (d.stage() == 2 && out) l.biome.merge(Places.category(d.level(), pos), dt, Long::sum);
         int next = Life.stageFor(l.travel, days, STAGE_CAP);
         if (next > d.stage()) growUp(d, next);
     }
