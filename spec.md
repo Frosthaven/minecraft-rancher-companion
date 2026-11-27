@@ -1113,8 +1113,10 @@ effect (see Mood), so other systems can soften or sharpen it later.
   nutrition (2 points to a shank) and its own saturation, as it gives a player; a diet food with no food values
   (wheat, seeds) gives one shank and 0.6 of a shank of saturation. Saturation is hidden, never above the shanks, and
   is spent before them. What does not fit in the bar is lost. It still eats only with room for a whole shank.
-- Drain (revised 2026-11-22: a quarter of the first rate, on the user's word): half a shank a game day, one while it
-  travels (server config `shanks_per_day`, `travel_shanks_per_day`; the old keys and their 1 and 2 are gone).
+- Drain (revised 2026-11-27, 1.5x, on the user's word; was half a shank and one from 2026-11-22): 0.75 of a shank a game
+  day, 1.5 while it travels (server config `shanks_per_day`, `travel_shanks_per_day`). Admins tune these in
+  world/serverconfig/rancher_companion-server.toml (applied on save, no restart); a new default reaches a file only where the
+  value is still the old default, once, by `config_version` (DrekkiConfig.upgrade): keys are never renamed for it.
 - Fed healing (decided 2026-11-21), as a player's on its 20 point bar, from the drekki's own bar only: at 9 shanks or
   more a hurt drekki heals 1 health every 4 s; with a full bar and saturation, 1 every half second, paid from
   saturation only. Each health costs 0.75 of a shank (a player's 6 exhaustion). Mood does not stop it, and it is

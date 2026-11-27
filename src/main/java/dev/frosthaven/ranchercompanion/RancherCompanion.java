@@ -93,6 +93,7 @@ public final class RancherCompanion {
         NeoForge.EVENT_BUS.addListener(ServerTickEvent.Post.class, ShowcaseBuild::onTick);
         container.registerConfig(net.neoforged.fml.config.ModConfig.Type.SERVER, DrekkiConfig.SPEC);
         modBus.addListener(net.neoforged.fml.event.config.ModConfigEvent.Loading.class, e -> FoodDiets.invalidate());
+        modBus.addListener(net.neoforged.fml.event.config.ModConfigEvent.Loading.class, DrekkiConfig::upgrade);
         modBus.addListener(net.neoforged.fml.event.config.ModConfigEvent.Reloading.class, e -> FoodDiets.invalidate());
         NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.TagsUpdatedEvent.class, e -> { FoodDiets.invalidate(); dev.frosthaven.ranchercompanion.life.Places.invalidate(); });
         /* Create's seats for the whistle's Go here, only with Create loaded */

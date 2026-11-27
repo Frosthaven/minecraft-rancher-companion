@@ -15,6 +15,9 @@ public final class DrekkiConfig {
     public static final ModConfigSpec.ConfigValue<List<? extends String>> NEVER, RAW, COOKED, SEED, ROOT;
     public static final ModConfigSpec.BooleanValue CROPS_BY_SEEDS;
     public static final ModConfigSpec.DoubleValue STAGE_DAYS, HUNGER_PER_DAY, TRAVEL_HUNGER_PER_DAY;
+    public static final ModConfigSpec.IntValue CONFIG_VERSION;
+    /** the defaults' version: a file below it has each value still at an older default moved to the new one (upgrade) */
+    public static final int VERSION = 1;
 
     /** the spec's lists (design page, Diet tab), every vanilla food, crop and seed by its rules (2026-11-16 review), then
         the convention tags for raw and cooked meat and fish, so modded meat feeds too; the plant tags are left out, as they
@@ -38,6 +41,8 @@ public final class DrekkiConfig {
 
     static {
         ModConfigSpec.Builder b = new ModConfigSpec.Builder();
+        CONFIG_VERSION = b.comment("Which defaults this file has been upgraded to. On load, a value still at an older default moves to",
+            "the new one, once; a value you changed is kept. Leave this as it is.").defineInRange("config_version", 0, 0, 1000);
         b.comment("Which food belongs to which diet: item ids or item tags (#namespace:path).",
             "Read raw, cooked, seed, root, each top to bottom. The first list an item is read into is its only one;",
             "a later list naming it again is skipped, with a warning in the log. Items in 'never' are never food.").push("diet");
@@ -57,9 +62,34 @@ public final class DrekkiConfig {
         b.comment("Hunger (spec, Hunger): shanks lost per game day, out of ten, while the drekki is live (its chunk ticking).",
             "Saturation is spent first. Travelling (checked out) drains at its own rate. A food gives its own nutrition",
             "(2 points to a shank) and saturation.").push("hunger");
-        HUNGER_PER_DAY = b.defineInRange("shanks_per_day", 0.5, 0.0, 100.0);
-        TRAVEL_HUNGER_PER_DAY = b.defineInRange("travel_shanks_per_day", 1.0, 0.0, 100.0);
+        HUNGER_PER_DAY = b.defineInRange("shanks_per_day", 0.75, 0.0, 100.0);   /* 0.5 until 0.8.1 (Shane, 2026-11-27: 1.5x) */
+        TRAVEL_HUNGER_PER_DAY = b.defineInRange("travel_shanks_per_day", 1.5, 0.0, 100.0);   /* 1.0 until 0.8.1 */
         b.pop();
         SPEC = b.build();
+    }
+
+    /**
+     * On load: a file below {@link #VERSION} has each value still at the default it was written with moved to today's
+     * default, then the version is set, so it runs once; a value an admin changed is kept, and so is one set back later.
+     * Admins tune the file (world/serverconfig/rancher_companion-server.toml); a new default reaches a server whose admin
+     * never touched that value (Shane, 2026-11-27: no renamed keys).
+     */
+    public static void upgrade(net.neoforged.fml.event.config.ModConfigEvent.Loading e) {
+        if (e.getConfig().getSpec() != SPEC || CONFIG_VERSION.get() >= VERSION) return;
+        int from = CONFIG_VERSION.get();
+        if (from < 1) {   /* 0.8.1: hunger 1.5x */
+            moved(HUNGER_PER_DAY, 0.5, 0.75);
+            moved(TRAVEL_HUNGER_PER_DAY, 1.0, 1.5);
+        }
+        CONFIG_VERSION.set(VERSION);
+        SPEC.save();
+        RancherCompanion.LOG.info("[config] defaults upgraded from version {} to {}", from, VERSION);
+    }
+
+    static boolean moved(ModConfigSpec.DoubleValue v, double old, double now) {
+        if (Math.abs(v.get() - old) > 1e-9) return false;
+        v.set(now);
+        RancherCompanion.LOG.info("[config] {} was the old default {}: now {}", String.join(".", v.getPath()), old, now);
+        return true;
     }
 }
