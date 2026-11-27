@@ -331,4 +331,17 @@ public final class LifeTests {
             for (DrekkiEntity d : mine) Ranch.roster(t.getLevel().getServer()).remove(d.drekkiId());
         });
     }
+
+    /** a dirt path anchors a Fledgling's wander area, not a pup's: pups keep to the hatchery and bedding (Shane, 2026-11-27) */
+    @GameTest(template = "floor", timeoutTicks = 40)
+    public static void aPupDoesNotAnchorToAPath(GameTestHelper t) {
+        BlockPos h = stable(t);
+        for (int x = 0; x < 13; x++) t.setBlock(new BlockPos(x, 0, 12), Blocks.DIRT_PATH);   /* a path along the far edge */
+        for (int z = 9; z < 12; z++) t.setBlock(new BlockPos(6, 0, z), Blocks.DIRT_PATH);   /* joined to the hatchery's area */
+        var g = new dev.frosthaven.ranchercompanion.ranch.Ground(t.getLevel());
+        long far = dev.frosthaven.ranchercompanion.ranch.Flood.pack(t.absolutePos(new BlockPos(0, 1, 11)).getX(), t.absolutePos(new BlockPos(0, 1, 11)).getY(), t.absolutePos(new BlockPos(0, 1, 11)).getZ());
+        t.assertFalse(g.pen(h, 1).contains(far), "a pup's area does not reach along the path");
+        t.assertTrue(g.pen(h, 2).contains(far), "a Fledgling's area does");
+        t.succeed();
+    }
 }

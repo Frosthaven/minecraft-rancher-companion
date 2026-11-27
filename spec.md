@@ -1010,7 +1010,7 @@ Decided 2026-11-04. A player has one drekki checked out at a time; the rest are 
   record (see Placement), and a duplicate of the same drekki is removed.
 - Wandering (proposal 2026-11-16, stricter than MineColonies' citizens): each checked-in drekki is leashed to its
   hatchery, 50 blocks out at most (25 until 2026-11-27), and never goes more than 3 blocks from an anchor block: a dirt path, Straw
-  Bedding, or the hatchery itself. The area it may use is every spot within 3 blocks of an anchor, inside the 50-block leash. Anchors chain
+  Bedding, or the hatchery itself. A pup anchors only to the hatchery and Straw Bedding, never a dirt path (decided 2026-11-27). The area it may use is every spot within 3 blocks of an anchor, inside the 50-block leash. Anchors chain
   (revised 2026-11-17): an anchor counts when it lies within 3 blocks of an anchor that counts, starting from the
   hatchery; nothing else (no walk, no fence check) decides the area. So players draw the stable with paths and bedding; with none, a drekki keeps to
   3 blocks around the hatchery. Stage 1 the same (decided 2026-11-17, after two corrections): anchors chain, so a

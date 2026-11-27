@@ -69,9 +69,11 @@ public final class Ground implements Flood.Grid {
     /**
      * The pen: every spot a drekki leashed to this hatchery may use, packed (see Flood.pack): a spot it can stand on,
      * within the leash, within 3 blocks of an anchor (a dirt path under the feet, Straw Bedding at them, or the hatchery
-     * itself). Anchors chain: one counts when it is within 3 blocks of one that counts, starting from the hatchery.
+     * itself). Anchors chain: one counts when it is within 3 blocks of one that counts, starting from the hatchery. A pup
+     * (stage 1) anchors only to the hatchery and Straw Bedding, never a dirt path (Shane, 2026-11-27).
      */
     public Set<Long> pen(BlockPos h, int stage) {
+        boolean paths = stage > 1;
         /* every stage: within 3 blocks of any anchor the walk reaches, anchor to anchor, inside the leash */
         int reach = LEASH, leash = LEASH;
         List<long[]> anchors = new ArrayList<>();
@@ -83,7 +85,7 @@ public final class Ground implements Flood.Grid {
             for (int dy = -PEN_UP; dy <= PEN_UP; dy++) {
                 int x = h.getX() + dx, y = h.getY() + dy, z = h.getZ() + dz;
                 BlockState s = level.getBlockState(m.set(x, y, z));
-                if (s.is(DrekkiBlocks.STRAW_BEDDING.get()) || s.is(Blocks.DIRT_PATH)) anchors.add(new long[]{x, s.is(Blocks.DIRT_PATH) ? y + 1 : y, z});
+                if (s.is(DrekkiBlocks.STRAW_BEDDING.get()) || paths && s.is(Blocks.DIRT_PATH)) anchors.add(new long[]{x, s.is(Blocks.DIRT_PATH) ? y + 1 : y, z});
             }
         }
         /* anchors chain: one counts when it lies within 3 blocks of an anchor that already counts, starting at the hatchery */

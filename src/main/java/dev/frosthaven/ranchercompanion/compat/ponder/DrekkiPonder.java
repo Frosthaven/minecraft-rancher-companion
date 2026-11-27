@@ -416,7 +416,7 @@ public final class DrekkiPonder implements PonderPlugin {
         Selection path = util.select().fromTo(0, 0, 1, 4, 0, 1).add(util.select().fromTo(5, 0, 0, 5, 0, 2));
         scene.world().modifyBlocks(path, st -> net.minecraft.world.level.block.Blocks.DIRT_PATH.defaultBlockState(), false);
         scene.overlay().chaseBoundingBoxOutline(PonderPalette.GREEN, "anchor", new AABB(0, 1, 0, 9, 1.1, 6), 110);  /* path x 0..5, z 0..2 */
-        scene.overlay().showText(100).text("So is a dirt path. Anchors chain: from the bedding a drekki may follow the path, 3 blocks either side, up to 50 blocks from the hatchery")
+        scene.overlay().showText(100).text("So is a dirt path, for Fledglings and Matures (pups keep to the hatchery and bedding). Anchors chain: from the bedding a drekki may follow the path, 3 blocks either side, up to 50 blocks from the hatchery")
             .pointAt(util.vector().topOf(2, 0, 1)).placeNearTarget().attachKeyFrame();
         scene.idle(110);
         scene.overlay().showText(80).text("Up to 20 drekki live at one hatchery. Use its screen to check one out, check one in, or release one")
