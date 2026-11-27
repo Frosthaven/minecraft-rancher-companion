@@ -71,6 +71,13 @@ neoForge {
             jvmArgument '-Drancher_companion.selftest=true'
             jvmArgument '-Drancher_companion.selftest.basin=true'
         }
+        // footprint trails in the real game (client/SelfTestTrails); -PwithPonder adds the Ponder scene
+        selfTestTrails {
+            client()
+            programArguments.addAll '--quickPlaySingleplayer', 'selftest'
+            jvmArgument '-Drancher_companion.selftest=true'
+            jvmArgument '-Drancher_companion.selftest.trails=true'
+        }
         // the hatchery's Roster and Breeding tabs, a pairing and the bred hatch (client/SelfTestBreed)
         selfTestBreed {
             client()

@@ -1043,6 +1043,32 @@ Decided 2026-11-04. A player has one drekki checked out at a time; the rest are 
 - On logout, the checked-out drekki is saved with the player and appears beside them on the next login. It is never
   left in the world while its owner is offline.
 
+## Trails
+
+Decided 2026-11-27 (Shane): Drekki Footprints, a path a drekki at a hatchery follows away from its pen.
+
+- **The block:** Drekki Footprints, 1 px flat like a carpet, no collision box, clear but for two clawed prints (the right
+  foot a stride ahead). It faces the way its placer faces. Recipe: dirt and a feather, shapeless, make 4 (no other
+  two-item recipe in the Haven pack uses them, checked 2026-11-27). It breaks like a carpet when the block under it goes.
+- **The graph:** each level keeps its prints and its Straw Bedding as saved data (trail/Trails), told by the blocks when
+  placed or removed and checked against each chunk that loads, so a trail is known where no chunk is loaded (as
+  Create's track graph). The next print from one is any print 1 or 2 blocks ahead of it (a step up or down too): the
+  nearest ahead, one at random at a fork; with none ahead, one beside it (a trail that turns), never back toward the
+  print before.
+- **Who walks:** Fledglings and Matures that live at a hatchery (not pups, not ghosts), by day, with their food bar at
+  half or more: now and then, in place of a stroll, from a print inside their wander area (the pen).
+- **The walk:** stretches of up to 5 prints, a block to one side at times, a pause now and then, so it follows the trail
+  loosely within 1 to 2 blocks (its paths may use only spots within 2 blocks of a print). At a fork it takes a branch at
+  random; at a trail's end it turns and walks the whole way back; a trail joined end to start is a loop. Back at the
+  trail's start the walk ends and the pen's goals take over. No limit on length.
+- **Night:** a walker turns for home and sleeps on the first Straw Bedding within 3 blocks of the trail on the way;
+  with none, it walks home.
+- **Unloaded ground** (as Create's trains): where the next print does not tick, the drekki is saved to the roster and
+  removed, and its walk goes on as a record (trail/TrailWalks), print to print at 2 blocks a second, owner online or
+  not. Where the record's print ticks again, the drekki appears there. The hatchery does not put a walking drekki back
+  at home, and a copy a chunk loads is refused while it walks as a record. It stays on its hatchery's roster all along.
+- Ponder: "Footprint trails" (Drekki Footprints, Hatchery). Tests: TrailTests (GameTests), selfTestTrails (real game).
+
 ## Trading
 
 Proposal 2026-11-05 (the user asked for player-to-player trades and left the design open). A drekki changes owner only

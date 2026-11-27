@@ -82,7 +82,7 @@ public final class DrekkiGoals {
 
         @Override
         public boolean canUse() {
-            if (d.isOut()) return false;
+            if (d.isOut() || dev.frosthaven.ranchercompanion.trail.TrailWalks.walking(d)) return false;
             Set<Long> pen = d.pen();
             if (pen == null || pen.isEmpty()) return false;
             boolean outside = !d.inPen(d.blockPosition());
@@ -125,7 +125,7 @@ public final class DrekkiGoals {
 
         @Override
         public boolean canUse() {
-            if (d.ghost() || d.isOut() || d.home() == null || !night() || d.pen() == null) return false;  /* a ghost never sleeps (Shane, 2026-11-26) */
+            if (d.ghost() || d.isOut() || d.home() == null || !night() || d.pen() == null || dev.frosthaven.ranchercompanion.trail.TrailWalks.walking(d)) return false;  /* a ghost never sleeps (Shane, 2026-11-26) */
             Set<Long> beds = d.bedding();
             bed = beds != null && !beds.isEmpty() ? pick(d, beds) : null;
             return true;
@@ -201,7 +201,11 @@ public final class DrekkiGoals {
     static final class PenNodes extends WalkNodeEvaluator {
         @Override
         public PathType getPathTypeOfMob(PathfindingContext ctx, int x, int y, int z, Mob mob) {
-            if (mob instanceof DrekkiEntity d && !d.isOut() && d.pen() != null && d.inPen(new BlockPos(x, y, z)) == false && d.inPen(d.blockPosition()))
+            if (mob instanceof DrekkiEntity d && !d.isOut() && d.pen() != null && d.inPen(new BlockPos(x, y, z)) == false
+                && (dev.frosthaven.ranchercompanion.trail.TrailWalks.walking(d)
+                    /* out on a trail: within 2 blocks of a footprint, so it keeps near the trail (spec, Trails) */
+                    ? dev.frosthaven.ranchercompanion.trail.Trails.get((net.minecraft.server.level.ServerLevel) d.level()).nearestPrint(new BlockPos(x, y, z), 2) == null
+                    : d.inPen(d.blockPosition())))
                 return PathType.BLOCKED;
             return super.getPathTypeOfMob(ctx, x, y, z, mob);
         }

@@ -288,7 +288,9 @@ public final class RanchTests {
         Ranch.onLogout(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent(p));
         t.runAfterDelay(1, () -> {
             t.assertTrue(drekki(t, p).isEmpty() && e.where == Roster.Where.OUT, "logged out: kept as data");
-            p.moveTo(t.absoluteVec(H.offset(-6, 0, 8).getCenter()));
+            /* on the floor: at z 14 it stood off the 13 x 13 floor, in the air, where a login holds the drekki as data (the
+               test passed only when a neighbouring test's blocks lay under that spot) */
+            p.moveTo(net.minecraft.world.phys.Vec3.atBottomCenterOf(t.absolutePos(H.offset(-6, 0, 6))));
             Ranch.onLogin(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent(p));
             besideOwner(t, p, h, e, "back on login");
         });

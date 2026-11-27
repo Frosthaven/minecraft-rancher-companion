@@ -181,6 +181,33 @@ def plaque(diet):
     return im
 
 
+def footprint():
+    """Drekki Footprints: clear but for two pressed paw prints, the right foot a stride ahead of the left. The texture's top
+    is the way the prints walk (the block's facing). A print: a three-lobed heel pad, three toes and a claw tip on each."""
+    im = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    EARTH = [(42, 30, 22, 215), (66, 48, 34, 190), (92, 70, 50, 120)]  # deep, pressed, rim
+    PRINT = [  # 7 wide, 8 tall: c claw, t toe, r pad rim, p heel pad
+        "c..c..c",
+        "t..t..t",
+        "tt.t.tt",
+        ".t.t.t.",
+        "..rrr..",
+        ".rpppr.",
+        ".ppppp.",
+        "..ppp..",
+    ]
+    def put(ox, oy):
+        for r, row in enumerate(PRINT):
+            for c, ch in enumerate(row):
+                if ch == ".":
+                    continue
+                col = {"c": EARTH[0], "t": EARTH[1], "p": EARTH[0], "r": EARTH[2]}[ch]
+                im.putpixel((ox + c, oy + r), col)
+    put(1, 7)   # left foot, behind
+    put(8, 0)   # right foot, a stride ahead
+    return im
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     out = {
@@ -194,6 +221,7 @@ def main():
         "tufted_leather_studs": studs(),
         "rancher_shingles": decor("shingles"),
         "straw_bedding": decor("bedding"),
+        "drekki_footprints": footprint(),
         # the style's materials, for the hatchery and the trough
         "style_wood": bard(WOOD[1], "wood"),
         "style_steel": bard(STEEL[1], "iron"),

@@ -52,6 +52,7 @@ public final class DrekkiPonder implements PonderPlugin {
     @Override
     public void registerScenes(PonderSceneRegistrationHelper<ResourceLocation> helper) {
         helper.forComponents(DrekkiBlocks.HATCHERY.getId()).addStoryBoard("hatchery/stable", DrekkiPonder::stable);
+        helper.forComponents(DrekkiBlocks.FOOTPRINT.getId(), DrekkiBlocks.HATCHERY.getId()).addStoryBoard("footprints/trail", DrekkiPonder::trail);
         helper.forComponents(DrekkiBlocks.TROUGH.getId())
             .addStoryBoard("trough/line", DrekkiPonder::line)
             .addStoryBoard("trough/diets", DrekkiPonder::diets)
@@ -421,6 +422,67 @@ public final class DrekkiPonder implements PonderPlugin {
         scene.overlay().showText(80).text("Up to 20 drekki live at one hatchery. Use its screen to check one out, check one in, or release one")
             .pointAt(util.vector().topOf(hatch)).placeNearTarget().attachKeyFrame();
         scene.idle(90);
+        scene.markAsFinished();
+    }
+
+    // ---- footprint trails (spec, Trails) ----
+
+    static void trail(SceneBuilder scene, SceneBuildingUtil util) {
+        scene.title("trail", "Footprint trails");
+        scene.configureBasePlate(0, 0, 13);
+        scene.showBasePlate();
+        scene.idle(10);
+        /* tools/ponder_scenes.py trail(): the hatchery at (1, 1, 4); prints east along z 4 from x 3 to 11, a branch
+           south along x 8 from z 5 to 7, Straw Bedding at (10, 1, 7) */
+        BlockPos hatch = util.grid().at(1, 1, 4);
+        scene.world().showSection(util.select().position(hatch), Direction.DOWN);
+        pup(scene, 2.5, 1, 5.5, 270, 2, 4);
+        scene.idle(20);
+        for (int x = 3; x <= 7; x++) {
+            scene.overlay().showControls(util.vector().topOf(x, 0, 4), Pointing.DOWN, 8).rightClick()
+                .withItem(new ItemStack(DrekkiBlocks.FOOTPRINT.get()));
+            scene.world().showSection(util.select().position(x, 1, 4), Direction.DOWN);
+            scene.idle(6);
+        }
+        scene.overlay().showText(90).text("Drekki Footprints lie flat like a carpet. Each one faces the way you face when you place it")
+            .pointAt(util.vector().topOf(5, 0, 4)).placeNearTarget().attachKeyFrame();
+        scene.idle(100);
+        scene.world().showSection(util.select().fromTo(8, 1, 4, 11, 1, 4), Direction.DOWN);
+        scene.world().showSection(util.select().fromTo(8, 1, 5, 8, 1, 7), Direction.DOWN);
+        scene.idle(15);
+        scene.overlay().showText(100).text("A Fledgling or Mature that lives at the hatchery sometimes takes a trail that starts near it, and keeps a block or two from the prints as it goes. A trail can be as long as you like")
+            .pointAt(util.vector().topOf(3, 0, 4)).placeNearTarget().attachKeyFrame();
+        scene.idle(40);
+        var d = scene.world().createEntity(level -> {
+            DrekkiEntity e = RancherCompanion.DREKKI.get().create(level);
+            e.setLook(2, 1, 2, Astral.DORMANT, 1);
+            e.moveTo(3.5, 1, 4.6, 270, 0);
+            return e;
+        });
+        walk(scene, d, 6.5, 1, 4.9, 6);
+        walk(scene, d, 7.6, 1, 4.3, 3);
+        scene.idle(10);
+        scene.overlay().showText(80).text("Where the trail forks it takes a branch at random")
+            .pointAt(util.vector().topOf(7, 0, 4)).placeNearTarget().attachKeyFrame();
+        scene.idle(30);
+        walk(scene, d, 11.5, 1, 4.4, 8);
+        scene.idle(10);
+        scene.overlay().showText(80).text("At the end of a trail it turns and walks the whole way back. Join the end to the start for a loop")
+            .pointAt(util.vector().topOf(11, 0, 4)).placeNearTarget().attachKeyFrame();
+        scene.idle(30);
+        walk(scene, d, 8.4, 1, 4.6, 6);
+        walk(scene, d, 8.6, 1, 6.6, 4);
+        scene.world().showSection(util.select().position(10, 1, 7), Direction.DOWN);
+        scene.idle(15);
+        scene.overlay().showText(100).text("At night it heads for home and sleeps on Straw Bedding within 3 blocks of the trail on the way. With none on the way, it walks home")
+            .pointAt(util.vector().topOf(10, 0, 7)).placeNearTarget().attachKeyFrame();
+        scene.idle(30);
+        walk(scene, d, 10.5, 1, 7.5, 4);
+        scene.world().modifyEntity(d, e -> { if (e instanceof DrekkiEntity de) de.setSleepingLoop(true); });
+        scene.idle(80);
+        scene.overlay().showText(90).text("Far from any player it keeps walking the trail, and is wherever its walk has taken it when you come by")
+            .pointAt(util.vector().topOf(11, 0, 4)).placeNearTarget();
+        scene.idle(100);
         scene.markAsFinished();
     }
 

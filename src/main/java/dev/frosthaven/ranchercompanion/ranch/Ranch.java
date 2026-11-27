@@ -108,6 +108,13 @@ public final class Ranch {
         return d;
     }
 
+    /** a drekki on a footprint trail appears at its walk's print (trail/TrailWalks) */
+    public static DrekkiEntity placeWalker(ServerLevel level, Entry e, BlockPos at) {
+        DrekkiEntity d = spawn(level, e, at, e.home.pos());
+        if (d != null) add(level, d);
+        return d;
+    }
+
     static void add(ServerLevel level, DrekkiEntity d) {
         LIVE.put(d.drekkiId(), d);
         dev.frosthaven.ranchercompanion.trait.Traits.changed();
@@ -262,8 +269,9 @@ public final class Ranch {
     /** every few seconds: put back any of this hatchery's drekki that are missing (spec, Spawning) */
     public static void syncHatchery(ServerLevel level, BlockPos pos) {
         Roster r = roster(level.getServer());
+        var walks = dev.frosthaven.ranchercompanion.trail.TrailWalks.get(level.getServer());
         for (Entry e : r.at(Roster.at(level, pos))) {
-            if (live(e.id) != null) continue;
+            if (live(e.id) != null || walks.of(e.id) != null) continue;  /* one out on a trail appears where its walk is */
             int stage = e.save.getInt("Stage");
             BlockPos at = new Ground(level).place(pos, Math.max(1, stage));
             if (at == null) continue;  /* no room: it waits as data */
@@ -471,6 +479,9 @@ public final class Ranch {
                 later(s, () -> place(s, e));
             }
         }
+        /* a drekki out on a trail as a record: it appears at its walk's print, never from a chunk's old copy */
+        var walk = ok ? dev.frosthaven.ranchercompanion.trail.TrailWalks.get(ev.getLevel().getServer()).of(d.drekkiId()) : null;
+        if (walk != null && !walk.live) ok = false;
         if (!ok) { dev.frosthaven.ranchercompanion.Debug.log("server: refused a copy, {} (roster {}, live copy {})", dev.frosthaven.ranchercompanion.Debug.of(d), e == null ? "none" : e.where, other != null); ev.setCanceled(true); return; }
         d.setStaying(e.stay != null);
         d.setJob(e.where == Where.WORK ? e.role : 0);
@@ -481,6 +492,16 @@ public final class Ranch {
     public static void onLeave(net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent ev) {
         if (ev.getLevel().isClientSide || !(ev.getEntity() instanceof DrekkiEntity d) || !d.owned()) return;
         if (LIVE.get(d.drekkiId()) != d) return;
+        var walk = dev.frosthaven.ranchercompanion.trail.TrailWalks.get(d.getServer()).of(d.drekkiId());
+        if (walk != null && walk.live && !d.isOut()) {
+            /* on a trail: ground that stops ticking makes it a record that walks on; an unload already saved it */
+            if (d.getRemovalReason() == null) {
+                later(d.getServer(), () -> { if (LIVE.get(d.drekkiId()) == d && !((ServerLevel) d.level()).isPositionEntityTicking(d.blockPosition()))
+                    dev.frosthaven.ranchercompanion.trail.TrailWalks.get(d.getServer()).toRecord(d); });
+                return;
+            }
+            if (d.getRemovalReason() != Entity.RemovalReason.KILLED) walk.live = false;
+        }
         ServerPlayer owner = d.isOut() && d.owner() != null ? d.getServer().getPlayerList().getPlayer(d.owner()) : null;
         if (d.getRemovalReason() == null) {
             /* no removal: its chunk stopped ticking but stays loaded (the owner went far; a chunk loader holds it). It is

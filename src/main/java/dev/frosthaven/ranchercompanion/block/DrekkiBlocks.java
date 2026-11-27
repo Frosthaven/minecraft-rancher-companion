@@ -57,6 +57,9 @@ public final class DrekkiBlocks {
         p -> new StairBlock(SHINGLES.get().defaultBlockState(), p), () -> copy(Blocks.DEEPSLATE_TILE_STAIRS));
     public static final DeferredBlock<StrawBeddingBlock> STRAW_BEDDING = add("straw_bedding", StrawBeddingBlock::new,
         () -> BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_YELLOW).strength(0.1f).sound(SoundType.GRASS).noOcclusion());
+    public static final DeferredBlock<FootprintBlock> FOOTPRINT = add("drekki_footprints", FootprintBlock::new,
+        () -> BlockBehaviour.Properties.of().mapColor(MapColor.DIRT).strength(0.1f).sound(SoundType.ROOTED_DIRT).noOcclusion()
+            .pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY));
     public static final DeferredBlock<FenceBlock> FENCE = add("rancher_fence", FenceBlock::new, () -> copy(Blocks.DARK_OAK_FENCE));
     public static final DeferredBlock<FenceGateBlock> FENCE_GATE = add("rancher_fence_gate",
         p -> new FenceGateBlock(WoodType.DARK_OAK, p), () -> copy(Blocks.DARK_OAK_FENCE_GATE));

@@ -60,6 +60,8 @@ public final class RancherCompanion {
         NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.entity.EntityJoinLevelEvent.class, Ranch::onPlayerJoinLevel);
         NeoForge.EVENT_BUS.addListener(ServerTickEvent.Post.class, Ranch::onServerTick);
         NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.level.ChunkEvent.Load.class, Ranch::onChunkLoad);
+        NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.level.ChunkEvent.Load.class, dev.frosthaven.ranchercompanion.trail.Trails::onChunkLoad);
+        NeoForge.EVENT_BUS.addListener(ServerTickEvent.Post.class, e -> dev.frosthaven.ranchercompanion.trail.TrailWalks.serverTick(e.getServer()));
         NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerChangeGameModeEvent.class, Ranch::onGameMode);
         NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.level.LevelEvent.Save.class, Ranch::onSave);
         var last = net.neoforged.bus.api.EventPriority.LOWEST;  /* after the claim mods, cancelled events too (entity/OwnClicks) */

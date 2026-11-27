@@ -15,6 +15,13 @@ hatching, the roster, check in and out, the small carrier, petting, names, the t
 - `look/`: pure data, no Minecraft types, unit tested. `Dims` (per-stage pixel dimensions), `Lineage` (nine bloodlines
   at four tiers plus twenty-three rare and ultra rare lines: fur, trim, sheen, eye and particle colors), `Astral`, `Diet`, `Anim` (every loop, the
   first stage that can do it, its travel speed), `Palette` (color math), `Gear` (hats, barding tiers and dyes).
+- `trail/` (0.8.0, spec "Trails"): `Trails` (per-level saved graph of Drekki Footprints and Straw Bedding, reconciled on chunk
+  load), `TrailWalk` (the goal: 5-print stretches, retries a missing path for 2 s, `PenNodes` lets a walker path within 2
+  blocks of a print), `TrailWalks` (walk records; a walker in ground that does not tick becomes a record moved once a second,
+  and appears where its print ticks again; `Ranch.syncHatchery`, `onJoin` and `onLeave` know walkers). GameTests in
+  `test/TrailTests` (batch `trails_by_day`: other tests set the shared world's time, and a walk turns home at night);
+  real game: `./gradlew runSelfTestTrails -PwithPonder` (Gradle on Java 21: a Java 27 default cannot compile the build
+  script).
 - `entity/DrekkiEntity`: synched look (stage, lineage, diet, astral, horn, hat, barding, dye) and a pinned loop; stage sets the hitbox.
 - `item/`: `DrekkiItems` registers every item (barding, carriers, hats, tonics, the egg) in display order (`ALL`) plus the
   creative tab; recipes are JSON under `data/rancher_companion/recipe`; barding is dyeable (`#minecraft:dyeable`).

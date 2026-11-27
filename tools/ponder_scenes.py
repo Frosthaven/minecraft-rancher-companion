@@ -3,7 +3,7 @@
 schematic step by step, so the positions here and in DrekkiPonder must agree.
 
 Run: uv run --with nbtlib python -I tools/ponder_scenes.py
-Writes assets/rancher_companion/ponder/{hatchery/stable,trough/line,trough/diets,trough/feeding,tombstone/rebirth,whistle/commands}.nbt, and the scenes'
+Writes assets/rancher_companion/ponder/{hatchery/stable,trough/line,trough/diets,trough/feeding,tombstone/rebirth,whistle/commands,footprints/trail}.nbt, and the scenes'
 texts into en_us.json: Ponder shows only translated text, keyed <mod>.ponder.<scene>.header and .text_<n> in the order
 the scene registers them, so they are read from DrekkiPonder.java's scene.title(...) and .text("...") calls in order.
 """
@@ -142,6 +142,20 @@ def whistle():
     s.save("whistle/commands")
 
 
+def trail():
+    """footprint trails: a grass plate 13 x 9, the hatchery at (1, 1, 4); prints from (3, 1, 4) east to a fork at
+    (7, 1, 4): one branch east along z 4 to its end at (11, 1, 4), one south along x 8 to (8, 1, 7) with Straw Bedding
+    beside it at (10, 1, 7), a rest stop"""
+    s = Schematic(13, 2, 9, floor="minecraft:grass_block")
+    s.set(1, 1, 4, f"{NS}:hatchery")
+    for x in range(3, 12):
+        s.set(x, 1, 4, f"{NS}:drekki_footprints", facing="east")
+    for z in range(5, 8):
+        s.set(8, 1, z, f"{NS}:drekki_footprints", facing="south")
+    s.set(10, 1, 7, f"{NS}:straw_bedding")
+    s.save("footprints/trail")
+
+
 def lang():
     src = (Path(__file__).resolve().parent.parent / "src/main/java/dev/frosthaven/ranchercompanion/compat/ponder/DrekkiPonder.java").read_text()
     p = Path(__file__).resolve().parent.parent / "src/main/resources/assets/rancher_companion/lang/en_us.json"
@@ -167,3 +181,4 @@ if __name__ == "__main__":
     feeding()
     rebirth()
     whistle()
+    trail()

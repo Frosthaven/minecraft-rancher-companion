@@ -407,6 +407,13 @@ final class SelfTestMature {
         check("the_slow_fall_has_its_wind", 2, 0, () -> {}, "loudest loop in the air", () -> String.format("%.3f", loudest), () -> loudest > 0.01);
         check("the_wind_stops_after_landing", 2, 0, () -> {}, "loop volume on the ground", () -> String.format("%.4f", DrekkiAudio.loopVolume(pup())), () -> pup() != null && pup().onGround() && DrekkiAudio.loopVolume(pup()) < 0.005);
         check("the_slow_fall_keeps_one_loop", 2, 0, () -> {}, "glide-fall changes", () -> airFlips, () -> airFlips <= 1);
+        /* Leap of Faith alone (Wings of Hope keeps its sounds: flight is a glide at any height): a hop is quiet, a long drop
+           has its wind (Shane, 2026-11-27: only long drops) */
+        quiet("leap_only", 20, () -> give(Trait.LEAP_OF_FAITH));
+        quiet("hop", 40, () -> { watchAir(50); keys(false, false, true); after(3, () -> keys(false, false, false)); });
+        check("a_hop_is_quiet", 20, 0, () -> {}, "loudest loop on a hop", () -> String.format("%.3f", loudest), () -> loudest < 0.005);
+        quiet("high_drop", 40, () -> { rideAt(o.getX() + 0.5, ground + 20, o.getZ() - 8.5); after(14, () -> watchAir(90)); });
+        check("a_long_drop_has_its_wind", 100, 0, () -> {}, "loudest loop on a 20-block drop", () -> String.format("%.3f", loudest), () -> loudest > 0.01);
         /* water: Ocean Walker walks on it; without it the rider is put off */
         quiet("pond", 30, () -> { cmd("gamemode creative"); cmd("fill " + at(o.offset(6, -3, -10)) + " " + at(o.offset(60, -1, -6)) + " water"); give(Trait.OCEAN_WALKER); });
         quiet("to_the_pond", 30, () -> rideAt(o.getX() + 2.5, ground, o.getZ() - 7.5));

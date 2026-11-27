@@ -282,6 +282,16 @@ def decor():
     put(A / "models/block/straw_bedding.json", {"parent": "minecraft:block/carpet", "textures": {"wool": t("straw_bedding")}})
     put(A / "blockstates/straw_bedding.json", {"variants": {"": {"model": f"{NS}:block/straw_bedding"}}})
 
+    # Drekki Footprints: a 1 px plate, cutout (clear but for the prints), turned to its facing (the texture's top walks north)
+    put(A / "models/block/drekki_footprints.json", {"parent": "minecraft:block/block", "render_type": "minecraft:cutout",
+        "textures": {"prints": t("drekki_footprints"), "particle": t("drekki_footprints")},
+        "elements": [{"from": [0, 0, 0], "to": [16, 0.25, 16], "faces": {
+            "up": {"uv": [0, 0, 16, 16], "texture": "#prints"},
+            "down": {"uv": [0, 0, 16, 16], "texture": "#prints", "cullface": "down"}}}]})
+    put(A / "blockstates/drekki_footprints.json", {"variants": {
+        f"facing={f}": ({"model": f"{NS}:block/drekki_footprints", "y": y} if y else {"model": f"{NS}:block/drekki_footprints"})
+        for f, y in (("north", 0), ("east", 90), ("south", 180), ("west", 270))}})
+
     # tufted leather: one grey texture tinted by the block's dye, the steel studs an untinted overlay
     ltex = {"leather": t("tufted_leather"), "studs": t("tufted_leather_studs"), "particle": t("tufted_leather")}
 
@@ -345,13 +355,14 @@ def decor():
     for item, m in simple_items.items():
         put(A / f"models/item/{item}.json", {"parent": f"{NS}:block/{m}"})
     put(A / "models/item/straw_bedding.json", {"parent": f"{NS}:block/straw_bedding"})
+    put(A / "models/item/drekki_footprints.json", {"parent": "minecraft:item/generated", "textures": {"layer0": t("drekki_footprints")}})
 
 
 # ---------- data: loot, recipes, tags ----------
 
 def all_blocks():
     names = ["hatchery", "trough", "rancher_planks", "rancher_planks_slab", "rancher_planks_stairs", "rancher_beam", "rancher_beam_slab",
-             "rancher_shingles", "rancher_shingles_slab", "rancher_shingles_stairs", "straw_bedding", "rancher_fence", "rancher_fence_gate"]
+             "rancher_shingles", "rancher_shingles_slab", "rancher_shingles_stairs", "straw_bedding", "rancher_fence", "rancher_fence_gate", "drekki_footprints"]
     names += ["tufted_leather"] + [f"{d}_tufted_leather" for d in DYES]
     names += ["tufted_leather_slab"] + [f"{d}_tufted_leather_slab" for d in DYES]
     return names
@@ -418,6 +429,8 @@ def recipes():
     # Farmer's Delight's straw when it is loaded (two side by side: its rope is two stacked), and wheat always
     shaped("straw_bedding", ["SS"], {"S": "farmersdelight:straw"}, "straw_bedding", 3, when=FD)
     shaped("straw_bedding_from_wheat", ["WW"], {"W": "minecraft:wheat"}, "straw_bedding", 3)
+    # dirt and a feather: no other two-item recipe in the Haven pack (checked 2026-11-27)
+    shapeless("drekki_footprints", ["minecraft:dirt", "minecraft:feather"], "drekki_footprints", 4)
     shaped("rancher_fence", ["PSP", "PSP"], {"P": f"{NS}:rancher_planks", "S": "minecraft:stick"}, "rancher_fence", 3)
     shaped("rancher_fence_gate", ["SPS", "SPS"], {"P": f"{NS}:rancher_planks", "S": "minecraft:stick"}, "rancher_fence_gate")
     shaped("tufted_leather", ["LNL", "NWN", "LNL"], {"L": "minecraft:leather", "N": N, "W": "#minecraft:wool"}, "tufted_leather", 4)
@@ -473,6 +486,7 @@ def names():
         "block.rancher_companion.rancher_shingles_slab": "Rancher Shingle Slab",
         "block.rancher_companion.rancher_shingles_stairs": "Rancher Shingle Stairs",
         "block.rancher_companion.straw_bedding": "Straw Bedding",
+        "block.rancher_companion.drekki_footprints": "Drekki Footprints",
         "block.rancher_companion.rancher_fence": "Rancher Fence",
         "block.rancher_companion.rancher_fence_gate": "Rancher Fence Gate",
         "block.rancher_companion.tufted_leather": "Tufted Leather",

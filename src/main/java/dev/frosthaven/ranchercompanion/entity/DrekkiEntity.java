@@ -638,6 +638,7 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
         goalSelector.addGoal(1, new dev.frosthaven.ranchercompanion.combat.CombatGoals.Attack(this));
         goalSelector.addGoal(2, new DrekkiGoals.Follow(this));
         goalSelector.addGoal(3, new EatGoal(this));
+        goalSelector.addGoal(4, new dev.frosthaven.ranchercompanion.trail.TrailWalk(this));  /* before Sleep: it sleeps by the trail itself */
         goalSelector.addGoal(4, new DrekkiGoals.Sleep(this));
         goalSelector.addGoal(5, new DrekkiGoals.Stroll(this));
         targetSelector.addGoal(1, new dev.frosthaven.ranchercompanion.combat.CombatGoals.PickTarget(this));

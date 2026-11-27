@@ -1,0 +1,16 @@
+{
+ "type": "minecraft:crafting_shapeless",
+ "category": "building",
+ "ingredients": [
+  {
+   "item": "minecraft:dirt"
+  },
+  {
+   "item": "minecraft:feather"
+  }
+ ],
+ "result": {
+  "id": "rancher_companion:drekki_footprints",
+  "count": 4
+ }
+}
