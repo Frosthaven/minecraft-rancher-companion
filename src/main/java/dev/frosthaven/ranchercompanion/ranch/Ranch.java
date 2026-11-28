@@ -153,6 +153,15 @@ public final class Ranch {
         msg(p, "hatchery.egg_in");
     }
 
+    /** an egg not Ready yet back into its owner's hand, its incubation and parents kept (a Ready egg hatches instead) */
+    public static void takeEgg(ServerPlayer p, BlockPos pos) {
+        HatcheryBlockEntity be = hatchery(p, pos);
+        if (be == null || !be.hasEgg() || Incubation.ready(be.incubation())) return;
+        p.getInventory().placeItemBackInInventory(be.takeEgg());
+        p.level().playSound(null, pos, SoundEvents.CHICKEN_EGG, SoundSource.BLOCKS, 0.7f, 1.1f);
+        msg(p, "hatchery.egg_out");
+    }
+
     /** the hatch checks that fail now, as message keys (spec, Hatchery: Hatching) */
     public static List<String> hatchProblems(ServerLevel level, BlockPos pos) {
         List<String> out = new ArrayList<>();

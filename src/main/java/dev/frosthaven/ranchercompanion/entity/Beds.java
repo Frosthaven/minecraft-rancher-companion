@@ -25,6 +25,8 @@ public final class Beds {
 
     /** ticks a drekki may spend stepping onto its bedding before it tries another block */
     static final int STEP_TICKS = 60;
+    /** a try that finds no way to the bedding: three of them and it is given up */
+    private static final int NO_WAY = STEP_TICKS / 3 + 1;
 
     /** a free bedding block of these, not one in {@code not} (given up tonight), at random, claimed for this drekki;
      *  null when none is free */
@@ -72,7 +74,8 @@ public final class Beds {
     /**
      * One tick toward lying on this bedding block: a path to it, and from close by the last step straight onto the block
      * (a path stops a block short of it). STUCK after {@link #STEP_TICKS} of trying from close by, or of paths that do
-     * not reach it. {@code tries} is the caller's counter, one per call.
+     * not reach it; three tries with no way to it at all (no path, or one that ends no nearer: a fence between) are
+     * enough. {@code tries} is the caller's counter, one per call.
      */
     public static Step approach(DrekkiEntity d, BlockPos bed, int[] tries) {
         if (d.blockPosition().equals(bed)) return Step.ON;
@@ -83,9 +86,13 @@ public final class Beds {
             d.getMoveControl().setWantedPosition(bed.getX() + 0.5, bed.getY(), bed.getZ() + 0.5, 0.6);
             tries[0]++;
         } else if (d.getNavigation().isDone()) {   /* on its way it only counts paths that end short */
+            if (!d.onGround() && !d.isInWater()) return Step.GOING;  /* off the ground for a moment (a hop): no path is made */
             var path = d.getNavigation().createPath(bed, 0);
-            if (path != null) d.getNavigation().moveTo(path, 0.8);
-            tries[0] += 6;
+            var end = path == null ? null : path.getEndNode();
+            /* no way there: given up quickly (Finn slept nowhere all night, his trail's bedding behind the pen's fence,
+               Shane 2026-11-27); a path that only gets nearer (a long way round) is walked */
+            if (end == null || end.asBlockPos().distSqr(bed) >= d.blockPosition().distSqr(bed) - 1) tries[0] += NO_WAY;
+            else { d.getNavigation().moveTo(path, 0.8); tries[0] += 6; }
         }
         return tries[0] > STEP_TICKS ? Step.STUCK : Step.GOING;
     }

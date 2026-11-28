@@ -35,7 +35,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 /**
  * The Drekki Hatchery: a dark oak chest bound in steel with a leather nest and a bed of straw (spec, Hatchery). Its
  * leather takes a dye on right-click (COLOR, 0 undyed) and keeps it when broken. Right-click with the egg puts it in
- * the nest; right-click the nest's top with the egg Ready hatches it; any other right-click opens the hatchery screen.
+ * the nest; right-click the nest's top with the egg Ready hatches it, and with an empty hand before then takes the egg
+ * back (Shane, 2026-11-27: to trade it without breaking the hatchery); any other right-click opens the hatchery screen.
  */
 public class HatcheryBlock extends HorizontalDirectionalBlock implements EntityBlock {
     public static final MapCodec<HatcheryBlock> CODEC = simpleCodec(HatcheryBlock::new);
@@ -100,8 +101,10 @@ public class HatcheryBlock extends HorizontalDirectionalBlock implements EntityB
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!level.isClientSide) {
             boolean onNest = hit.getDirection() == Direction.UP;
-            if (onNest && level.getBlockEntity(pos) instanceof HatcheryBlockEntity be && be.hasEgg()
-                && dev.frosthaven.ranchercompanion.look.Incubation.ready(be.incubation())) Ranch.hatch((ServerPlayer) player, pos);
+            HatcheryBlockEntity be = onNest && level.getBlockEntity(pos) instanceof HatcheryBlockEntity h && h.hasEgg() ? h : null;
+            boolean egg = be != null, ready = egg && dev.frosthaven.ranchercompanion.look.Incubation.ready(be.incubation());
+            if (ready) Ranch.hatch((ServerPlayer) player, pos);
+            else if (egg && player.getMainHandItem().isEmpty()) Ranch.takeEgg((ServerPlayer) player, pos);
             else Ranch.openHatchery((ServerPlayer) player, pos);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);

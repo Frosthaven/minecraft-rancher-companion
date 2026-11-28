@@ -265,8 +265,8 @@ public class DrekkiEntity extends PathfinderMob implements net.minecraft.world.e
     public boolean ghost() { return entityData.get(GHOST); }
 
     /** a ghost and players pass through each other (Shane, 2026-11-26): players do not push it, it does not push them */
-    @Override public void push(net.minecraft.world.entity.Entity by) { if (!(ghost() && by instanceof net.minecraft.world.entity.player.Player)) super.push(by); }
-    @Override protected void doPush(net.minecraft.world.entity.Entity e) { if (!(ghost() && e instanceof net.minecraft.world.entity.player.Player)) super.doPush(e); }
+    @Override public void push(net.minecraft.world.entity.Entity by) { if (!(ghost() && by instanceof net.minecraft.world.entity.player.Player) && !dev.frosthaven.ranchercompanion.trail.Passing.through(this, by)) super.push(by); }
+    @Override protected void doPush(net.minecraft.world.entity.Entity e) { if (!(ghost() && e instanceof net.minecraft.world.entity.player.Player) && !dev.frosthaven.ranchercompanion.trail.Passing.through(this, e)) super.doPush(e); }
     /** a screen's stand-in model (never in the world): drawn as a ghost */
     public void setGhostView(boolean g) { entityData.set(GHOST, g); }
     public boolean ghostFlame() { return entityData.get(GHOST_FLAME); }

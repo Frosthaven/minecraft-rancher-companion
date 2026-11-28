@@ -222,12 +222,38 @@ public final class RanchTests {
         int south = 0;
         for (long p : g.pen(h, 1)) south = Math.max(south, dev.frosthaven.ranchercompanion.ranch.Flood.z(p) - h.getZ());
         t.assertTrue(south == 3, "bedding out of reach counts for nothing, got " + south);
-        /* a chain: bedding 3 west counts, bedding 3 west of that counts from it, and the area runs 3 past the last */
+        /* a chain: bedding 3 west counts, bedding 3 west of that counts from it, and the area runs 3 past the last; the
+           floor goes on 4 blocks west of the template, open above, for the walk out there */
+        for (int x = -4; x < 0; x++) for (int z = 0; z < 13; z++) {
+            t.setBlock(new BlockPos(x, 0, z), Blocks.STONE);
+            for (int y = 1; y <= 3; y++) t.setBlock(new BlockPos(x, y, z), Blocks.AIR);
+        }
         t.setBlock(H.offset(-3, 0, 0), DrekkiBlocks.STRAW_BEDDING.get());
         t.setBlock(H.offset(-6, 0, 0), DrekkiBlocks.STRAW_BEDDING.get());
         int west = 0;
         for (long p : g.pen(h, 1)) west = Math.max(west, h.getX() - dev.frosthaven.ranchercompanion.ranch.Flood.x(p));
         t.assertTrue(west == 9, "anchors chain: 3 past the bedding 6 out (9), got " + west);
+        t.succeed();
+    }
+
+    /** a fence bounds the pen: the ground and bedding behind it are out (the area once ran through Shane's pen fence,
+     *  2026-11-27), and an open gate in it lets the pen through to them */
+    @GameTest(template = "floor")
+    public static void aFenceBoundsThePenAnOpenGateDoesNot(GameTestHelper t) {
+        BlockPos h = stable(t);
+        Ground g = new Ground(t.getLevel());
+        for (int x = 0; x < 13; x++) t.setBlock(H.offset(x - 6, 0, 2), DrekkiBlocks.FENCE.get());
+        BlockPos bed = H.offset(0, 0, 3), past = H.offset(0, 0, 6);
+        t.setBlock(bed, DrekkiBlocks.STRAW_BEDDING.get());
+        java.util.Set<Long> pen = g.pen(h, 2);
+        long b = dev.frosthaven.ranchercompanion.ranch.Flood.pack(t.absolutePos(bed).getX(), t.absolutePos(bed).getY(), t.absolutePos(bed).getZ());
+        long q = dev.frosthaven.ranchercompanion.ranch.Flood.pack(t.absolutePos(past).getX(), t.absolutePos(past).getY(), t.absolutePos(past).getZ());
+        t.assertFalse(pen.contains(b), "the bedding behind the fence is not in the pen");
+        t.setBlock(H.offset(2, 0, 2), Blocks.OAK_FENCE_GATE.defaultBlockState().setValue(net.minecraft.world.level.block.FenceGateBlock.OPEN, true));
+        pen = g.pen(h, 2);
+        t.assertTrue(pen.contains(b) && pen.contains(q), "through the open gate: the bedding and 3 past it");
+        t.setBlock(H.offset(2, 0, 2), Blocks.OAK_FENCE_GATE.defaultBlockState());
+        t.assertFalse(g.pen(h, 2).contains(b), "a closed gate shuts it again");
         t.succeed();
     }
 
@@ -510,6 +536,38 @@ public final class RanchTests {
         t.runAfterDelay(from + ticks + 1, () -> {
             t.getLevel().setDayTime(1000);
             Ranch.act(p, h, Ranch.Action.RELEASE, e.id);
+            t.succeed();
+        });
+    }
+
+    /** the nest slot on the hatchery screen: an egg goes in from the cursor and by shift-click, comes back out with its
+     *  incubation until it is Ready, and a Ready egg stays for its hatch (Shane, 2026-11-27) */
+    @GameTest(template = "floor", timeoutTicks = 60)
+    public static void theNestSlotTakesAnEggInAndOutUntilReady(GameTestHelper t) {
+        BlockPos h = stable(t);
+        ServerPlayer p = player(t);
+        var be = (dev.frosthaven.ranchercompanion.block.HatcheryBlockEntity) t.getLevel().getBlockEntity(h);
+        var m = new dev.frosthaven.ranchercompanion.block.HatcheryMenu(1, p.getInventory(), h, null);
+        int nest = dev.frosthaven.ranchercompanion.block.HatcheryMenu.NEST;
+        var pick = net.minecraft.world.inventory.ClickType.PICKUP;
+        m.setCarried(new ItemStack(DrekkiItems.INTRIGUING_EGG.get()));
+        m.clicked(nest, 0, pick, p);
+        t.assertTrue(be.hasEgg() && m.getCarried().isEmpty(), "the egg went into the nest from the cursor");
+        t.runAfterDelay(20, () -> {
+            m.clicked(nest, 0, pick, p);
+            ItemStack c = m.getCarried();
+            Long inc = c.get(DrekkiData.INCUBATION.get());
+            t.assertTrue(!be.hasEgg() && c.is(DrekkiItems.INTRIGUING_EGG.get()) && inc != null && inc >= 15, "out again with its incubation: " + inc);
+            m.setCarried(ItemStack.EMPTY);
+            c.set(DrekkiData.INCUBATION.get(), dev.frosthaven.ranchercompanion.look.Incubation.READY + 10);
+            p.getInventory().setItem(0, c);
+            m.quickMoveStack(p, 28);  /* hotbar slot 0 */
+            t.assertTrue(be.hasEgg() && p.getInventory().getItem(0).isEmpty(), "shift-click put it in");
+            m.clicked(nest, 0, pick, p);
+            t.assertTrue(be.hasEgg() && m.getCarried().isEmpty(), "a Ready egg stays in the nest");
+            m.quickMoveStack(p, nest);
+            t.assertTrue(be.hasEgg(), "and stays on a shift-click");
+            be.takeEgg();
             t.succeed();
         });
     }

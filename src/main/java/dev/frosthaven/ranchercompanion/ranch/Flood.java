@@ -63,6 +63,53 @@ public final class Flood {
     }
 
     /**
+     * The pen (spec, Wandering): the walk out from the hatchery's sides over spots within {@code reach} blocks (a cube) of
+     * an anchor it has walked to, starting with the hatchery; each anchor the walk steps onto ({@code anchor}) opens the
+     * spots within reach of it. So a fence or wall bounds it: an anchor behind one counts only when a way round leads
+     * there (Shane, 2026-11-27). {@code leash} (square, the hatchery's own column left out) and {@code up} (up or down
+     * from hy) bound every spot.
+     */
+    public static Set<Long> anchored(Grid g, int hx, int hy, int hz, int leash, int up, int reach, java.util.function.LongPredicate anchor) {
+        Set<Long> allowed = new HashSet<>(), seen = new HashSet<>(), pending = new HashSet<>(), out = new HashSet<>();
+        ArrayDeque<Long> q = new ArrayDeque<>();
+        java.util.function.LongConsumer open = a -> {  /* an anchor counts: the spots within reach of it may be walked */
+            int ax = x(a), ay = y(a), az = z(a);
+            for (int dx = -reach; dx <= reach; dx++) for (int dz = -reach; dz <= reach; dz++) for (int dy = -reach; dy <= reach; dy++) {
+                long c = pack(ax + dx, ay + dy, az + dz);
+                if (allowed.add(c) && pending.remove(c) && seen.add(c)) q.add(c);  /* a spot the walk met before it counted */
+            }
+        };
+        open.accept(pack(hx, hy, hz));
+        for (int[] s : SIDES) for (int dy = CLIMB; dy >= -CLIMB; dy--) {
+            int x = hx + s[0], y = hy + dy, z = hz + s[1];
+            if (!g.stand(x, y, z)) continue;
+            long p = pack(x, y, z);
+            if (allowed.contains(p) && seen.add(p)) q.add(p);
+            break;
+        }
+        Set<Long> counted = new HashSet<>();
+        while (!q.isEmpty()) {
+            long cur = q.poll();
+            out.add(cur);
+            if (anchor.test(cur) && counted.add(cur)) open.accept(cur);
+            int x = x(cur), y = y(cur), z = z(cur);
+            for (int[] s : SIDES) for (int dy = CLIMB; dy >= -CLIMB; dy--) {
+                int nx = x + s[0], ny = y + dy, nz = z + s[1];
+                if (Math.max(Math.abs(nx - hx), Math.abs(nz - hz)) > leash || Math.abs(ny - hy) > up || (nx == hx && nz == hz)) continue;
+                long p = pack(nx, ny, nz);
+                if (seen.contains(p) || !g.stand(nx, ny, nz)) continue;
+                if (dy > 0 && !g.headroom(x, y + 1, z)) continue;
+                if (dy < 0 && !g.headroom(nx, ny + 1, nz)) continue;
+                if (!allowed.contains(p)) { pending.add(p); continue; }  /* a legal step, but not near a counted anchor yet */
+                seen.add(p);
+                q.add(p);
+                break;  /* one spot per column step: the highest one it can reach */
+            }
+        }
+        return out;
+    }
+
+    /**
      * Where a drekki appears (spec, Placement): the first spot that fits on the walk, nearest walk first; then, when none
      * does, the spots the walk did not reach, ring by ring. -1 when nothing within the radius fits.
      */

@@ -168,4 +168,154 @@ public final class TrailTests {
         });
         t.succeedWhen(() -> t.assertTrue(grown[0] && walks.of(pup.drekkiId()) != null, "the Fledgling took the trail by itself"));
     }
+
+    /** its bedtime held: night, or day for a nocturnal eye */
+    private static void bedtime(GameTestHelper t, DrekkiEntity d) {
+        long at = dev.frosthaven.ranchercompanion.look.Astral.nocturnal(d.astral()) ? 6000 : 18000;  /* the sky's darkness follows a tick later */
+        t.getLevel().setDayTime(at);
+        t.onEachTick(() -> { long now = t.getLevel().getDayTime() % 24000; if (Math.abs(now - at) > 4000) t.getLevel().setDayTime(at); });
+    }
+
+    /** a walker out on the trail at bedtime, at the print x 28 (the trail runs x 8..30 on z 6 out of the pen) */
+    private static DrekkiEntity outAtNight(GameTestHelper t, ServerPlayer p, BlockPos h) {
+        DrekkiEntity d = LifeTests.hatchOne(t, p, h);
+        d.setLook(2, d.line(), d.diet(), d.astral(), d.horn());
+        for (int x = 8; x <= 30; x++) print(t, x, 6, Direction.EAST);
+        /* bedding by the trail at x 26 fenced in all round: no way onto it */
+        BlockPos fenced = new BlockPos(26, 1, 9);
+        t.setBlock(fenced, DrekkiBlocks.STRAW_BEDDING.get());
+        for (int dx = -1; dx <= 1; dx++) for (int dz = -1; dz <= 1; dz++)
+            if (dx != 0 || dz != 0) t.setBlock(fenced.offset(dx, 0, dz), DrekkiBlocks.FENCE.get());
+        TrailWalks.get(t.getLevel().getServer()).start(d, t.absolutePos(new BlockPos(28, 1, 6)));
+        d.moveTo(t.absoluteVec(new BlockPos(28, 1, 6).getCenter().subtract(0, 0.5, 0)));
+        bedtime(t, d);
+        return d;
+    }
+
+    /** bedding by the trail it cannot get onto is given up quickly: it walks on back and sleeps on the next bedding stop
+     *  (Finn stood at his pen's fence all night, 2026-11-27) */
+    @GameTest(template = "field", timeoutTicks = 1100, batch = "trails_by_night_skip")
+    public static void aWalkerSkipsBeddingItCannotReach(GameTestHelper t) {
+        ground(t);
+        BlockPos h = LifeTests.stable(t);
+        ServerPlayer p = LifeTests.player(t);
+        t.setBlock(new BlockPos(16, 1, 8), DrekkiBlocks.STRAW_BEDDING.get());
+        DrekkiEntity d = outAtNight(t, p, h);
+        TrailWalks walks = TrailWalks.get(t.getLevel().getServer());
+        StringBuilder log = new StringBuilder();
+        t.onEachTick(() -> {
+            if (t.getTick() % 40 == 0 && log.length() < 1500) {
+                var w = walks.of(d.drekkiId());
+                log.append(" | t").append(t.getTick()).append(' ').append(t.relativePos(d.blockPosition()).toShortString())
+                   .append(w == null ? " no walk" : " node " + t.relativePos(BlockPos.of(w.node)).toShortString() + " dir " + w.dir + " asleep " + w.asleep)
+                   .append(" night ").append(d.restTime());
+            }
+        });
+        t.succeedWhen(() -> {
+            var w = walks.of(d.drekkiId());
+            t.assertTrue(w != null && w.asleep && d.isSleepingLoop(), "asleep on the trail walk: " + (w == null ? "no walk" : "asleep " + w.asleep) + " at " + t.relativePos(d.blockPosition()) + log);
+            t.assertTrue(d.blockPosition().equals(t.absolutePos(new BlockPos(16, 1, 8))), "on the reachable bedding: " + t.relativePos(d.blockPosition()) + log);
+            walks.end(d.drekkiId());
+        });
+    }
+
+    /** with no bedding it can reach by the trail, it walks home: the walk ends near the pen */
+    @GameTest(template = "field", timeoutTicks = 1100, batch = "trails_by_night_home")
+    public static void aWalkerWithNoReachableBeddingGoesHome(GameTestHelper t) {
+        ground(t);
+        BlockPos h = LifeTests.stable(t);
+        ServerPlayer p = LifeTests.player(t);
+        DrekkiEntity d = outAtNight(t, p, h);
+        TrailWalks walks = TrailWalks.get(t.getLevel().getServer());
+        int baseX = t.absolutePos(BlockPos.ZERO).getX();
+        t.succeedWhen(() -> {
+            t.assertTrue(walks.of(d.drekkiId()) == null, "the walk is over: " + (walks.of(d.drekkiId()) == null ? "" : "asleep " + walks.of(d.drekkiId()).asleep) + " x " + String.format("%.1f", d.getX() - baseX));
+            t.assertTrue(d.getX() - baseX < 14, "home: x " + String.format("%.1f", d.getX() - baseX));
+        });
+    }
+
+    /** Shane's stable (2026-11-27): a fenced pen of bedding with one opening on its south side and a trail spur out of it;
+     *  two nocturnal Matures come back along the spur at bedtime and each lies down on a bedding block of its own */
+    @GameTest(template = "field", timeoutTicks = 900, batch = "trails_pen_bedtime")
+    public static void nocturnalWalkersComeHomeToTheirOwnBedding(GameTestHelper t) {
+        ground(t);
+        BlockPos h = LifeTests.stable(t);
+        ServerPlayer p = LifeTests.player(t);
+        t.setBlock(new BlockPos(3, 1, 3), Blocks.AIR);  /* the stable's torch: the fence runs there */
+        for (int x = 2; x <= 13; x++) for (int z = 2; z <= 12; z++) {
+            boolean edge = x == 2 || x == 13 || z == 2 || z == 12;
+            boolean gap = z == 12 && x >= 6 && x <= 9;
+            if (edge && !gap) t.setBlock(new BlockPos(x, 1, z), DrekkiBlocks.FENCE.get());
+        }
+        for (int x = 4; x <= 11; x++) for (int z = 8; z <= 11; z++) t.setBlock(new BlockPos(x, 1, z), DrekkiBlocks.STRAW_BEDDING.get());
+        for (int z = 13; z <= 15; z++) { print(t, 7, z, Direction.SOUTH); print(t, 8, z, Direction.SOUTH); }
+        for (int x = 3; x <= 12; x++) print(t, x, 16, Direction.WEST);
+        DrekkiEntity a = LifeTests.hatchOne(t, p, h);
+        Ranch.putEgg(p, h, dev.frosthaven.ranchercompanion.item.CreativeEggItem.egg(4));
+        Ranch.hatch(p, h);
+        DrekkiEntity b = t.getLevel().getEntitiesOfClass(DrekkiEntity.class, new AABB(h).inflate(20), x -> p.getUUID().equals(x.owner()) && x != a).get(0);
+        TrailWalks walks = TrailWalks.get(t.getLevel().getServer());
+        for (DrekkiEntity d : new DrekkiEntity[]{a, b}) {
+            d.setLook(3, d.line(), d.diet(), dev.frosthaven.ranchercompanion.look.Astral.LUNAR, d.horn());
+            var w = walks.start(d, t.absolutePos(new BlockPos(d == a ? 5 : 10, 1, 16)));
+            w.dir = -1;
+            d.moveTo(t.absoluteVec(new BlockPos(d == a ? 5 : 10, 1, 16).getCenter().subtract(0, 0.5, 0)));
+        }
+        bedtime(t, a);
+        StringBuilder log = new StringBuilder();
+        t.onEachTick(() -> {
+            if (t.getTick() % 60 == 0 && log.length() < 2500) for (DrekkiEntity d : new DrekkiEntity[]{a, b}) {
+                var w = walks.of(d.drekkiId());
+                log.append(" | t").append(t.getTick()).append(d == a ? " A " : " B ").append(t.relativePos(d.blockPosition()).toShortString())
+                   .append(w == null ? " no walk" : " node " + t.relativePos(BlockPos.of(w.node)).toShortString() + " asleep " + w.asleep).append(" sleeping ").append(d.isSleepingLoop());
+            }
+        });
+        t.succeedWhen(() -> {
+            for (DrekkiEntity d : new DrekkiEntity[]{a, b}) {
+                boolean onBed = t.getLevel().getBlockState(d.blockPosition()).is(DrekkiBlocks.STRAW_BEDDING.get());
+                t.assertTrue(d.isSleepingLoop() && onBed, (d == a ? "A" : "B") + " asleep on bedding: sleeping " + d.isSleepingLoop() + " on " + t.getLevel().getBlockState(d.blockPosition()).getBlock() + log);
+            }
+            t.assertFalse(a.blockPosition().equals(b.blockPosition()), "each on its own block");
+            walks.end(a.drekkiId()); walks.end(b.drekkiId());
+        });
+    }
+
+    /** two walkers meet head-on in a corridor one block wide: they pass through each other only once they are blocked,
+     *  and both get through (Shane, 2026-11-28: they pushed against each other and stood there) */
+    @GameTest(template = "field", timeoutTicks = 1200, batch = "trails_by_day_narrow")
+    public static void twoWalkersPassInAOneBlockCorridor(GameTestHelper t) {
+        ground(t);
+        day(t);
+        BlockPos h = LifeTests.stable(t);
+        ServerPlayer p = LifeTests.player(t);
+        DrekkiEntity a = LifeTests.hatchOne(t, p, h);
+        Ranch.putEgg(p, h, dev.frosthaven.ranchercompanion.item.CreativeEggItem.egg(4));
+        Ranch.hatch(p, h);
+        DrekkiEntity b = t.getLevel().getEntitiesOfClass(DrekkiEntity.class, new AABB(h).inflate(20), x -> p.getUUID().equals(x.owner()) && x != a).get(0);
+        for (int x = 8; x <= 30; x++) print(t, x, 6, Direction.EAST);
+        for (int x = 12; x <= 28; x++) for (int y = 1; y <= 3; y++) { t.setBlock(new BlockPos(x, y, 5), Blocks.STONE); t.setBlock(new BlockPos(x, y, 7), Blocks.STONE); }
+        TrailWalks walks = TrailWalks.get(t.getLevel().getServer());
+        int baseX = t.absolutePos(BlockPos.ZERO).getX();
+        boolean[] met = {false}, passedEarly = {false};
+        int[] aMax = {0}, bMin = {99};
+        t.runAfterDelay(3, () -> {
+            for (DrekkiEntity d : new DrekkiEntity[]{a, b}) d.setLook(2, d.line(), d.diet(), d.astral(), d.horn());
+            var wa = walks.start(a, t.absolutePos(new BlockPos(13, 1, 6)));
+            a.moveTo(t.absoluteVec(new BlockPos(13, 1, 6).getCenter().subtract(0, 0.5, 0)));
+            var wb = walks.start(b, t.absolutePos(new BlockPos(27, 1, 6)));
+            wb.dir = -1;
+            b.moveTo(t.absoluteVec(new BlockPos(27, 1, 6).getCenter().subtract(0, 0.5, 0)));
+        });
+        t.onEachTick(() -> {
+            int ax = (int) Math.floor(a.getX()) - baseX, bx = (int) Math.floor(b.getX()) - baseX;
+            if (Math.abs(a.getX() - b.getX()) < 1.5) met[0] = true;
+            if (dev.frosthaven.ranchercompanion.trail.Passing.through(a, b) && !met[0]) passedEarly[0] = true;
+            aMax[0] = Math.max(aMax[0], ax); bMin[0] = Math.min(bMin[0], bx);
+        });
+        t.succeedWhen(() -> {
+            t.assertFalse(passedEarly[0], "pass-through only once they were blocked");
+            t.assertTrue(met[0], "they met");
+            t.assertTrue(aMax[0] >= 24 && bMin[0] <= 16, "both got past each other: a reached x " + aMax[0] + ", b x " + bMin[0]);
+        });
+    }
 }

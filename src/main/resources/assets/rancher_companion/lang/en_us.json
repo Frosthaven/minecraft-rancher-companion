@@ -165,6 +165,7 @@
   "message.rancher_companion.hatchery.not_yours": "This hatchery belongs to %s.",
   "message.rancher_companion.hatchery.has_egg": "The nest already has an egg",
   "message.rancher_companion.hatchery.egg_in": "The egg is in the nest",
+  "message.rancher_companion.hatchery.egg_out": "You take the egg from the nest",
   "message.rancher_companion.hatch.failed": "Won't hatch: %s",
   "message.rancher_companion.hatch.ceiling": "needs roof",
   "message.rancher_companion.hatch.light": "too dark around it",

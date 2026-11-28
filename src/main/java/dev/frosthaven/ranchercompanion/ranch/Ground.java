@@ -1,9 +1,7 @@
 package dev.frosthaven.ranchercompanion.ranch;
 
 import dev.frosthaven.ranchercompanion.block.DrekkiBlocks;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
@@ -67,46 +65,37 @@ public final class Ground implements Flood.Grid {
     }
 
     /**
-     * The pen: every spot a drekki leashed to this hatchery may use, packed (see Flood.pack): a spot it can stand on,
-     * within the leash, within 3 blocks of an anchor (a dirt path under the feet, Straw Bedding at them, or the hatchery
-     * itself). Anchors chain: one counts when it is within 3 blocks of one that counts, starting from the hatchery. A pup
-     * (stage 1) anchors only to the hatchery and Straw Bedding, never a dirt path (Shane, 2026-11-27).
+     * The pen: every spot a drekki leashed to this hatchery may use, packed (see Flood.pack): a spot it can walk to from
+     * the hatchery, within the leash, within 3 blocks of an anchor it can walk to (a dirt path under the feet, Straw
+     * Bedding at them, or the hatchery itself). Anchors chain along the walk, so a fence or wall bounds the pen; an open
+     * door or gate lets the walk through (Shane, 2026-11-27: the area went through his pen's fence, and walkers pressed
+     * against it for a trail start outside). A pup (stage 1) anchors only to the hatchery and Straw Bedding, never a dirt
+     * path (Shane, 2026-11-27).
      */
     public Set<Long> pen(BlockPos h, int stage) {
         boolean paths = stage > 1;
-        /* every stage: within 3 blocks of any anchor the walk reaches, anchor to anchor, inside the leash */
-        int reach = LEASH, leash = LEASH;
-        List<long[]> anchors = new ArrayList<>();
-        anchors.add(new long[]{h.getX(), h.getY(), h.getZ()});
-        int r = reach;
-        /* only loaded columns: a read in an unloaded chunk loads it, and the leash reaches 4 chunks out */
-        for (int dx = -r; dx <= r; dx++) for (int dz = -r; dz <= r; dz++) {
-            if (!level.isLoaded(m.set(h.getX() + dx, h.getY(), h.getZ() + dz))) continue;
-            for (int dy = -PEN_UP; dy <= PEN_UP; dy++) {
-                int x = h.getX() + dx, y = h.getY() + dy, z = h.getZ() + dz;
-                BlockState s = level.getBlockState(m.set(x, y, z));
-                if (s.is(DrekkiBlocks.STRAW_BEDDING.get()) || paths && s.is(Blocks.DIRT_PATH)) anchors.add(new long[]{x, s.is(Blocks.DIRT_PATH) ? y + 1 : y, z});
-            }
-        }
-        /* anchors chain: one counts when it lies within 3 blocks of an anchor that already counts, starting at the hatchery */
-        List<long[]> joined = new ArrayList<>(List.of(anchors.get(0)));
-        List<long[]> rest = new ArrayList<>(anchors.subList(1, anchors.size()));
-        for (int i = 0; i < joined.size(); i++) {
-            long[] j = joined.get(i);
-            for (var it = rest.iterator(); it.hasNext(); ) {
-                long[] c = it.next();
-                if (Math.abs(c[0] - j[0]) <= ANCHOR && Math.abs(c[1] - j[1]) <= ANCHOR && Math.abs(c[2] - j[2]) <= ANCHOR) { joined.add(c); it.remove(); }
-            }
-        }
-        /* the area: every spot a drekki can stand on within 3 blocks of a counted anchor, inside the leash */
-        Set<Long> out = new HashSet<>();
-        for (long[] c : joined) for (int dx = -ANCHOR; dx <= ANCHOR; dx++) for (int dz = -ANCHOR; dz <= ANCHOR; dz++) for (int dy = -ANCHOR; dy <= ANCHOR; dy++) {
-            int x = (int) c[0] + dx, y = (int) c[1] + dy, z = (int) c[2] + dz;
-            if (Math.max(Math.abs(x - h.getX()), Math.abs(z - h.getZ())) > leash || (x == h.getX() && z == h.getZ())) continue;
-            long p = Flood.pack(x, y, z);
-            if (!out.contains(p) && stand(x, y, z)) out.add(p);
-        }
-        return out;
+        Flood.Grid walk = new Flood.Grid() {
+            @Override public boolean stand(int x, int y, int z) { return Ground.this.stand(x, y, z) || doorway(x, y, z); }
+            @Override public boolean headroom(int x, int y, int z) { return Ground.this.headroom(x, y, z) || door(x, y, z); }
+        };
+        return Flood.anchored(walk, h.getX(), h.getY(), h.getZ(), LEASH, PEN_UP + ANCHOR, ANCHOR, p -> {
+            int x = Flood.x(p), y = Flood.y(p), z = Flood.z(p);
+            if (Math.abs(y - h.getY()) > PEN_UP) return false;
+            if (level.getBlockState(m.set(x, y, z)).is(DrekkiBlocks.STRAW_BEDDING.get())) return true;
+            return paths && level.getBlockState(m.set(x, y - 1, z)).is(Blocks.DIRT_PATH);
+        });
+    }
+
+    /** an open door at these feet, its upper half above, ground under it */
+    private boolean doorway(int x, int y, int z) {
+        if (!door(x, y, z) || !level.isLoaded(m.set(x, y, z))) return false;
+        double below = top(x, y - 1, z);
+        return below >= 0.4 && below <= 1.0;
+    }
+
+    private boolean door(int x, int y, int z) {
+        BlockState s = level.getBlockState(m.set(x, y, z));
+        return s.getBlock() instanceof net.minecraft.world.level.block.DoorBlock && s.getValue(net.minecraft.world.level.block.DoorBlock.OPEN);
     }
 
     /** the pen's spots on Straw Bedding (spec, Wandering: a hatchling's strolls and sleep go there) */

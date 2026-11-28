@@ -127,6 +127,10 @@ The player puts the egg in the hatchery. Incubation takes 3 in-game days; the eg
 it rocks now and then, its teal speckles pulse, a crack shows and a few motes rise, with a tooltip line. It waits as
 long as the player likes.
 
+Before it is Ready, its owner takes the egg back with an empty hand on the nest, or through the nest slot on the
+hatchery screen (where an egg also goes in from the inventory) (decided 2026-11-27, Shane: to trade an
+egg without breaking the hatchery); the egg keeps its incubation and, if bred, its parents.
+
 Hatching is a player action: right-click the Ready egg. Every condition is checked at that moment, the ordinary ones
 (light, ceiling) and any rare-line ones. A failed check leaves the egg Ready and tells the player what failed. The
 hatchery screen also shows which conditions currently pass, so a player can line up a rare line without a wiki.
@@ -1010,9 +1014,11 @@ Decided 2026-11-04. A player has one drekki checked out at a time; the rest are 
   record (see Placement), and a duplicate of the same drekki is removed.
 - Wandering (proposal 2026-11-16, stricter than MineColonies' citizens): each checked-in drekki is leashed to its
   hatchery, 50 blocks out at most (25 until 2026-11-27), and never goes more than 3 blocks from an anchor block: a dirt path, Straw
-  Bedding, or the hatchery itself. A pup anchors only to the hatchery and Straw Bedding, never a dirt path (decided 2026-11-27). The area it may use is every spot within 3 blocks of an anchor, inside the 50-block leash. Anchors chain
-  (revised 2026-11-17): an anchor counts when it lies within 3 blocks of an anchor that counts, starting from the
-  hatchery; nothing else (no walk, no fence check) decides the area. So players draw the stable with paths and bedding; with none, a drekki keeps to
+  Bedding, or the hatchery itself. A pup anchors only to the hatchery and Straw Bedding, never a dirt path (decided 2026-11-27). The area it may use is every spot within 3 blocks of an anchor, inside the 50-block leash, that it can walk to
+  from the hatchery. Anchors chain (revised 2026-11-17): an anchor counts when it lies within 3 blocks of an anchor that
+  counts, starting from the hatchery, and (revised 2026-11-27, Shane) when the walk reaches it: a fence or wall bounds
+  the area, an open door or gate lets it through. Until then the area ran through fences, and walkers pressed against
+  his pen's fence for a trail start behind it. So players draw the stable with paths and bedding; with none, a drekki keeps to
   3 blocks around the hatchery. Stage 1 the same (decided 2026-11-17, after two corrections): anchors chain, so a
   hatchling that reaches bedding may go on to a path within 3 blocks of it, and so on, inside the 50-block leash; with
   no anchors it keeps to 3 blocks around the hatchery. Bedding draws it: most of its strolls end on bedding, and at
@@ -1051,7 +1057,7 @@ Decided 2026-11-04. A player has one drekki checked out at a time; the rest are 
   night. In a level without day and night (the Nether, the End) no bedtime comes (Astral.restTime).
 - Bedding (2026-11-27): each drekki claims a free Straw Bedding block and lies down on that block, not beside it (a path
   stops a block short, so it takes the last step itself). It prefers a block with no taken neighbour, so drekki spread
-  out. A block it cannot get onto in about 3 s is given up for the night and another free one tried; with none free it
+  out. A block it cannot get onto in about 3 s (at once when no path leads there) is given up for the night and another free one tried; with none free it
   sleeps where it stands, and wakes for a block that comes free and that it can reach (entity/Beds).
 
 ## Trails
@@ -1073,7 +1079,13 @@ Decided 2026-11-27 (Shane): Drekki Footprints, a path a drekki at a hatchery fol
   random; at a trail's end it turns and walks the whole way back; a trail joined end to start is a loop. Back at the
   trail's start the walk ends and the pen's goals take over. No limit on length.
 - **Night** (its bedtime, see Sleep): a walker turns for home and sleeps on the first free Straw Bedding within 3
-  blocks of the trail on the way; with none, it walks home.
+  blocks of the trail on the way that it can get onto. Bedding with no way onto it (a fence between) is given up for
+  the night within a few seconds and it walks on back (decided 2026-11-27, Shane: Finn stood at his pen's fence all
+  night); back at the trail's start the pen's sleep takes over; still on the trail after 60 s of looking, it sleeps
+  where it is.
+- **Meeting on a narrow trail** (decided 2026-11-28, Shane): two walkers that block each other (on their way, hardly
+  moved in 1.5 s, another walker within about a block) stop pushing each other for 3 s and slip past. Only then: drekki
+  never walk through each other otherwise (trail/Passing).
 - **Unloaded ground** (as Create's trains): where the next print does not tick, the drekki is saved to the roster and
   removed, and its walk goes on as a record (trail/TrailWalks), print to print at 2 blocks a second, owner online or
   not. Where the record's print ticks again, the drekki appears there. The hatchery does not put a walking drekki back

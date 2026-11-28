@@ -23,7 +23,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * The hatchery screen (spec, Checkout: Roster on the hatchery screen; Breeding: Pairing), two tabs over the player's
- * inventory. Roster: the nest (the egg, its incubation on hover, Hatch once Ready), the viewer's drekki with a model
+ * inventory. Roster: the nest (the egg slot: in and out until Ready; its incubation on hover, Hatch once Ready), the viewer's drekki with a model
  * portrait, the name and where each is (or how long it rests), then Check out, Check in and Release (with a confirm
  * step). Breeding: {@link BreedTab}. The tab parts are drawn in screen coordinates in {@link #renderBg}; tooltips after
  * the slots.
@@ -51,6 +51,7 @@ public final class HatcheryScreen extends AbstractContainerScreen<HatcheryMenu> 
         super(menu, inv, title);
         this.view = menu.view;
         menu.pairing = view != null && view.breeding();
+        menu.readyEgg = view != null && view.ready();
         imageWidth = HatcheryMenu.W;
         imageHeight = HatcheryMenu.H;
         inventoryLabelY = 10000;  /* the steel panel needs no label */
@@ -65,6 +66,7 @@ public final class HatcheryScreen extends AbstractContainerScreen<HatcheryMenu> 
     private void update(HatcheryView v) {
         view = v;
         menu.pairing = v.breeding();
+        menu.readyEgg = v.ready();
         confirming = false;
         if (selected != null && row(selected) == null) selected = null;
         scroll = Math.max(0, Math.min(scroll, Math.max(0, v.rows().size() - ROWS)));
@@ -202,7 +204,7 @@ public final class HatcheryScreen extends AbstractContainerScreen<HatcheryMenu> 
             g.drawString(font, t, leftPos + 40 - font.width(t) / 2, topPos + 79, Art.DIM, false);
             return;
         }
-        g.renderItem(view.egg(), ex, ey);
+        /* the egg itself is the nest slot's item (HatcheryMenu): drawn with the slots; in and out by click */
         if (view.ready()) {
             Component r = Component.translatable("screen.rancher_companion.ready");
             g.drawString(font, r, leftPos + 40 - font.width(r) / 2, topPos + 69, Art.GLOW, false);
