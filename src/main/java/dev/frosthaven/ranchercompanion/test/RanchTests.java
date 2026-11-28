@@ -571,4 +571,17 @@ public final class RanchTests {
             t.succeed();
         });
     }
+
+    /** the top of a trough is no ground: a pup sent there pushed into the trough's side for good (Sandlight, Shane
+     *  2026-11-28: "constantly walking forward into the trough"). Not in the pen; a walk to it gets nowhere near */
+    @GameTest(template = "floor", timeoutTicks = 200)
+    public static void aTroughTopIsNoGround(GameTestHelper t) {
+        BlockPos h = stable(t);
+        ServerPlayer p = player(t);
+        BlockPos tr = LifeTests.trough(t, p, new ItemStack(Items.WHEAT, 4));
+        Ground g = new Ground(t.getLevel());
+        t.assertFalse(g.stand(tr.getX(), tr.getY() + 1, tr.getZ()), "standing on top of the trough is not ground");
+        t.assertFalse(g.pen(h, 1).contains(dev.frosthaven.ranchercompanion.ranch.Flood.pack(tr.getX(), tr.getY() + 1, tr.getZ())), "and not in the pen");
+        t.succeed();
+    }
 }

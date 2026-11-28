@@ -152,7 +152,7 @@ public final class TrailTests {
     }
 
     /** a Fledgling takes a trail from its pen by itself; a pup beside it never does */
-    @GameTest(template = "field", timeoutTicks = 2400, batch = "trails_by_day")
+    @GameTest(template = "field", timeoutTicks = 7200, batch = "trails_by_day")   /* a trail start is a chance: 2400 ticks failed one run in five */
     public static void aFledglingTakesTheTrailAPupDoesNot(GameTestHelper t) {
         ground(t);
         day(t);
@@ -316,6 +316,119 @@ public final class TrailTests {
             t.assertFalse(passedEarly[0], "pass-through only once they were blocked");
             t.assertTrue(met[0], "they met");
             t.assertTrue(aMax[0] >= 24 && bMin[0] <= 16, "both got past each other: a reached x " + aMax[0] + ", b x " + bMin[0]);
+        });
+    }
+
+    /** a walker inside its fenced pen whose walk is at a print behind the fence (no way round): the walk ends within
+     *  moments instead of pacing the fence for good (Tulip, 2026-11-28) */
+    @GameTest(template = "field", timeoutTicks = 800, batch = "trails_by_day_fenced")
+    public static void aWalkerFencedOffItsTrailEndsTheWalk(GameTestHelper t) {
+        ground(t);
+        day(t);
+        BlockPos h = LifeTests.stable(t);
+        ServerPlayer p = LifeTests.player(t);
+        DrekkiEntity d = LifeTests.hatchOne(t, p, h);
+        for (int x = 1; x <= 12; x++) for (int y = 1; y <= 3; y++) t.setBlock(new BlockPos(x, y, 12), Blocks.STONE);   /* a wall south of the pen */
+        for (int x = 2; x <= 10; x++) print(t, x, 15, Direction.EAST);
+        TrailWalks walks = TrailWalks.get(t.getLevel().getServer());
+        long[] startedAt = {-1};
+        t.runAfterDelay(3, () -> {
+            d.setLook(2, d.line(), d.diet(), d.astral(), d.horn());
+            walks.start(d, t.absolutePos(new BlockPos(6, 1, 15)));
+            startedAt[0] = t.getTick();
+        });
+        StringBuilder log = new StringBuilder();
+        int baseX = t.absolutePos(BlockPos.ZERO).getX(), baseZ = t.absolutePos(BlockPos.ZERO).getZ();
+        t.onEachTick(() -> {
+            if (t.getTick() % 50 == 0 && log.length() < 2000) {
+                var w = walks.of(d.drekkiId());
+                log.append(String.format(" | t%d at %.1f,%.1f", t.getTick(), d.getX() - baseX, d.getZ() - baseZ))
+                   .append(w == null ? " no walk" : " node " + (BlockPos.getX(w.node) - baseX) + "," + (BlockPos.getZ(w.node) - baseZ) + " dir " + w.dir)
+                   .append(" nav ").append(d.getNavigation().isDone() ? "done" : "on")
+                   .append(" goals ").append(d.goalSelector.getAvailableGoals().stream().filter(g -> g.isRunning()).map(g -> g.getGoal().getClass().getSimpleName()).toList());
+            }
+        });
+        t.succeedWhen(() -> {
+            t.assertTrue(startedAt[0] >= 0 && walks.of(d.drekkiId()) == null, "the walk ended (still walking after " + (t.getTick() - startedAt[0]) + " ticks)" + log);
+            t.assertTrue(t.getTick() - startedAt[0] < 600, "within 30 s: " + (t.getTick() - startedAt[0]));
+        });
+    }
+
+    /** Shane's live stable and trails (copied 2026-11-28, rancher_companion_test/shane_stable.txt; blocks of mods this
+     *  server lacks as stand-ins of the same shape): three Matures walk the trails a day and a night. None may stand
+     *  still for 10 s while it walks (stuck at a fence, a trough, each other), and by the night's end each is asleep */
+    @GameTest(template = "field", timeoutTicks = 3400, batch = "trails_shane_stable")
+    public static void shanesStableHasNoStuckWalkers(GameTestHelper t) {
+        ground(t);
+        var lookup = t.getLevel().holderLookup(net.minecraft.core.registries.Registries.BLOCK);
+        try (var in = TrailTests.class.getResourceAsStream("/rancher_companion_test/shane_stable.txt")) {
+            for (String line : new String(in.readAllBytes()).split("\n")) {
+                if (line.isBlank() || line.startsWith("#")) continue;
+                String[] f = line.split(" ", 4);
+                var st = net.minecraft.commands.arguments.blocks.BlockStateParser.parseForBlock(lookup, f[3], false).blockState();
+                t.setBlock(new BlockPos(Integer.parseInt(f[0]), Integer.parseInt(f[1]), Integer.parseInt(f[2])), st);
+            }
+        } catch (Exception e) { throw new net.minecraft.gametest.framework.GameTestAssertException("layout: " + e); }
+        BlockPos hRel = new BlockPos(18, 1, 6);
+        for (int dx = -1; dx <= 1; dx++) for (int dz = -1; dz <= 1; dz++) t.setBlock(hRel.offset(dx, 4, dz), Blocks.OAK_PLANKS);  /* the hatch checks' roof */
+        BlockPos h = t.absolutePos(hRel);
+        t.getLevel().setDayTime(1000);
+        ServerPlayer p = t.makeMockServerPlayerInLevel();
+        p.moveTo(t.absoluteVec(new BlockPos(16, 1, 8).getCenter()));
+        List<DrekkiEntity> mine = new java.util.ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            Ranch.putEgg(p, h, dev.frosthaven.ranchercompanion.item.CreativeEggItem.egg(4));
+            Ranch.hatch(p, h);
+        }
+        mine.addAll(t.getLevel().getEntitiesOfClass(DrekkiEntity.class, new AABB(h).inflate(20), x -> p.getUUID().equals(x.owner())));
+        t.assertTrue(mine.size() == 3, "three hatched: " + mine.size());
+        TrailWalks walks = TrailWalks.get(t.getLevel().getServer());
+        BlockPos[] heads = {new BlockPos(12, 1, 14), new BlockPos(13, 1, 15), new BlockPos(12, 1, 16)};
+        t.runAfterDelay(5, () -> {
+            for (int i = 0; i < 3; i++) {
+                DrekkiEntity d = mine.get(i);
+                d.setLook(3, d.line(), d.diet(), dev.frosthaven.ranchercompanion.look.Astral.SOLAR, d.horn());
+                walks.start(d, t.absolutePos(heads[i]));
+            }
+        });
+        t.onEachTick(() -> {
+            long want = t.getTick() < 1600 ? 1000 : 18000;
+            if (Math.abs(t.getLevel().getDayTime() % 24000 - want) > 3000) t.getLevel().setDayTime(want);
+        });
+        java.util.Map<DrekkiEntity, net.minecraft.world.phys.Vec3> at = new java.util.HashMap<>();
+        StringBuilder stuck = new StringBuilder();
+        int[] range = {99, -99, 99, -99};
+        int baseX = t.absolutePos(BlockPos.ZERO).getX(), baseZ = t.absolutePos(BlockPos.ZERO).getZ();
+        t.onEachTick(() -> {
+            for (DrekkiEntity d : mine) {
+                int x = (int) d.getX() - baseX, z = (int) d.getZ() - baseZ;
+                range[0] = Math.min(range[0], x); range[1] = Math.max(range[1], x); range[2] = Math.min(range[2], z); range[3] = Math.max(range[3], z);
+            }
+            if (t.getTick() % 200 != 0) return;
+            for (DrekkiEntity d : mine) {
+                var w = walks.of(d.drekkiId());
+                var was = at.put(d, d.position());
+                boolean walking = w != null && !w.asleep && !d.isSleepingLoop();
+                if (walking && was != null && was.distanceTo(d.position()) < 0.5 && stuck.length() < 1500)
+                    stuck.append(String.format(" | t%d %s stood at %.1f,%.1f (print %d,%d dir %d)", t.getTick(), d.drekkiId().toString().substring(0, 4),
+                        d.getX() - baseX, d.getZ() - baseZ, BlockPos.getX(w.node) - baseX, BlockPos.getZ(w.node) - baseZ, w.dir));
+            }
+        });
+        t.runAfterDelay(3300, () -> {
+            StringBuilder state = new StringBuilder();
+            boolean allAsleep = true;
+            for (DrekkiEntity d : mine) {
+                var w = walks.of(d.drekkiId());
+                boolean asleep = d.isSleepingLoop() && t.getLevel().getBlockState(d.blockPosition()).is(DrekkiBlocks.STRAW_BEDDING.get());
+                allAsleep &= asleep;
+                state.append(String.format(" | %s at %.1f,%.1f %s %s", d.drekkiId().toString().substring(0, 4), d.getX() - baseX, d.getZ() - baseZ,
+                    w == null ? "home" : "on the trail", asleep ? "asleep on bedding" : d.isSleepingLoop() ? "ASLEEP OFF BEDDING on " + t.getLevel().getBlockState(d.blockPosition()).getBlock() : "AWAKE"));
+            }
+            RancherCompanion.LOG.info("[trails test] Shane's stable: walkers reached x {}..{}, z {}..{};{}", range[0], range[1], range[2], range[3], state);
+            t.assertTrue(stuck.length() == 0, "no walker stood still for 10 s:" + stuck);
+            t.assertTrue(allAsleep, "all asleep on bedding by the night's end (it is reachable from everywhere here):" + state);
+            for (DrekkiEntity d : mine) walks.end(d.drekkiId());
+            t.succeed();
         });
     }
 }

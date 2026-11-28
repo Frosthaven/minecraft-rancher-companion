@@ -14,8 +14,8 @@ import net.minecraft.world.entity.ai.goal.Goal;
  * pen; then print to print, a step to either side now and then and a pause at times, so it follows the trail loosely.
  * At a fork it takes one at random; at the trail's end it walks the whole way back. At night it turns for home and
  * sleeps on the first free Straw Bedding by the trail (within 3 blocks of a print) that it can get onto: bedding with no
- * way onto it is given up and it walks on back. Home first, the pen's goals put it to bed; still on the trail after
- * {@link #SEARCH} ticks, it sleeps where it is. Where the next print does not tick, it becomes a record
+ * way onto it is given up and it walks on back. Home first, the pen's goals put it to bed; on the trail with no print
+ * passed for {@link #SEARCH} ticks (no headway home), it sleeps where it is. Where the next print does not tick, it becomes a record
  * ({@link TrailWalks}) and walks on there.
  */
 public final class TrailWalk extends Goal {
@@ -34,7 +34,7 @@ public final class TrailWalk extends Goal {
     /** tonight: the bedding by the trail it gave up (no way onto it, or none free), and the ticks spent looking */
     private final Set<BlockPos> gaveUp = new java.util.HashSet<>();
     private int search;
-    /** a night's look for bedding along the trail, 60 s; then it sleeps on the trail */
+    /** a night's look for bedding along the trail: 60 s with no print passed (no headway home); then it sleeps on the trail */
     static final int SEARCH = 1200;
 
     public TrailWalk(DrekkiEntity d) { this.d = d; setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK, Flag.JUMP)); }
@@ -115,10 +115,11 @@ public final class TrailWalk extends Goal {
             w.node = p.asLong(); w.prev = Long.MIN_VALUE; plan.clear(); target = null;
         }
         if (night && w.dir == 1) { w.turn(); plan.clear(); target = null; d.getNavigation().stop(); walks().changed(); }
-        if (night && ++search > SEARCH) { sleepHere(w); return; }  /* no bedding it could reach: on the trail */
+        if (night && ++search > SEARCH) { sleepHere(w, "no headway home for 60 s"); return; }  /* no bedding it could reach: on the trail */
         if (night && plan.isEmpty() && (rest != null || hasRest(tr, w.node))) { sleepOn(w, tr); return; }
         if (pause > 0) { pause--; return; }
         if (plan.isEmpty()) { plan(w, tr, night); return; }
+        if (standing()) { dev.frosthaven.ranchercompanion.Debug.log("trail: {} stood still on its way", dev.frosthaven.ranchercompanion.Debug.of(d)); d.getNavigation().stop(); blocked(w); return; }
         /* on the way: each print it comes near is passed (its place on the trail moves on) */
         while (!plan.isEmpty() && near(BlockPos.of(plan.get(0)[0]), 1.8)) pass(w, plan.remove(0));
         if (plan.isEmpty()) { arrived(); return; }
@@ -159,8 +160,35 @@ public final class TrailWalk extends Goal {
     }
 
     private boolean go(BlockPos last) {
-        return d.getNavigation().moveTo(target.getX() + 0.5, target.getY(), target.getZ() + 0.5, 0.8)
-            || d.getNavigation().moveTo(last.getX() + 0.5, last.getY(), last.getZ() + 0.5, 0.8);
+        return toward(target) || toward(last);
+    }
+
+    private net.minecraft.world.phys.Vec3 stillAt;
+    private int stillFor;
+
+    /** on its way (a path under way) but not moving: two seconds within a third of a block. The path then never ends,
+     *  so the walk never sees it is blocked (a walker pushing at its pen's fence stood there for good, GameTest
+     *  2026-11-28). Not while two walkers pass through each other (Passing) */
+    private boolean standing() {
+        if (!d.getNavigation().isInProgress() || Passing.passing(d)) { stillAt = null; return false; }
+        if (stillAt == null || stillAt.distanceToSqr(d.position()) > 0.3 * 0.3) { stillAt = d.position(); stillFor = 0; return false; }
+        if (++stillFor <= 40) return false;
+        if (Passing.blockedBy(d)) { stillFor = 0; return false; }   /* another walker in the way: they pass, it does not turn back */
+        return true;
+    }
+
+    /** a path to this spot that gets there, or at least two blocks nearer it. The pathfinder gives the nearest point when
+     *  it cannot reach a spot, and a walk took that as a way on: Tulip, inside her pen with the next print behind its
+     *  fence, walked to the fence and back for good (Shane, 2026-11-28); now that counts as no way on (repath, blocked) */
+    private boolean toward(BlockPos to) {
+        var path = d.getNavigation().createPath(to, 1);
+        if (path == null || path.getEndNode() == null) return false;
+        double end = path.getEndNode().asBlockPos().distSqr(to), now = d.blockPosition().distSqr(to);
+        if (end > 2 * 2 && Math.sqrt(end) > Math.sqrt(now) - 2) {
+            dev.frosthaven.ranchercompanion.Debug.log("trail: {} no way to {} (the path ends {} from it, {} now)", dev.frosthaven.ranchercompanion.Debug.of(d), to.toShortString(), Math.round(Math.sqrt(end)), Math.round(Math.sqrt(now)));
+            return false;
+        }
+        return d.getNavigation().moveTo(path, 0.8);
     }
 
     /** no path this tick: a drekki off the ground for a moment (a step, a hop) gets none at all. It tries again every
@@ -178,6 +206,7 @@ public final class TrailWalk extends Goal {
 
     private void pass(TrailWalks.Walk w, long[] step) {
         w.node = step[0]; w.prev = step[1]; w.dir = (int) step[2]; walks().changed(); stuck = 0;
+        search = 0;   /* a print passed is headway home: the night's 60 s count only time without it (Pom Pom slept on the trail a minute after dusk, its way home clear; Shane, 2026-11-28) */
     }
 
     /** the stretch walked: now and then a pause (a sniff, a look round) */
@@ -198,6 +227,7 @@ public final class TrailWalk extends Goal {
 
     /** no way on: back the other way; blocked three times in a row, the walk ends and it goes home */
     private void blocked(TrailWalks.Walk w) {
+        dev.frosthaven.ranchercompanion.Debug.log("trail: {} blocked ({} in a row) at print {}", dev.frosthaven.ranchercompanion.Debug.of(d), stuck + 1, BlockPos.of(w.node).toShortString());
         plan.clear(); target = null;
         if (++stuck >= 3) { end(); d.goHome(); return; }
         w.turn(); walks().changed();
@@ -217,13 +247,14 @@ public final class TrailWalk extends Goal {
             if (rest == null) { gaveUp.addAll(tr.restsNear(w.node)); return; }  /* all taken: the next stop back */
         }
         switch (dev.frosthaven.ranchercompanion.entity.Beds.approach(d, rest, bedTries)) {
-            case ON -> sleepHere(w);
+            case ON -> sleepHere(w, "on its bedding");
             case STUCK -> { gaveUp.add(rest); rest = null; dev.frosthaven.ranchercompanion.entity.Beds.release(d); d.getNavigation().stop(); }
             case GOING -> { }
         }
     }
 
-    private void sleepHere(TrailWalks.Walk w) {
+    private void sleepHere(TrailWalks.Walk w, String why) {
+        dev.frosthaven.ranchercompanion.Debug.log("trail: {} asleep on the trail ({})", dev.frosthaven.ranchercompanion.Debug.of(d), why);
         d.getNavigation().stop(); d.setSleepingLoop(true); w.asleep = true; walks().changed();
     }
 

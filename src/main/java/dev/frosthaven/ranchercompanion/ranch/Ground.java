@@ -39,6 +39,10 @@ public final class Ground implements Flood.Grid {
         if (feet == 0) {
             double below = top(x, y - 1, z);
             if (below < 0.4 || below > 1.0) return false;
+            /* the top of a trough or a hatchery is no ground: a stroll to a trough's top pushed into its side for good
+               (Sandlight, Shane 2026-11-28) */
+            BlockState under = level.getBlockState(m.set(x, y - 1, z));
+            if (under.is(DrekkiBlocks.TROUGH.get()) || under.is(DrekkiBlocks.HATCHERY.get())) return false;
         }
         return top(x, y + 1, z) == 0 || feet + 0.6 <= 1;
     }

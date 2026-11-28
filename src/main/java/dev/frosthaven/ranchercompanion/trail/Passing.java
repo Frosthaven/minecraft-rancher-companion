@@ -33,11 +33,22 @@ public final class Passing {
         return p != null && p.with() == b && now < p.until() || q != null && q.with() == a && now < q.until();
     }
 
+    /** this walker passes through another one now */
+    static boolean passing(Entity a) {
+        Pass p = PASSES.get(a);
+        return p != null && a.level().getGameTime() < p.until();
+    }
+
     /** every tick of a trail walk: is this walker blocked by another one? */
     static void check(DrekkiEntity d) {
         if (d.tickCount % CHECK != 0) return;
         Vec3 was = SAMPLE.put(d, d.position());
         if (was == null || !d.getNavigation().isInProgress() || was.distanceTo(d.position()) >= MOVED) return;
+        blockedBy(d);
+    }
+
+    /** another walker within reach blocks this one: they pass through each other now. False when none is near */
+    static boolean blockedBy(DrekkiEntity d) {
         for (DrekkiEntity o : d.level().getEntitiesOfClass(DrekkiEntity.class, new AABB(d.blockPosition()).inflate(NEAR),
                 o -> o != d && o.isAlive() && o.distanceTo(d) <= NEAR && TrailWalks.walking(o))) {
             long until = d.level().getGameTime() + FOR;
@@ -45,7 +56,8 @@ public final class Passing {
             PASSES.put(o, new Pass(d, until));
             dev.frosthaven.ranchercompanion.RancherCompanion.LOG.info("[trails] {} and {} blocked each other on a trail: they pass through each other for {} s",
                 d.getName().getString(), o.getName().getString(), FOR / 20);
-            return;
+            return true;
         }
+        return false;
     }
 }

@@ -1015,7 +1015,7 @@ Decided 2026-11-04. A player has one drekki checked out at a time; the rest are 
 - Wandering (proposal 2026-11-16, stricter than MineColonies' citizens): each checked-in drekki is leashed to its
   hatchery, 50 blocks out at most (25 until 2026-11-27), and never goes more than 3 blocks from an anchor block: a dirt path, Straw
   Bedding, or the hatchery itself. A pup anchors only to the hatchery and Straw Bedding, never a dirt path (decided 2026-11-27). The area it may use is every spot within 3 blocks of an anchor, inside the 50-block leash, that it can walk to
-  from the hatchery. Anchors chain (revised 2026-11-17): an anchor counts when it lies within 3 blocks of an anchor that
+  from the hatchery (the top of a trough or a hatchery is no ground: Sandlight walked into a trough for good, 2026-11-28). Anchors chain (revised 2026-11-17): an anchor counts when it lies within 3 blocks of an anchor that
   counts, starting from the hatchery, and (revised 2026-11-27, Shane) when the walk reaches it: a fence or wall bounds
   the area, an open door or gate lets it through. Until then the area ran through fences, and walkers pressed against
   his pen's fence for a trail start behind it. So players draw the stable with paths and bedding; with none, a drekki keeps to
@@ -1057,7 +1057,7 @@ Decided 2026-11-04. A player has one drekki checked out at a time; the rest are 
   night. In a level without day and night (the Nether, the End) no bedtime comes (Astral.restTime).
 - Bedding (2026-11-27): each drekki claims a free Straw Bedding block and lies down on that block, not beside it (a path
   stops a block short, so it takes the last step itself). It prefers a block with no taken neighbour, so drekki spread
-  out. A block it cannot get onto in about 3 s (at once when no path leads there) is given up for the night and another free one tried; with none free it
+  out. A block it cannot get onto in about 3 s (at once when no path leads there) is given up for the night and another free one tried; a drekki asleep is not pushed off its bedding by another drekki (2026-11-28); with none free it
   sleeps where it stands, and wakes for a block that comes free and that it can reach (entity/Beds).
 
 ## Trails
@@ -1081,8 +1081,10 @@ Decided 2026-11-27 (Shane): Drekki Footprints, a path a drekki at a hatchery fol
 - **Night** (its bedtime, see Sleep): a walker turns for home and sleeps on the first free Straw Bedding within 3
   blocks of the trail on the way that it can get onto. Bedding with no way onto it (a fence between) is given up for
   the night within a few seconds and it walks on back (decided 2026-11-27, Shane: Finn stood at his pen's fence all
-  night); back at the trail's start the pen's sleep takes over; still on the trail after 60 s of looking, it sleeps
-  where it is.
+  night); back at the trail's start the pen's sleep takes over; on the trail with no headway home for 60 s (no print
+  passed: blocked, lost), it sleeps where it is (revised 2026-11-28, Shane: Pom Pom slept on the trail a minute after
+  dusk with its way home clear). A walker that stands still on its way for 2 s, or cannot get nearer its next print, is
+  blocked: it turns back, and after three it goes home.
 - **Meeting on a narrow trail** (decided 2026-11-28, Shane): two walkers that block each other (on their way, hardly
   moved in 1.5 s, another walker within about a block) stop pushing each other for 3 s and slip past. Only then: drekki
   never walk through each other otherwise (trail/Passing).
